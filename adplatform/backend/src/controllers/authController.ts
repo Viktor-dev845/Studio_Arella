@@ -350,13 +350,13 @@ export const forgotPassword: RequestHandler = async (req, res) => {
     // Invalidate old tokens
     await pool.query('UPDATE password_reset_tokens SET used = true WHERE user_id = $1', [user.rows[0].id]);
 
-    const token = crypto.randomBytes(32).toString('hex');
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
     await pool.query(
       `INSERT INTO password_reset_tokens (user_id, token, expires_at)
        VALUES ($1, $2, NOW() + INTERVAL '15 minutes')`,
-      [user.rows[0].id, token]
+      [user.rows[0].id, code]
     );
-    sendPasswordResetEmail(email, user.rows[0].name, token).catch(console.error);
+    sendPasswordResetEmail(email, user.rows[0].name, code).catch(console.error);
   } catch (err) {
     console.error('Forgot password error:', err);
   }
@@ -365,17 +365,18 @@ export const forgotPassword: RequestHandler = async (req, res) => {
 // ── Reset password ────────────────────────────────────────────────────────────
 export const resetPassword: RequestHandler = async (req, res) => {
   try {
-    const { token, password } = req.body;
-    if (!token || !password) { res.status(400).json({ message: 'Token and password are required' }); return; }
+    const { email, code, password } = req.body;
+    if (!email || !code || !password) { res.status(400).json({ message: 'Email, code, and password are required' }); return; }
     if (password.length < 6) { res.status(400).json({ message: 'Password must be at least 6 characters' }); return; }
 
     const result = await pool.query(
-      `SELECT * FROM password_reset_tokens
-       WHERE token = $1 AND used = false AND expires_at > NOW()`,
-      [token]
+      `SELECT t.* FROM password_reset_tokens t
+       JOIN users u ON u.id = t.user_id
+       WHERE t.token = $1 AND u.email = $2 AND t.used = false AND t.expires_at > NOW()`,
+      [code, email]
     );
     if (!result.rows[0]) {
-      res.status(400).json({ message: 'Invalid or expired reset link. Please request a new one.' });
+      res.status(400).json({ message: 'Invalid or expired reset code. Please request a new one.' });
       return;
     }
 

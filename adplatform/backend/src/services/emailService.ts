@@ -90,16 +90,17 @@ export async function sendWelcomeEmail(to: string, name: string) {
 }
 
 // ── 3. Password reset ─────────────────────────────────────────────────────────
-export async function sendPasswordResetEmail(to: string, name: string, token: string) {
-  const url = `${process.env.FRONTEND_URL}/auth/reset-password?token=${token}`;
+export async function sendPasswordResetEmail(to: string, name: string, code: string) {
   await transporter.sendMail({
     from: FROM, to,
     subject: 'Reset your password — Bems Screens',
     html: wrap(`
       ${h1('Reset your password')}
-      ${p(`Hi ${name}, we received a request to reset your Bems Screens password.`)}
-      ${btn('Reset my password', url)}
-      ${p('This link expires in <strong>15 minutes</strong>. If you didn\'t request a password reset, please ignore this email — your account is safe.', true)}
+      ${p(`Hi ${name}, we received a request to reset your Bems Screens password. Please use the 6-digit code below to set a new password:`)}
+      <div style="background:#F9F7F5;border:1px dashed #E5E7EB;padding:24px;border-radius:12px;text-align:center;margin:24px 0">
+        <span style="font-size:32px;font-weight:900;letter-spacing:6px;color:#0A0A0A">${code}</span>
+      </div>
+      ${p(`This code expires in 15 minutes. If you didn't request this, you can safely ignore this email.`, true)}
     `),
   });
 }

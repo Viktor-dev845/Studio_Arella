@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { AnimatedButton } from '@/components/ui/Animations';
@@ -11,6 +12,7 @@ import api from '@/lib/api';
 const F = "'Quicksand', sans-serif";
 
 export default function ForgotPasswordPage() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -21,7 +23,7 @@ export default function ForgotPasswordPage() {
     setLoading(true);
     try {
       await api.post('/auth/forgot-password', { email });
-      setSent(true);
+      router.push(`/auth/reset-password?email=${encodeURIComponent(email)}`);
     } catch (err: any) {
       toast(err?.response?.data?.message || 'Failed to send reset link', 'error');
     } finally {

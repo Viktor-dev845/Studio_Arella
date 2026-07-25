@@ -1,5 +1,5 @@
 'use client';
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -20,27 +20,50 @@ export default function ResetPasswordPage() {
 function ResetPasswordContent() {
   const params = useSearchParams();
   const router = useRouter();
+  
+  const [code, setCode] = useState(['', '', '', '', '', '']);
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState('');
   const [done, setDone] = useState(false);
   const [loading, setLoading] = useState(false);
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  const token = params.get('token') || '';
+  const email = params.get('email') || '';
+  
   const inputStyle: React.CSSProperties = { width: '100%', padding: '12px 14px', background: '#fff', border: '1.5px solid #E5E7EB', borderRadius: 10, fontSize: 14, fontFamily: F, color: '#1A1A1A', outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.2s, box-shadow 0.2s' };
+
+  const handleCodeChange = (index: number, value: string) => {
+    if (!/^[0-9]*$/.test(value)) return;
+    const newCode = [...code];
+    newCode[index] = value;
+    setCode(newCode);
+    if (value && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && !code[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); setError('');
+    const otpCode = code.join('');
+    if (otpCode.length < 6) { setError('Please enter the 6-digit code'); return; }
     if (password.length < 6) { setError('Password must be at least 6 characters'); return; }
     if (password !== confirm) { setError('Passwords do not match'); return; }
+    
     setLoading(true);
     try {
-      await api.post('/auth/reset-password', { token, password });
+      await api.post('/auth/reset-password', { email, code: otpCode, password });
       setDone(true);
       setTimeout(() => router.push('/auth/login'), 2500);
     } catch (err: any) {
-      setError(err?.response?.data?.message || 'Reset failed. The link may have expired.');
+      setError(err?.response?.data?.message || 'Reset failed. The code may have expired.');
     } finally { setLoading(false); }
   };
 
@@ -57,9 +80,44 @@ function ResetPasswordContent() {
         {!done ? (
           <>
             <h1 style={{ fontSize: 22, fontWeight: 900, color: '#1A1A1A', margin: '0 0 6px' }}>Set new password</h1>
-            <p style={{ fontSize: 14, color: '#64748B', margin: '0 0 24px' }}>Choose a strong password for your account.</p>
+            <p style={{ fontSize: 14, color: '#64748B', margin: '0 0 24px' }}>
+              We've sent a 6-digit code to <strong style={{ color: '#1A1A1A' }}>{email}</strong>
+            </p>
             {error && <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', color: '#B91C1C', fontSize: 13, padding: '10px 14px', borderRadius: 10, marginBottom: 16 }}>{error}</div>}
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+              
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 700, color: '#475569', display: 'block', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.06em' }}>6-Digit Code</label>
+                <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between' }}>
+                  {code.map((digit, index) => (
+                    <input
+                      key={index}
+                      ref={el => { inputRefs.current[index] = el; }}
+                      type="text"
+                      maxLength={1}
+                      value={digit}
+                      onChange={(e) => handleCodeChange(index, e.target.value)}
+                      onKeyDown={(e) => handleKeyDown(index, e)}
+                      style={{
+                        width: '100%',
+                        height: 48,
+                        background: '#fff',
+                        border: `1.5px solid ${digit ? '#D4AF37' : '#E5E7EB'}`,
+                        borderRadius: 10,
+                        fontSize: 20,
+                        fontWeight: 800,
+                        color: '#1A1A1A',
+                        textAlign: 'center',
+                        outline: 'none',
+                        transition: 'all 0.2s',
+                        boxShadow: digit ? '0 0 0 3px rgba(212,175,55,0.1)' : 'none',
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+
               <div>
                 <label style={{ fontSize: 11, fontWeight: 700, color: '#475569', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>New password</label>
                 <div style={{ position: 'relative' }}>
@@ -71,20 +129,22 @@ function ResetPasswordContent() {
                   </button>
                 </div>
               </div>
+              
               <div>
                 <label style={{ fontSize: 11, fontWeight: 700, color: '#475569', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Confirm password</label>
                 <input type="password" value={confirm} onChange={e => setConfirm(e.target.value)} placeholder="Repeat your password" required style={inputStyle}
                   onFocus={e => { e.target.style.borderColor = '#D4AF37'; e.target.style.boxShadow = '0 0 0 3px rgba(212,175,55,0.12)'; }}
                   onBlur={e => { e.target.style.borderColor = '#E5E7EB'; e.target.style.boxShadow = 'none'; }} />
               </div>
+
               <AnimatedButton
-              type="submit"
-              loading={loading}
-              loadingText="Resetting"
-              style={{ width: '100%', padding: '13px', background: '#D4AF37', color: '#111111', borderRadius: 11, fontSize: 14, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, boxShadow: '0 4px 14px rgba(212,175,55,0.25)' }}
-            >
-              <FaArrowRight size={13} /> Set new password
-            </AnimatedButton>
+                type="submit"
+                loading={loading}
+                loadingText="Resetting"
+                style={{ width: '100%', padding: '13px', background: '#D4AF37', color: '#111111', borderRadius: 11, fontSize: 14, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, boxShadow: '0 4px 14px rgba(212,175,55,0.25)', marginTop: 4 }}
+              >
+                <FaArrowRight size={13} /> Set new password
+              </AnimatedButton>
             </form>
           </>
         ) : (
