@@ -43,42 +43,44 @@ const CustomToolbar = (toolbar: any) => {
   };
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 16 }}>
       <div>
-        <button onClick={goToCurrent} style={{ padding: '8px 16px', background: theme.color.surface2, color: theme.color.text2, border: `1px solid ${theme.color.border}`, borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s' }}
-          onMouseOver={e => { e.currentTarget.style.background = theme.color.goldLight; e.currentTarget.style.color = theme.color.goldDark; e.currentTarget.style.borderColor = theme.color.goldMid; }}
-          onMouseOut={e => { e.currentTarget.style.background = theme.color.surface2; e.currentTarget.style.color = theme.color.text2; e.currentTarget.style.borderColor = theme.color.border; }}>
+        <button onClick={goToCurrent} style={{ padding: '8px 20px', background: 'transparent', color: theme.color.text1, border: `2px solid ${theme.color.border2}`, borderRadius: 100, fontSize: 13, fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}
+          onMouseOver={e => { e.currentTarget.style.background = theme.color.gold; e.currentTarget.style.color = '#111'; e.currentTarget.style.borderColor = theme.color.gold; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+          onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = theme.color.text1; e.currentTarget.style.borderColor = theme.color.border2; e.currentTarget.style.transform = 'translateY(0)'; }}>
           Today
         </button>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-        <button onClick={goToBack} style={{ padding: '6px', background: theme.color.surface2, border: `1px solid ${theme.color.border}`, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', color: theme.color.text2, transition: 'all 0.15s' }}
-          onMouseOver={e => { e.currentTarget.style.background = theme.color.surface; e.currentTarget.style.color = theme.color.text1; }}
-          onMouseOut={e => { e.currentTarget.style.background = theme.color.surface2; e.currentTarget.style.color = theme.color.text2; }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: theme.color.surface2, border: `1px solid ${theme.color.border}`, borderRadius: 100, padding: 4, boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}>
+        <button onClick={goToBack} style={{ padding: '6px 12px', background: 'transparent', border: 'none', borderRadius: 100, cursor: 'pointer', display: 'flex', alignItems: 'center', color: theme.color.text2, transition: 'all 0.15s' }}
+          onMouseOver={e => { e.currentTarget.style.background = theme.color.surface; e.currentTarget.style.color = theme.color.text1; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)'; }}
+          onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = theme.color.text2; e.currentTarget.style.boxShadow = 'none'; }}>
           <ChevronLeft size={16} strokeWidth={2.5} />
         </button>
         
-        {label()}
+        <div style={{ minWidth: 150, textAlign: 'center' }}>
+          {label()}
+        </div>
 
-        <button onClick={goToNext} style={{ padding: '6px', background: theme.color.surface2, border: `1px solid ${theme.color.border}`, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', color: theme.color.text2, transition: 'all 0.15s' }}
-          onMouseOver={e => { e.currentTarget.style.background = theme.color.surface; e.currentTarget.style.color = theme.color.text1; }}
-          onMouseOut={e => { e.currentTarget.style.background = theme.color.surface2; e.currentTarget.style.color = theme.color.text2; }}>
+        <button onClick={goToNext} style={{ padding: '6px 12px', background: 'transparent', border: 'none', borderRadius: 100, cursor: 'pointer', display: 'flex', alignItems: 'center', color: theme.color.text2, transition: 'all 0.15s' }}
+          onMouseOver={e => { e.currentTarget.style.background = theme.color.surface; e.currentTarget.style.color = theme.color.text1; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)'; }}
+          onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = theme.color.text2; e.currentTarget.style.boxShadow = 'none'; }}>
           <ChevronRight size={16} strokeWidth={2.5} />
         </button>
       </div>
 
-      <div style={{ display: 'flex', background: theme.color.surface2, border: `1px solid ${theme.color.border}`, borderRadius: 8, padding: 3 }}>
+      <div style={{ display: 'flex', background: theme.color.surface2, border: `1px solid ${theme.color.border}`, borderRadius: 100, padding: 4, boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}>
         {['month', 'week', 'day', 'agenda'].map(v => (
           <button
             key={v}
             onClick={() => toolbar.onView(v)}
             style={{
-              padding: '6px 14px', background: toolbar.view === v ? theme.color.surface : 'transparent',
+              padding: '6px 16px', background: toolbar.view === v ? theme.color.surface : 'transparent',
               color: toolbar.view === v ? theme.color.text1 : theme.color.text3,
-              border: 'none', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer',
-              boxShadow: toolbar.view === v ? theme.shadow.sm : 'none',
-              textTransform: 'capitalize', transition: 'all 0.15s'
+              border: 'none', borderRadius: 100, fontSize: 12, fontWeight: 800, cursor: 'pointer',
+              boxShadow: toolbar.view === v ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
+              textTransform: 'capitalize', transition: 'all 0.2s'
             }}>
             {v}
           </button>
