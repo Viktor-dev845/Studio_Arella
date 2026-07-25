@@ -10,7 +10,7 @@ import Button from '@/components/ui/Button';
 import api from '@/lib/api';
 import { FaUser, FaShield, FaBell, FaPalette, FaCreditCard, FaArrowRight, FaCamera, FaLock, FaKey } from 'react-icons/fa6';
 import { theme } from '@/lib/theme';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const F = theme.font.body;
 
