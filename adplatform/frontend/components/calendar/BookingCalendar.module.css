@@ -73,7 +73,8 @@
   font-weight: 900;
 }
 
-/* For the today number specifically, try to target the link inside */
+/* For the today number specifically, try to target the link or button inside */
+.calendar :global(.rbc-date-cell.rbc-now button),
 .calendar :global(.rbc-date-cell.rbc-now a) {
   display: inline-block;
   color: #111;
@@ -84,6 +85,10 @@
   line-height: 28px;
   text-align: center;
   box-shadow: 0 4px 12px rgba(212,175,55,0.3);
+  border: none;
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
 }
 
 .calendar :global(.rbc-show-more) {
