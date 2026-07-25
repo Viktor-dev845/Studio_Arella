@@ -192,6 +192,7 @@ export default function SettingsPage() {
                         )}
                       </AnimatePresence>
                     </div>
+                  </div>
 
                   <div style={{ background: '#FFF0F0', borderRadius: 24, border: `1px solid #FECACA`, padding: '40px', boxShadow: theme.shadow.sm }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>

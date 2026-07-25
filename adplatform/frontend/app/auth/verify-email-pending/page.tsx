@@ -2,7 +2,7 @@
 
 import { useState, Suspense, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Mail, RefreshCw } from 'lucide-react';
+import { Mail, RefreshCw, ArrowRight } from 'lucide-react';
 import api from '@/lib/api';
 import { theme } from '@/lib/theme';
 import { useToast } from '@/components/ui/ToastProvider';
@@ -193,8 +193,12 @@ function VerifyEmailPendingContent() {
               fontWeight: 600,
               cursor: resending ? 'not-allowed' : 'pointer',
               transition: 'all 0.2s',
+            }}
+          >
+            <RefreshCw size={16} className={resending ? 'animate-spin' : ''} />
+            {resending ? 'Sending...' : 'Resend Code'}
           </button>
-        )}
+        </div>
 
         {/* Already verified */}
         <button
