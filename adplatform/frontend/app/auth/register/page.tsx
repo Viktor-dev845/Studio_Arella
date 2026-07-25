@@ -133,8 +133,8 @@ export default function RegisterPage() {
             {[
               { Icon: FaCheck,      color: '#22c55e', text: 'Free to join — no credit card required' },
               { Icon: FaBolt,       color: '#D4AF37', text: 'Book and go live in under an hour' },
-              { Icon: FaChartLine,  color: '#06B6D4', text: 'Real-time impression tracking dashboard' },
-              { Icon: FaCreditCard, color: '#EAB308', text: 'Secure payment via Monnify' },
+              { Icon: FaChartLine,  color: '#06B6D4', text: 'Manage your campaigns in one intuitive dashboard' },
+              { Icon: FaCreditCard, color: '#EAB308', text: 'Safe, encrypted, and transparent payment processing' },
             ].map(({ Icon, color, text }) => (
               <div key={text} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <div style={{ width: 28, height: 28, borderRadius: 8, background: `rgba(255,255,255,0.03)`, border: `1px solid rgba(255,255,255,0.08)`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>

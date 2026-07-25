@@ -88,7 +88,7 @@ const HOW = [
   { n: '01', title: 'Create your account', body: "Sign up free in seconds — no credit card required. You're instantly ready to start booking ad slots on Studio Arella." },
   { n: '02', title: 'Pick your slot on the calendar', body: 'Browse the live booking calendar. Select your preferred date and time. Choose from plans starting at ₦1,000.' },
   { n: '03', title: 'Upload or request your ad', body: 'Upload your own creative, or let our team create a professional design for you — graphics or video.' },
-  { n: '04', title: 'Pay and go live', body: 'Pay securely via Monnify. Your ad is pushed directly to the Studio Arella screen. Track impressions in real time.' },
+  { n: '04', title: 'Pay and go live', body: 'Pay securely using encrypted processing. Your ad is pushed directly to the Studio Arella screen and you can monitor your campaign.' },
 ];
 
 const FAQS = [
@@ -97,9 +97,9 @@ const FAQS = [
   { q: 'How much does it cost to advertise on the screen?', a: 'Plans start from ₦1,000 for a 1-minute slot. We offer packages up to 8-hour full-day bookings. All plans are billed once at time of booking with no hidden fees.' },
   { q: 'How much does it cost to book the Podcast Studio?', a: 'Our Audio-Only podcast sessions start at ₦10,000 per hour. If you require Audio + Video with a multi-cam setup, the rate is ₦20,000 per hour.' },
   { q: "I don't have an ad — can your team create one?", a: 'Yes. Our professional creative team offers graphic design services and promotional video production. Contact us via the Request Creative page or call 08164523926 to discuss your needs.' },
-  { q: 'How do I make payment?', a: 'All payments are processed securely via Monnify. We accept debit cards and bank transfers. Credits are confirmed instantly and your booking goes live immediately.' },
+  { q: 'How do I make payment?', a: 'All payments are processed securely. We accept debit cards and bank transfers. Credits are confirmed instantly and your booking goes live immediately.' },
   { q: 'Can I book a slot from outside Umuahia?', a: "Absolutely. That's exactly why we built this platform. Upload your ad, book your slot, make payment — and your ad plays on the Studio Arella screen from anywhere in the world." },
-  { q: 'How do I know my ad actually played?', a: "Your dashboard shows real-time impression tracking — exactly when your ad played, how many times, and estimated audience reach. You always know what you're getting." },
+  { q: 'How do I know my ad actually played?', a: "Your dashboard provides detailed logs of your active and past campaigns, helping you keep track of your ad schedules and performance." },
 ];
 
 function FAQItem({ q, a }: { q: string; a: string }) {
