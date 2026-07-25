@@ -127,46 +127,34 @@ export default function AdvertiserDashboard() {
               ))}
             </div>
 
-            {/* Chart */}
-            {/* 
-            <div id="tour-chart">
-              <FadeCard delay={0.16} style={{ ...card, padding: '22px 22px 14px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
-                <div>
-                  <p style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1, margin: '0 0 2px', letterSpacing: '-0.2px' }}>Impression Activity</p>
-                  <p style={{ fontSize: 11, color: theme.color.text3, margin: 0, fontWeight: 500 }}>Hourly performance on Studio Arella today</p>
+            {/* Quick Start Guide Banner */}
+            <FadeCard delay={0.16} style={{ ...card, padding: 24, background: `linear-gradient(135deg, ${theme.color.surface} 40%, ${theme.color.goldLight})`, position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', right: -20, top: -20, opacity: 0.05, pointerEvents: 'none' }}>
+                <FaBullhorn size={180} color={theme.color.gold} />
+              </div>
+              <div style={{ position: 'relative', zIndex: 1 }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(212,175,55,0.15)', color: theme.color.goldDark, padding: '4px 10px', borderRadius: 100, fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12 }}>
+                  Getting Started
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: theme.color.infoLight, border: `1px solid ${theme.color.infoBorder}`, borderRadius: 100, padding: '4px 10px' }}>
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: theme.color.glitchCyan }} />
-                  <span style={{ fontSize: 10, fontWeight: 800, color: theme.color.info }}>Live</span>
+                <p style={{ fontSize: 18, fontWeight: 800, color: theme.color.text1, margin: '0 0 6px' }}>Ready to reach thousands of daily viewers?</p>
+                <p style={{ fontSize: 13, color: theme.color.text3, margin: '0 0 20px', lineHeight: 1.5, maxWidth: 480 }}>
+                  Studio Arella gives you direct access to premium digital billboards in high-traffic areas. Follow these simple steps to launch your first campaign and grow your brand.
+                </p>
+                
+                <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                  {[
+                    { step: 1, text: 'Fund your account wallet', icon: DollarSign },
+                    { step: 2, text: 'Upload your video ad', icon: FaPaintbrush },
+                    { step: 3, text: 'Book a slot & go live', icon: FaCalendarDays }
+                  ].map(s => (
+                    <div key={s.step} style={{ display: 'flex', alignItems: 'center', gap: 10, background: theme.color.surface, padding: '10px 14px', borderRadius: 12, border: `1px solid ${theme.color.goldMid}`, boxShadow: '0 2px 8px rgba(212,175,55,0.08)' }}>
+                      <div style={{ width: 24, height: 24, borderRadius: '50%', background: theme.color.gold, color: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 11 }}>{s.step}</div>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: theme.color.text1 }}>{s.text}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
-              {chart.some((d: any) => d.impressions > 0) ? (
-                <ResponsiveContainer width="100%" height={200}>
-                  <AreaChart data={chart} margin={{ top: 4, right: 8, left: -24, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="goldGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor={theme.color.gold} stopOpacity={0.15} />
-                        <stop offset="95%" stopColor={theme.color.gold} stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="2 4" stroke={theme.color.surface2} vertical={false} />
-                    <XAxis dataKey="label" tick={{ fontSize: 10, fill: theme.color.text4, fontFamily: F }} axisLine={false} tickLine={false} interval={3} />
-                    <YAxis tick={{ fontSize: 10, fill: theme.color.text4, fontFamily: F }} axisLine={false} tickLine={false} />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Area type="monotone" dataKey="impressions" stroke={theme.color.gold} strokeWidth={2.5} fill="url(#goldGrad)" dot={false} activeDot={{ r: 5, fill: theme.color.gold, stroke: theme.color.surface, strokeWidth: 2 }} />
-                  </AreaChart>
-                </ResponsiveContainer>
-              ) : (
-                <div style={{ height: 200, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, background: theme.color.surface2, borderRadius: 12, border: `1.5px dashed ${theme.color.border}` }}>
-                  <FaArrowTrendUp size={28} color={theme.color.border} />
-                  <p style={{ fontSize: 13, fontWeight: 700, color: theme.color.text4, margin: 0 }}>No impression data yet</p>
-                  <Link href="/book" style={{ fontSize: 12, color: theme.color.gold, textDecoration: 'none', fontWeight: 700 }}>Book your first slot →</Link>
-                </div>
-              )}
             </FadeCard>
-            </div>
-            */}
 
             {/* Bookings table */}
             <FadeCard delay={0.24} style={{ ...card, padding: 22 }}>
