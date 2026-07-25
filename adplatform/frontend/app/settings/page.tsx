@@ -193,17 +193,6 @@ export default function SettingsPage() {
                       </AnimatePresence>
                     </div>
 
-                    <div style={{ background: theme.color.surface2, borderRadius: 16, border: `1px solid ${theme.color.border2}`, padding: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div>
-                        <h3 style={{ fontSize: 16, fontWeight: 800, color: theme.color.text1, margin: '0 0 6px' }}>Two-Factor Authentication (2FA)</h3>
-                        <p style={{ fontSize: 13, color: theme.color.text3, margin: 0 }}>Add an extra layer of security to your account.</p>
-                      </div>
-                      <div style={{ width: 48, height: 24, background: theme.color.border, borderRadius: 24, position: 'relative', cursor: 'pointer' }}>
-                        <div style={{ width: 20, height: 20, background: '#fff', borderRadius: '50%', position: 'absolute', top: 2, left: 2, boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }} />
-                      </div>
-                    </div>
-                  </div>
-
                   <div style={{ background: '#FFF0F0', borderRadius: 24, border: `1px solid #FECACA`, padding: '40px', boxShadow: theme.shadow.sm }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
                       <FaShield size={20} color="#DC2626" />

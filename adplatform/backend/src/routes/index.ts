@@ -62,7 +62,7 @@ router.post('/auth/login', login);
 router.get('/auth/me', authenticate, getMe);
 router.put('/auth/profile', authenticate, updateProfile);
 router.put('/auth/password', authenticate, changePassword);
-router.get('/auth/verify-email', verifyEmail);
+router.post('/auth/verify-email', authenticate, verifyEmail);
 router.post('/auth/resend-verification', resendVerification);
 router.post('/auth/forgot-password', forgotPassword);
 router.post('/auth/reset-password', resetPassword);

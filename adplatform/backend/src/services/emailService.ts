@@ -56,16 +56,17 @@ const table = (rows: string) =>
   `<table style="width:100%;border:1px solid #E5E7EB;border-radius:12px;border-collapse:collapse;margin:16px 0;overflow:hidden">${rows}</table>`;
 
 // ── 1. Email verification ─────────────────────────────────────────────────────
-export async function sendVerificationEmail(to: string, name: string, token: string) {
-  const url = `${process.env.FRONTEND_URL}/auth/verify-email?token=${token}`;
+export async function sendVerificationEmail(to: string, name: string, code: string) {
   await transporter.sendMail({
     from: FROM, to,
     subject: 'Verify your email — Bems Screens',
     html: wrap(`
       ${h1('Verify your email address')}
-      ${p(`Hi ${name}, welcome to Bems Screens! Please verify your email address to activate your account and start booking ad slots on Studio Arella.`)}
-      ${btn('Verify my email', url)}
-      ${p('This link expires in 24 hours. If you didn\'t create an account, you can safely ignore this email.', true)}
+      ${p(`Hi ${name}, welcome to Bems Screens! Please use the following 6-digit code to verify your email address and activate your account.`)}
+      <div style="background:#F9F7F5;border:1px dashed #E5E7EB;padding:24px;border-radius:12px;text-align:center;margin:24px 0">
+        <span style="font-size:32px;font-weight:900;letter-spacing:6px;color:#0A0A0A">${code}</span>
+      </div>
+      ${p('This code expires in 24 hours. If you didn\'t create an account, you can safely ignore this email.', true)}
     `),
   });
 }

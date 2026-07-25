@@ -88,22 +88,22 @@ export const register: RequestHandler = async (req, res) => {
     );
     const user = result.rows[0];
 
-    // Create verification token
-    const token = crypto.randomBytes(32).toString('hex');
+    // Create 6-digit verification code
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
     await pool.query(
       `INSERT INTO email_verification_tokens (user_id, token, expires_at)
        VALUES ($1, $2, NOW() + INTERVAL '24 hours')`,
-      [user.id, token]
+      [user.id, code]
     );
 
     // Send verification email (non-blocking)
-    sendVerificationEmail(email, first_name.trim(), token).catch(console.error);
+    sendVerificationEmail(email, first_name.trim(), code).catch(console.error);
 
     const jwtToken = signToken({ id: user.id, email: user.email, role: user.role, name: user.name });
     res.status(201).json({
       token: jwtToken,
       user: { ...user, email_verified: false },
-      message: 'Account created! Please check your email to verify your account.',
+      message: 'Account created! Please enter the 6-digit code sent to your email.',
     });
   } catch (err: any) {
     console.error('Register error:', err);
@@ -114,16 +114,20 @@ export const register: RequestHandler = async (req, res) => {
 // ── Verify email ──────────────────────────────────────────────────────────────
 export const verifyEmail: RequestHandler = async (req, res) => {
   try {
-    const { token } = req.query;
-    if (!token) { res.status(400).json({ message: 'Token is required' }); return; }
+    const { code } = req.body;
+    const authReq = req as AuthRequest; // Assume they send their JWT token when verifying
+    const userId = authReq.user?.id;
+    
+    if (!code) { res.status(400).json({ message: 'Verification code is required' }); return; }
+    if (!userId) { res.status(401).json({ message: 'Unauthorized. Please login first.' }); return; }
 
     const result = await pool.query(
       `SELECT * FROM email_verification_tokens
-       WHERE token = $1 AND used = false AND expires_at > NOW()`,
-      [token]
+       WHERE user_id = $1 AND token = $2 AND used = false AND expires_at > NOW()`,
+      [userId, code]
     );
     if (!result.rows[0]) {
-      res.status(400).json({ message: 'Invalid or expired verification link. Please request a new one.' });
+      res.status(400).json({ message: 'Invalid or expired 6-digit code. Please request a new one.' });
       return;
     }
 
@@ -147,20 +151,20 @@ export const resendVerification: RequestHandler = async (req, res) => {
   try {
     const { email } = req.body;
     const user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-    if (!user.rows[0]) { res.json({ message: 'If this email exists, a verification link has been sent.' }); return; }
+    if (!user.rows[0]) { res.json({ message: 'If this email exists, a verification code has been sent.' }); return; }
     if (user.rows[0].email_verified) { res.status(400).json({ message: 'Email is already verified.' }); return; }
 
     // Invalidate old tokens
     await pool.query('UPDATE email_verification_tokens SET used = true WHERE user_id = $1', [user.rows[0].id]);
 
-    const token = crypto.randomBytes(32).toString('hex');
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
     await pool.query(
       `INSERT INTO email_verification_tokens (user_id, token, expires_at)
        VALUES ($1, $2, NOW() + INTERVAL '24 hours')`,
-      [user.rows[0].id, token]
+      [user.rows[0].id, code]
     );
-    sendVerificationEmail(email, user.rows[0].name, token).catch(console.error);
-    res.json({ message: 'Verification email sent.' });
+    sendVerificationEmail(email, user.rows[0].name, code).catch(console.error);
+    res.json({ message: 'Verification code sent.' });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }

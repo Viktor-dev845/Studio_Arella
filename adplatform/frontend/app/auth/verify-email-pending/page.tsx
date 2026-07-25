@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Mail, RefreshCw, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Mail, RefreshCw } from 'lucide-react';
 import api from '@/lib/api';
 import { theme } from '@/lib/theme';
 import { useToast } from '@/components/ui/ToastProvider';
+import { useAuthStore } from '@/store/authStore';
 
 const F = "'Outfit', sans-serif";
 
@@ -13,20 +14,60 @@ function VerifyEmailPendingContent() {
   const params = useSearchParams();
   const router = useRouter();
   const { toast } = useToast();
+  const { updateUser } = useAuthStore();
   const email = params.get('email') || 'your email';
+  
+  const [code, setCode] = useState(['', '', '', '', '', '']);
+  const [verifying, setVerifying] = useState(false);
   const [resending, setResending] = useState(false);
-  const [sent, setSent] = useState(false);
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const handleResend = async () => {
     setResending(true);
     try {
       await api.post('/auth/resend-verification', { email });
-      setSent(true);
-      toast('Verification email resent! Please check your inbox.', 'success');
+      toast('Verification code resent! Please check your inbox.', 'success');
+      setCode(['', '', '', '', '', '']);
+      inputRefs.current[0]?.focus();
     } catch (err: any) {
       toast(err?.response?.data?.message || 'Failed to resend. Please try again.', 'error');
     } finally {
       setResending(false);
+    }
+  };
+
+  const handleVerify = async (otpCode: string) => {
+    setVerifying(true);
+    try {
+      const res = await api.post('/auth/verify-email', { code: otpCode });
+      updateUser({ email_verified: true });
+      toast(res.data.message || 'Email verified successfully!', 'success');
+      router.push('/dashboard');
+    } catch (err: any) {
+      toast(err?.response?.data?.message || 'Invalid or expired verification code.', 'error');
+      setVerifying(false);
+    }
+  };
+
+  const handleChange = (index: number, value: string) => {
+    if (!/^[0-9]*$/.test(value)) return;
+    
+    const newCode = [...code];
+    newCode[index] = value;
+    setCode(newCode);
+
+    if (value && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+    
+    if (newCode.every(v => v !== '')) {
+      handleVerify(newCode.join(''));
+    }
+  };
+
+  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && !code[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
     }
   };
 
@@ -40,7 +81,6 @@ function VerifyEmailPendingContent() {
       fontFamily: F,
       padding: '24px',
     }}>
-      {/* Background glow */}
       <div style={{ position: 'fixed', top: '20%', left: '50%', transform: 'translateX(-50%)', width: 600, height: 600, background: 'radial-gradient(circle, rgba(212,175,55,0.08) 0%, transparent 70%)', pointerEvents: 'none', filter: 'blur(60px)' }} />
 
       <div style={{
@@ -54,7 +94,6 @@ function VerifyEmailPendingContent() {
         backdropFilter: 'blur(20px)',
         position: 'relative',
       }}>
-        {/* Icon */}
         <div style={{
           width: 80, height: 80,
           borderRadius: '50%',
@@ -67,19 +106,18 @@ function VerifyEmailPendingContent() {
           <Mail size={36} color={theme.color.gold} />
         </div>
 
-        {/* Heading */}
         <h1 style={{ color: '#F8FAFC', fontSize: 26, fontWeight: 800, marginBottom: 12, letterSpacing: '-0.02em' }}>
-          Check your inbox
+          Enter Verification Code
         </h1>
         <p style={{ color: '#94A3B8', fontSize: 15, lineHeight: 1.6, marginBottom: 8 }}>
-          We've sent a verification link to
+          We've sent a 6-digit code to
         </p>
         <div style={{
           background: 'rgba(212,175,55,0.08)',
           border: '1px solid rgba(212,175,55,0.2)',
           borderRadius: 10,
           padding: '10px 16px',
-          marginBottom: 28,
+          marginBottom: 32,
           color: theme.color.gold,
           fontWeight: 700,
           fontSize: 15,
@@ -88,59 +126,73 @@ function VerifyEmailPendingContent() {
           {email}
         </div>
 
-        <p style={{ color: '#64748B', fontSize: 13, lineHeight: 1.7, marginBottom: 32 }}>
-          Click the link in that email to activate your account.<br />
-          The link expires in <strong style={{ color: '#94A3B8' }}>24 hours</strong>.
-        </p>
-
-        {/* Steps */}
-        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 12, padding: 20, marginBottom: 32, textAlign: 'left' }}>
-          {[
-            { num: '1', text: 'Open your email app' },
-            { num: '2', text: 'Find the email from Studio Arella' },
-            { num: '3', text: 'Click "Verify my email" in the email' },
-            { num: '4', text: 'You\'ll be logged in automatically' },
-          ].map(step => (
-            <div key={step.num} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: step.num === '4' ? 0 : 14 }}>
-              <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 11, fontWeight: 800, color: theme.color.gold }}>
-                {step.num}
-              </div>
-              <span style={{ color: '#CBD5E1', fontSize: 13 }}>{step.text}</span>
-            </div>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 32 }}>
+          {code.map((digit, index) => (
+            <input
+              key={index}
+              ref={el => { inputRefs.current[index] = el; }}
+              type="text"
+              maxLength={1}
+              value={digit}
+              onChange={(e) => handleChange(index, e.target.value)}
+              onKeyDown={(e) => handleKeyDown(index, e)}
+              disabled={verifying}
+              style={{
+                width: 48,
+                height: 56,
+                background: 'rgba(255,255,255,0.03)',
+                border: `1px solid ${digit ? theme.color.gold : 'rgba(255,255,255,0.1)'}`,
+                borderRadius: 12,
+                fontSize: 24,
+                fontWeight: 800,
+                color: '#fff',
+                textAlign: 'center',
+                outline: 'none',
+                boxShadow: digit ? '0 0 10px rgba(212,175,55,0.2)' : 'none',
+                transition: 'all 0.2s',
+              }}
+            />
           ))}
         </div>
 
-        {/* Resend button */}
-        {sent ? (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, color: '#4ADE80', fontWeight: 700, fontSize: 14, marginBottom: 20 }}>
-            <CheckCircle2 size={18} /> Email resent successfully!
-          </div>
-        ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <button
+            onClick={() => handleVerify(code.join(''))}
+            disabled={verifying || code.some(v => v === '')}
+            style={{
+              width: '100%',
+              padding: '16px',
+              background: (verifying || code.some(v => v === '')) ? 'rgba(255,255,255,0.05)' : `linear-gradient(135deg, ${theme.color.gold}, #e8a825)`,
+              color: (verifying || code.some(v => v === '')) ? '#64748B' : '#0a0a0a',
+              border: 'none',
+              borderRadius: 12,
+              fontSize: 15,
+              fontWeight: 800,
+              cursor: (verifying || code.some(v => v === '')) ? 'not-allowed' : 'pointer',
+              transition: 'all 0.3s',
+            }}
+          >
+            {verifying ? 'Verifying...' : 'Verify Email'}
+          </button>
+          
           <button
             onClick={handleResend}
             disabled={resending}
             style={{
-              width: '100%',
-              padding: '14px',
-              borderRadius: 12,
-              border: '1px solid rgba(255,255,255,0.1)',
-              background: 'rgba(255,255,255,0.05)',
-              color: '#E2E8F0',
-              fontFamily: F,
-              fontSize: 14,
-              fontWeight: 700,
-              cursor: resending ? 'not-allowed' : 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: 8,
-              marginBottom: 16,
+              width: '100%',
+              padding: '16px',
+              background: 'transparent',
+              color: '#94A3B8',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: 12,
+              fontSize: 14,
+              fontWeight: 600,
+              cursor: resending ? 'not-allowed' : 'pointer',
               transition: 'all 0.2s',
-              opacity: resending ? 0.6 : 1,
-            }}
-          >
-            <RefreshCw size={16} style={{ animation: resending ? 'spin 1s linear infinite' : 'none' }} />
-            {resending ? 'Resending...' : "Didn't get it? Resend email"}
           </button>
         )}
 
