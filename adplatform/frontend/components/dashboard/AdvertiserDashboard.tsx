@@ -104,7 +104,7 @@ export default function AdvertiserDashboard() {
             {/* Stat cards */}
             <div id="tour-stats" className="stats-grid">
               {[
-                { label: 'Total Spending', value: `₦${(stats?.total_revenue || 0).toLocaleString()}`, icon: DollarSign, color: theme.color.gold, bg: theme.color.goldLight, border: theme.color.goldMid, change: '+12%' },
+                { label: 'Total Spending', value: `₦${(stats?.total_revenue || 0).toLocaleString()}`, icon: DollarSign, color: theme.color.gold, bg: theme.color.goldLight, border: theme.color.goldMid, change: (stats?.total_revenue || 0) > 0 ? '+12%' : '' },
                 { label: 'Active Campaigns', value: stats?.active_campaigns || 0, icon: Megaphone, color: theme.color.success, bg: theme.color.successLight, border: theme.color.success, change: '' },
                 { label: 'Slots Booked', value: stats?.active_screens || 0, icon: Monitor, color: theme.color.info, bg: theme.color.infoLight, border: theme.color.infoBorder, change: '' },
               ].map(({ label, value, icon: Icon, color, bg, border, change }, i) => (
@@ -121,8 +121,8 @@ export default function AdvertiserDashboard() {
                       </div>
                     )}
                   </div>
-                  <p style={{ fontSize: 24, fontWeight: 900, color: theme.color.text1, margin: '0 0 3px', letterSpacing: '-0.5px' }}>{value}</p>
-                  <p style={{ fontSize: 11, color: theme.color.text3, margin: 0, fontWeight: 600 }}>{label}</p>
+                  <p style={{ fontSize: 34, fontWeight: 900, color: theme.color.text1, margin: '0 0 4px', letterSpacing: '-1px' }}>{value}</p>
+                  <p style={{ fontSize: 13, color: theme.color.text3, margin: 0, fontWeight: 700 }}>{label}</p>
                 </FadeCard>
               ))}
             </div>
@@ -253,27 +253,7 @@ export default function AdvertiserDashboard() {
             </FadeCard>
             </div>
 
-            {/* Quick actions */}
-            <div id="tour-actions">
-              <FadeCard delay={0.20} style={{ ...card, padding: '20px 22px' }}>
-              <p style={{ fontSize: 10, fontWeight: 800, color: theme.color.text3, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 12px' }}>Quick Actions</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-                {[
-                  { label: 'Book Ad Slot',          href: '/book',      bg: theme.color.goldLight,    color: theme.color.goldDark, border: theme.color.goldMid, Icon: FaCalendar },
-                  { label: 'Request Creative Team', href: '/creative',  bg: theme.color.warningLight,  color: theme.color.warning, border: theme.color.warning, Icon: FaPaintbrush },
-                  { label: 'View Calendar',          href: '/calendar',  bg: theme.color.successLight,  color: theme.color.success, border: theme.color.success, Icon: FaCalendarDays },
-                  { label: 'Create Campaign',        href: '/campaigns', bg: theme.color.infoLight,                 color: theme.color.info, border: theme.color.infoBorder, Icon: FaBullhorn },
-                ].map(({ label, href, bg, color, border, Icon: ActionIcon }) => (
-                  <Link key={label} href={href} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', background: bg, border: `1px solid ${border}`, borderRadius: 10, textDecoration: 'none', transition: 'opacity 0.15s' }}
-                    onMouseOver={e => (e.currentTarget.style.opacity = '0.8')} onMouseOut={e => (e.currentTarget.style.opacity = '1')}>
-                    <ActionIcon size={13} color={color} />
-                    <span style={{ fontSize: 12, fontWeight: 700, color: theme.color.text1, flex: 1 }}>{label}</span>
-                    <FaArrowRight size={10} color={theme.color.text4} />
-                  </Link>
-                ))}
-              </div>
-            </FadeCard>
-            </div>
+
           </div>
         </div>
       </div>
