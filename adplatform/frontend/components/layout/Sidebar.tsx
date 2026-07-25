@@ -57,7 +57,7 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
         <div style={{ padding: '24px 20px 20px', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <Link href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', padding: '4px 0' }}>
-              <img src="/logo-white.png" alt="Studio Arella Logo" style={{ height: 46, objectFit: 'contain' }} />
+              <img src="/logo-white.png" alt="Studio Arella Logo" style={{ height: 46, objectFit: 'contain', filter: 'invert(1) brightness(2)', mixBlendMode: 'screen' }} />
             </Link>
             {mobileOpen && (
               <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.05)', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.6)', padding: 6, borderRadius: '50%' }}>
@@ -84,14 +84,14 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                   <Link href={href} id={href === '/book' ? 'tour-book-ad' : href === '/podcast' ? 'tour-book-podcast' : undefined} onClick={onClose} style={{
                     display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 10,
                     textDecoration: 'none', fontSize: 13, fontWeight: active ? 800 : 600,
-                    color: active ? '#1a1a1a' : highlight ? theme.color.goldMid : 'rgba(255,255,255,0.55)',
-                    background: active ? `linear-gradient(90deg, ${theme.color.gold}, #f6c04f)` : 'transparent',
-                    boxShadow: active ? `0 4px 14px rgba(224,165,38,0.25)` : 'none',
+                    color: active ? theme.color.gold : highlight ? theme.color.goldMid : 'rgba(255,255,255,0.55)',
+                    background: active ? `linear-gradient(90deg, rgba(212,175,55,0.15) 0%, transparent 100%)` : 'transparent',
+                    boxShadow: active ? `inset 3px 0 0 0 ${theme.color.gold}` : 'none',
                     transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                   }}
                     onMouseOver={e => { 
                       if (!active) {
-                        e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+                        e.currentTarget.style.background = 'rgba(255,255,255,0.03)';
                         e.currentTarget.style.color = '#fff';
                         e.currentTarget.style.transform = 'translateX(4px)';
                       }
@@ -121,10 +121,10 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                 const active = pathname === href;
                 return (
                   <li key={href}>
-                    <Link href={href} onClick={onClose} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 10, textDecoration: 'none', fontSize: 13, fontWeight: active ? 800 : 600, color: active ? '#1a1a1a' : 'rgba(255,255,255,0.55)', background: active ? `linear-gradient(90deg, ${theme.color.gold}, #f6c04f)` : 'transparent', transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)' }}
+                    <Link href={href} onClick={onClose} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 10, textDecoration: 'none', fontSize: 13, fontWeight: active ? 800 : 600, color: active ? theme.color.gold : 'rgba(255,255,255,0.55)', background: active ? `linear-gradient(90deg, rgba(212,175,55,0.15) 0%, transparent 100%)` : 'transparent', boxShadow: active ? `inset 3px 0 0 0 ${theme.color.gold}` : 'none', transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)' }}
                       onMouseOver={e => { 
                         if (!active) {
-                          e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+                          e.currentTarget.style.background = 'rgba(255,255,255,0.03)';
                           e.currentTarget.style.color = '#fff';
                           e.currentTarget.style.transform = 'translateX(4px)';
                         }
