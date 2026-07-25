@@ -120,15 +120,21 @@ export const createAd: RequestHandler = async (req, res) => {
     // Trigger AI moderation webhook if it's a video
     if (isVideoFile && file_url) {
       try {
+        // Fetch the video from Cloudinary into a Blob (binary stream)
+        const videoResponse = await fetch(createdAd.media_url);
+        const videoBlob = await videoResponse.blob();
+
+        // Construct FormData for multipart/form-data upload
+        const formData = new FormData();
+        formData.append('file', videoBlob, `video_${createdAd.id}.mp4`);
+        formData.append('ad_id', createdAd.id.toString());
+        formData.append('title', createdAd.title);
+        formData.append('media_url', createdAd.media_url);
+        formData.append('user_id', createdAd.user_id.toString());
+
         await fetch('https://bems003.app.n8n.cloud/webhook-test/moderate-video', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            ad_id: createdAd.id,
-            title: createdAd.title,
-            media_url: createdAd.media_url,
-            user_id: createdAd.user_id
-          })
+          body: formData
         });
       } catch (webhookErr) {
         console.error('Failed to trigger moderation webhook:', webhookErr);
