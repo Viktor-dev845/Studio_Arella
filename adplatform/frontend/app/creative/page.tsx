@@ -95,7 +95,7 @@ export default function RequestCreativePage() {
   return (
     <DashboardLayout>
       <PageTransition>
-        <div style={{ fontFamily: F, maxWidth: 680, margin: '0 auto' }}>
+        <div style={{ fontFamily: F, maxWidth: 860, margin: '0 auto' }}>
           {/* Header */}
           <div style={{ marginBottom: 36, textAlign: 'center' }}>
             <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 64, height: 64, borderRadius: 20, background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.2)', marginBottom: 16 }}>
