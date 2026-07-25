@@ -108,6 +108,7 @@ export default function BookingCalendar({ screenId }: { screenId?: string }) {
   const [view, setView] = useState<View>('month');
   const [date, setDate] = useState(new Date());
   const [selected, setSelected] = useState<CalEvent | null>(null);
+  const [selectedDayEvents, setSelectedDayEvents] = useState<{ date: Date, events: CalEvent[] } | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -179,8 +180,20 @@ export default function BookingCalendar({ screenId }: { screenId?: string }) {
             event: CustomEvent
           }}
           onSelectSlot={(slotInfo) => {
-            const iso = format(slotInfo.start, 'yyyy-MM-dd');
-            router.push(`/book?date=${iso}`);
+            const dayEvents = events.filter(e => {
+              const d1 = new Date(e.start);
+              const d2 = new Date(slotInfo.start);
+              return d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
+            });
+            setSelectedDayEvents({ date: slotInfo.start, events: dayEvents });
+          }}
+          onDrillDown={(date) => {
+            const dayEvents = events.filter(e => {
+              const d1 = new Date(e.start);
+              const d2 = new Date(date);
+              return d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
+            });
+            setSelectedDayEvents({ date, events: dayEvents });
           }}
           eventPropGetter={e => {
             const isPodcast = (e as CalEvent).resource.type === 'podcast';
@@ -203,7 +216,7 @@ export default function BookingCalendar({ screenId }: { screenId?: string }) {
         />
       )}
 
-      {/* Event detail */}
+      {/* Event detail (bottom panel) */}
       <AnimatePresence>
         {selected && (
           <motion.div key="detail" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} transition={{ duration: 0.2 }}
@@ -240,6 +253,86 @@ export default function BookingCalendar({ screenId }: { screenId?: string }) {
               </div>
             </div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Daily Summary Modal Popup */}
+      <AnimatePresence>
+        {selectedDayEvents && (
+          <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} 
+              style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }} 
+              onClick={() => setSelectedDayEvents(null)} 
+            />
+            
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 10 }} transition={{ duration: 0.2 }}
+              style={{ position: 'relative', width: '100%', maxWidth: 460, background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 24, boxShadow: '0 10px 40px rgba(0,0,0,0.2)', overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: '85vh' }}>
+              
+              <div style={{ padding: '24px 24px 20px', borderBottom: `1px solid ${theme.color.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: theme.color.surface2 }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: theme.color.text1, letterSpacing: '-0.3px' }}>
+                    {format(selectedDayEvents.date, 'EEEE')}
+                  </h3>
+                  <p style={{ margin: '4px 0 0', fontSize: 14, color: theme.color.text2, fontWeight: 500 }}>
+                    {format(selectedDayEvents.date, 'MMMM do, yyyy')}
+                  </p>
+                </div>
+                <button onClick={() => setSelectedDayEvents(null)} style={{ background: 'transparent', border: 'none', color: theme.color.text3, cursor: 'pointer', padding: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', transition: 'all 0.15s' }}
+                  onMouseOver={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.05)'; e.currentTarget.style.color = theme.color.text1; }}
+                  onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = theme.color.text3; }}>
+                  <FaLocationDot size={0} /> {/* Spacer */}
+                  <span style={{ fontSize: 18, fontWeight: 800, lineHeight: 1 }}>&times;</span>
+                </button>
+              </div>
+
+              <div style={{ padding: 24, overflowY: 'auto' }}>
+                {selectedDayEvents.events.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '30px 0' }}>
+                    <div style={{ width: 64, height: 64, borderRadius: '50%', background: theme.color.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', color: theme.color.text4 }}>
+                      <FaCalendarDays size={24} />
+                    </div>
+                    <p style={{ margin: '0 0 8px', fontSize: 16, fontWeight: 700, color: theme.color.text1 }}>No Bookings Today</p>
+                    <p style={{ margin: 0, fontSize: 14, color: theme.color.text3 }}>You have no scheduled ad slots or podcast sessions on this date.</p>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {selectedDayEvents.events.map((ev, i) => (
+                      <div key={i} style={{ padding: 16, borderRadius: 12, border: `1px solid ${theme.color.border}`, background: theme.color.surface2, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+                          <span style={{ fontSize: 14, fontWeight: 700, color: theme.color.text1 }}>{ev.title}</span>
+                          <span style={{ fontSize: 10, fontWeight: 800, color: '#fff', background: ev.resource.type === 'podcast' ? '#8B5CF6' : (statusColors[ev.resource.status] || theme.color.gold), padding: '4px 8px', borderRadius: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                            {ev.resource.status}
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: theme.color.text3, fontSize: 12, fontWeight: 500 }}>
+                          <FaCalendarDays size={12} />
+                          {format(ev.start, 'h:mm a')} - {format(ev.end, 'h:mm a')}
+                        </div>
+                        {ev.resource.screen && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: theme.color.text3, fontSize: 12, fontWeight: 500 }}>
+                            <FaLocationDot size={12} />
+                            {ev.resource.screen}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div style={{ padding: 24, borderTop: `1px solid ${theme.color.border}`, background: theme.color.surface2 }}>
+                <button 
+                  onClick={() => router.push(`/book?date=${format(selectedDayEvents.date, 'yyyy-MM-dd')}`)}
+                  style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: theme.color.gold, color: '#111', padding: '14px', borderRadius: 12, fontSize: 14, fontWeight: 800, cursor: 'pointer', border: 'none', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(212,175,55,0.2)' }}
+                  onMouseOver={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                  onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}
+                >
+                  Book New Slot on this Date
+                </button>
+              </div>
+
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>
