@@ -145,15 +145,11 @@ router.get('/creative-requests/all', authenticate, getAllCreativeRequests);
 router.put('/creative-requests/:id/status', authenticate, updateCreativeRequestStatus);
 
 // ── Notifications ────────────────────────────────────────────────────────────
-router.use('/notifications', authenticate, (req: Request, res: Response, next: NextFunction) => {
-  const notificationRouter = Router();
-  notificationRouter.get('/', getNotifications);
-  notificationRouter.get('/unread', getUnreadCount);
-  notificationRouter.put('/read-all', markAllRead);
-  notificationRouter.put('/:id/read', markRead);
-  notificationRouter.delete('/:id', deleteNotification);
-  notificationRouter(req, res, next);
-});
+router.get('/notifications', authenticate, getNotifications);
+router.get('/notifications/unread', authenticate, getUnreadCount);
+router.put('/notifications/read-all', authenticate, markAllRead);
+router.put('/notifications/:id/read', authenticate, markRead);
+router.delete('/notifications/:id', authenticate, deleteNotification);
 
 // ── Admin ─────────────────────────────────────────────────────────────────────
 router.get('/admin/stats', authenticate, getPlatformStats);
