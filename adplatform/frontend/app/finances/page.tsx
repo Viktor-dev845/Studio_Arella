@@ -8,7 +8,7 @@ import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import api from '@/lib/api';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaArrowRight, FaPlus, FaArrowTrendUp, FaArrowTrendDown } from 'react-icons/fa6';
+import { FaArrowRight, FaPlus, FaArrowTrendUp, FaArrowTrendDown, FaCheck } from 'react-icons/fa6';
 import { DollarSign, TrendingUp, CreditCard } from 'lucide-react';
 import Link from 'next/link';
 import { theme } from '@/lib/theme';
@@ -27,6 +27,7 @@ export default function FinancesPage() {
   const [idType, setIdType] = useState('bvn');
   const [idNumber, setIdNumber] = useState('');
   const [creatingReserved, setCreatingReserved] = useState(false);
+  const [copied, setCopied] = useState(false);
   const { toast } = useToast();
 
   const fetchData = async () => {
@@ -139,9 +140,31 @@ export default function FinancesPage() {
                     <p style={{ fontSize: 24, fontWeight: 800, color: '#fff', margin: 0, letterSpacing: '1px', fontFamily: 'monospace' }}>{balance.reserved_account_number}</p>
                     <p style={{ fontSize: 14, color: theme.color.gold, margin: '4px 0 0', fontWeight: 700 }}>{balance.reserved_account_bank}</p>
                   </div>
-                  <button onClick={() => { navigator.clipboard.writeText(balance.reserved_account_number); toast('Account number copied', 'success'); }} style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', transition: 'background 0.2s' }}>
-                    Copy Number
-                  </button>
+                  <motion.button
+                    onClick={() => {
+                      if (copied) return;
+                      navigator.clipboard.writeText(balance.reserved_account_number);
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 5000);
+                    }}
+                    animate={{ background: copied ? 'rgba(39,174,96,0.25)' : 'rgba(255,255,255,0.1)', borderColor: copied ? 'rgba(39,174,96,0.5)' : 'transparent' }}
+                    transition={{ duration: 0.3 }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '8px 16px', color: '#fff', border: '1px solid transparent', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: copied ? 'default' : 'pointer', transition: 'color 0.2s', fontFamily: F }}
+                  >
+                    <AnimatePresence mode="wait" initial={false}>
+                      {copied ? (
+                        <motion.span key="check" initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0, opacity: 0 }} transition={{ type: 'spring', stiffness: 400, damping: 20 }} style={{ display: 'flex', alignItems: 'center', color: '#27ae60' }}>
+                          <FaCheck size={12} />
+                        </motion.span>
+                      ) : (
+                        <motion.span key="copy" initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0, opacity: 0 }} transition={{ duration: 0.15 }} style={{ display: 'flex', alignItems: 'center' }}>
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                    <motion.span animate={{ color: copied ? '#27ae60' : '#fff' }} transition={{ duration: 0.3 }}>
+                      {copied ? 'Copied!' : 'Copy Number'}
+                    </motion.span>
+                  </motion.button>
                 </div>
                 <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', margin: '12px 0 0' }}>Transfer any amount to this account from your bank app. Your balance will be credited automatically.</p>
               </div>
