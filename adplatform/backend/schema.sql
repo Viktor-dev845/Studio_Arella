@@ -21,6 +21,9 @@ CREATE TABLE IF NOT EXISTS users (
   language VARCHAR(10) DEFAULT 'en',
   terms_accepted BOOLEAN DEFAULT false,
   has_seen_tour BOOLEAN DEFAULT false,
+  reserved_account_reference VARCHAR(255),
+  reserved_account_number VARCHAR(50),
+  reserved_account_bank VARCHAR(100),
   created_at TIMESTAMP DEFAULT NOW(),
   updated_at TIMESTAMP DEFAULT NOW()
 );

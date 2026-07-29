@@ -70,8 +70,17 @@ app.listen(PORT, async () => {
       );
     `);
     console.log('✅ booking_slots table verified');
+
+    // Migration: Add reserved account columns to users table
+    await pool.query(`
+      ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS reserved_account_reference VARCHAR(255),
+        ADD COLUMN IF NOT EXISTS reserved_account_number VARCHAR(50),
+        ADD COLUMN IF NOT EXISTS reserved_account_bank VARCHAR(100);
+    `);
+    console.log('✅ users table reserved account columns verified');
   } catch (err) {
-    console.error('❌ Failed to create booking_slots table:', err);
+    console.error('❌ Failed to run database migrations:', err);
   }
 
   startBookingLifecycleCron();

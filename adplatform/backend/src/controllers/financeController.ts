@@ -5,7 +5,10 @@ import { AuthRequest } from '../middleware/auth';
 export const getBalance : RequestHandler = async (req, res) => {
     const authReq = req as AuthRequest;
   try {
-    const result = await pool.query('SELECT credits FROM users WHERE id = $1', [authReq.user?.id]);
+    const result = await pool.query(
+      'SELECT credits, reserved_account_number, reserved_account_bank FROM users WHERE id = $1', 
+      [authReq.user?.id]
+    );
     
     // Get sales vs referral breakdown
     const salesResult = await pool.query(
@@ -16,13 +19,15 @@ export const getBalance : RequestHandler = async (req, res) => {
 
     const breakdown: Record<string, number> = {};
     let grandTotal = 0;
-    salesResult.rows.forEach((row) => {
+    salesResult.rows.forEach((row: any) => {
       breakdown[row.source] = parseFloat(row.total);
       grandTotal += parseFloat(row.total);
     });
 
     res.json({
       credits: parseFloat(result.rows[0]?.credits || 0),
+      reserved_account_number: result.rows[0]?.reserved_account_number,
+      reserved_account_bank: result.rows[0]?.reserved_account_bank,
       breakdown,
       grand_total: grandTotal,
       sales_pct: grandTotal > 0 ? Math.round(((breakdown.sales || 0) / grandTotal) * 100) : 0,

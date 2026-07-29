@@ -24,7 +24,7 @@ import { getBalance, getTransactions, addCredits, getTotalRevenue } from '../con
 import { getDashboardStats, getHourlyAnalytics, getAdvertiserProofOfPlay } from '../controllers/analyticsController';
 import { getPlatformStats, getAllUsers, getAllBookings, getAllCampaigns, getAllScreens, updateUserRole, getAllTransactions, getAllPodcastBookings } from '../controllers/adminController';
 import { getPlans, getBaseRate } from '../controllers/pricingController';
-import { initializePayment, initializeCreditPayment, verifyPayment, monnifyWebhook, devBypassPayment, payFromWallet, initializePaystackPayment, verifyPaystackPayment, paystackWebhook, initializePaystackCreditPayment } from '../controllers/paymentController';
+import { initializePayment, initializeCreditPayment, verifyPayment, monnifyWebhook, devBypassPayment, payFromWallet, initializePaystackPayment, verifyPaystackPayment, paystackWebhook, initializePaystackCreditPayment, createReservedAccount } from '../controllers/paymentController';
 import { getNotifications, markRead, markAllRead, deleteNotification, getUnreadCount } from '../controllers/notificationController';
 import { submitCreativeRequest, getMyCreativeRequests, getAllCreativeRequests, updateCreativeRequestStatus } from '../controllers/creativeController';
 import { getAvailability, reserveSlot, getMyBookings } from '../controllers/podcastController';
@@ -130,6 +130,7 @@ router.post('/payments/wallet', authenticate, payFromWallet);
 router.post('/payments/initialize-credits', authenticate, initializeCreditPayment);
 router.get('/payments/verify/:reference', authenticate, verifyPayment);
 router.post('/payments/webhook/monnify', monnifyWebhook); // No auth — Monnify signs with HMAC
+router.post('/payments/reserved-account', authenticate, createReservedAccount);
 
 // Paystack (alternative gateway)
 router.post('/payments/paystack/initialize', authenticate, initializePaystackPayment);

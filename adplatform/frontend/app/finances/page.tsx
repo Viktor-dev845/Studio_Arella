@@ -23,6 +23,10 @@ export default function FinancesPage() {
   const [showModal, setShowModal] = useState(false);
   const [amount, setAmount] = useState('');
   const [adding, setAdding] = useState(false);
+  const [showReservedModal, setShowReservedModal] = useState(false);
+  const [idType, setIdType] = useState('bvn');
+  const [idNumber, setIdNumber] = useState('');
+  const [creatingReserved, setCreatingReserved] = useState(false);
   const { toast } = useToast();
 
   const fetchData = async () => {
@@ -53,6 +57,19 @@ export default function FinancesPage() {
       }
     } catch { toast('Failed to initialize payment', 'error'); }
     finally { setAdding(false); }
+  };
+
+  const handleCreateReserved = async () => {
+    if (!idNumber) { toast(`Please enter your ${idType.toUpperCase()}`, 'error'); return; }
+    setCreatingReserved(true);
+    try {
+      const { data } = await api.post('/payments/reserved-account', { idType, idNumber });
+      toast('Permanent account created successfully!', 'success');
+      setBalance({ ...balance, reserved_account_number: data.account_number, reserved_account_bank: data.bank_name });
+      setShowReservedModal(false);
+    } catch (err: any) {
+      toast(err.response?.data?.message || 'Failed to create reserved account', 'error');
+    } finally { setCreatingReserved(false); }
   };
 
   return (
@@ -107,7 +124,28 @@ export default function FinancesPage() {
               <Link href="/book" style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'rgba(255,255,255,0.05)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '12px 24px', fontSize: 14, fontWeight: 700, textDecoration: 'none', transition: 'all 0.2s' }}>
                 Book Slot <FaArrowRight size={12} />
               </Link>
+              {!balance?.reserved_account_number && (
+                <button onClick={() => setShowReservedModal(true)} style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'transparent', color: theme.color.gold, border: `1px solid ${theme.color.gold}`, borderRadius: 10, padding: '12px 24px', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: F, transition: 'all 0.2s' }}>
+                  Get Permanent Account
+                </button>
+              )}
             </div>
+
+            {balance?.reserved_account_number && (
+              <div style={{ position: 'relative', marginTop: 24, paddingTop: 24, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', margin: '0 0 8px', fontWeight: 600 }}>Your Permanent Wallet Account</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+                  <div>
+                    <p style={{ fontSize: 24, fontWeight: 800, color: '#fff', margin: 0, letterSpacing: '1px', fontFamily: 'monospace' }}>{balance.reserved_account_number}</p>
+                    <p style={{ fontSize: 14, color: theme.color.gold, margin: '4px 0 0', fontWeight: 700 }}>{balance.reserved_account_bank}</p>
+                  </div>
+                  <button onClick={() => { navigator.clipboard.writeText(balance.reserved_account_number); toast('Account number copied', 'success'); }} style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', transition: 'background 0.2s' }}>
+                    Copy Number
+                  </button>
+                </div>
+                <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', margin: '12px 0 0' }}>Transfer any amount to this account from your bank app. Your balance will be credited automatically.</p>
+              </div>
+            )}
           </FadeCard>
 
           {/* Transactions */}
@@ -196,6 +234,54 @@ export default function FinancesPage() {
                     <Button onClick={() => setShowModal(false)} variant="secondary" style={{ flex: 1 }}>Cancel</Button>
                     <Button loading={adding} loadingText="Adding" onClick={handleAdd} variant="primary" style={{ flex: 1 }}>
                       <FaArrowRight size={12} /> Add Credits
+                    </Button>
+                  </div>
+                </div>
+              </motion.div>
+              </div>
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* Reserved Account Modal */}
+        <AnimatePresence>
+          {showReservedModal && (
+            <>
+              <motion.div key="bd-res" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                onClick={() => setShowReservedModal(false)}
+                style={{ position: 'fixed', inset: 0, background: 'rgba(26,26,26,0.4)', zIndex: 200, backdropFilter: 'blur(3px)' }} />
+              <div style={{ position: 'fixed', inset: 0, zIndex: 201, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', padding: 16 }}>
+                <motion.div key="modal-res"
+                  initial={{ opacity: 0, scale: 0.93, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: 12 }} transition={{ duration: 0.22 }}
+                  style={{ width: '100%', maxWidth: 420, pointerEvents: 'auto' }}>
+                <div style={{ background: theme.color.surface, borderRadius: theme.radius.xl, padding: 28, boxShadow: theme.shadow.lg, fontFamily: F }}>
+                  <h2 style={{ fontFamily: theme.font.display, fontSize: 20, fontWeight: 600, color: theme.color.text1, margin: '0 0 6px', letterSpacing: '-0.2px' }}>Get a Permanent Account</h2>
+                  <p style={{ fontSize: 13, color: theme.color.text3, margin: '0 0 22px', lineHeight: 1.6 }}>
+                    Provide your BVN or NIN to get a dedicated Wema/Sterling bank account number. Transfers to this account will automatically top up your wallet.
+                  </p>
+                  
+                  <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 600, color: theme.color.text2, cursor: 'pointer' }}>
+                      <input type="radio" name="idType" value="bvn" checked={idType === 'bvn'} onChange={() => setIdType('bvn')} /> BVN
+                    </label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 600, color: theme.color.text2, cursor: 'pointer' }}>
+                      <input type="radio" name="idType" value="nin" checked={idType === 'nin'} onChange={() => setIdType('nin')} /> NIN
+                    </label>
+                  </div>
+
+                  <div style={{ marginBottom: 14 }}>
+                    <Input label={idType === 'bvn' ? 'Bank Verification Number (BVN)' : 'National Identification Number (NIN)'} type="text" placeholder={`Enter your ${idType.toUpperCase()}`} value={idNumber} onChange={e => setIdNumber(e.target.value)} />
+                  </div>
+                  <div style={{ background: 'rgba(39, 174, 96, 0.08)', border: `1px solid rgba(39, 174, 96, 0.2)`, borderRadius: 10, padding: '12px 14px', marginBottom: 20 }}>
+                    <p style={{ fontSize: 12, color: '#2F6A3B', margin: 0, lineHeight: 1.55 }}>
+                      <strong>Secure & Private:</strong> This information is sent directly to Monnify to satisfy CBN KYC regulations. We do not store your BVN/NIN.
+                    </p>
+                  </div>
+                  <div style={{ display: 'flex', gap: 10 }}>
+                    <Button onClick={() => setShowReservedModal(false)} variant="secondary" style={{ flex: 1 }}>Cancel</Button>
+                    <Button loading={creatingReserved} loadingText="Creating" onClick={handleCreateReserved} variant="primary" style={{ flex: 1 }}>
+                      Get Account
                     </Button>
                   </div>
                 </div>

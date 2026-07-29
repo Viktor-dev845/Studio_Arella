@@ -448,7 +448,32 @@ export const monnifyWebhook: RequestHandler = async (req, res) => {
       const meta = data.metaData || {};
       const ref = data.paymentReference;
 
-      if (meta.type === 'topup') {
+      if (data.product && data.product.type === 'RESERVED_ACCOUNT') {
+        // ── Handle Reserved Account Transfer (Wallet Top-up) ──
+        const accountRef = data.product.reference;
+        const userRes = await pool.query('SELECT id FROM users WHERE reserved_account_reference = $1', [accountRef]);
+        
+        if (userRes.rows.length > 0) {
+          const userId = userRes.rows[0].id;
+          const existingTxn = await pool.query('SELECT id FROM transactions WHERE reference = $1', [ref]);
+          
+          if (existingTxn.rows.length === 0) {
+            await pool.query("UPDATE users SET credits = credits + $1 WHERE id = $2", [data.amountPaid, userId]);
+            await pool.query(
+              "INSERT INTO transactions (user_id, type, source, amount, description, reference) VALUES ($1, 'credit', 'topup', $2, 'Wallet Top-up via Direct Transfer', $3)", 
+              [userId, data.amountPaid, ref]
+            );
+            
+            createNotification({
+              user_id: userId,
+              type: 'payment_received',
+              title: 'Wallet Funded!',
+              body: `₦${Number(data.amountPaid).toLocaleString()} has been credited to your wallet via direct bank transfer.`,
+              link: '/finances',
+            });
+          }
+        }
+      } else if (meta.type === 'topup') {
         const existing = await pool.query(
           "SELECT id FROM transactions WHERE reference = $1 AND type = 'credit'", [ref]
         );
@@ -798,6 +823,89 @@ export const initializePaystackCreditPayment: RequestHandler = async (req, res) 
     });
   } catch (err) {
     console.error('Paystack credit init error:', err);
-    res.status(500).json({ message: 'Payment initialization failed' });
+    res.status(500).json({ message: 'Failed to initialize Paystack payment' });
+  }
+};
+
+// ── Monnify: Create Reserved Account ──────────────────────────────────────────
+export const createReservedAccount: RequestHandler = async (req, res) => {
+  const authReq = req as AuthRequest;
+  try {
+    const { idNumber, idType } = req.body;
+    
+    if (!idNumber || !idType) {
+      res.status(400).json({ message: 'ID Number (BVN/NIN) and ID Type are required.' });
+      return;
+    }
+
+    const userQuery = await pool.query('SELECT name, email, reserved_account_number FROM users WHERE id = $1', [authReq.user?.id]);
+    const user = userQuery.rows[0];
+
+    if (!user) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+
+    if (user.reserved_account_number) {
+      res.status(400).json({ message: 'You already have a reserved account.' });
+      return;
+    }
+
+    const accountReference = `RES-${authReq.user?.id}-${Date.now()}`;
+    const token = await getMonnifyToken();
+
+    const payload: any = {
+      accountReference,
+      accountName: user.name,
+      currencyCode: 'NGN',
+      contractCode: MONNIFY_CONTRACT,
+      customerEmail: user.email,
+      customerName: user.name,
+      getAllAvailableBanks: true
+    };
+
+    if (idType.toLowerCase() === 'bvn') {
+      payload.customerBvn = idNumber;
+    } else if (idType.toLowerCase() === 'nin') {
+      payload.customerNin = idNumber;
+    } else {
+      res.status(400).json({ message: 'Invalid ID Type. Must be bvn or nin.' });
+      return;
+    }
+
+    const monnifyRes = await monnifyReq('POST', '/api/v2/bank-transfer/reserved-accounts', payload, token);
+
+    if (!monnifyRes.requestSuccessful) {
+      console.error('Monnify reserved account creation failed:', monnifyRes);
+      res.status(400).json({ message: monnifyRes.responseMessage || 'Failed to create reserved account.' });
+      return;
+    }
+
+    const accounts = monnifyRes.responseBody.accounts || [];
+    if (accounts.length === 0) {
+      res.status(500).json({ message: 'No bank accounts returned by Monnify.' });
+      return;
+    }
+
+    // Prefer Wema, then Sterling, else just take the first one
+    const preferredAccount = accounts.find((a: any) => a.bankName.toLowerCase().includes('wema'))
+      || accounts.find((a: any) => a.bankName.toLowerCase().includes('sterling'))
+      || accounts[0];
+
+    await pool.query(
+      'UPDATE users SET reserved_account_reference = $1, reserved_account_number = $2, reserved_account_bank = $3 WHERE id = $4',
+      [accountReference, preferredAccount.accountNumber, preferredAccount.bankName, authReq.user?.id]
+    );
+
+    res.json({
+      success: true,
+      account_number: preferredAccount.accountNumber,
+      bank_name: preferredAccount.bankName,
+      account_name: preferredAccount.accountName
+    });
+
+  } catch (err) {
+    console.error('Reserved account creation error:', err);
+    res.status(500).json({ message: 'An internal error occurred while creating your reserved account.' });
   }
 };
