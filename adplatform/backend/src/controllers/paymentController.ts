@@ -865,8 +865,10 @@ export const createReservedAccount: RequestHandler = async (req, res) => {
     };
 
     if (idType.toLowerCase() === 'bvn') {
+      payload.bvn = idNumber;
       payload.customerBvn = idNumber;
     } else if (idType.toLowerCase() === 'nin') {
+      payload.nin = idNumber;
       payload.customerNin = idNumber;
     } else {
       res.status(400).json({ message: 'Invalid ID Type. Must be bvn or nin.' });
@@ -877,7 +879,7 @@ export const createReservedAccount: RequestHandler = async (req, res) => {
 
     if (!monnifyRes.requestSuccessful) {
       console.error('Monnify reserved account creation failed:', monnifyRes);
-      res.status(400).json({ message: monnifyRes.responseMessage || 'Failed to create reserved account.' });
+      res.status(400).json({ message: `Monnify Error: ${monnifyRes.responseMessage || 'Validation failed'}` });
       return;
     }
 
