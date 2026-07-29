@@ -27,10 +27,11 @@ app.use(cors({
   credentials: true,
 }));
 
-// Raw body for Paystack webhook signature verification
-app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
+// Raw body ONLY for Paystack webhook (Paystack HMAC is computed on the raw buffer)
+app.use('/api/payments/webhook/paystack', express.raw({ type: 'application/json' }));
 
-// JSON body parser for everything else (larger limit for base64 uploads)
+// JSON body parser for everything else — including the Monnify webhook
+// (Monnify HMAC is verified against JSON.stringify(req.body) of the parsed object)
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 

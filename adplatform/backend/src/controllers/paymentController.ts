@@ -710,10 +710,13 @@ export const verifyPaystackPayment: RequestHandler = async (req, res) => {
 // ── Paystack: Webhook (server-to-server) ──────────────────────────────────────
 export const paystackWebhook: RequestHandler = async (req, res) => {
   try {
-    // Validate Paystack HMAC signature
+    // req.body is a raw Buffer because we use express.raw() for this route
+    const rawBody = req.body instanceof Buffer ? req.body : Buffer.from(JSON.stringify(req.body));
+
+    // Validate Paystack HMAC signature (must be computed on the raw body buffer)
     const hash = crypto
       .createHmac('sha512', PAYSTACK_SECRET_KEY)
-      .update(JSON.stringify(req.body))
+      .update(rawBody)
       .digest('hex');
 
     if (hash !== req.headers['x-paystack-signature']) {
@@ -723,7 +726,7 @@ export const paystackWebhook: RequestHandler = async (req, res) => {
     // Always respond 200 immediately
     res.status(200).send('OK');
 
-    const event = req.body;
+    const event = JSON.parse(rawBody.toString());
     if (event.event === 'charge.success') {
       const data = event.data;
       const meta = data.metadata || {};
@@ -757,6 +760,7 @@ export const paystackWebhook: RequestHandler = async (req, res) => {
     res.status(200).send('OK'); // Always 200 to Paystack
   }
 };
+
 
 // ── Paystack: Initialize credit top-up ───────────────────────────────────────
 export const initializePaystackCreditPayment: RequestHandler = async (req, res) => {
