@@ -3,11 +3,24 @@ import nodemailer from 'nodemailer';
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
   port: parseInt(process.env.SMTP_PORT || '587'),
-  secure: false,
+  secure: parseInt(process.env.SMTP_PORT || '587') === 465,
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
   },
+});
+
+// Verify SMTP connection on startup and log any config issues
+transporter.verify((err) => {
+  if (err) {
+    console.error('❌ SMTP connection FAILED:', err.message);
+    console.error('   SMTP_HOST:', process.env.SMTP_HOST);
+    console.error('   SMTP_PORT:', process.env.SMTP_PORT);
+    console.error('   SMTP_USER:', process.env.SMTP_USER ? process.env.SMTP_USER.slice(0, 5) + '***' : 'NOT SET');
+    console.error('   SMTP_PASS:', process.env.SMTP_PASS ? '***SET***' : 'NOT SET');
+  } else {
+    console.log('✅ SMTP connection verified — emails will be sent from', process.env.SMTP_USER);
+  }
 });
 
 const FROM = `"Studio Arella · Bems Screens" <${process.env.SMTP_USER}>`;

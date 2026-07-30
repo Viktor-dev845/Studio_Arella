@@ -96,8 +96,21 @@ export const register: RequestHandler = async (req, res) => {
       [user.id, code]
     );
 
-    // Send verification email (non-blocking)
-    sendVerificationEmail(email, first_name.trim(), code).catch(console.error);
+    // Send verification email
+    try {
+      await sendVerificationEmail(email, first_name.trim(), code);
+    } catch (emailErr: any) {
+      console.error('❌ Failed to send verification email:', emailErr.message);
+      // Still return success but warn the user so they can use resend
+      const jwtToken = signToken({ id: user.id, email: user.email, role: user.role, name: user.name });
+      res.status(201).json({
+        token: jwtToken,
+        user: { ...user, email_verified: false },
+        message: 'Account created! However, we could not send the verification email right now. Please use the "Resend Code" option on the verification page.',
+        emailError: true,
+      });
+      return;
+    }
 
     const jwtToken = signToken({ id: user.id, email: user.email, role: user.role, name: user.name });
     res.status(201).json({
@@ -163,8 +176,13 @@ export const resendVerification: RequestHandler = async (req, res) => {
        VALUES ($1, $2, NOW() + INTERVAL '24 hours')`,
       [user.rows[0].id, code]
     );
-    sendVerificationEmail(email, user.rows[0].name, code).catch(console.error);
-    res.json({ message: 'Verification code sent.' });
+    try {
+      await sendVerificationEmail(email, user.rows[0].name, code);
+      res.json({ message: 'Verification code sent. Please check your inbox (and spam folder).' });
+    } catch (emailErr: any) {
+      console.error('❌ Failed to resend verification email:', emailErr.message);
+      res.status(500).json({ message: `Failed to send email: ${emailErr.message}. Please contact support if this persists.` });
+    }
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
