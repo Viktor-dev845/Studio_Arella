@@ -14,11 +14,7 @@ const wrap = (content: string) => `
   <div style="max-width:560px;margin:40px auto;background:#fff;border:1px solid #E5E7EB;border-radius:16px;overflow:hidden">
     <!-- Header -->
     <div style="background:#0A0A0A;padding:24px 32px;display:flex;align-items:center;gap:12px">
-      <div style="width:36px;height:36px;background:#F97316;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;color:#fff">B</div>
-      <div style="display:inline-block;margin-left:10px;vertical-align:middle">
-        <span style="font-size:15px;font-weight:800;color:#fff">Bems Screens</span>
-        <span style="display:block;font-size:10px;color:rgba(255,255,255,0.4);letter-spacing:0.08em;text-transform:uppercase">Studio Arella</span>
-      </div>
+      <img src="\${process.env.FRONTEND_URL || 'https://studio-arella.vercel.app'}/logo-white.png" alt="Studio Arella" style="height:36px;object-fit:contain" />
     </div>
     <!-- Body -->
     <div style="padding:32px">
@@ -66,10 +62,10 @@ async function sendEmail(options: { to: string; subject: string; html: string })
 export async function sendVerificationEmail(to: string, name: string, code: string) {
   await sendEmail({
     to,
-    subject: 'Verify your email — Bems Screens',
+    subject: 'Verify your email — Studio Arella',
     html: wrap(`
       ${h1('Verify your email address')}
-      ${p(`Hi ${name}, welcome to Bems Screens! Please use the following 6-digit code to verify your email address and activate your account.`)}
+      ${p(`Hi ${name}, welcome to Studio Arella! Please use the following 6-digit code to verify your email address and activate your account.`)}
       <div style="background:#F9F7F5;border:1px dashed #E5E7EB;padding:24px;border-radius:12px;text-align:center;margin:24px 0">
         <span style="font-size:32px;font-weight:900;letter-spacing:6px;color:#0A0A0A">${code}</span>
       </div>
@@ -82,7 +78,7 @@ export async function sendVerificationEmail(to: string, name: string, code: stri
 export async function sendWelcomeEmail(to: string, name: string) {
   await sendEmail({
     to,
-    subject: `Welcome to Bems Screens, ${name}!`,
+    subject: `Welcome to Studio Arella, ${name}!`,
     html: wrap(`
       ${h1(`Welcome aboard, ${name}!`)}
       ${p('Your account is now active. You can book ad slots on the <strong>Studio Arella</strong> LED screen at Bems Junction, Umuahia — starting from just ₦1,000 per minute.')}
@@ -100,10 +96,10 @@ export async function sendWelcomeEmail(to: string, name: string) {
 export async function sendPasswordResetEmail(to: string, name: string, code: string) {
   await sendEmail({
     to,
-    subject: 'Reset your password — Bems Screens',
+    subject: 'Reset your password — Studio Arella',
     html: wrap(`
       ${h1('Reset your password')}
-      ${p(`Hi ${name}, we received a request to reset your Bems Screens password. Please use the 6-digit code below to set a new password:`)}
+      ${p(`Hi ${name}, we received a request to reset your Studio Arella password. Please use the 6-digit code below to set a new password:`)}
       <div style="background:#F9F7F5;border:1px dashed #E5E7EB;padding:24px;border-radius:12px;text-align:center;margin:24px 0">
         <span style="font-size:32px;font-weight:900;letter-spacing:6px;color:#0A0A0A">${code}</span>
       </div>
@@ -124,7 +120,7 @@ export async function sendBookingConfirmationEmail(to: string, name: string, boo
 }) {
   await sendEmail({
     to,
-    subject: `Booking confirmed: ${booking.booking_number} — Bems Screens`,
+    subject: `Booking confirmed: ${booking.booking_number} — Studio Arella`,
     html: wrap(`
       ${h1('Your booking is confirmed!')}
       ${p(`Hi ${name}, your ad slot on Studio Arella has been secured. Here are your booking details:`)}
@@ -195,7 +191,7 @@ export async function sendPodcastConfirmationEmail(to: string, name: string, boo
 export async function sendCreativeApprovedEmail(to: string, name: string, creativeName: string) {
   await sendEmail({
     to,
-    subject: `Creative approved: "${creativeName}" — Bems Screens`,
+    subject: `Creative approved: "${creativeName}" — Studio Arella`,
     html: wrap(`
       ${h1('Your creative has been approved!')}
       ${p(`Hi ${name}, great news — your ad creative <strong>"${creativeName}"</strong> has been reviewed and approved by our team.`)}
@@ -212,7 +208,7 @@ export async function sendCreativeApprovedEmail(to: string, name: string, creati
 export async function sendCreativeRejectedEmail(to: string, name: string, creativeName: string, reason: string) {
   await sendEmail({
     to,
-    subject: `Creative not approved: "${creativeName}" — Bems Screens`,
+    subject: `Creative not approved: "${creativeName}" — Studio Arella`,
     html: wrap(`
       ${h1('Creative not approved')}
       ${p(`Hi ${name}, unfortunately your ad creative <strong>"${creativeName}"</strong> could not be approved.`)}
@@ -260,7 +256,7 @@ export async function sendCancellationEmail(to: string, name: string, booking: {
   const hasRefund = booking.refund_amount > 0;
   await sendEmail({
     to,
-    subject: `Booking cancelled: ${booking.booking_number} — Bems Screens`,
+    subject: `Booking cancelled: ${booking.booking_number} — Studio Arella`,
     html: wrap(`
       ${h1('Booking cancelled')}
       ${p(`Hi ${name}, your booking <strong>${booking.booking_number}</strong> has been cancelled.`)}
