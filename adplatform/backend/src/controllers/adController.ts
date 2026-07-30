@@ -56,7 +56,6 @@ export const createAd: RequestHandler = async (req, res) => {
       const isVideo = ALLOWED_VIDEO.includes(ext);
       const isImage = ALLOWED_IMAGE.includes(ext);
       if (!isVideo && !isImage) {
-        fs.unlinkSync(file.path);
         res.status(400).json({ message: `Unsupported format. Allowed: ${[...ALLOWED_VIDEO, ...ALLOWED_IMAGE].join(', ')}` });
         return;
       }
@@ -64,29 +63,40 @@ export const createAd: RequestHandler = async (req, res) => {
       // Validate size
       const sizeMB = file.size / (1024 * 1024);
       if (sizeMB > MAX_FILE_MB) {
-        fs.unlinkSync(file.path);
         res.status(400).json({ message: `File too large. Maximum size is ${MAX_FILE_MB}MB.` });
         return;
       }
 
       try {
         const folder = `bems-screens/${authReq.user?.id}`;
-        const uploadResult = await cloudinary.uploader.upload(file.path, {
-          folder,
-          resource_type: isVideo ? 'video' : 'image',
-          transformation: isVideo ? [{ quality: 'auto' }] : [{ quality: 'auto', fetch_format: 'auto' }],
+
+        // Stream the buffer directly to Cloudinary (works on ephemeral servers like Render)
+        const uploadResult = await new Promise<any>((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            {
+              folder,
+              resource_type: isVideo ? 'video' : 'image',
+              transformation: isVideo ? [{ quality: 'auto' }] : [{ quality: 'auto', fetch_format: 'auto' }],
+            },
+            (error, result) => {
+              if (error) return reject(error);
+              resolve(result);
+            }
+          );
+          // file.buffer is available because the route now uses memoryStorage
+          const { Readable } = require('stream');
+          const readable = new Readable();
+          readable.push(file.buffer);
+          readable.push(null);
+          readable.pipe(stream);
         });
 
         file_url = uploadResult.secure_url;
         file_type = isVideo ? 'video' : ext === 'gif' ? 'gif' : 'image';
         file_size = file.size;
-
-        // Delete local temporary file
-        fs.unlinkSync(file.path);
       } catch (uploadErr) {
-        if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
         console.error('Cloudinary upload error:', uploadErr);
-        res.status(500).json({ message: 'Cloudinary upload failed' });
+        res.status(500).json({ message: 'Cloudinary upload failed. Please try again.' });
         return;
       }
     }
