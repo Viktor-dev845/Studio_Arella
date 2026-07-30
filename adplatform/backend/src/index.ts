@@ -22,6 +22,8 @@ app.use(cors({
     // Allow requests with no origin (mobile apps, curl, Postman, webhooks)
     if (!origin) return callback(null, true);
     if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
+    // Allow all Vercel preview deployments
+    if (origin.endsWith('.vercel.app')) return callback(null, true);
     callback(new Error(`CORS: origin ${origin} not allowed`));
   },
   credentials: true,
