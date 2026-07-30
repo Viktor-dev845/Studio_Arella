@@ -51,6 +51,21 @@ router.get('/nuke-db', async (req: Request, res: Response) => {
   }
 });
 
+// TEMPORARY: Delete specific user
+router.get('/dev-delete-user', async (req: Request, res: Response) => {
+  const email = req.query.email as string;
+  if (!email) {
+    res.send('Need email query param');
+    return;
+  }
+  try {
+    await pool.query('DELETE FROM users WHERE email = $1', [email]);
+    res.json({ message: `Deleted user ${email}` });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── Podcasts ──────────────────────────────────────────────────────────────────
 router.get('/podcasts/availability', getAvailability);
 router.post('/podcasts/reserve', authenticate, reserveSlot);
