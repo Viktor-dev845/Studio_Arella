@@ -94,9 +94,10 @@ export const createAd: RequestHandler = async (req, res) => {
         file_url = uploadResult.secure_url;
         file_type = isVideo ? 'video' : ext === 'gif' ? 'gif' : 'image';
         file_size = file.size;
-      } catch (uploadErr) {
+      } catch (uploadErr: any) {
         console.error('Cloudinary upload error:', uploadErr);
-        res.status(500).json({ message: 'Cloudinary upload failed. Please try again.' });
+        const errMsg = uploadErr?.message || (typeof uploadErr === 'object' ? JSON.stringify(uploadErr) : String(uploadErr));
+        res.status(500).json({ message: `Cloudinary upload failed: ${errMsg}` });
         return;
       }
     }
