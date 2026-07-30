@@ -1,32 +1,9 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.SMTP_PORT || '587'),
-  secure: parseInt(process.env.SMTP_PORT || '587') === 465,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-  connectionTimeout: 5000, // 5 seconds
-  greetingTimeout: 5000,
-  socketTimeout: 5000,
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Verify SMTP connection on startup and log any config issues
-transporter.verify((err) => {
-  if (err) {
-    console.error('❌ SMTP connection FAILED:', err.message);
-    console.error('   SMTP_HOST:', process.env.SMTP_HOST);
-    console.error('   SMTP_PORT:', process.env.SMTP_PORT);
-    console.error('   SMTP_USER:', process.env.SMTP_USER ? process.env.SMTP_USER.slice(0, 5) + '***' : 'NOT SET');
-    console.error('   SMTP_PASS:', process.env.SMTP_PASS ? '***SET***' : 'NOT SET');
-  } else {
-    console.log('✅ SMTP connection verified — emails will be sent from', process.env.SMTP_USER);
-  }
-});
-
-const FROM = `"Studio Arella · Bems Screens" <${process.env.SMTP_USER}>`;
+// Use a verified domain if set, otherwise use the testing sandbox
+const FROM = process.env.RESEND_FROM_EMAIL || 'Studio Arella <onboarding@resend.dev>';
 
 // ── Base email template ───────────────────────────────────────────────────────
 const wrap = (content: string) => `
@@ -71,10 +48,24 @@ const row = (label: string, value: string) =>
 const table = (rows: string) =>
   `<table style="width:100%;border:1px solid #E5E7EB;border-radius:12px;border-collapse:collapse;margin:16px 0;overflow:hidden">${rows}</table>`;
 
+// Helper function to send via Resend and throw nicely if it fails
+async function sendEmail(options: { to: string; subject: string; html: string }) {
+  const { data, error } = await resend.emails.send({
+    from: FROM,
+    to: options.to,
+    subject: options.subject,
+    html: options.html,
+  });
+  if (error) {
+    throw new Error(error.message);
+  }
+  return data;
+}
+
 // ── 1. Email verification ─────────────────────────────────────────────────────
 export async function sendVerificationEmail(to: string, name: string, code: string) {
-  await transporter.sendMail({
-    from: FROM, to,
+  await sendEmail({
+    to,
     subject: 'Verify your email — Bems Screens',
     html: wrap(`
       ${h1('Verify your email address')}
@@ -89,8 +80,8 @@ export async function sendVerificationEmail(to: string, name: string, code: stri
 
 // ── 2. Welcome email (after verification) ────────────────────────────────────
 export async function sendWelcomeEmail(to: string, name: string) {
-  await transporter.sendMail({
-    from: FROM, to,
+  await sendEmail({
+    to,
     subject: `Welcome to Bems Screens, ${name}!`,
     html: wrap(`
       ${h1(`Welcome aboard, ${name}!`)}
@@ -107,8 +98,8 @@ export async function sendWelcomeEmail(to: string, name: string) {
 
 // ── 3. Password reset ─────────────────────────────────────────────────────────
 export async function sendPasswordResetEmail(to: string, name: string, code: string) {
-  await transporter.sendMail({
-    from: FROM, to,
+  await sendEmail({
+    to,
     subject: 'Reset your password — Bems Screens',
     html: wrap(`
       ${h1('Reset your password')}
@@ -131,8 +122,8 @@ export async function sendBookingConfirmationEmail(to: string, name: string, boo
   creative_title?: string;
   payment_reference: string;
 }) {
-  await transporter.sendMail({
-    from: FROM, to,
+  await sendEmail({
+    to,
     subject: `Booking confirmed: ${booking.booking_number} — Bems Screens`,
     html: wrap(`
       ${h1('Your booking is confirmed!')}
@@ -175,8 +166,8 @@ export async function sendPodcastConfirmationEmail(to: string, name: string, boo
     return 'None';
   })();
 
-  await transporter.sendMail({
-    from: FROM, to,
+  await sendEmail({
+    to,
     subject: `Podcast session confirmed: ${booking.booking_number} — Studio Arella`,
     html: wrap(`
       ${h1('Your podcast session is booked!')}
@@ -202,8 +193,8 @@ export async function sendPodcastConfirmationEmail(to: string, name: string, boo
 
 // ── 5. Creative approved ──────────────────────────────────────────────────────
 export async function sendCreativeApprovedEmail(to: string, name: string, creativeName: string) {
-  await transporter.sendMail({
-    from: FROM, to,
+  await sendEmail({
+    to,
     subject: `Creative approved: "${creativeName}" — Bems Screens`,
     html: wrap(`
       ${h1('Your creative has been approved!')}
@@ -219,8 +210,8 @@ export async function sendCreativeApprovedEmail(to: string, name: string, creati
 
 // ── 6. Creative rejected ──────────────────────────────────────────────────────
 export async function sendCreativeRejectedEmail(to: string, name: string, creativeName: string, reason: string) {
-  await transporter.sendMail({
-    from: FROM, to,
+  await sendEmail({
+    to,
     subject: `Creative not approved: "${creativeName}" — Bems Screens`,
     html: wrap(`
       ${h1('Creative not approved')}
@@ -242,8 +233,8 @@ export async function sendBookingReminderEmail(to: string, name: string, booking
   start_time: string;
   duration_minutes: number;
 }) {
-  await transporter.sendMail({
-    from: FROM, to,
+  await sendEmail({
+    to,
     subject: `Reminder: Your ad goes live tomorrow — ${booking.booking_number}`,
     html: wrap(`
       ${h1('Your ad plays tomorrow!')}
@@ -267,8 +258,8 @@ export async function sendCancellationEmail(to: string, name: string, booking: {
   refund_reference?: string;
 }) {
   const hasRefund = booking.refund_amount > 0;
-  await transporter.sendMail({
-    from: FROM, to,
+  await sendEmail({
+    to,
     subject: `Booking cancelled: ${booking.booking_number} — Bems Screens`,
     html: wrap(`
       ${h1('Booking cancelled')}
@@ -288,8 +279,8 @@ export async function sendCancellationEmail(to: string, name: string, booking: {
 
 // ── 9. Admin Alert: New Creative ──────────────────────────────────────────────
 export async function sendAdminNewCreativeAlert(to: string, advertiserName: string, creativeTitle: string) {
-  await transporter.sendMail({
-    from: FROM, to,
+  await sendEmail({
+    to,
     subject: `Action Required: Review new creative "${creativeTitle}"`,
     html: wrap(`
       ${h1('New creative awaiting review')}
@@ -309,8 +300,8 @@ export async function sendCreativeRequestAdminAlert(
   description: string, 
   contact: string
 ) {
-  await transporter.sendMail({
-    from: FROM, to,
+  await sendEmail({
+    to,
     subject: `New Creative Request: ${businessName}`,
     html: wrap(`
       ${h1('New creative request received')}
