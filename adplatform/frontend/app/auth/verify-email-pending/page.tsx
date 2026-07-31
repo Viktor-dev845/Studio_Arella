@@ -42,7 +42,7 @@ function VerifyEmailPendingContent() {
       const res = await api.post('/auth/verify-email', { code: otpCode });
       updateUser({ email_verified: true });
       toast(res.data.message || 'Email verified successfully!', 'success');
-      router.push('/dashboard');
+      router.push('/onboarding');
     } catch (err: any) {
       toast(err?.response?.data?.message || 'Invalid or expired verification code.', 'error');
       setVerifying(false);

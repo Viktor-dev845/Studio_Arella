@@ -56,7 +56,7 @@ function VerifyEmailContent() {
             </div>
             <h2 style={{ fontSize: 22, fontWeight: 900, color: '#1A1A1A', margin: '0 0 8px' }}>Email verified!</h2>
             <p style={{ fontSize: 14, color: '#64748B', margin: '0 0 24px', lineHeight: 1.6 }}>{message}</p>
-            <Link href="/dashboard" style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: '#D4AF37', color: '#111111', padding: '12px 24px', borderRadius: 10, fontSize: 14, fontWeight: 800, textDecoration: 'none' }}>
+            <Link href="/onboarding" style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: '#D4AF37', color: '#111111', padding: '12px 24px', borderRadius: 10, fontSize: 14, fontWeight: 800, textDecoration: 'none' }}>
               Go to dashboard <FaArrowRight size={13} />
             </Link>
           </motion.div>
