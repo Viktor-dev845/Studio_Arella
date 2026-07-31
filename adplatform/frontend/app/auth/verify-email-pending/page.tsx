@@ -2,7 +2,7 @@
 
 import { useState, Suspense, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Mail, RefreshCw, ArrowRight } from 'lucide-react';
+import { Mail, RefreshCw, ArrowRight, MessageSquare } from 'lucide-react';
 import api from '@/lib/api';
 import { theme } from '@/lib/theme';
 import { useToast } from '@/components/ui/ToastProvider';
@@ -19,20 +19,22 @@ function VerifyEmailPendingContent() {
   
   const [code, setCode] = useState(['', '', '', '', '', '']);
   const [verifying, setVerifying] = useState(false);
-  const [resending, setResending] = useState(false);
+  const [resending, setResending] = useState<'email' | 'sms' | null>(null);
+  const [sentMethod, setSentMethod] = useState<'email' | 'sms'>('email');
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  const handleResend = async () => {
-    setResending(true);
+  const handleResend = async (method: 'email' | 'sms') => {
+    setResending(method);
     try {
-      await api.post('/auth/resend-verification', { email });
-      toast('Verification code resent! Please check your inbox.', 'success');
+      await api.post('/auth/resend-verification', { email, method });
+      toast(`Verification code sent via ${method === 'sms' ? 'SMS' : 'Email'}!`, 'success');
+      setSentMethod(method);
       setCode(['', '', '', '', '', '']);
       inputRefs.current[0]?.focus();
     } catch (err: any) {
-      toast(err?.response?.data?.message || 'Failed to resend. Please try again.', 'error');
+      toast(err?.response?.data?.message || 'Failed to send. Please try again.', 'error');
     } finally {
-      setResending(false);
+      setResending(null);
     }
   };
 
@@ -110,7 +112,7 @@ function VerifyEmailPendingContent() {
           Enter Verification Code
         </h1>
         <p style={{ color: '#94A3B8', fontSize: 15, lineHeight: 1.6, marginBottom: 8 }}>
-          We've sent a 6-digit code to
+          {sentMethod === 'sms' ? "We've sent a 6-digit code via SMS for" : "We've sent a 6-digit code to"}
         </p>
         <div style={{
           background: 'rgba(212,175,55,0.08)',
@@ -172,32 +174,58 @@ function VerifyEmailPendingContent() {
               transition: 'all 0.3s',
             }}
           >
-            {verifying ? 'Verifying...' : 'Verify Email'}
+            {verifying ? 'Verifying...' : 'Verify Account'}
           </button>
           
-          <button
-            onClick={handleResend}
-            disabled={resending}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
-              width: '100%',
-              padding: '16px',
-              background: 'transparent',
-              color: '#94A3B8',
-              border: '1px solid rgba(255,255,255,0.1)',
-              borderRadius: 12,
-              fontSize: 14,
-              fontWeight: 600,
-              cursor: resending ? 'not-allowed' : 'pointer',
-              transition: 'all 0.2s',
-            }}
-          >
-            <RefreshCw size={16} className={resending ? 'animate-spin' : ''} />
-            {resending ? 'Sending...' : 'Resend Code'}
-          </button>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <button
+              onClick={() => handleResend('email')}
+              disabled={resending !== null}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                width: '100%',
+                padding: '14px',
+                background: 'transparent',
+                color: '#94A3B8',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: 12,
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: resending !== null ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s',
+              }}
+            >
+              <Mail size={14} className={resending === 'email' ? 'animate-pulse' : ''} />
+              {resending === 'email' ? 'Sending...' : 'Send to Email'}
+            </button>
+
+            <button
+              onClick={() => handleResend('sms')}
+              disabled={resending !== null}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                width: '100%',
+                padding: '14px',
+                background: 'transparent',
+                color: '#94A3B8',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: 12,
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: resending !== null ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s',
+              }}
+            >
+              <MessageSquare size={14} className={resending === 'sms' ? 'animate-pulse' : ''} />
+              {resending === 'sms' ? 'Sending...' : 'Send via SMS'}
+            </button>
+          </div>
         </div>
 
         {/* Already verified */}

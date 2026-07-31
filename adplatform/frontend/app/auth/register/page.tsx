@@ -217,15 +217,15 @@ export default function RegisterPage() {
 
             {/* Phone */}
             <div>
-              <label style={labelStyle}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                  <FaPhone size={9} /> Phone number <span style={{ color: '#64748B', fontWeight: 500, textTransform: 'none', letterSpacing: 0 }}>(optional)</span>
-                </span>
-              </label>
-              <input type="tel" placeholder="e.g. 08012345678"
-                value={form.phone}
-                onChange={e => setForm({ ...form, phone: e.target.value })}
-                style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
+              <label style={labelStyle}>Phone number *</label>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <div style={{ ...inputStyle, width: 80, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.03)', color: '#94A3B8' }}>+234</div>
+                <input type="tel" placeholder="e.g. 08012345678"
+                  value={form.phone}
+                  onChange={e => setForm({ ...form, phone: e.target.value })}
+                  required
+                  style={{ ...inputStyle, flex: 1 }} onFocus={onFocus} onBlur={onBlur} />
+              </div>
             </div>
 
             {/* Email */}

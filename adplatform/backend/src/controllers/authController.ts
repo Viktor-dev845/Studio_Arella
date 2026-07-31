@@ -52,8 +52,8 @@ export const register: RequestHandler = async (req, res) => {
   try {
     const { first_name, last_name, email, password, business_name, phone, role } = req.body;
 
-    if (!first_name || !last_name || !email || !password) {
-      res.status(400).json({ message: 'First name, last name, email, and password are required' });
+    if (!first_name || !last_name || !email || !password || !phone) {
+      res.status(400).json({ message: 'First name, last name, email, password, and phone are required' });
       return;
     }
     if (password.length < 6) {
@@ -162,26 +162,49 @@ export const verifyEmail: RequestHandler = async (req, res) => {
 // ── Resend verification ───────────────────────────────────────────────────────
 export const resendVerification: RequestHandler = async (req, res) => {
   try {
-    const { email } = req.body;
-    const user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-    if (!user.rows[0]) { res.json({ message: 'If this email exists, a verification code has been sent.' }); return; }
-    if (user.rows[0].email_verified) { res.status(400).json({ message: 'Email is already verified.' }); return; }
+    const { email, method } = req.body; // method can be 'email' or 'sms'
+    
+    if (!email) {
+      res.status(400).json({ message: 'Email is required' });
+      return;
+    }
+
+    const userResult = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    const user = userResult.rows[0];
+    if (!user) { res.json({ message: 'If this email exists, a verification code has been sent.' }); return; }
+    if (user.email_verified) { res.status(400).json({ message: 'Email is already verified.' }); return; }
 
     // Invalidate old tokens
-    await pool.query('UPDATE email_verification_tokens SET used = true WHERE user_id = $1', [user.rows[0].id]);
+    await pool.query('UPDATE email_verification_tokens SET used = true WHERE user_id = $1', [user.id]);
 
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     await pool.query(
       `INSERT INTO email_verification_tokens (user_id, token, expires_at)
        VALUES ($1, $2, NOW() + INTERVAL '24 hours')`,
-      [user.rows[0].id, code]
+      [user.id, code]
     );
-    try {
-      await sendVerificationEmail(email, user.rows[0].name, code);
-      res.json({ message: 'Verification code sent. Please check your inbox (and spam folder).' });
-    } catch (emailErr: any) {
-      console.error('❌ Failed to resend verification email:', emailErr.message);
-      res.status(500).json({ message: `Failed to send email: ${emailErr.message}. Please contact support if this persists.` });
+
+    if (method === 'sms') {
+      if (!user.phone) {
+        res.status(400).json({ message: 'No phone number associated with this account.' });
+        return;
+      }
+      try {
+        const { sendSms } = await import('../services/smsService');
+        await sendSms(user.phone, `Your Studio Arella verification code is: ${code}`);
+        res.json({ message: 'Verification code sent to your phone via SMS' });
+      } catch (err: any) {
+        console.error('❌ Failed to send SMS:', err.message);
+        res.status(500).json({ message: 'Failed to send SMS. Please try email.' });
+      }
+    } else {
+      try {
+        await sendVerificationEmail(email, user.first_name, code);
+        res.json({ message: 'Verification code sent to your email' });
+      } catch (emailErr: any) {
+        console.error('❌ Failed to resend verification email:', emailErr.message);
+        res.status(500).json({ message: `Failed to send email: ${emailErr.message}. Please contact support if this persists.` });
+      }
     }
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
