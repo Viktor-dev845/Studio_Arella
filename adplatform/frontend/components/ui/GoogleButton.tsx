@@ -15,9 +15,9 @@ export default function GoogleButton({ label = 'Continue with Google' }: GoogleB
     window.location.href = `${API}/auth/google?t=${Date.now()}`;
   };
   return (
-    <button onClick={handleClick} disabled={loading} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 11, padding: '12px 16px', background: theme.color.surface, border: `1.5px solid ${theme.color.border}`, borderRadius: theme.radius.sm, color: theme.color.text2, fontSize: 14, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', fontFamily: F, transition: 'border-color 0.15s, box-shadow 0.15s', opacity: loading ? 0.7 : 1 }}
-      onMouseOver={e => { if (!loading) { (e.currentTarget as HTMLButtonElement).style.borderColor = theme.color.text4; (e.currentTarget as HTMLButtonElement).style.boxShadow = theme.shadow.sm; } }}
-      onMouseOut={e => { if (!loading) { (e.currentTarget as HTMLButtonElement).style.borderColor = theme.color.border; (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none'; } }}>
+    <button onClick={handleClick} disabled={loading} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 11, padding: '14px 16px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, color: '#F8FAFC', fontSize: 14, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', fontFamily: F, transition: 'all 0.2s', opacity: loading ? 0.7 : 1, backdropFilter: 'blur(10px)' }}
+      onMouseOver={e => { if (!loading) { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.08)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(255,255,255,0.2)'; } }}
+      onMouseOut={e => { if (!loading) { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.04)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(255,255,255,0.1)'; } }}>
       {loading ? (
         <svg style={{ animation: 'spin 1s linear infinite', width: 18, height: 18, color: theme.color.text3 }} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
           <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" strokeOpacity="0.25"></circle>
