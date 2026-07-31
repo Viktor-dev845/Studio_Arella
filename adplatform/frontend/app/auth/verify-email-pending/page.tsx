@@ -21,6 +21,7 @@ function VerifyEmailPendingContent() {
   const [verifying, setVerifying] = useState(false);
   const [resending, setResending] = useState<'email' | 'sms' | null>(null);
   const [sentMethod, setSentMethod] = useState<'email' | 'sms'>('email');
+  const [step, setStep] = useState<'select' | 'input'>('select');
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const handleResend = async (method: 'email' | 'sms') => {
@@ -29,8 +30,9 @@ function VerifyEmailPendingContent() {
       await api.post('/auth/resend-verification', { email, method });
       toast(`Verification code sent via ${method === 'sms' ? 'SMS' : 'Email'}!`, 'success');
       setSentMethod(method);
+      setStep('input');
       setCode(['', '', '', '', '', '']);
-      inputRefs.current[0]?.focus();
+      setTimeout(() => inputRefs.current[0]?.focus(), 100);
     } catch (err: any) {
       toast(err?.response?.data?.message || 'Failed to send. Please try again.', 'error');
     } finally {
@@ -108,125 +110,132 @@ function VerifyEmailPendingContent() {
           <Mail size={36} color={theme.color.gold} />
         </div>
 
-        <h1 style={{ color: '#F8FAFC', fontSize: 26, fontWeight: 800, marginBottom: 12, letterSpacing: '-0.02em' }}>
-          Enter Verification Code
-        </h1>
-        <p style={{ color: '#94A3B8', fontSize: 15, lineHeight: 1.6, marginBottom: 8 }}>
-          {sentMethod === 'sms' ? "We've sent a 6-digit code via SMS for" : "We've sent a 6-digit code to"}
-        </p>
-        <div style={{
-          background: 'rgba(212,175,55,0.08)',
-          border: '1px solid rgba(212,175,55,0.2)',
-          borderRadius: 10,
-          padding: '10px 16px',
-          marginBottom: 32,
-          color: theme.color.gold,
-          fontWeight: 700,
-          fontSize: 15,
-          wordBreak: 'break-all',
-        }}>
-          {email}
-        </div>
+        {step === 'select' ? (
+          <>
+            <h1 style={{ color: '#F8FAFC', fontSize: 26, fontWeight: 800, marginBottom: 12, letterSpacing: '-0.02em' }}>
+              Verify Your Account
+            </h1>
+            <p style={{ color: '#94A3B8', fontSize: 15, lineHeight: 1.6, marginBottom: 32 }}>
+              How would you like to receive your 6-digit verification code?
+            </p>
 
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 32 }}>
-          {code.map((digit, index) => (
-            <input
-              key={index}
-              ref={el => { inputRefs.current[index] = el; }}
-              type="text"
-              maxLength={1}
-              value={digit}
-              onChange={(e) => handleChange(index, e.target.value)}
-              onKeyDown={(e) => handleKeyDown(index, e)}
-              disabled={verifying}
-              style={{
-                width: 48,
-                height: 56,
-                background: 'rgba(255,255,255,0.03)',
-                border: `1px solid ${digit ? theme.color.gold : 'rgba(255,255,255,0.1)'}`,
-                borderRadius: 12,
-                fontSize: 24,
-                fontWeight: 800,
-                color: '#fff',
-                textAlign: 'center',
-                outline: 'none',
-                boxShadow: digit ? '0 0 10px rgba(212,175,55,0.2)' : 'none',
-                transition: 'all 0.2s',
-              }}
-            />
-          ))}
-        </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 32 }}>
+              <button
+                onClick={() => handleResend('email')}
+                disabled={resending !== null}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 12, padding: '18px 24px',
+                  background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)',
+                  borderRadius: 12, color: '#F8FAFC', fontSize: 15, fontWeight: 700,
+                  cursor: resending !== null ? 'not-allowed' : 'pointer', transition: 'all 0.2s',
+                  textAlign: 'left'
+                }}
+                onMouseOver={e => { if (!resending) { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.borderColor = theme.color.gold; } }}
+                onMouseOut={e => { if (!resending) { e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; } }}
+              >
+                <div style={{ background: 'rgba(255,255,255,0.05)', padding: 10, borderRadius: 8 }}>
+                  <Mail size={20} className={resending === 'email' ? 'animate-pulse' : ''} color={theme.color.gold} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ marginBottom: 2 }}>{resending === 'email' ? 'Sending...' : 'Send to Email'}</div>
+                  <div style={{ fontSize: 12, color: '#64748B', fontWeight: 500 }}>{email}</div>
+                </div>
+                <ArrowRight size={16} color="#64748B" />
+              </button>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <button
-            onClick={() => handleVerify(code.join(''))}
-            disabled={verifying || code.some(v => v === '')}
-            style={{
-              width: '100%',
-              padding: '16px',
-              background: (verifying || code.some(v => v === '')) ? 'rgba(255,255,255,0.05)' : `linear-gradient(135deg, ${theme.color.gold}, #e8a825)`,
-              color: (verifying || code.some(v => v === '')) ? '#64748B' : '#0a0a0a',
-              border: 'none',
-              borderRadius: 12,
-              fontSize: 15,
-              fontWeight: 800,
-              cursor: (verifying || code.some(v => v === '')) ? 'not-allowed' : 'pointer',
-              transition: 'all 0.3s',
-            }}
-          >
-            {verifying ? 'Verifying...' : 'Verify Account'}
-          </button>
-          
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            <button
-              onClick={() => handleResend('email')}
-              disabled={resending !== null}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-                width: '100%',
-                padding: '14px',
-                background: 'transparent',
-                color: '#94A3B8',
-                border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: 12,
-                fontSize: 13,
-                fontWeight: 600,
-                cursor: resending !== null ? 'not-allowed' : 'pointer',
-                transition: 'all 0.2s',
-              }}
-            >
-              <Mail size={14} className={resending === 'email' ? 'animate-pulse' : ''} />
-              {resending === 'email' ? 'Sending...' : 'Send to Email'}
-            </button>
+              <button
+                onClick={() => handleResend('sms')}
+                disabled={resending !== null}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 12, padding: '18px 24px',
+                  background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)',
+                  borderRadius: 12, color: '#F8FAFC', fontSize: 15, fontWeight: 700,
+                  cursor: resending !== null ? 'not-allowed' : 'pointer', transition: 'all 0.2s',
+                  textAlign: 'left'
+                }}
+                onMouseOver={e => { if (!resending) { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.borderColor = theme.color.gold; } }}
+                onMouseOut={e => { if (!resending) { e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; } }}
+              >
+                <div style={{ background: 'rgba(255,255,255,0.05)', padding: 10, borderRadius: 8 }}>
+                  <MessageSquare size={20} className={resending === 'sms' ? 'animate-pulse' : ''} color={theme.color.gold} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ marginBottom: 2 }}>{resending === 'sms' ? 'Sending...' : 'Send via SMS'}</div>
+                  <div style={{ fontSize: 12, color: '#64748B', fontWeight: 500 }}>To your registered phone number</div>
+                </div>
+                <ArrowRight size={16} color="#64748B" />
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <h1 style={{ color: '#F8FAFC', fontSize: 26, fontWeight: 800, marginBottom: 12, letterSpacing: '-0.02em' }}>
+              Enter Verification Code
+            </h1>
+            <p style={{ color: '#94A3B8', fontSize: 15, lineHeight: 1.6, marginBottom: 8 }}>
+              {sentMethod === 'sms' ? "We've sent a 6-digit code via SMS for" : "We've sent a 6-digit code to"}
+            </p>
+            <div style={{
+              background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)',
+              borderRadius: 10, padding: '10px 16px', marginBottom: 32,
+              color: theme.color.gold, fontWeight: 700, fontSize: 15, wordBreak: 'break-all',
+            }}>
+              {sentMethod === 'sms' ? 'Your Phone Number' : email}
+            </div>
 
-            <button
-              onClick={() => handleResend('sms')}
-              disabled={resending !== null}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-                width: '100%',
-                padding: '14px',
-                background: 'transparent',
-                color: '#94A3B8',
-                border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: 12,
-                fontSize: 13,
-                fontWeight: 600,
-                cursor: resending !== null ? 'not-allowed' : 'pointer',
-                transition: 'all 0.2s',
-              }}
-            >
-              <MessageSquare size={14} className={resending === 'sms' ? 'animate-pulse' : ''} />
-              {resending === 'sms' ? 'Sending...' : 'Send via SMS'}
-            </button>
-          </div>
-        </div>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 32 }}>
+              {code.map((digit, index) => (
+                <input
+                  key={index}
+                  ref={el => { inputRefs.current[index] = el; }}
+                  type="text"
+                  maxLength={1}
+                  value={digit}
+                  onChange={(e) => handleChange(index, e.target.value)}
+                  onKeyDown={(e) => handleKeyDown(index, e)}
+                  disabled={verifying}
+                  style={{
+                    width: 48, height: 56, background: 'rgba(255,255,255,0.03)',
+                    border: `1px solid ${digit ? theme.color.gold : 'rgba(255,255,255,0.1)'}`,
+                    borderRadius: 12, fontSize: 24, fontWeight: 800, color: '#fff',
+                    textAlign: 'center', outline: 'none',
+                    boxShadow: digit ? '0 0 10px rgba(212,175,55,0.2)' : 'none',
+                    transition: 'all 0.2s',
+                  }}
+                />
+              ))}
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <button
+                onClick={() => handleVerify(code.join(''))}
+                disabled={verifying || code.some(v => v === '')}
+                style={{
+                  width: '100%', padding: '16px',
+                  background: (verifying || code.some(v => v === '')) ? 'rgba(255,255,255,0.05)' : `linear-gradient(135deg, ${theme.color.gold}, #e8a825)`,
+                  color: (verifying || code.some(v => v === '')) ? '#64748B' : '#0a0a0a',
+                  border: 'none', borderRadius: 12, fontSize: 15, fontWeight: 800,
+                  cursor: (verifying || code.some(v => v === '')) ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.3s',
+                }}
+              >
+                {verifying ? 'Verifying...' : 'Verify Account'}
+              </button>
+              
+              <button
+                onClick={() => setStep('select')}
+                style={{
+                  background: 'transparent', color: '#94A3B8', border: 'none',
+                  fontSize: 13, fontWeight: 600, cursor: 'pointer', padding: '10px'
+                }}
+                onMouseOver={e => e.currentTarget.style.color = '#F8FAFC'}
+                onMouseOut={e => e.currentTarget.style.color = '#94A3B8'}
+              >
+                Change Verification Method
+              </button>
+            </div>
+          </>
+        )}
 
         {/* Already verified */}
         <button

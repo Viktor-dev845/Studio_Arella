@@ -96,16 +96,11 @@ export const register: RequestHandler = async (req, res) => {
       [user.id, code]
     );
 
-    // Send verification email (fire-and-forget so it doesn't hang the UI)
-    sendVerificationEmail(email, first_name.trim(), code).catch(emailErr => {
-      console.error('❌ Failed to send verification email asynchronously:', emailErr?.message || emailErr);
-    });
-
     const jwtToken = signToken({ id: user.id, email: user.email, role: user.role, name: user.name });
     res.status(201).json({
       token: jwtToken,
       user: { ...user, email_verified: false },
-      message: 'Account created! Please check your email or choose to verify via SMS.',
+      message: 'Account created! Please choose a verification method.',
     });
   } catch (err: any) {
     console.error('Register error:', err);
