@@ -179,7 +179,7 @@ export const resendVerification: RequestHandler = async (req, res) => {
         res.json({ message: 'Verification code sent to your phone via SMS' });
       } catch (err: any) {
         console.error('❌ Failed to send SMS:', err.message);
-        res.status(500).json({ message: 'Failed to send SMS. Please try email.' });
+        res.status(500).json({ message: `Termii Error: ${err.message}` });
       }
     } else {
       try {

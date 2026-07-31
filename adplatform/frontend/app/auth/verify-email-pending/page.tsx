@@ -81,11 +81,13 @@ function VerifyEmailPendingContent() {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      background: 'linear-gradient(135deg, #0f172a 0%, #0a0a0a 100%)',
+      background: 'linear-gradient(rgba(10,10,10,0.85), rgba(10,10,10,0.95)), url("https://images.unsplash.com/photo-1511268559489-34b624fbfcf5?w=1600&q=80&auto=format&fit=crop")',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
       fontFamily: F,
       padding: '24px',
     }}>
-      <div style={{ position: 'fixed', top: '20%', left: '50%', transform: 'translateX(-50%)', width: 600, height: 600, background: 'radial-gradient(circle, rgba(212,175,55,0.08) 0%, transparent 70%)', pointerEvents: 'none', filter: 'blur(60px)' }} />
+      <div style={{ position: 'fixed', top: '20%', left: '50%', transform: 'translateX(-50%)', width: 600, height: 600, background: 'radial-gradient(circle, rgba(212,175,55,0.15) 0%, transparent 70%)', pointerEvents: 'none', filter: 'blur(60px)' }} />
 
       <div style={{
         maxWidth: 480,
