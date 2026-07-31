@@ -96,27 +96,16 @@ export const register: RequestHandler = async (req, res) => {
       [user.id, code]
     );
 
-    // Send verification email
-    try {
-      await sendVerificationEmail(email, first_name.trim(), code);
-    } catch (emailErr: any) {
-      console.error('❌ Failed to send verification email:', emailErr.message);
-      // Still return success but warn the user so they can use resend
-      const jwtToken = signToken({ id: user.id, email: user.email, role: user.role, name: user.name });
-      res.status(201).json({
-        token: jwtToken,
-        user: { ...user, email_verified: false },
-        message: 'Account created! However, we could not send the verification email right now. Please use the "Resend Code" option on the verification page.',
-        emailError: true,
-      });
-      return;
-    }
+    // Send verification email (fire-and-forget so it doesn't hang the UI)
+    sendVerificationEmail(email, first_name.trim(), code).catch(emailErr => {
+      console.error('❌ Failed to send verification email asynchronously:', emailErr?.message || emailErr);
+    });
 
     const jwtToken = signToken({ id: user.id, email: user.email, role: user.role, name: user.name });
     res.status(201).json({
       token: jwtToken,
       user: { ...user, email_verified: false },
-      message: 'Account created! Please enter the 6-digit code sent to your email.',
+      message: 'Account created! Please check your email or choose to verify via SMS.',
     });
   } catch (err: any) {
     console.error('Register error:', err);
