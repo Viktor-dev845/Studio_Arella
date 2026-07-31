@@ -1,6 +1,6 @@
 export async function sendSms(to: string, message: string) {
-  const apiKey = process.env.TERMII_API_KEY;
-  const senderId = process.env.TERMII_SENDER_ID || 'N-Alert';
+  const apiKey = (process.env.TERMII_API_KEY || '').replace(/['"]/g, '').trim();
+  const senderId = (process.env.TERMII_SENDER_ID || 'N-Alert').replace(/['"]/g, '').trim();
 
   if (!apiKey) {
     console.warn('⚠️ TERMII_API_KEY not set. Skipping SMS sending.');
