@@ -31,7 +31,7 @@ export async function sendSms(to: string, message: string) {
       }),
     });
 
-    const data = await response.json();
+    const data = await response.json() as any;
 
     if (!response.ok || data.status === 'error') {
       throw new Error(`Sendchamp Error: ${data.message || JSON.stringify(data)}`);
