@@ -145,6 +145,7 @@ function VerifyEmailPendingContent() {
                 <ArrowRight size={16} color="#64748B" />
               </button>
 
+              {/*
               <button
                 onClick={() => handleResend('sms')}
                 disabled={resending !== null}
@@ -167,6 +168,7 @@ function VerifyEmailPendingContent() {
                 </div>
                 <ArrowRight size={16} color="#64748B" />
               </button>
+              */}
             </div>
           </>
         ) : (
