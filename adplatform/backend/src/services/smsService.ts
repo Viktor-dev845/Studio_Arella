@@ -1,14 +1,13 @@
 export async function sendSms(to: string, message: string) {
-  const apiKey = (process.env.TERMII_API_KEY || '').replace(/['"]/g, '').trim();
-  const senderId = (process.env.TERMII_SENDER_ID || 'N-Alert').replace(/['"]/g, '').trim();
+  const apiKey = (process.env.SENDCHAMP_API_KEY || '').replace(/['"]/g, '').trim();
+  const senderId = (process.env.SENDCHAMP_SENDER_ID || 'Sendchamp').replace(/['"]/g, '').trim();
 
   if (!apiKey) {
-    console.warn('⚠️ TERMII_API_KEY not set. Skipping SMS sending.');
+    console.warn('⚠️ SENDCHAMP_API_KEY not set. Skipping SMS sending.');
     return;
   }
 
   // Format phone number to international format without '+'
-  // Assuming Nigerian numbers for now, e.g., 080... -> 23480...
   let formattedPhone = to.replace(/\D/g, '');
   if (formattedPhone.startsWith('0')) {
     formattedPhone = '234' + formattedPhone.substring(1);
@@ -17,31 +16,31 @@ export async function sendSms(to: string, message: string) {
   }
 
   try {
-    const response = await fetch('https://api.ng.termii.com/api/sms/send', {
+    const response = await fetch('https://api.sendchamp.com/api/v1/sms/send', {
       method: 'POST',
       headers: {
+        'Accept': 'application/json',
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        to: formattedPhone,
-        from: senderId,
-        sms: message,
-        type: 'plain',
-        channel: 'generic',
-        api_key: apiKey,
+        to: [formattedPhone],
+        message: message,
+        sender_name: senderId,
+        route: 'dnd'
       }),
     });
 
     const data = await response.json();
 
-    if (!response.ok) {
-      throw new Error(`Termii Error: ${JSON.stringify(data)}`);
+    if (!response.ok || data.status === 'error') {
+      throw new Error(`Sendchamp Error: ${data.message || JSON.stringify(data)}`);
     }
 
     console.log(`✅ SMS sent successfully to ${formattedPhone}`, data);
     return data;
   } catch (error: any) {
-    console.error('❌ Failed to send SMS via Termii:', error.message);
+    console.error('❌ Failed to send SMS via Sendchamp:', error.message);
     throw error;
   }
 }

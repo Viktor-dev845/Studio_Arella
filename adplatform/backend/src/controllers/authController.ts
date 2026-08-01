@@ -1,4 +1,4 @@
-import { Request, Response, RequestHandler } from 'express';
+The import { Request, Response, RequestHandler } from 'express';
 import pool from '../db/pool';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
@@ -179,7 +179,7 @@ export const resendVerification: RequestHandler = async (req, res) => {
         res.json({ message: 'Verification code sent to your phone via SMS' });
       } catch (err: any) {
         console.error('❌ Failed to send SMS:', err.message);
-        res.status(500).json({ message: `Termii Error: ${err.message}` });
+        res.status(500).json({ message: `SMS Error: ${err.message}` });
       }
     } else {
       try {
