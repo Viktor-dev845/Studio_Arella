@@ -6,43 +6,66 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = process.env.RESEND_FROM_EMAIL || 'Studio Arella <onboarding@resend.dev>';
 
 // ── Base email template ───────────────────────────────────────────────────────
+const FRONTEND = process.env.FRONTEND_URL || 'https://studioarella.com';
+
 const wrap = (content: string) => `
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#F9F7F5;font-family:'Quicksand',Arial,sans-serif">
-  <div style="max-width:560px;margin:40px auto;background:#fff;border:1px solid #E5E7EB;border-radius:16px;overflow:hidden">
-    <!-- Header -->
-    <div style="background:#0A0A0A;padding:24px 32px;display:flex;align-items:center;gap:12px">
-      <img src="\${process.env.FRONTEND_URL || 'https://studio-arella.vercel.app'}/logo-white.png" alt="Studio Arella" style="height:36px;object-fit:contain" />
-    </div>
-    <!-- Body -->
-    <div style="padding:32px">
-      ${content}
-    </div>
-    <!-- Footer -->
-    <div style="background:#FAFAFA;border-top:1px solid #F3F4F6;padding:20px 32px;text-align:center">
-      <p style="font-size:12px;color:#9CA3AF;margin:0 0 4px">Studio Arella · Bems Junction, Finbars, Bende Road, Umuahia, Abia State</p>
-      <p style="font-size:12px;color:#9CA3AF;margin:0">Managed by Diekolayomi Samuel Babatunde · 08164523926</p>
-    </div>
-  </div>
+<body style="margin:0;padding:0;background-color:#050505;font-family:'Inter',-apple-system,BlinkMacSystemFont,Arial,sans-serif">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#050505" style="padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <!-- Main Card -->
+        <table width="100%" max-width="600" border="0" cellspacing="0" cellpadding="0" style="max-width:600px;background-color:#0A0A0A;border:1px solid rgba(212,175,55,0.15);border-radius:24px;overflow:hidden;box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);">
+          
+          <!-- Premium Header -->
+          <tr>
+            <td align="center" style="padding: 40px 32px 30px;background: linear-gradient(180deg, rgba(212,175,55,0.08) 0%, rgba(10,10,10,0) 100%);">
+              <img src="${FRONTEND}/logo-white.png" alt="Studio Arella" width="160" style="display:block;width:160px;max-width:100%;height:auto;margin:0 auto;" />
+            </td>
+          </tr>
+
+          <!-- Body Content -->
+          <tr>
+            <td style="padding: 10px 48px 40px;">
+              ${content}
+            </td>
+          </tr>
+          
+          <!-- Minimalist Footer -->
+          <tr>
+            <td align="center" style="padding: 24px 48px;background-color:#050505;border-top:1px solid rgba(255,255,255,0.05);">
+              <p style="font-size:12px;color:#64748B;line-height:1.6;margin:0 0 8px;font-weight:500;">
+                <strong style="color:#94A3B8;">Studio Arella</strong><br/>
+                Bems Junction, Finbars, Bende Road, Umuahia, Abia State
+              </p>
+              <p style="font-size:12px;color:#475569;margin:0;">
+                Need help? Contact support at 08164523926
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
 </body>
 </html>`;
 
-const btn = (text: string, url: string, color = '#F97316') =>
-  `<a href="${url}" style="display:inline-block;background:${color};color:#fff;padding:12px 28px;border-radius:10px;font-size:14px;font-weight:800;text-decoration:none;margin-top:20px">${text}</a>`;
+const btn = (text: string, url: string) =>
+  `<a href="${url}" style="display:inline-block;background-color:#D4AF37;color:#0A0A0A;padding:16px 32px;border-radius:12px;font-size:15px;font-weight:700;text-decoration:none;margin-top:28px;text-transform:uppercase;letter-spacing:0.5px;">${text}</a>`;
 
 const h1 = (text: string) =>
-  `<h1 style="font-size:22px;font-weight:900;color:#0A0A0A;margin:0 0 8px;letter-spacing:-0.4px">${text}</h1>`;
+  `<h1 style="font-size:26px;font-weight:800;color:#F8FAFC;margin:0 0 16px;letter-spacing:-0.03em;text-align:center;">${text}</h1>`;
 
-const p = (text: string, muted = false) =>
-  `<p style="font-size:14px;color:${muted ? '#9CA3AF' : '#374151'};line-height:1.7;margin:0 0 12px">${text}</p>`;
+const p = (text: string, muted = false, alignCenter = false) =>
+  `<p style="font-size:16px;color:${muted ? '#64748B' : '#CBD5E1'};line-height:1.8;margin:0 0 16px;font-weight:400;text-align:${alignCenter ? 'center' : 'left'};">${text}</p>`;
 
 const row = (label: string, value: string) =>
-  `<tr><td style="padding:10px 14px;font-size:13px;color:#9CA3AF;border-bottom:1px solid #F3F4F6;white-space:nowrap">${label}</td><td style="padding:10px 14px;font-size:13px;font-weight:700;color:#0A0A0A;border-bottom:1px solid #F3F4F6">${value}</td></tr>`;
+  `<tr><td style="padding:14px 18px;font-size:14px;color:#94A3B8;border-bottom:1px solid rgba(255,255,255,0.05);white-space:nowrap">${label}</td><td style="padding:14px 18px;font-size:14px;font-weight:600;color:#F8FAFC;border-bottom:1px solid rgba(255,255,255,0.05);text-align:right;">${value}</td></tr>`;
 
 const table = (rows: string) =>
-  `<table style="width:100%;border:1px solid #E5E7EB;border-radius:12px;border-collapse:collapse;margin:16px 0;overflow:hidden">${rows}</table>`;
+  `<table width="100%" style="width:100%;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:16px;border-collapse:collapse;margin:24px 0;overflow:hidden">${rows}</table>`;
 
 // Helper function to send via Resend and throw nicely if it fails
 async function sendEmail(options: { to: string; subject: string; html: string }) {
@@ -62,14 +85,23 @@ async function sendEmail(options: { to: string; subject: string; html: string })
 export async function sendVerificationEmail(to: string, name: string, code: string) {
   await sendEmail({
     to,
-    subject: 'Verify your email — Studio Arella',
+    subject: 'Verification Code — Studio Arella',
     html: wrap(`
-      ${h1('Verify your email address')}
-      ${p(`Hi ${name}, welcome to Studio Arella! Please use the following 6-digit code to verify your email address and activate your account.`)}
-      <div style="background:#F9F7F5;border:1px dashed #E5E7EB;padding:24px;border-radius:12px;text-align:center;margin:24px 0">
-        <span style="font-size:32px;font-weight:900;letter-spacing:6px;color:#0A0A0A">${code}</span>
-      </div>
-      ${p('This code expires in 24 hours. If you didn\'t create an account, you can safely ignore this email.', true)}
+      ${h1('Verify Your Email')}
+      ${p(`Welcome to the future of digital advertising, ${name}. Please use the secure 6-digit code below to authenticate your account.`, false, true)}
+      
+      <!-- OTP Box -->
+      <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin:36px 0;">
+        <tr>
+          <td align="center">
+            <div style="background:rgba(212,175,55,0.05);border:1px solid rgba(212,175,55,0.25);border-radius:16px;padding:32px;display:inline-block;">
+              <span style="font-size:42px;font-weight:900;letter-spacing:12px;color:#D4AF37;font-family:'Courier New',Courier,monospace;line-height:1;">${code}</span>
+            </div>
+          </td>
+        </tr>
+      </table>
+
+      ${p('For your security, this authentication code will expire in 24 hours. If you did not initiate this request, please safely ignore this email.', true, true)}
     `),
   });
 }
