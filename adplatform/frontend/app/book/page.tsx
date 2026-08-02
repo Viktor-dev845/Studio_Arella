@@ -562,7 +562,7 @@ function DoohScheduler() {
               
               {approvedCreatives.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '60px 0', background: theme.color.surface2, borderRadius: 12, border: `1px dashed ${theme.color.border}` }}>
-                  <FaFilm size={32} color={theme.color.text4} style={{ marginBottom: 16 }} />
+                  <FaFilm size={32} color={theme.color.text4} style={{ margin: '0 auto 16px', display: 'block' }} />
                   <p style={{ fontSize: 15, color: theme.color.text3 }}>You have no approved ads yet.</p>
                   <AnimatedButton onClick={() => router.push('/creative')} style={{ marginTop: 16, background: theme.color.charcoal900, color: theme.color.surface, border: "none", padding: "10px 20px", borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
                     Create or Upload Ad
