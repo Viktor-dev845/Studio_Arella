@@ -22,7 +22,7 @@ const wrap = (content: string) => `
           <!-- Premium Header -->
           <tr>
             <td align="center" style="padding: 40px 32px 30px;background: linear-gradient(180deg, rgba(212,175,55,0.08) 0%, rgba(10,10,10,0) 100%);">
-              <img src="${FRONTEND}/logo-white.png" alt="Studio Arella" width="160" style="display:block;width:160px;max-width:100%;height:auto;margin:0 auto;" />
+              <img src="https://raw.githubusercontent.com/Viktor2025-bit/Studio_Arella/main/adplatform/frontend/public/logo-white.png" alt="Studio Arella" width="160" style="display:block;width:160px;max-width:100%;height:auto;margin:0 auto;" />
             </td>
           </tr>
 
