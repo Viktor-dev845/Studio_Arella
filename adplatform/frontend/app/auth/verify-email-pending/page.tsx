@@ -75,6 +75,25 @@ function VerifyEmailPendingContent() {
     }
   };
 
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text/plain').replace(/\D/g, '').slice(0, 6);
+    if (!pastedData) return;
+    
+    const newCode = [...code];
+    for (let i = 0; i < pastedData.length; i++) {
+      newCode[i] = pastedData[i];
+    }
+    setCode(newCode);
+    
+    const focusIndex = pastedData.length < 6 ? pastedData.length : 5;
+    inputRefs.current[focusIndex]?.focus();
+    
+    if (newCode.every(v => v !== '')) {
+      handleVerify(newCode.join(''));
+    }
+  };
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -197,6 +216,7 @@ function VerifyEmailPendingContent() {
                   value={digit}
                   onChange={(e) => handleChange(index, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(index, e)}
+                  onPaste={handlePaste}
                   disabled={verifying}
                   style={{
                     width: 48, height: 56, background: 'rgba(255,255,255,0.03)',
