@@ -76,7 +76,6 @@ export const createAd: RequestHandler = async (req, res) => {
             {
               folder,
               resource_type: isVideo ? 'video' : 'image',
-              transformation: isVideo ? [{ quality: 'auto' }] : [{ quality: 'auto', fetch_format: 'auto' }],
             },
             (error, result) => {
               if (error) return reject(error);

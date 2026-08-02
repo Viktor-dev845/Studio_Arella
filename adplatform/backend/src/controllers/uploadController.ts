@@ -53,9 +53,6 @@ export const uploadMedia : RequestHandler = async (req, res) => {
     const result = await streamToCloudinary(req.file.buffer, {
       folder,
       resource_type: isVideo ? 'video' : 'image',
-      transformation: isVideo
-        ? [{ quality: 'auto' }]
-        : [{ quality: 'auto', fetch_format: 'auto' }],
     });
 
     res.json({
