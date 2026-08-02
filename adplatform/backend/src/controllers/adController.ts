@@ -8,11 +8,13 @@ import { createNotification, notifyAdmins } from '../services/notificationServic
 import { v2 as cloudinary } from 'cloudinary';
 
 // Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+if (process.env.CLOUDINARY_CLOUD_NAME) {
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+  });
+}
 
 const ALLOWED_VIDEO = ['mp4', 'mov'];
 const ALLOWED_IMAGE = ['jpg', 'jpeg', 'png', 'gif'];
