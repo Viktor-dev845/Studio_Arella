@@ -36,11 +36,11 @@ const wrap = (content: string) => `
           <!-- Minimalist Footer -->
           <tr>
             <td align="center" style="padding: 24px 48px;background-color:#050505;border-top:1px solid rgba(255,255,255,0.05);">
-              <p style="font-size:12px;color:#64748B;line-height:1.6;margin:0 0 8px;font-weight:500;">
-                <strong style="color:#94A3B8;">Studio Arella</strong><br/>
+              <p style="font-size:12px;color:#A1A1AA;line-height:1.6;margin:0 0 8px;font-weight:500;">
+                <strong style="color:#FFFFFF;">Studio Arella</strong><br/>
                 Bems Junction, Finbars, Bende Road, Umuahia, Abia State
               </p>
-              <p style="font-size:12px;color:#475569;margin:0;">
+              <p style="font-size:12px;color:#A1A1AA;margin:0;">
                 Need help? Contact support at 08164523926
               </p>
             </td>
@@ -56,10 +56,10 @@ const btn = (text: string, url: string) =>
   `<a href="${url}" style="display:inline-block;background-color:#D4AF37;color:#0A0A0A;padding:16px 32px;border-radius:12px;font-size:15px;font-weight:700;text-decoration:none;margin-top:28px;text-transform:uppercase;letter-spacing:0.5px;">${text}</a>`;
 
 const h1 = (text: string) =>
-  `<h1 style="font-size:26px;font-weight:800;color:#F8FAFC;margin:0 0 16px;letter-spacing:-0.03em;text-align:center;">${text}</h1>`;
+  `<h1 style="font-size:26px;font-weight:800;color:#FFFFFF;margin:0 0 16px;letter-spacing:-0.03em;text-align:center;">${text}</h1>`;
 
 const p = (text: string, muted = false, alignCenter = false) =>
-  `<p style="font-size:16px;color:${muted ? '#64748B' : '#CBD5E1'};line-height:1.8;margin:0 0 16px;font-weight:400;text-align:${alignCenter ? 'center' : 'left'};">${text}</p>`;
+  `<p style="font-size:16px;color:${muted ? '#A1A1AA' : '#FFFFFF'};line-height:1.8;margin:0 0 16px;font-weight:400;text-align:${alignCenter ? 'center' : 'left'};">${text}</p>`;
 
 const row = (label: string, value: string) =>
   `<tr><td style="padding:14px 18px;font-size:14px;color:#94A3B8;border-bottom:1px solid rgba(255,255,255,0.05);white-space:nowrap">${label}</td><td style="padding:14px 18px;font-size:14px;font-weight:600;color:#F8FAFC;border-bottom:1px solid rgba(255,255,255,0.05);text-align:right;">${value}</td></tr>`;
