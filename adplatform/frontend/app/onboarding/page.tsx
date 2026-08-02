@@ -111,7 +111,7 @@ export default function OnboardingPage() {
 
   const NEXT_ACTIONS = [
     { Icon: FaLocationDot,   color: theme.color.gold, bg: theme.color.goldLight, border: theme.color.goldMid, title: 'Book your first ad slot',     sub: 'Pick a date on the Studio Arella calendar', href: '/book' },
-    { Icon: FaCreditCard,    color: theme.color.success, bg: theme.color.successLight, border: '#C7E0BE', title: 'Add credits to your account', sub: 'Pay via Monnify — cards or bank transfer',       href: '/finances' },
+    { Icon: FaCreditCard,    color: theme.color.success, bg: theme.color.successLight, border: '#C7E0BE', title: 'Add credits to your account', sub: 'Secure and speedy payments via cards or bank transfer',       href: '/finances' },
     { Icon: FaPaintbrush,    color: theme.color.goldDark, bg: '#F5F3FF', border: '#DDD6FE', title: 'Request our creative team',   sub: 'We design and film your ad for you',         href: '/creative' },
     { Icon: FaGaugeHigh,     color: '#2563EB', bg: '#EFF6FF', border: '#BFDBFE', title: 'Go to your dashboard',        sub: 'See all your campaigns and stats',            href: '/dashboard' },
   ];
@@ -132,7 +132,7 @@ export default function OnboardingPage() {
         {/* Logo */}
         <div style={{ position: 'relative', zIndex: 1, marginBottom: 'auto' }}>
           <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-            <img src="/logo-white.png" alt="Studio Arella Logo" style={{ height: 48, objectFit: 'contain' }} />
+            <img src="/logo-white.png" alt="Studio Arella Logo" style={{ height: 120, objectFit: 'contain' }} />
           </Link>
         </div>
 
@@ -150,7 +150,7 @@ export default function OnboardingPage() {
         <div style={{ position: 'relative', zIndex: 1, marginTop: 'auto', display: 'flex', gap: 24 }}>
            <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', padding: 24, borderRadius: 16, backdropFilter: 'blur(10px)', flex: 1 }}>
              <FaLocationDot size={24} color={theme.color.gold} style={{ marginBottom: 16 }} />
-             <div style={{ fontSize: 15, fontWeight: 800, color: '#F8FAFC', marginBottom: 4 }}>Bems Junction Screen</div>
+             <div style={{ fontSize: 15, fontWeight: 800, color: '#F8FAFC', marginBottom: 4 }}>Premium LED Display</div>
              <div style={{ fontSize: 13, color: '#64748B', fontWeight: 500 }}>Reach 15,000+ daily road users</div>
            </div>
            <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', padding: 24, borderRadius: 16, backdropFilter: 'blur(10px)', flex: 1 }}>
@@ -170,7 +170,7 @@ export default function OnboardingPage() {
             @media (min-width: 1024px) { .mobile-logo { display: none !important; } }
           `}} />
           <Link href="/" className="mobile-logo" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-             <img src="/logo.png" alt="Studio Arella Logo" style={{ height: 40, objectFit: 'contain' }} />
+             <img src="/logo.png" alt="Studio Arella Logo" style={{ height: 90, objectFit: 'contain' }} />
           </Link>
         </div>
 
@@ -198,7 +198,7 @@ export default function OnboardingPage() {
                       { Icon: FaLocationDot,   color: theme.color.gold, bg: theme.color.goldLight, border: theme.color.goldMid, text: 'Book ad slots on the Studio Arella LED screen' },
                       { Icon: FaMicrophone,    color: '#8B5CF6', bg: '#F5F3FF', border: '#DDD6FE', text: 'Reserve sessions in our premium podcast studio' },
                       { Icon: FaPaintbrush,    color: theme.color.goldDark, bg: '#FEF3C7', border: '#FDE68A', text: 'Request our creative team to design or film for you' },
-                      { Icon: FaCreditCard,    color: theme.color.success, bg: theme.color.successLight, border: '#C7E0BE', text: 'Pay securely via Monnify using cards or bank transfer' },
+                      { Icon: FaCreditCard,    color: theme.color.success, bg: theme.color.successLight, border: '#C7E0BE', text: 'Secure and speedy payment processing via cards or bank transfer' },
                     ].map(({ Icon, color, bg, border, text }) => (
                       <div key={text} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                         <div style={{ width: 34, height: 34, borderRadius: 9, background: bg, border: `1px solid ${border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
