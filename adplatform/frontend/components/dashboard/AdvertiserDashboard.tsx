@@ -173,7 +173,7 @@ export default function AdvertiserDashboard() {
   return (
     <PageTransition>
       <DashboardTour />
-      <div style={{ position: 'fixed', top: 0, right: 0, width: '100vw', height: '100vh', background: `radial-gradient(circle at top right, ${CAROUSEL_SLIDES[currentSlide].iconColor}15, transparent 60%)`, pointerEvents: 'none', zIndex: 0, transition: 'background 1s ease' }} />
+      <div style={{ position: 'fixed', top: 0, right: 0, width: '100vw', height: '100vh', background: `radial-gradient(circle at top right, ${CAROUSEL_SLIDES[currentSlide].iconColor}40, transparent 75%)`, pointerEvents: 'none', zIndex: 0, transition: 'background 1s ease' }} />
       
       <div style={{ fontFamily: F, position: 'relative', zIndex: 1 }}>
         <div style={{ marginBottom: 24 }}>
