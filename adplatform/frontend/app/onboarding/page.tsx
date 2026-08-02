@@ -68,7 +68,6 @@ export default function OnboardingPage() {
     { Icon: FaLocationDot,   color: theme.color.gold, bg: theme.color.goldLight, border: theme.color.goldMid, title: 'Book your first ad slot',     sub: 'Pick a date on the Studio Arella calendar', href: '/book' },
     { Icon: FaCreditCard,    color: theme.color.success, bg: theme.color.successLight, border: '#C7E0BE', title: 'Add credits to your account', sub: 'Secure and speedy payments via cards or bank transfer',       href: '/finances' },
     { Icon: FaPaintbrush,    color: theme.color.goldDark, bg: '#F5F3FF', border: '#DDD6FE', title: 'Request our creative team',   sub: 'We design and film your ad for you',         href: '/creative' },
-    { Icon: FaGaugeHigh,     color: '#2563EB', bg: '#EFF6FF', border: '#BFDBFE', title: 'Go to your dashboard',        sub: 'See all your campaigns and stats',            href: '/dashboard' },
   ];
 
   return (
@@ -223,7 +222,7 @@ export default function OnboardingPage() {
               <motion.div key="s3" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} style={{ textAlign: 'center' }}>
                 <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 200, damping: 14, delay: 0.1 }}
                   style={{ width: 72, height: 72, borderRadius: '50%', background: `linear-gradient(135deg, ${theme.color.gold}, ${theme.color.charcoal700})`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 22px', boxShadow: theme.shadow.gold }}>
-                  <FaRocket size={28} color="#fff" />
+                  <FaCheck size={28} color="#fff" />
                 </motion.div>
 
                 <p style={{ fontSize: 11, fontWeight: 700, color: theme.color.success, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8 }}>Account ready</p>
