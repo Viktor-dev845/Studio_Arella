@@ -69,14 +69,7 @@ const CAROUSEL_SLIDES = [
   }
 ];
 
-function DashboardCarousel() {
-  const [current, setCurrent] = useState(0);
-
-  useEffect(() => {
-    const timer = setInterval(() => setCurrent(c => (c + 1) % CAROUSEL_SLIDES.length), 6000);
-    return () => clearInterval(timer);
-  }, []);
-
+function DashboardCarousel({ current, setCurrent }: { current: number, setCurrent: (i: number) => void }) {
   const slide = CAROUSEL_SLIDES[current];
 
   return (
@@ -121,6 +114,12 @@ export default function AdvertiserDashboard() {
   const [balance, setBalance] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentSlide(c => (c + 1) % CAROUSEL_SLIDES.length), 6000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -174,7 +173,9 @@ export default function AdvertiserDashboard() {
   return (
     <PageTransition>
       <DashboardTour />
-      <div style={{ fontFamily: F }}>
+      <div style={{ position: 'fixed', top: 0, right: 0, width: '100vw', height: '100vh', background: `radial-gradient(circle at top right, ${CAROUSEL_SLIDES[currentSlide].iconColor}15, transparent 60%)`, pointerEvents: 'none', zIndex: 0, transition: 'background 1s ease' }} />
+      
+      <div style={{ fontFamily: F, position: 'relative', zIndex: 1 }}>
         <div style={{ marginBottom: 24 }}>
           <h1 style={{ fontFamily: theme.font.display, fontSize: 26, fontWeight: 600, color: theme.color.text1, margin: '0 0 4px', letterSpacing: '-0.3px' }}>
             {greeting}, {user?.name?.split(' ')[0]}
@@ -214,7 +215,7 @@ export default function AdvertiserDashboard() {
             </div>
 
             {/* Carousel Banner */}
-            <DashboardCarousel />
+            <DashboardCarousel current={currentSlide} setCurrent={setCurrentSlide} />
 
             {/* Bookings table */}
             <FadeCard delay={0.24} style={{ ...card, padding: 22 }}>
