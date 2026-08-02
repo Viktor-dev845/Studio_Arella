@@ -15,50 +15,7 @@ import { theme } from '@/lib/theme';
 
 const F = theme.font.body;
 
-function Confetti() {
-  const ref = useRef<HTMLCanvasElement>(null);
-  useEffect(() => {
-    const canvas = ref.current; if (!canvas) return;
-    const ctx = canvas.getContext('2d')!;
-    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-    const colors = [theme.color.gold, theme.color.glitchMagenta, theme.color.goldMid, theme.color.charcoal900, theme.color.success, theme.color.glitchCyan];
-    const pieces = Array.from({ length: 120 }, () => ({
-      x: Math.random() * canvas.width, y: Math.random() * canvas.height - canvas.height,
-      r: Math.random() * 6 + 2, d: Math.random() * 80 + 20,
-      color: colors[Math.floor(Math.random() * colors.length)],
-      tilt: Math.floor(Math.random() * 10) - 10, ts: Math.random() * 0.1 + 0.04,
-    }));
-    let angle = 0, frame: number;
-    let startTime: number | null = null;
-    const TOTAL = 8000;   // run for 8 seconds
-    const FADE  = 6000;   // start fading at 6 seconds
 
-    const draw = (ts: number) => {
-      if (!startTime) startTime = ts;
-      const elapsed = ts - startTime;
-
-      // Graceful fade-out in final 2 seconds
-      if (elapsed >= FADE) {
-        canvas.style.opacity = String(Math.max(0, 1 - (elapsed - FADE) / (TOTAL - FADE)));
-      }
-      if (elapsed >= TOTAL) { canvas.style.opacity = '0'; return; }
-
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      angle += 0.01;
-      pieces.forEach((p, i) => {
-        p.tilt += p.ts; p.y += (Math.cos(angle + p.d) + 2) * 1.4; p.x += Math.sin(angle) * 0.7;
-        if (p.y > canvas.height + 10) pieces[i] = { ...p, y: -10, x: Math.random() * canvas.width };
-        ctx.beginPath(); ctx.lineWidth = p.r / 2; ctx.strokeStyle = p.color;
-        ctx.moveTo(p.x + p.tilt + p.r / 4, p.y);
-        ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 4); ctx.stroke();
-      });
-      frame = requestAnimationFrame(draw);
-    };
-    frame = requestAnimationFrame(draw);
-    return () => cancelAnimationFrame(frame);
-  }, []);
-  return <canvas ref={ref} style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 50, opacity: 1 }} />;
-}
 
 function ProgressBar({ step, total }: { step: number; total: number }) {
   return (
@@ -78,7 +35,6 @@ export default function OnboardingPage() {
   const [campaignName, setCampaignName] = useState('');
   const [budget, setBudget] = useState('');
   const [saving, setSaving] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
 
   useEffect(() => {
     loadFromStorage();
@@ -94,7 +50,6 @@ export default function OnboardingPage() {
       }
     } catch {}
     setSaving(false);
-    setShowConfetti(true);
     setStep(3);
   };
 
@@ -118,7 +73,6 @@ export default function OnboardingPage() {
 
   return (
     <div style={{ fontFamily: F, minHeight: '100vh', background: theme.color.bg, display: 'flex', position: 'relative' }}>
-      {showConfetti && <Confetti />}
 
       {/* LEFT PANEL: Visuals & Brand (Hidden on mobile) */}
       <div className="hidden lg:flex" style={{ flex: 1, flexDirection: 'column', padding: '64px', position: 'relative', overflow: 'hidden', background: `linear-gradient(135deg, #0f172a 0%, #1e293b 100%)` }}>
