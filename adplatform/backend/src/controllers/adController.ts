@@ -8,7 +8,7 @@ import { createNotification, notifyAdmins } from '../services/notificationServic
 import { v2 as cloudinary } from 'cloudinary';
 
 // Configure Cloudinary
-if (process.env.CLOUDINARY_CLOUD_NAME) {
+if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
   cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
