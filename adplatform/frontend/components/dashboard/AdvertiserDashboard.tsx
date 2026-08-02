@@ -8,9 +8,9 @@ import StatusBadge from '@/components/ui/StatusBadge';
 import { PageTransition, FadeCard, Skeleton } from '@/components/ui/Animations';
 import api from '@/lib/api';
 import { Booking } from '@/types';
-import { FaArrowRight, FaArrowTrendUp, FaCalendarDays, FaBullhorn, FaPaintbrush, FaCalendar, FaCircleArrowUp } from 'react-icons/fa6';
+import { FaArrowRight, FaArrowTrendUp, FaCalendarDays, FaBullhorn, FaPaintbrush, FaCalendar, FaCircleArrowUp, FaMicrophone } from 'react-icons/fa6';
 import { DollarSign, Megaphone, Monitor, Search } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { theme } from '@/lib/theme';
 import DashboardTour from '@/components/ui/DashboardTour';
 
@@ -26,6 +26,92 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   );
   return null;
 };
+
+const CAROUSEL_SLIDES = [
+  {
+    tag: 'Getting Started',
+    title: 'Ready to reach thousands of daily viewers?',
+    desc: 'Studio Arella gives you direct access to premium digital billboards in high-traffic areas. Follow these simple steps to launch your first campaign and grow your brand.',
+    steps: [
+      { step: 1, text: 'Fund your account wallet', icon: DollarSign },
+      { step: 2, text: 'Upload your video ad', icon: FaPaintbrush },
+      { step: 3, text: 'Book a slot & go live', icon: FaCalendarDays }
+    ],
+    bg: `linear-gradient(135deg, ${theme.color.surface} 40%, ${theme.color.goldLight})`,
+    icon: FaBullhorn,
+    iconColor: theme.color.gold
+  },
+  {
+    tag: 'Podcast Studio',
+    title: 'Record professional audio & video podcasts',
+    desc: 'Our state-of-the-art podcast studio in Umuahia is equipped with professional mics, perfect acoustics, and video lighting. Book a session today.',
+    steps: [
+      { step: 1, text: 'Choose your session length', icon: FaCalendar },
+      { step: 2, text: 'Pick a date & time', icon: FaCalendarDays },
+      { step: 3, text: 'Show up and record!', icon: FaMicrophone }
+    ],
+    bg: `linear-gradient(135deg, ${theme.color.surface} 40%, #EDE9FE)`,
+    icon: FaMicrophone,
+    iconColor: '#8B5CF6'
+  },
+  {
+    tag: 'Creative Services',
+    title: 'Need a stunning ad designed for you?',
+    desc: 'Our in-house creative team can design, animate, or film high-converting video ads specifically tailored for the Studio Arella screen.',
+    steps: [
+      { step: 1, text: 'Submit a creative brief', icon: FaPaintbrush },
+      { step: 2, text: 'We design your ad', icon: FaPaintbrush },
+      { step: 3, text: 'Approve & go live', icon: FaBullhorn }
+    ],
+    bg: `linear-gradient(135deg, ${theme.color.surface} 40%, #FEF3C7)`,
+    icon: FaPaintbrush,
+    iconColor: theme.color.goldDark
+  }
+];
+
+function DashboardCarousel() {
+  const [current, setCurrent] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrent(c => (c + 1) % CAROUSEL_SLIDES.length), 6000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const slide = CAROUSEL_SLIDES[current];
+
+  return (
+    <FadeCard delay={0.16} style={{ ...card, padding: 24, background: slide.bg, position: 'relative', overflow: 'hidden', minHeight: 220, transition: 'background 0.5s ease' }}>
+      <AnimatePresence mode="wait">
+        <motion.div key={current} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }} style={{ position: 'relative', zIndex: 1, minHeight: 160 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(0,0,0,0.04)', color: slide.iconColor, padding: '4px 10px', borderRadius: 100, fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12 }}>
+            {slide.tag}
+          </div>
+          <p style={{ fontSize: 18, fontWeight: 800, color: theme.color.text1, margin: '0 0 6px' }}>{slide.title}</p>
+          <p style={{ fontSize: 13, color: theme.color.text3, margin: '0 0 20px', lineHeight: 1.5, maxWidth: 480 }}>{slide.desc}</p>
+          
+          <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+            {slide.steps.map(s => (
+              <div key={s.step} style={{ display: 'flex', alignItems: 'center', gap: 10, background: theme.color.surface, padding: '10px 14px', borderRadius: 12, border: '1px solid rgba(0,0,0,0.05)', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+                <div style={{ width: 24, height: 24, borderRadius: '50%', background: slide.iconColor, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 11 }}>{s.step}</div>
+                <span style={{ fontSize: 12, fontWeight: 700, color: theme.color.text1 }}>{s.text}</span>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      </AnimatePresence>
+
+      <div style={{ position: 'absolute', right: -20, top: -20, opacity: 0.05, pointerEvents: 'none', transition: 'color 0.5s ease' }}>
+         <slide.icon size={180} color={slide.iconColor} />
+      </div>
+
+      <div style={{ position: 'absolute', bottom: 20, right: 24, display: 'flex', gap: 6, zIndex: 2 }}>
+        {CAROUSEL_SLIDES.map((_, i) => (
+          <button key={i} onClick={() => setCurrent(i)} style={{ width: i === current ? 16 : 6, height: 6, borderRadius: 3, background: i === current ? slide.iconColor : 'rgba(0,0,0,0.1)', border: 'none', cursor: 'pointer', transition: 'all 0.3s', padding: 0 }} />
+        ))}
+      </div>
+    </FadeCard>
+  );
+}
 
 export default function AdvertiserDashboard() {
   const { user } = useAuthStore();
@@ -127,34 +213,8 @@ export default function AdvertiserDashboard() {
               ))}
             </div>
 
-            {/* Quick Start Guide Banner */}
-            <FadeCard delay={0.16} style={{ ...card, padding: 24, background: `linear-gradient(135deg, ${theme.color.surface} 40%, ${theme.color.goldLight})`, position: 'relative', overflow: 'hidden' }}>
-              <div style={{ position: 'absolute', right: -20, top: -20, opacity: 0.05, pointerEvents: 'none' }}>
-                <FaBullhorn size={180} color={theme.color.gold} />
-              </div>
-              <div style={{ position: 'relative', zIndex: 1 }}>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(212,175,55,0.15)', color: theme.color.goldDark, padding: '4px 10px', borderRadius: 100, fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12 }}>
-                  Getting Started
-                </div>
-                <p style={{ fontSize: 18, fontWeight: 800, color: theme.color.text1, margin: '0 0 6px' }}>Ready to reach thousands of daily viewers?</p>
-                <p style={{ fontSize: 13, color: theme.color.text3, margin: '0 0 20px', lineHeight: 1.5, maxWidth: 480 }}>
-                  Studio Arella gives you direct access to premium digital billboards in high-traffic areas. Follow these simple steps to launch your first campaign and grow your brand.
-                </p>
-                
-                <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-                  {[
-                    { step: 1, text: 'Fund your account wallet', icon: DollarSign },
-                    { step: 2, text: 'Upload your video ad', icon: FaPaintbrush },
-                    { step: 3, text: 'Book a slot & go live', icon: FaCalendarDays }
-                  ].map(s => (
-                    <div key={s.step} style={{ display: 'flex', alignItems: 'center', gap: 10, background: theme.color.surface, padding: '10px 14px', borderRadius: 12, border: `1px solid ${theme.color.goldMid}`, boxShadow: '0 2px 8px rgba(212,175,55,0.08)' }}>
-                      <div style={{ width: 24, height: 24, borderRadius: '50%', background: theme.color.gold, color: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 11 }}>{s.step}</div>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: theme.color.text1 }}>{s.text}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </FadeCard>
+            {/* Carousel Banner */}
+            <DashboardCarousel />
 
             {/* Bookings table */}
             <FadeCard delay={0.24} style={{ ...card, padding: 22 }}>
