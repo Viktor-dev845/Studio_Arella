@@ -68,10 +68,17 @@ export const register: RequestHandler = async (req, res) => {
       return;
     }
 
-    const existing = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
+    const existing = await pool.query('SELECT id, email_verified FROM users WHERE email = $1', [email]);
     if (existing.rows.length > 0) {
-      res.status(409).json({ message: 'An account with this email already exists' });
-      return;
+      if (existing.rows[0].email_verified) {
+        res.status(409).json({ message: 'An account with this email already exists' });
+        return;
+      }
+      
+      // If the account exists but is NOT verified, they likely abandoned registration or want to resend OTP.
+      // Delete the old unverified data so we can recreate it cleanly.
+      await pool.query('DELETE FROM email_verification_tokens WHERE user_id = $1', [existing.rows[0].id]);
+      await pool.query('DELETE FROM users WHERE id = $1', [existing.rows[0].id]);
     }
 
     const fullName = `${first_name.trim()} ${last_name.trim()}`;
