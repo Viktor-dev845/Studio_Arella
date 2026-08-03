@@ -7,7 +7,7 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useToast } from '@/components/ui/ToastProvider';
 import { useCartStore } from '@/store/cartStore';
 import api from '@/lib/api';
-import { FaWallet, FaCreditCard, FaLock } from 'react-icons/fa6';
+import { FaWallet, FaCreditCard, FaLock, FaArrowRight } from 'react-icons/fa6';
 import { AnimatedButton, PageTransition } from '@/components/ui/Animations';
 import { theme } from '@/lib/theme';
 import EditCartModal from '@/components/ui/EditCartModal';
