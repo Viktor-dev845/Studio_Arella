@@ -32,6 +32,7 @@ export const getAds: RequestHandler = async (req, res) => {
        ORDER BY a.created_at DESC`,
       [authReq.user?.id]
     );
+    
     res.json({ ads: result.rows });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
@@ -70,42 +71,71 @@ export const createAd: RequestHandler = async (req, res) => {
       }
 
       try {
-        const folder = `bems-screens/${authReq.user?.id}`;
+        if (isVideo) {
+          // Send to n8n for synchronous AI processing and Cloudinary upload
+          const formData = new FormData();
+          const blob = new Blob([file.buffer], { type: file.mimetype });
+          formData.append('file', blob, file.originalname);
+          formData.append('title', title || 'Untitled Ad');
+          formData.append('user_id', authReq.user?.id?.toString() || '');
 
-        // Stream the buffer directly to Cloudinary (works on ephemeral servers like Render)
-        const uploadResult = await new Promise<any>((resolve, reject) => {
-          const stream = cloudinary.uploader.upload_stream(
-            {
-              folder,
-              resource_type: isVideo ? 'video' : 'image',
-            },
-            (error, result) => {
-              if (error) return reject(error);
-              resolve(result);
-            }
-          );
-          // file.buffer is available because the route now uses memoryStorage
-          const { Readable } = require('stream');
-          const readable = new Readable();
-          readable.push(file.buffer);
-          readable.push(null);
-          readable.pipe(stream);
-        });
+          const n8nResponse = await fetch('https://bems003.app.n8n.cloud/webhook/moderate-video', {
+            method: 'POST',
+            body: formData
+          });
 
-        file_url = uploadResult.secure_url;
-        file_type = isVideo ? 'video' : ext === 'gif' ? 'gif' : 'image';
-        file_size = file.size;
+          if (!n8nResponse.ok) {
+            throw new Error(`n8n webhook failed with status ${n8nResponse.status}`);
+          }
+
+          const n8nResult = await n8nResponse.json();
+          
+          if (n8nResult.status === 'rejected') {
+             res.status(400).json({ message: `Video rejected by AI moderation: ${n8nResult.reason || 'Inappropriate content detected'}` });
+             return;
+          }
+
+          const uploadedUrl = n8nResult.cloudinary_url || n8nResult.url || n8nResult.media_url || n8nResult.file_url;
+          if ((n8nResult.status === 'approved' || n8nResult.status === 'success' || !n8nResult.status) && uploadedUrl) {
+             file_url = uploadedUrl;
+             file_type = 'video';
+             file_size = file.size; 
+          } else {
+             throw new Error('n8n response missing Cloudinary URL');
+          }
+        } else {
+          // Images bypass n8n and go directly to Cloudinary
+          const folder = `bems-screens/${authReq.user?.id}`;
+          const uploadResult = await new Promise<any>((resolve, reject) => {
+            const stream = cloudinary.uploader.upload_stream(
+              { folder, resource_type: 'image' },
+              (error, result) => {
+                if (error) return reject(error);
+                resolve(result);
+              }
+            );
+            const { Readable } = require('stream');
+            const readable = new Readable();
+            readable.push(file.buffer);
+            readable.push(null);
+            readable.pipe(stream);
+          });
+
+          file_url = uploadResult.secure_url;
+          file_type = ext === 'gif' ? 'gif' : 'image';
+          file_size = file.size;
+        }
       } catch (uploadErr: any) {
-        console.error('Cloudinary upload error:', uploadErr);
+        console.error('Upload/Moderation error:', uploadErr);
         const errMsg = uploadErr?.message || (typeof uploadErr === 'object' ? JSON.stringify(uploadErr) : String(uploadErr));
-        res.status(500).json({ message: `Cloudinary upload failed: ${errMsg}` });
+        res.status(500).json({ message: `Upload or AI processing failed: ${errMsg}` });
         return;
       }
     }
 
     const isVideoFile = file_type === 'video';
-    const initialStatus = isVideoFile ? 'pending' : 'approved';
-    const reviewedAt = isVideoFile ? null : new Date();
+    const initialStatus = 'approved'; // Instantly approved since n8n acts as gatekeeper
+    const reviewedAt = new Date();
 
     const result = await pool.query(
       `INSERT INTO ads (user_id, campaign_id, title, media_url, file_url, file_type, file_size,
@@ -129,35 +159,11 @@ export const createAd: RequestHandler = async (req, res) => {
 
     const createdAd = result.rows[0];
 
-    // Trigger AI moderation webhook if it's a video
-    if (isVideoFile && file_url) {
-      try {
-        // Fetch the video from Cloudinary into a Blob (binary stream)
-        const videoResponse = await fetch(createdAd.media_url);
-        const videoBlob = await videoResponse.blob();
-
-        // Construct FormData for multipart/form-data upload
-        const formData = new FormData();
-        formData.append('file', videoBlob, `video_${createdAd.id}.mp4`);
-        formData.append('ad_id', createdAd.id.toString());
-        formData.append('title', createdAd.title);
-        formData.append('media_url', createdAd.media_url);
-        formData.append('user_id', createdAd.user_id.toString());
-
-        await fetch('https://bems003.app.n8n.cloud/webhook-test/moderate-video', {
-          method: 'POST',
-          body: formData
-        });
-      } catch (webhookErr) {
-        console.error('Failed to trigger moderation webhook:', webhookErr);
-      }
-    }
+    // No need to trigger async webhook since n8n processed it synchronously.
 
     res.status(201).json({
       ad: createdAd,
-      message: isVideoFile
-        ? 'Your video has been uploaded successfully and is currently being analyzed by AI for approval.'
-        : 'Your creative has been uploaded successfully! It is now approved and ready to be used in your bookings.',
+      message: 'Your creative has been uploaded successfully! It is now approved and ready to be used in your bookings.',
     });
   } catch (err) {
     console.error('Upload error:', err);
