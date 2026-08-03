@@ -88,7 +88,7 @@ export const createAd: RequestHandler = async (req, res) => {
             throw new Error(`n8n webhook failed with status ${n8nResponse.status}`);
           }
 
-          const n8nResult = await n8nResponse.json();
+          const n8nResult = await n8nResponse.json() as any;
           
           if (n8nResult.status === 'rejected') {
              res.status(400).json({ message: `Video rejected by AI moderation: ${n8nResult.reason || 'Inappropriate content detected'}` });
