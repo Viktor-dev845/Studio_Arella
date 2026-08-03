@@ -310,71 +310,104 @@ export default function CartPage() {
 
     {/* Premium Invoice Modal */}
     {showInvoice && (
-      <div style={{ position: "fixed", inset: 0, background: "rgba(10, 12, 16, 0.85)", backdropFilter: "blur(16px)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, animation: "fadeIn 0.3s ease-out" }}>
-        <div style={{ background: "linear-gradient(180deg, #1A1D24 0%, #13151A 100%)", borderRadius: 28, width: "100%", maxWidth: 460, padding: 0, boxShadow: "0 0 0 1px rgba(255,255,255,0.05), 0 32px 64px rgba(0,0,0,0.5)", position: "relative", overflow: "hidden", animation: "slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)" }}>
+      <div style={{ position: "fixed", inset: 0, background: "rgba(10, 12, 16, 0.6)", backdropFilter: "blur(24px)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, animation: "fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", background: "rgba(20, 22, 28, 0.7)", backdropFilter: "blur(40px)", borderRadius: 32, width: "100%", maxWidth: 900, boxShadow: "0 0 0 1px rgba(255,255,255,0.08), 0 40px 80px rgba(0,0,0,0.6)", position: "relative", overflow: "hidden", animation: "slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1)" }}>
           
-          {/* Top Golden Accent Line */}
-          <div style={{ height: 4, width: "100%", background: "linear-gradient(90deg, #D4AF37, #F1B945, #D4AF37)" }} />
-
-          <button onClick={() => setShowInvoice(false)} style={{ position: "absolute", top: 24, right: 24, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", width: 36, height: 36, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#A0AEC0", transition: "all 0.2s" }} className="hover:bg-white/10 hover:text-white">
-            <X size={18} />
+          <button onClick={() => setShowInvoice(false)} style={{ position: "absolute", top: 24, right: 24, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", width: 40, height: 40, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#A0AEC0", transition: "all 0.2s", zIndex: 10 }} className="hover:bg-white/10 hover:text-white">
+            <X size={20} />
           </button>
           
-          <div style={{ padding: "40px 32px 32px" }}>
-            <div style={{ textAlign: "center", marginBottom: 32 }}>
+          {/* Left Column: Order Summary */}
+          <div style={{ flex: "1 1 400px", padding: "48px 40px", background: "linear-gradient(180deg, rgba(26, 29, 36, 0.9) 0%, rgba(19, 21, 26, 0.9) 100%)", borderRight: "1px solid rgba(255,255,255,0.05)", position: "relative" }}>
+            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 4, background: "linear-gradient(90deg, #D4AF37, #F1B945, #D4AF37)" }} />
+            
+            <div style={{ marginBottom: 40 }}>
               <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(212, 175, 55, 0.1)", border: "1px solid rgba(212, 175, 55, 0.2)", color: "#F1B945", padding: "8px 16px", borderRadius: 30, fontSize: 13, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 20 }}>
-                <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#F1B945", boxShadow: "0 0 8px #F1B945" }} />
+                <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#F1B945", boxShadow: "0 0 12px #F1B945", animation: "pulse 2s infinite" }} />
                 Slots Reserved
               </div>
-              <h2 style={{ fontSize: 28, fontWeight: 800, color: "#FFFFFF", fontFamily: theme.font.display, marginBottom: 8, letterSpacing: "-0.5px" }}>Checkout Invoice</h2>
-              <p style={{ color: "#A0AEC0", fontSize: 15, lineHeight: 1.5 }}>Complete your payment now to secure these premium slots permanently.</p>
+              <h2 style={{ fontSize: 32, fontWeight: 800, color: "#FFFFFF", fontFamily: theme.font.display, marginBottom: 12, letterSpacing: "-0.5px" }}>Checkout Invoice</h2>
+              <p style={{ color: "#A0AEC0", fontSize: 15, lineHeight: 1.6 }}>Complete your payment now to secure these premium slots permanently.</p>
             </div>
 
             {timeLeft !== null && (
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32, background: "rgba(239, 68, 68, 0.05)", border: "1px solid rgba(239, 68, 68, 0.2)", padding: "16px 20px", borderRadius: 16 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 40, background: "linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.02) 100%)", border: "1px solid rgba(239, 68, 68, 0.2)", padding: "20px 24px", borderRadius: 20, boxShadow: "inset 0 2px 12px rgba(239, 68, 68, 0.05)" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <Timer size={20} color="#EF4444" />
+                  <div style={{ background: "rgba(239, 68, 68, 0.15)", padding: 10, borderRadius: 12 }}>
+                    <Timer size={22} color="#EF4444" />
+                  </div>
                   <div style={{ color: "#EF4444", fontWeight: 700, fontSize: 15, letterSpacing: "0.02em" }}>Time Remaining</div>
                 </div>
-                <div className="mono" style={{ fontSize: 24, fontWeight: 800, color: "#EF4444", textShadow: "0 0 12px rgba(239, 68, 68, 0.4)" }}>
+                <div className="mono" style={{ fontSize: 28, fontWeight: 800, color: "#EF4444", textShadow: "0 0 16px rgba(239, 68, 68, 0.5)" }}>
                   {pad(mins)}:{pad(secs)}
                 </div>
               </div>
             )}
 
-            <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 20, padding: 24, marginBottom: 32 }}>
+            <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)", borderRadius: 24, padding: 28 }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16, color: "#A0AEC0", fontSize: 15 }}>
                 <span style={{ fontWeight: 500 }}>Total Airtime</span>
                 <span className="mono" style={{ fontWeight: 700, color: "#E2E8F0" }}>{cart.length} block(s)</span>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16, color: "#A0AEC0", fontSize: 15 }}>
                 <span style={{ fontWeight: 500 }}>Screen</span>
-                <span style={{ fontWeight: 600, color: "#E2E8F0" }}>Bems Junction, Umuahia</span>
+                <span style={{ fontWeight: 600, color: "#E2E8F0", textAlign: "right" }}>Bems Junction, Umuahia</span>
               </div>
-              <div style={{ height: 1, background: "rgba(255,255,255,0.08)", margin: "20px 0" }} />
+              <div style={{ height: 1, background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent)", margin: "24px 0" }} />
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontWeight: 700, fontSize: 16, color: "#A0AEC0", textTransform: "uppercase", letterSpacing: "0.05em" }}>Total Due</span>
-                <span className="mono" style={{ color: "#F1B945", fontWeight: 800, fontSize: 32, textShadow: "0 0 24px rgba(212, 175, 55, 0.3)" }}>{naira(cartTotal)}</span>
+                <span style={{ fontWeight: 700, fontSize: 14, color: "#A0AEC0", textTransform: "uppercase", letterSpacing: "0.1em" }}>Total Due</span>
+                <span className="mono" style={{ color: "#F1B945", fontWeight: 800, fontSize: 36, textShadow: "0 0 32px rgba(212, 175, 55, 0.4)" }}>{naira(cartTotal)}</span>
               </div>
             </div>
+          </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {/* Right Column: Payment Methods */}
+          <div style={{ flex: "1 1 350px", padding: "48px 40px", display: "flex", flexDirection: "column", justifyContent: "center", position: "relative" }}>
+            <div style={{ marginBottom: 32 }}>
+              <h3 style={{ fontSize: 20, fontWeight: 700, color: "#FFFFFF", fontFamily: theme.font.display, marginBottom: 8 }}>Select Payment Method</h3>
+              <p style={{ color: "#A0AEC0", fontSize: 14 }}>All transactions are secure and encrypted.</p>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               {/* Paystack */}
-              <AnimatedButton onClick={() => handlePay('paystack')} disabled={paying} style={{ background: "linear-gradient(135deg, #00C3FF 0%, #0052CC 100%)", color: "#fff", border: "none", padding: "18px", borderRadius: 14, fontSize: 16, fontWeight: 800, cursor: paying ? 'not-allowed' : 'pointer', display: "flex", alignItems: "center", justifyContent: "center", gap: 12, boxShadow: "0 12px 24px rgba(0,82,204,0.25)", transition: "all 0.2s" }}>
-                <FaCreditCard size={20} /> Pay with Paystack
+              <AnimatedButton onClick={() => handlePay('paystack')} disabled={paying} style={{ background: "linear-gradient(135deg, #00C3FF 0%, #0052CC 100%)", color: "#fff", border: "1px solid rgba(255,255,255,0.1)", padding: "20px", borderRadius: 16, fontSize: 16, fontWeight: 800, cursor: paying ? 'not-allowed' : 'pointer', display: "flex", alignItems: "center", gap: 16, boxShadow: "0 12px 24px rgba(0,82,204,0.25), inset 0 1px 0 rgba(255,255,255,0.2)", transition: "all 0.2s" }} className="hover:scale-[1.02]">
+                <div style={{ background: "rgba(255,255,255,0.2)", padding: 10, borderRadius: 12 }}><FaCreditCard size={20} /></div>
+                <div style={{ flex: 1, textAlign: "left" }}>
+                   <div style={{ fontSize: 16, fontWeight: 800 }}>Pay with Paystack</div>
+                   <div style={{ fontSize: 12, fontWeight: 500, color: "rgba(255,255,255,0.8)" }}>Cards, Bank Transfer, USSD</div>
+                </div>
+                <FaArrowRight size={16} style={{ opacity: 0.7 }} />
               </AnimatedButton>
+
               {/* Monnify */}
-              <AnimatedButton onClick={() => handlePay('monnify')} disabled={paying} style={{ background: "linear-gradient(135deg, #F1B945 0%, #D4AF37 100%)", color: "#1A1A1A", border: "none", padding: "18px", borderRadius: 14, fontSize: 16, fontWeight: 800, cursor: paying ? 'not-allowed' : 'pointer', display: "flex", alignItems: "center", justifyContent: "center", gap: 12, boxShadow: "0 12px 24px rgba(212, 175, 55, 0.25)", transition: "all 0.2s" }}>
-                <FaCreditCard size={20} /> Pay with Monnify
+              <AnimatedButton onClick={() => handlePay('monnify')} disabled={paying} style={{ background: "linear-gradient(135deg, #F1B945 0%, #D4AF37 100%)", color: "#1A1A1A", border: "1px solid rgba(255,255,255,0.2)", padding: "20px", borderRadius: 16, fontSize: 16, fontWeight: 800, cursor: paying ? 'not-allowed' : 'pointer', display: "flex", alignItems: "center", gap: 16, boxShadow: "0 12px 24px rgba(212, 175, 55, 0.25), inset 0 1px 0 rgba(255,255,255,0.4)", transition: "all 0.2s" }} className="hover:scale-[1.02]">
+                <div style={{ background: "rgba(0,0,0,0.1)", padding: 10, borderRadius: 12 }}><FaCreditCard size={20} /></div>
+                <div style={{ flex: 1, textAlign: "left" }}>
+                   <div style={{ fontSize: 16, fontWeight: 800 }}>Pay with Monnify</div>
+                   <div style={{ fontSize: 12, fontWeight: 600, color: "rgba(0,0,0,0.6)" }}>Direct Bank Transfer</div>
+                </div>
+                <FaArrowRight size={16} style={{ opacity: 0.7 }} />
               </AnimatedButton>
+
+              <div style={{ display: "flex", alignItems: "center", margin: "8px 0" }}>
+                <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
+                <div style={{ padding: "0 16px", color: "#718096", fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em" }}>or</div>
+                <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
+              </div>
+
               {/* Wallet */}
-              <AnimatedButton onClick={() => handlePay('wallet')} disabled={paying} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "#FFFFFF", padding: "18px", borderRadius: 14, fontSize: 16, fontWeight: 700, cursor: paying ? 'not-allowed' : 'pointer', display: "flex", alignItems: "center", justifyContent: "center", gap: 12, transition: "all 0.2s" }} className="hover:bg-white/10">
-                <FaWallet size={20} color="#A0AEC0" /> Pay from Wallet
+              <AnimatedButton onClick={() => handlePay('wallet')} disabled={paying} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.1)", color: "#FFFFFF", padding: "20px", borderRadius: 16, fontSize: 16, fontWeight: 700, cursor: paying ? 'not-allowed' : 'pointer', display: "flex", alignItems: "center", gap: 16, transition: "all 0.2s" }} className="hover:bg-white/5 hover:border-white/20 hover:scale-[1.02]">
+                <div style={{ background: "rgba(255,255,255,0.05)", padding: 10, borderRadius: 12 }}><FaWallet size={20} color="#A0AEC0" /></div>
+                <div style={{ flex: 1, textAlign: "left" }}>
+                   <div style={{ fontSize: 16, fontWeight: 700 }}>Pay from Wallet</div>
+                   <div style={{ fontSize: 12, fontWeight: 500, color: "#718096" }}>Use your pre-funded balance</div>
+                </div>
               </AnimatedButton>
             </div>
 
-            <div style={{ textAlign: "center", marginTop: 16, fontSize: 12, color: "#718096", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-              <FaLock size={10} /> Secured by Paystack &amp; Monnify
+            <div style={{ textAlign: "center", marginTop: 32, fontSize: 12, color: "#718096", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "12px", background: "rgba(0,0,0,0.2)", borderRadius: 12, border: "1px solid rgba(255,255,255,0.03)" }}>
+              <FaLock size={12} color="#D4AF37" /> 
+              <span>End-to-end encrypted checkout</span>
             </div>
           </div>
         </div>
