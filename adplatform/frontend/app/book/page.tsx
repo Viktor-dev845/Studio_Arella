@@ -521,9 +521,6 @@ function DoohScheduler() {
   for (let h = START_HOUR; h <= END_HOUR; h++) hours.push(h);
   const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
   const showNowLine = isSameDate(viewDate, today) && nowMin >= START_HOUR * 60 && nowMin <= END_HOUR * 60;
-
-  const activeLoops = draft ? draft.loops : draftLoops;
-  
   const maxTouchedHour = React.useMemo(() => {
      if (selectedHours.length === 0) return null;
      const simBookings = [...bookingsForDate(localDateKey(viewDate))];
