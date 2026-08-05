@@ -68,6 +68,23 @@ function isStartInsideBooking(startMin: number, bookings: any[]) {
   return bookings.some((b) => startMin >= b.startMin && startMin < b.startMin + b.durationMin);
 }
 
+function getAvailableStartMin(hour: number, bookings: any[]) {
+  let bookedMins = 0;
+  for (const b of bookings) {
+     const bStart = b.startMin;
+     const bEnd = b.startMin + b.durationMin;
+     const hStart = hour * 60;
+     const hEnd = (hour + 1) * 60;
+     
+     const overlapStart = Math.max(bStart, hStart);
+     const overlapEnd = Math.min(bEnd, hEnd);
+     if (overlapStart < overlapEnd) {
+        bookedMins += (overlapEnd - overlapStart);
+     }
+  }
+  return (hour * 60) + bookedMins;
+}
+
 const WEEKDAYS = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
 
 function Portal({ children }: { children: React.ReactNode }) {
@@ -725,6 +742,29 @@ function DoohScheduler() {
                   </div>
 
                   {/* Multi-Day Tabs */}
+                  {(() => {
+                     const simBookings = [...bookingsForDate(localDateKey(viewDate))];
+                     let localHasConflict = false;
+                     const touched = new Set<number>();
+                     
+                     selectedHours.forEach(h => {
+                        const startMin = getAvailableStartMin(h, simBookings);
+                        const durationMin = Math.ceil(activeLoops * (videoSeconds || 60) / 60);
+                        if (startMin + durationMin > 20 * 60) {
+                           localHasConflict = true;
+                        } else {
+                           simBookings.push({ startMin, durationMin, type: 'virtual' });
+                           for(let hr = Math.floor(startMin/60); hr <= Math.floor((startMin + durationMin - 1)/60); hr++) {
+                              touched.add(hr);
+                           }
+                        }
+                     });
+                     
+                     // Attach to window or a ref isn't needed if we just render it inside this block. 
+                     // But we can't easily pass it down without wrapping. 
+                     // Let's just wrap the rest of the modal content in a function!
+                     return (
+                        <>
                   {spreadTabs.length > 1 && (
                     <div style={{ marginBottom: 28 }}>
                       <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 16, marginBottom: 12, borderBottom: `1px solid ${theme.color.border}` }}>
@@ -779,6 +819,7 @@ function DoohScheduler() {
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(90px, 1fr))", gap: 10 }}>
                       {hours.map((h) => {
                         const isSelected = selectedHours.includes(h);
+                        const isTouched = touched.has(h);
                         const isPastHour = isSameDate(viewDate, today) && h < new Date().getHours();
                         return (
                           <button key={h} disabled={isPastHour} onClick={() => {
@@ -800,10 +841,10 @@ function DoohScheduler() {
                             setSelectedHours(newHours);
                           }}
                             style={{
-                              background: isPastHour ? 'transparent' : isSelected ? theme.color.gold : theme.color.surface2,
-                              color: isPastHour ? theme.color.text4 : isSelected ? theme.color.charcoal900 : theme.color.text1,
-                              fontWeight: isSelected ? 800 : 700,
-                              border: `1px solid ${isPastHour ? theme.color.border2 : isSelected ? theme.color.goldMid : theme.color.border}`,
+                              background: isPastHour ? 'transparent' : isSelected ? theme.color.gold : isTouched ? theme.color.goldLight : theme.color.surface2,
+                              color: isPastHour ? theme.color.text4 : isSelected || isTouched ? theme.color.charcoal900 : theme.color.text1,
+                              fontWeight: isSelected || isTouched ? 800 : 700,
+                              border: `1px solid ${isPastHour ? theme.color.border2 : isSelected || isTouched ? theme.color.goldMid : theme.color.border}`,
                               borderRadius: 999, padding: "12px 0", fontSize: 14, 
                               cursor: isPastHour ? "not-allowed" : "pointer", 
                               transition: "all 0.2s ease",
@@ -821,30 +862,7 @@ function DoohScheduler() {
                   {selectedHours.length > 0 && (() => {
                     const draftPrice = calcCost(draftDurationSec, selectedCreative?.ppm_rate || PPM);
                     
-                    // Check conflicts for all selected hours
-                    const bookings = bookingsForDate(localDateKey(viewDate));
-                    let hasConflict = false;
-                    
-                    if (selectedHours.length === 1 && draft && isSameDate(draft.date, viewDate)) {
-                        for(let m = 0; m < draftDurationMin; m++) {
-                            if (isStartInsideBooking(draft.startMin + m, bookings)) hasConflict = true;
-                        }
-                    } else {
-                        selectedHours.forEach(h => {
-                            let firstAvailMin = h * 60;
-                            while(firstAvailMin < (h + 1) * 60 && isStartInsideBooking(firstAvailMin, bookings)) {
-                              firstAvailMin++;
-                            }
-                            if (firstAvailMin >= (h + 1) * 60) hasConflict = true;
-                            else {
-                               for(let m = 0; m < draftDurationMin; m++) {
-                                  if (isStartInsideBooking(firstAvailMin + m, bookings)) hasConflict = true;
-                               }
-                            }
-                        });
-                    }
-
-                    const isInvalid = hasConflict;
+                    const isInvalid = localHasConflict;
                     let displayTotalCost = 0;
                     let displayTotalBlocks = 0;
                     let displayTotalSec = 0;
@@ -930,27 +948,23 @@ function DoohScheduler() {
                                   const newItems: any[] = [];
                                   
                                   const generateItemsForDate = (d: Date, state: any) => {
-                                    state.selectedHours.forEach((h: number) => {
-                                       let startMin = state.minuteSelections?.[h];
-                                       if (startMin === undefined) {
-                                         const bookings = bookingsForDate(localDateKey(d));
-                                         let firstAvailMin = h * 60;
-                                         while (firstAvailMin < (h + 1) * 60 && isStartInsideBooking(firstAvailMin, bookings)) {
-                                           firstAvailMin++;
-                                         }
-                                         startMin = firstAvailMin;
-                                       }
-                                       if (startMin < (h + 1) * 60) {
-                                         newItems.push({
-                                            id: crypto.randomUUID(),
-                                            creative: selectedCreative,
-                                            date: d,
-                                            startMin,
-                                            durationSec: (state.draft ? state.draft.loops : state.draftLoops) * (videoSeconds || 60),
-                                            priceInfo: calcCost((state.draft ? state.draft.loops : state.draftLoops) * (videoSeconds || 60), selectedCreative?.ppm_rate || PPM)
-                                         });
-                                       }
-                                    });
+                                     const dateSimBookings = [...bookingsForDate(localDateKey(d))];
+                                     state.selectedHours.forEach((h: number) => {
+                                        const startMin = getAvailableStartMin(h, dateSimBookings);
+                                        const durationMin = Math.ceil((state.draft ? state.draft.loops : state.draftLoops) * (videoSeconds || 60) / 60);
+                                        
+                                        if (startMin + durationMin <= 20 * 60) {
+                                           dateSimBookings.push({ startMin, durationMin, type: 'virtual' });
+                                           newItems.push({
+                                              id: crypto.randomUUID(),
+                                              creative: selectedCreative,
+                                              date: d,
+                                              startMin,
+                                              durationSec: (state.draft ? state.draft.loops : state.draftLoops) * (videoSeconds || 60),
+                                              priceInfo: calcCost((state.draft ? state.draft.loops : state.draftLoops) * (videoSeconds || 60), selectedCreative?.ppm_rate || PPM)
+                                           });
+                                        }
+                                     });
                                   };
 
                                   if (spreadTabs.length > 1) {
@@ -1021,11 +1035,11 @@ function DoohScheduler() {
                   })()}
 
                   {/* Minute Grid Tabs */}
-                  {selectedHours.length > 0 && (
+                  {touched.size > 0 && (
                     <div style={{ marginTop: 28 }}>
-                      {selectedHours.length > 1 && (
+                      {touched.size > 1 && (
                         <div style={{ display: "flex", gap: 8, marginBottom: 12, overflowX: "auto", paddingBottom: 4 }}>
-                          {selectedHours.map(hour => (
+                          {Array.from(touched).sort((a,b)=>a-b).map(hour => (
                             <button
                               key={hour}
                               onClick={() => setActiveMinuteGridHour(hour)}
@@ -1047,7 +1061,7 @@ function DoohScheduler() {
                         </div>
                       )}
                       
-                      {activeMinuteGridHour !== null && selectedHours.includes(activeMinuteGridHour) && (
+                      {activeMinuteGridHour !== null && touched.has(activeMinuteGridHour) && (
                         <div style={{ background: theme.color.surface2, borderRadius: 20, padding: "28px", border: `1px solid ${theme.color.border2}`, boxShadow: "inset 0 2px 4px rgba(0,0,0,0.02)" }}>
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
                             <div style={{ fontWeight: 800, fontSize: 18, color: theme.color.text1, letterSpacing: "-0.3px" }}>{formatMin(activeMinuteGridHour * 60)} Slots (Minute-by-Minute)</div>
@@ -1074,26 +1088,25 @@ function DoohScheduler() {
                               const isInCart = isStartInsideBooking(minOfDay, cartBookings);
                               const isPastMinute = isSameDate(viewDate, today) && minOfDay < (new Date().getHours() * 60 + new Date().getMinutes());
                               
-                              const isDisabled = isBookedByOther || isPastMinute || isInCart;
-                              
                               let isSelected = false;
-                              const selectedStart = minuteSelections[activeMinuteGridHour] !== undefined ? minuteSelections[activeMinuteGridHour] : (selectedHours.length === 1 && draft && isSameDate(draft.date, viewDate) ? draft.startMin : null);
-                              
-                              if (selectedStart !== null) {
-                                const draftEnd = selectedStart + draftDurationSec / 60;
-                                if (minOfDay >= selectedStart && minOfDay < draftEnd) {
-                                  isSelected = true;
-                                }
+                              if (!isBookedByOther && !isInCart) {
+                                 // Check if it falls in ANY of our auto-allocated blocks
+                                 const simBookings = [...bookingsForDate(localDateKey(viewDate))];
+                                 selectedHours.forEach(h => {
+                                    const startMin = getAvailableStartMin(h, simBookings);
+                                    const durationMin = Math.ceil(activeLoops * (videoSeconds || 60) / 60);
+                                    if (startMin + durationMin <= 20 * 60) {
+                                       simBookings.push({ startMin, durationMin, type: 'virtual' });
+                                       if (minOfDay >= startMin && minOfDay < startMin + durationMin) {
+                                          isSelected = true;
+                                       }
+                                    }
+                                 });
                               }
 
                               return (
-                                <button key={m}
-                                  onClick={() => {
-                                    if (isDisabled) return;
-                                    setMinuteSelections(prev => ({ ...prev, [activeMinuteGridHour]: minOfDay }));
-                                    setDraft({ date: viewDate, startMin: minOfDay, loops: draftLoops });
-                                  }}
-                                  disabled={isDisabled}
+                                <div key={m}
+                                  title="Minutes are automatically assigned by the system"
                                   style={{
                                     aspectRatio: "1.5", borderRadius: 10, 
                                     border: `1px solid ${isSelected || isInCart ? theme.color.goldMid : isBookedByOther || isPastMinute ? "transparent" : theme.color.border2}`,
@@ -1101,14 +1114,14 @@ function DoohScheduler() {
                                     color: isBookedByOther || isPastMinute ? theme.color.text4 : isSelected || isInCart ? theme.color.charcoal900 : theme.color.text2,
                                     fontWeight: isSelected || isInCart ? 800 : 600,
                                     fontSize: 13, display: "flex", alignItems: "center", justifyContent: "center",
-                                    cursor: isDisabled ? "not-allowed" : "pointer", 
+                                    cursor: "default", 
                                     opacity: isBookedByOther || isPastMinute ? 0.3 : (isInCart ? 0.9 : 1), 
                                     transition: "all 0.2s ease",
                                     boxShadow: isSelected || isInCart ? theme.shadow.gold : "0 1px 2px rgba(0,0,0,0.03)"
                                   }}
                                   className="mono">
                                   :{String(m).padStart(2, '0')}
-                                </button>
+                                </div>
                               );
                             })}
                           </div>
@@ -1117,6 +1130,9 @@ function DoohScheduler() {
                     </div>
                   )}
 
+                  </>
+                  );
+                  })()}
                 </div>
               </div>
             </div>
