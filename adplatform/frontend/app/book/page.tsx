@@ -522,6 +522,33 @@ function DoohScheduler() {
   const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
   const showNowLine = isSameDate(viewDate, today) && nowMin >= START_HOUR * 60 && nowMin <= END_HOUR * 60;
 
+  const activeLoops = draft ? draft.loops : draftLoops;
+  
+  const maxTouchedHour = React.useMemo(() => {
+     if (selectedHours.length === 0) return null;
+     const simBookings = [...bookingsForDate(localDateKey(viewDate))];
+     let maxHour = -1;
+     
+     selectedHours.forEach(h => {
+        const startMin = getAvailableStartMin(h, simBookings);
+        const durationMin = Math.ceil(activeLoops * (videoSeconds || 60) / 60);
+        if (startMin + durationMin <= 20 * 60) {
+           simBookings.push({ startMin, durationMin, type: 'virtual' });
+           for(let hr = Math.floor(startMin/60); hr <= Math.floor((startMin + durationMin - 1)/60); hr++) {
+              if (hr > maxHour) maxHour = hr;
+           }
+        }
+     });
+     
+     return maxHour === -1 ? null : maxHour;
+  }, [selectedHours, activeLoops, videoSeconds, viewDate, liveBookings, cart]);
+
+  React.useEffect(() => {
+     if (maxTouchedHour !== null) {
+         setActiveMinuteGridHour(maxTouchedHour);
+     }
+  }, [maxTouchedHour]);
+
   return (
     <DashboardLayout>
       <PageTransition>
