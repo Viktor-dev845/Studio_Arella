@@ -141,7 +141,5 @@ N8N_WEBHOOK_URL=https://your-n8n-instance.com/webhook/video-moderation
 NEXT_PUBLIC_API_URL=http://localhost:5000/api
 ```
 
-### Recommended Hosting
-1. **Database:** Render PostgreSQL, Supabase, or Neon.
-2. **Backend Server:** Render Web Service or Railway. Must have Node.js 18+ and be able to receive incoming HTTP requests from the frontend and outgoing requests to n8n.
-3. **Frontend:** Vercel. Connect the GitHub repository directly to Vercel for continuous deployment on the `main` branch.
+### Planned Hosting Environment
+1. **Hostinger:** The platform is planned to be migrated and hosted entirely on Hostinger. This includes hosting the Next.js frontend, the Node.js backend API, and the PostgreSQL database within Hostinger's VPS or specialized hosting environments.
