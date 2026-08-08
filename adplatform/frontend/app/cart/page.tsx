@@ -40,7 +40,7 @@ export default function CartPage() {
   const { cart, removeFromCart, getCartTotal, clearCart } = useCartStore();
   
   const [reserving, setReserving] = useState(false);
-  const [paying, setPaying] = useState(false);
+  const [paying, setPaying] = useState<string | null>(null);
   const [bookingId, setBookingId] = useState<string | null>(null);
   const [lockedUntil, setLockedUntil] = useState<number | null>(null);
   const [showInvoice, setShowInvoice] = useState(false);
@@ -108,7 +108,7 @@ export default function CartPage() {
   useEffect(() => {
     const handlePageShow = (event: PageTransitionEvent) => {
       if (event.persisted) {
-        setPaying(false);
+        setPaying(null);
       }
     };
     window.addEventListener('pageshow', handlePageShow);
@@ -167,7 +167,7 @@ export default function CartPage() {
 
   const handlePay = async (method: 'monnify' | 'paystack' | 'wallet') => {
     if (!bookingId) return;
-    setPaying(true);
+    setPaying(method);
     try {
       if (method === 'monnify') {
         const res = await api.post('/payments/initialize', { booking_id: bookingId });
@@ -183,7 +183,7 @@ export default function CartPage() {
       }
     } catch (err: any) {
       toast(err?.response?.data?.message || 'Payment failed', 'error');
-      setPaying(false);
+      setPaying(null);
     }
   };
 
@@ -391,24 +391,32 @@ export default function CartPage() {
 
             <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
               {/* Primary: Monnify */}
-              <AnimatedButton onClick={() => handlePay('monnify')} disabled={paying} style={{ position: "relative", background: "linear-gradient(135deg, #F1B945 0%, #D4AF37 100%)", color: "#1A1A1A", border: "none", padding: "24px", borderRadius: 20, cursor: paying ? 'not-allowed' : 'pointer', display: "flex", alignItems: "center", gap: 20, boxShadow: "0 16px 32px rgba(212, 175, 55, 0.3), inset 0 2px 0 rgba(255,255,255,0.5)", transition: "all 0.3s", overflow: "hidden" }} className="hover:-translate-y-1 hover:shadow-[0_24px_48px_rgba(212,175,55,0.4)] group">
+              <AnimatedButton onClick={() => handlePay('monnify')} disabled={!!paying} style={{ position: "relative", background: "linear-gradient(135deg, #F1B945 0%, #D4AF37 100%)", color: "#1A1A1A", border: "none", padding: "24px", borderRadius: 20, cursor: paying ? 'not-allowed' : 'pointer', display: "flex", alignItems: "center", gap: 20, boxShadow: "0 16px 32px rgba(212, 175, 55, 0.3), inset 0 2px 0 rgba(255,255,255,0.5)", transition: "all 0.3s", overflow: "hidden", opacity: paying && paying !== 'monnify' ? 0.6 : 1 }} className={!paying ? "hover:-translate-y-1 hover:shadow-[0_24px_48px_rgba(212,175,55,0.4)] group" : ""}>
                 <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 100%)", pointerEvents: "none" }} />
                 <div style={{ background: "rgba(0,0,0,0.1)", padding: 14, borderRadius: 14, backdropFilter: "blur(4px)" }}><FaCreditCard size={24} /></div>
                 <div style={{ flex: 1, textAlign: "left", position: "relative" }}>
                    <div style={{ fontSize: 18, fontWeight: 900, marginBottom: 4 }}>Pay Securely</div>
                    <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(0,0,0,0.6)" }}>Direct Bank Transfer (Monnify)</div>
                 </div>
-                <FaArrowRight size={18} style={{ opacity: 0.8 }} className="transition-transform group-hover:translate-x-1" />
+                {paying === 'monnify' ? (
+                  <Loader2 size={22} className="animate-spin" style={{ animation: "spin 1s linear infinite" }} />
+                ) : (
+                  <FaArrowRight size={18} style={{ opacity: 0.8 }} className="transition-transform group-hover:translate-x-1" />
+                )}
               </AnimatedButton>
 
               {/* Secondary: Wallet */}
-              <AnimatedButton onClick={() => handlePay('wallet')} disabled={paying} style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)", color: "#FFFFFF", padding: "24px", borderRadius: 20, cursor: paying ? 'not-allowed' : 'pointer', display: "flex", alignItems: "center", gap: 20, transition: "all 0.3s", backdropFilter: "blur(12px)" }} className="hover:bg-white/5 hover:border-white/20 hover:-translate-y-1 group">
-                <div style={{ background: "rgba(255,255,255,0.05)", padding: 14, borderRadius: 14, border: "1px solid rgba(255,255,255,0.1)" }}><FaWallet size={24} color="#A0AEC0" className="group-hover:text-white transition-colors" /></div>
+              <AnimatedButton onClick={() => handlePay('wallet')} disabled={!!paying} style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)", color: "#FFFFFF", padding: "24px", borderRadius: 20, cursor: paying ? 'not-allowed' : 'pointer', display: "flex", alignItems: "center", gap: 20, transition: "all 0.3s", backdropFilter: "blur(12px)", opacity: paying && paying !== 'wallet' ? 0.6 : 1 }} className={!paying ? "hover:bg-white/5 hover:border-white/20 hover:-translate-y-1 group" : ""}>
+                <div style={{ background: "rgba(255,255,255,0.05)", padding: 14, borderRadius: 14, border: "1px solid rgba(255,255,255,0.1)" }}><FaWallet size={24} color="#A0AEC0" className={!paying ? "group-hover:text-white transition-colors" : ""} /></div>
                 <div style={{ flex: 1, textAlign: "left" }}>
                    <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 4 }}>Pay from Wallet</div>
                    <div style={{ fontSize: 13, fontWeight: 500, color: "#718096" }}>Use your pre-funded balance</div>
                 </div>
-                <FaArrowRight size={18} color="#718096" className="transition-transform group-hover:translate-x-1 group-hover:text-white" />
+                {paying === 'wallet' ? (
+                  <Loader2 size={22} color="#FFFFFF" className="animate-spin" style={{ animation: "spin 1s linear infinite" }} />
+                ) : (
+                  <FaArrowRight size={18} color="#718096" className={!paying ? "transition-transform group-hover:translate-x-1 group-hover:text-white" : ""} />
+                )}
               </AnimatedButton>
             </div>
 
