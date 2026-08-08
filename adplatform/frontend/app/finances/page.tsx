@@ -82,7 +82,7 @@ export default function FinancesPage() {
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 4 }}>
                 <DollarSign size={17} color={theme.color.gold} />
-                <h1 style={{ fontFamily: theme.font.display, fontSize: 24, fontWeight: 600, color: theme.color.text1, margin: 0 }}>Finances</h1>
+                <h1 style={{ fontFamily: theme.font.display, fontSize: 24, fontWeight: 600, color: theme.color.text1, margin: 0 }}>Wallet</h1>
               </div>
               <p style={{ fontSize: 13, color: theme.color.text3, margin: 0 }}>Manage your credits and view transaction history</p>
             </div>

@@ -75,7 +75,7 @@ function FinancesPaymentCallbackContent() {
 
             <div style={{ display: 'flex', gap: 10 }}>
               <Link href="/finances" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: '#D4AF37', color: '#111111', padding: '12px', borderRadius: 10, fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>
-                Go to Finances <FaArrowRight size={12} />
+                Go to Wallet <FaArrowRight size={12} />
               </Link>
             </div>
           </motion.div>

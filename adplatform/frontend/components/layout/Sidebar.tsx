@@ -18,7 +18,7 @@ const advertiserNav = [
   { href: '/calendar',   label: 'My Calendar',      icon: Calendar },
   { href: '/campaigns',  label: 'My Campaigns',     icon: Megaphone },
   { href: '/creative',   label: 'Request Creative', icon: Paintbrush },
-  { href: '/finances',   label: 'Finances',         icon: DollarSign },
+  { href: '/finances',   label: 'Wallet',         icon: DollarSign },
   { href: '/cart',       label: 'Cart',             icon: ShoppingCart },
 ];
 

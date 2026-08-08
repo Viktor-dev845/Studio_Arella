@@ -36,7 +36,7 @@ export default function AdminPage() {
     { label: 'Manage Users',       href: '/admin/users',     Icon: FaUsers,        color: theme.color.gold, bg: theme.color.goldLight, border: theme.color.goldMid },
     { label: 'All Campaigns',      href: '/admin/campaigns', Icon: Megaphone,      color: theme.color.info, bg: theme.color.infoLight, border: theme.color.infoBorder },
     { label: 'All Screens',        href: '/admin/screens',   Icon: FaDisplay,      color: theme.color.success, bg: theme.color.successLight, border: theme.color.success },
-    { label: 'Platform Finances',  href: '/admin/finances',  Icon: FaMoneyBillWave,color: theme.color.warning, bg: theme.color.warningLight, border: theme.color.warning },
+    { label: 'Platform Wallet',  href: '/admin/finances',  Icon: FaMoneyBillWave,color: theme.color.warning, bg: theme.color.warningLight, border: theme.color.warning },
   ];
 
   return (
