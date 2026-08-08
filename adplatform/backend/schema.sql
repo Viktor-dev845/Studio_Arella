@@ -77,6 +77,7 @@ CREATE TABLE IF NOT EXISTS ads (
   media_url VARCHAR(500),
   media_type VARCHAR(50) DEFAULT 'image', -- 'image' | 'video'
   duration_seconds INTEGER DEFAULT 30,
+  ppm_rate DECIMAL(10,2) DEFAULT 1000.00,
   status VARCHAR(50) DEFAULT 'pending', -- 'pending' | 'approved' | 'rejected' | 'active'
   created_at TIMESTAMP DEFAULT NOW(),
   updated_at TIMESTAMP DEFAULT NOW()
