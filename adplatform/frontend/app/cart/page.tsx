@@ -104,6 +104,17 @@ export default function CartPage() {
     setLockedUntil(null);
   }, [cart, clearCart]); // Actually clearCart is stable, but depending on cart means any change resets it.
 
+  // Reset paying state if user navigates back from a payment gateway using bfcache
+  useEffect(() => {
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        setPaying(false);
+      }
+    };
+    window.addEventListener('pageshow', handlePageShow);
+    return () => window.removeEventListener('pageshow', handlePageShow);
+  }, []);
+
   const mins = timeLeft ? Math.floor(timeLeft / 60) : 0;
   const secs = timeLeft ? timeLeft % 60 : 0;
 
