@@ -838,52 +838,70 @@ function DoohScheduler() {
                   )}
 
                   {/* Period Selector (Hours) */}
-                  <div style={{ marginBottom: 28 }}>
-                    <div style={{ fontSize: 12, fontWeight: 800, color: theme.color.text3, textTransform: "uppercase", letterSpacing: '0.05em', marginBottom: 14 }}>Select Hour</div>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(90px, 1fr))", gap: 10 }}>
-                      {hours.map((h) => {
-                        const isSelected = selectedHours.includes(h);
-                        const isTouched = touched.has(h);
-                        const isPastHour = isSameDate(viewDate, today) && h < new Date().getHours();
-                        return (
-                          <button key={h} disabled={isPastHour} onClick={() => {
-                            let newHours = [...selectedHours];
-                            if (isSelected) {
-                              newHours = newHours.filter(x => x !== h);
-                              setMinuteSelections(prev => {
-                                const next = { ...prev };
-                                delete next[h];
-                                return next;
-                              });
-                              // Clear specific minute draft if they unselected the only hour
-                              if (newHours.length === 0) setDraft(null);
-                            } else {
-                              newHours.push(h);
-                              autoSelectSlot(viewDate, h);
-                            }
-                            newHours.sort((a,b) => a-b);
-                            setSelectedHours(newHours);
-                          }}
-                            style={{
-                              background: isPastHour ? 'transparent' : isSelected ? theme.color.gold : isTouched ? theme.color.goldLight : theme.color.surface2,
-                              color: isPastHour ? theme.color.text4 : isSelected || isTouched ? theme.color.charcoal900 : theme.color.text1,
-                              fontWeight: isSelected || isTouched ? 800 : 700,
-                              border: `1px solid ${isPastHour ? theme.color.border2 : isSelected || isTouched ? theme.color.goldMid : theme.color.border}`,
-                              borderRadius: 999, padding: "12px 0", fontSize: 14, 
-                              cursor: isPastHour ? "not-allowed" : "pointer", 
-                              transition: "all 0.2s ease",
-                              boxShadow: isSelected ? theme.shadow.gold : "0 2px 4px rgba(0,0,0,0.02)",
-                              opacity: isPastHour ? 0.4 : 1
-                            }}>
-                            {formatMin(h * 60)}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
+                  {(() => {
+                    const allHoursPassed = isSameDate(viewDate, today) && hours.every(h => h < new Date().getHours());
+                    
+                    if (allHoursPassed) {
+                      return (
+                        <div style={{ marginBottom: 28, background: theme.color.warningLight, color: theme.color.warning, padding: 20, borderRadius: 16, border: `1px solid ${theme.color.warning}` }}>
+                          <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <AlertTriangle size={20} /> Booking Hours Have Passed
+                          </div>
+                          <div style={{ fontSize: 14, color: theme.color.text2 }}>
+                            The operating hours for this date have already passed. Please close this modal and select a future date from the calendar to book your ad slot.
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div style={{ marginBottom: 28 }}>
+                        <div style={{ fontSize: 12, fontWeight: 800, color: theme.color.text3, textTransform: "uppercase", letterSpacing: '0.05em', marginBottom: 14 }}>Select Hour</div>
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(90px, 1fr))", gap: 10 }}>
+                          {hours.map((h) => {
+                            const isSelected = selectedHours.includes(h);
+                            const isTouched = touched.has(h);
+                            const isPastHour = isSameDate(viewDate, today) && h < new Date().getHours();
+                            return (
+                              <button key={h} disabled={isPastHour} onClick={() => {
+                                let newHours = [...selectedHours];
+                                if (isSelected) {
+                                  newHours = newHours.filter(x => x !== h);
+                                  setMinuteSelections(prev => {
+                                    const next = { ...prev };
+                                    delete next[h];
+                                    return next;
+                                  });
+                                  if (newHours.length === 0) setDraft(null);
+                                } else {
+                                  newHours.push(h);
+                                  autoSelectSlot(viewDate, h);
+                                }
+                                newHours.sort((a,b) => a-b);
+                                setSelectedHours(newHours);
+                              }}
+                                style={{
+                                  background: isPastHour ? 'transparent' : isSelected ? theme.color.gold : isTouched ? theme.color.goldLight : theme.color.surface2,
+                                  color: isPastHour ? theme.color.text4 : isSelected || isTouched ? theme.color.charcoal900 : theme.color.text1,
+                                  fontWeight: isSelected || isTouched ? 800 : 700,
+                                  border: `1px solid ${isPastHour ? theme.color.border2 : isSelected || isTouched ? theme.color.goldMid : theme.color.border}`,
+                                  borderRadius: 999, padding: "12px 0", fontSize: 14, 
+                                  cursor: isPastHour ? "not-allowed" : "pointer", 
+                                  transition: "all 0.2s ease",
+                                  boxShadow: isSelected ? theme.shadow.gold : "0 2px 4px rgba(0,0,0,0.02)",
+                                  opacity: isPastHour ? 0.4 : 1
+                                }}>
+                                {formatMin(h * 60)}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                   {/* Draft Summary & Add to Cart */}
-                  {selectedHours.length > 0 && (() => {
+                  {selectedHours.length > 0 && ! (isSameDate(viewDate, today) && hours.every(h => h < new Date().getHours())) && (() => {
                     const draftPrice = calcCost(draftDurationSec, selectedCreative?.ppm_rate || PPM);
                     
                     const isInvalid = localHasConflict;
