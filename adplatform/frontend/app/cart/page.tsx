@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, ChevronDown, ChevronUp, Trash2, Clock, Calendar, Edit2, Timer, X } from 'lucide-react';
+import { ChevronLeft, ChevronDown, ChevronUp, Trash2, Clock, Calendar, Edit2, Timer, X, Loader2 } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useToast } from '@/components/ui/ToastProvider';
 import { useCartStore } from '@/store/cartStore';
@@ -301,8 +301,15 @@ export default function CartPage() {
                 <div style={{ background: theme.color.surface2, borderRadius: 16, padding: 20, border: `1px dashed ${theme.color.border}` }}>
                   <CampaignPicker value={campaignId} onChange={setCampaignId} />
                 </div>
-                <AnimatedButton onClick={handleReserve} disabled={reserving} style={{ width: "100%", padding: "20px 0", borderRadius: 16, border: "none", background: "linear-gradient(135deg, #F1B945 0%, #D4AF37 100%)", color: "#1A1A1A", fontWeight: 900, fontSize: 18, letterSpacing: '0.02em', cursor: reserving ? 'not-allowed' : 'pointer', opacity: reserving ? 0.7 : 1, display: "flex", gap: 12, alignItems: "center", justifyContent: "center", boxShadow: "0 16px 32px rgba(212, 175, 55, 0.3)", transition: "all 0.2s" }}>
-                  {reserving ? 'Reserving Slots...' : <>Proceed to Checkout</>}
+                <AnimatedButton onClick={handleReserve} disabled={reserving} style={{ width: "100%", padding: "20px 0", borderRadius: 16, border: "none", background: "linear-gradient(135deg, #F1B945 0%, #D4AF37 100%)", color: "#1A1A1A", fontWeight: 900, fontSize: 18, letterSpacing: '0.02em', cursor: reserving ? 'not-allowed' : 'pointer', opacity: reserving ? 0.8 : 1, display: "flex", gap: 12, alignItems: "center", justifyContent: "center", boxShadow: "0 16px 32px rgba(212, 175, 55, 0.3)", transition: "all 0.2s" }}>
+                  {reserving ? (
+                    <>
+                      <Loader2 size={24} style={{ animation: "spin 1s linear infinite" }} />
+                      <span>Securely Reserving Slots...</span>
+                    </>
+                  ) : (
+                    <>Proceed to Checkout</>
+                  )}
                 </AnimatedButton>
               </div>
             </div>
