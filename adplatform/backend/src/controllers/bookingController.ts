@@ -121,6 +121,12 @@ export const reserveSlots: RequestHandler = async (req, res) => {
     const costPerSec = totalSeconds > 0 ? totalCost / totalSeconds : 0;
 
     await client.query('BEGIN');
+    
+    // Clear any previous unpaid bookings for this user to allow them to recreate their cart without waiting 10 minutes
+    await client.query(`
+      DELETE FROM bookings 
+      WHERE user_id = $1 AND status = 'pending_payment'
+    `, [authReq.user?.id]);
 
     for (const block of slots) {
       const startDt = new Date(block.start);
@@ -140,13 +146,6 @@ export const reserveSlots: RequestHandler = async (req, res) => {
       
       if (conflict.rows.length > 0) {
         await client.query('ROLLBACK');
-        const conflictingSlot = conflict.rows[0];
-        
-        if (conflictingSlot.user_id === authReq.user?.id && conflictingSlot.status === 'locked') {
-           res.status(409).json({ message: "You already have a pending reservation for these exact slots. Please wait a few minutes for your previous session to expire before trying again." });
-           return;
-        }
-
         const watDisplay = new Date(startDt.getTime() + 3600000).toISOString().replace('T', ' ').substring(0, 16) + ' WAT';
         res.status(409).json({ message: `Time block starting at ${watDisplay} conflicts with an existing booking.` });
         return;
