@@ -389,40 +389,26 @@ export default function CartPage() {
               <p style={{ color: "#A0AEC0", fontSize: 14 }}>All transactions are secure and encrypted.</p>
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              {/* Paystack */}
-              <AnimatedButton onClick={() => handlePay('paystack')} disabled={paying} style={{ background: "linear-gradient(135deg, #00C3FF 0%, #0052CC 100%)", color: "#fff", border: "1px solid rgba(255,255,255,0.1)", padding: "20px", borderRadius: 16, fontSize: 16, fontWeight: 800, cursor: paying ? 'not-allowed' : 'pointer', display: "flex", alignItems: "center", gap: 16, boxShadow: "0 12px 24px rgba(0,82,204,0.25), inset 0 1px 0 rgba(255,255,255,0.2)", transition: "all 0.2s" }} className="hover:scale-[1.02]">
-                <div style={{ background: "rgba(255,255,255,0.2)", padding: 10, borderRadius: 12 }}><FaCreditCard size={20} /></div>
-                <div style={{ flex: 1, textAlign: "left" }}>
-                   <div style={{ fontSize: 16, fontWeight: 800 }}>Pay with Paystack</div>
-                   <div style={{ fontSize: 12, fontWeight: 500, color: "rgba(255,255,255,0.8)" }}>Cards, Bank Transfer, USSD</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+              {/* Primary: Monnify */}
+              <AnimatedButton onClick={() => handlePay('monnify')} disabled={paying} style={{ position: "relative", background: "linear-gradient(135deg, #F1B945 0%, #D4AF37 100%)", color: "#1A1A1A", border: "none", padding: "24px", borderRadius: 20, cursor: paying ? 'not-allowed' : 'pointer', display: "flex", alignItems: "center", gap: 20, boxShadow: "0 16px 32px rgba(212, 175, 55, 0.3), inset 0 2px 0 rgba(255,255,255,0.5)", transition: "all 0.3s", overflow: "hidden" }} className="hover:-translate-y-1 hover:shadow-[0_24px_48px_rgba(212,175,55,0.4)] group">
+                <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 100%)", pointerEvents: "none" }} />
+                <div style={{ background: "rgba(0,0,0,0.1)", padding: 14, borderRadius: 14, backdropFilter: "blur(4px)" }}><FaCreditCard size={24} /></div>
+                <div style={{ flex: 1, textAlign: "left", position: "relative" }}>
+                   <div style={{ fontSize: 18, fontWeight: 900, marginBottom: 4 }}>Pay Securely</div>
+                   <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(0,0,0,0.6)" }}>Direct Bank Transfer (Monnify)</div>
                 </div>
-                <FaArrowRight size={16} style={{ opacity: 0.7 }} />
+                <FaArrowRight size={18} style={{ opacity: 0.8 }} className="transition-transform group-hover:translate-x-1" />
               </AnimatedButton>
 
-              {/* Monnify */}
-              <AnimatedButton onClick={() => handlePay('monnify')} disabled={paying} style={{ background: "linear-gradient(135deg, #F1B945 0%, #D4AF37 100%)", color: "#1A1A1A", border: "1px solid rgba(255,255,255,0.2)", padding: "20px", borderRadius: 16, fontSize: 16, fontWeight: 800, cursor: paying ? 'not-allowed' : 'pointer', display: "flex", alignItems: "center", gap: 16, boxShadow: "0 12px 24px rgba(212, 175, 55, 0.25), inset 0 1px 0 rgba(255,255,255,0.4)", transition: "all 0.2s" }} className="hover:scale-[1.02]">
-                <div style={{ background: "rgba(0,0,0,0.1)", padding: 10, borderRadius: 12 }}><FaCreditCard size={20} /></div>
+              {/* Secondary: Wallet */}
+              <AnimatedButton onClick={() => handlePay('wallet')} disabled={paying} style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)", color: "#FFFFFF", padding: "24px", borderRadius: 20, cursor: paying ? 'not-allowed' : 'pointer', display: "flex", alignItems: "center", gap: 20, transition: "all 0.3s", backdropFilter: "blur(12px)" }} className="hover:bg-white/5 hover:border-white/20 hover:-translate-y-1 group">
+                <div style={{ background: "rgba(255,255,255,0.05)", padding: 14, borderRadius: 14, border: "1px solid rgba(255,255,255,0.1)" }}><FaWallet size={24} color="#A0AEC0" className="group-hover:text-white transition-colors" /></div>
                 <div style={{ flex: 1, textAlign: "left" }}>
-                   <div style={{ fontSize: 16, fontWeight: 800 }}>Pay with Monnify</div>
-                   <div style={{ fontSize: 12, fontWeight: 600, color: "rgba(0,0,0,0.6)" }}>Direct Bank Transfer</div>
+                   <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 4 }}>Pay from Wallet</div>
+                   <div style={{ fontSize: 13, fontWeight: 500, color: "#718096" }}>Use your pre-funded balance</div>
                 </div>
-                <FaArrowRight size={16} style={{ opacity: 0.7 }} />
-              </AnimatedButton>
-
-              <div style={{ display: "flex", alignItems: "center", margin: "8px 0" }}>
-                <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
-                <div style={{ padding: "0 16px", color: "#718096", fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em" }}>or</div>
-                <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
-              </div>
-
-              {/* Wallet */}
-              <AnimatedButton onClick={() => handlePay('wallet')} disabled={paying} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.1)", color: "#FFFFFF", padding: "20px", borderRadius: 16, fontSize: 16, fontWeight: 700, cursor: paying ? 'not-allowed' : 'pointer', display: "flex", alignItems: "center", gap: 16, transition: "all 0.2s" }} className="hover:bg-white/5 hover:border-white/20 hover:scale-[1.02]">
-                <div style={{ background: "rgba(255,255,255,0.05)", padding: 10, borderRadius: 12 }}><FaWallet size={20} color="#A0AEC0" /></div>
-                <div style={{ flex: 1, textAlign: "left" }}>
-                   <div style={{ fontSize: 16, fontWeight: 700 }}>Pay from Wallet</div>
-                   <div style={{ fontSize: 12, fontWeight: 500, color: "#718096" }}>Use your pre-funded balance</div>
-                </div>
+                <FaArrowRight size={18} color="#718096" className="transition-transform group-hover:translate-x-1 group-hover:text-white" />
               </AnimatedButton>
             </div>
 
