@@ -198,6 +198,7 @@ export const resendVerification: RequestHandler = async (req, res) => {
       }
     }
   } catch (err) {
+    console.error('Server error in resendVerification:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };
