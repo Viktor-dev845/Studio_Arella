@@ -2,7 +2,7 @@
 
 import { useState, Suspense, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Mail, RefreshCw, ArrowRight, MessageSquare } from 'lucide-react';
+import { Mail, RefreshCw, ArrowRight, MessageSquare, Loader2 } from 'lucide-react';
 import api from '@/lib/api';
 import { theme } from '@/lib/theme';
 import { useToast } from '@/components/ui/ToastProvider';
@@ -161,7 +161,11 @@ function VerifyEmailPendingContent() {
                   <div style={{ marginBottom: 2 }}>{resending === 'email' ? 'Sending...' : 'Send to Email'}</div>
                   <div style={{ fontSize: 12, color: '#64748B', fontWeight: 500 }}>{email}</div>
                 </div>
-                <ArrowRight size={16} color="#64748B" />
+                {resending === 'email' ? (
+                  <Loader2 size={16} color="#64748B" className="animate-spin" />
+                ) : (
+                  <ArrowRight size={16} color="#64748B" />
+                )}
               </button>
 
               {/*
