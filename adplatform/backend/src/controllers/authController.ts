@@ -197,9 +197,9 @@ export const resendVerification: RequestHandler = async (req, res) => {
         res.status(500).json({ message: `Failed to send email: ${emailErr.message}. Please contact support if this persists.` });
       }
     }
-  } catch (err) {
+  } catch (err: any) {
     console.error('Server error in resendVerification:', err);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: err.message || err.toString() || 'Server error' });
   }
 };
 
