@@ -1,14 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { useToast } from '@/components/ui/ToastProvider';
 import { FaCheck } from 'react-icons/fa6';
 import GoogleButton from '@/components/ui/GoogleButton';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { AnimatedButton } from '@/components/ui/Animations';
+import api from '@/lib/api';
 
 const F = "'Quicksand', sans-serif";
 
@@ -53,9 +54,16 @@ export default function RegisterPage() {
   });
   const [showPw, setShowPw] = useState(false);
   const [showConfirmPw, setShowConfirmPw] = useState(false);
-  const { register, isLoading } = useAuthStore();
+  const { register, isLoading, updateUser } = useAuthStore();
   const { toast } = useToast();
   const router = useRouter();
+
+  // OTP Modal State
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [otpCode, setOtpCode] = useState(['', '', '', '', '', '']);
+  const [verifying, setVerifying] = useState(false);
+  const [resending, setResending] = useState(false);
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const inputStyle: React.CSSProperties = {
     width: '100%', padding: '13px 14px', background: '#FFFFFF',
@@ -80,7 +88,8 @@ export default function RegisterPage() {
     if (form.password !== form.confirm_password) { toast('Passwords do not match', 'error'); return; }
     try {
       await register(form.first_name, form.last_name, form.email, form.password, form.business_name || undefined, form.phone || undefined);
-      router.push(`/auth/verify-email-pending?email=${encodeURIComponent(form.email)}`);
+      setShowOtpModal(true);
+      setTimeout(() => inputRefs.current[0]?.focus(), 100);
     } catch (err: any) {
       console.error('Registration error:', err);
       const msg = err?.response?.data?.message || err?.message || 'Registration failed. Please try again.';
@@ -88,56 +97,86 @@ export default function RegisterPage() {
     }
   };
 
+  // OTP Logic
+  const handleVerify = async (codeStr: string) => {
+    setVerifying(true);
+    try {
+      const res = await api.post('/auth/verify-email', { code: codeStr });
+      updateUser({ email_verified: true });
+      toast(res.data.message || 'Email verified successfully!', 'success');
+      router.push('/onboarding');
+    } catch (err: any) {
+      toast(err?.response?.data?.message || 'Invalid or expired verification code.', 'error');
+      setVerifying(false);
+    }
+  };
+
+  const handleOtpChange = (index: number, value: string) => {
+    if (!/^[0-9]*$/.test(value)) return;
+    const newCode = [...otpCode];
+    newCode[index] = value;
+    setOtpCode(newCode);
+
+    if (value && index < 5) inputRefs.current[index + 1]?.focus();
+    if (newCode.every(v => v !== '')) handleVerify(newCode.join(''));
+  };
+
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && !otpCode[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handleOtpPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text/plain').replace(/\D/g, '').slice(0, 6);
+    if (!pastedData) return;
+    const newCode = [...otpCode];
+    for (let i = 0; i < pastedData.length; i++) newCode[i] = pastedData[i];
+    setOtpCode(newCode);
+    const focusIndex = pastedData.length < 6 ? pastedData.length : 5;
+    inputRefs.current[focusIndex]?.focus();
+    if (newCode.every(v => v !== '')) handleVerify(newCode.join(''));
+  };
+
+  const handleResend = async () => {
+    setResending(true);
+    try {
+      await api.post('/auth/resend-verification', { email: form.email, method: 'email' });
+      toast('Verification code sent via Email!', 'success');
+    } catch (err: any) {
+      toast(err?.response?.data?.message || 'Failed to send. Please try again.', 'error');
+    } finally {
+      setResending(false);
+    }
+  };
+
   return (
-    <div className="flex" style={{ fontFamily: F, minHeight: '100vh', background: '#FFFFFF' }}>
+    <div className="flex" style={{ fontFamily: F, minHeight: '100vh', background: '#FFFFFF', position: 'relative' }}>
       
       {/* ── Left panel (Image + Overlay) ── */}
       <div className="hidden lg:flex flex-col justify-center" style={{ flex: '1 1 50%', maxWidth: '50%', position: 'relative', overflow: 'hidden' }}>
-        {/* Background Image with Color Blend */}
         <div style={{ position: 'absolute', inset: 0, backgroundImage: 'url("https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=2000")', backgroundSize: 'cover', backgroundPosition: 'center', zIndex: 0 }} />
-        {/* The heavy olive/gold tint */}
         <div style={{ position: 'absolute', inset: 0, backgroundColor: '#705F1C', opacity: 0.85, mixBlendMode: 'multiply', zIndex: 1 }} />
-        {/* A secondary flat color to guarantee the dark gold look if image fails */}
         <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(92, 77, 21, 0.7)', zIndex: 2 }} />
 
-        {/* Content */}
         <div style={{ position: 'relative', zIndex: 3, padding: '0 10%', display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'center' }}>
-          
           <div style={{ position: 'absolute', top: 60, left: '10%' }}>
-            <Link href="/">
-              <img src="/logo-white.png" alt="Studio Arella Logo" style={{ height: 60, objectFit: 'contain' }} />
-            </Link>
+            <Link href="/"><img src="/logo-white.png" alt="Studio Arella Logo" style={{ height: 60, objectFit: 'contain' }} /></Link>
           </div>
-
           <div style={{ color: '#D4AF37', fontSize: 60, fontFamily: 'serif', fontWeight: 900, lineHeight: 0.5, marginBottom: 24, marginTop: 40 }}>“</div>
-          
           <h2 style={{ fontSize: 24, fontWeight: 500, color: '#FFFFFF', margin: '0 0 60px', lineHeight: 1.5, maxWidth: 440 }}>
             Podcasts, music, and ads made to be heard, felt, and remembered.
           </h2>
-
           <div style={{ position: 'relative' }}>
-             {/* The white angle accent from the design */}
              <div style={{ position: 'absolute', top: -30, right: 0, width: 20, height: 20, borderBottom: '5px solid #FFFFFF', borderLeft: '5px solid #FFFFFF' }} />
-             {/* The dotted square accent */}
              <div style={{ position: 'absolute', top: -140, right: 40, width: 60, height: 60, backgroundImage: 'radial-gradient(circle, rgba(212,175,55,0.4) 2px, transparent 2px)', backgroundSize: '12px 12px' }} />
-
              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 20 }}>
-                <li style={{ fontSize: 15, color: '#FFFFFF', fontWeight: 400, lineHeight: 1.6, display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-                  <span style={{ fontSize: 24, lineHeight: 0.8 }}>•</span>
-                  <span><strong style={{ fontWeight: 600 }}>Give a Voice. Make Impact.</strong> — Podcasting, music & advertising, all under one roof.</span>
-                </li>
-                <li style={{ fontSize: 15, color: '#FFFFFF', fontWeight: 400, lineHeight: 1.6, display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-                  <span style={{ fontSize: 24, lineHeight: 0.8 }}>•</span>
-                  <span><strong style={{ fontWeight: 600 }}>Your Sound. Your Story. Your Stage.</strong> — Create, record, and get heard.</span>
-                </li>
-                <li style={{ fontSize: 15, color: '#FFFFFF', fontWeight: 400, lineHeight: 1.6, display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-                  <span style={{ fontSize: 24, lineHeight: 0.8 }}>•</span>
-                  <span><strong style={{ fontWeight: 600 }}>From Studio to Spotlight.</strong> — We create sounds and put them where audiences are listening.</span>
-                </li>
+                <li style={{ fontSize: 15, color: '#FFFFFF', fontWeight: 400, lineHeight: 1.6, display: 'flex', alignItems: 'flex-start', gap: 12 }}><span style={{ fontSize: 24, lineHeight: 0.8 }}>•</span><span><strong style={{ fontWeight: 600 }}>Give a Voice. Make Impact.</strong> — Podcasting, music & advertising, all under one roof.</span></li>
+                <li style={{ fontSize: 15, color: '#FFFFFF', fontWeight: 400, lineHeight: 1.6, display: 'flex', alignItems: 'flex-start', gap: 12 }}><span style={{ fontSize: 24, lineHeight: 0.8 }}>•</span><span><strong style={{ fontWeight: 600 }}>Your Sound. Your Story. Your Stage.</strong> — Create, record, and get heard.</span></li>
+                <li style={{ fontSize: 15, color: '#FFFFFF', fontWeight: 400, lineHeight: 1.6, display: 'flex', alignItems: 'flex-start', gap: 12 }}><span style={{ fontSize: 24, lineHeight: 0.8 }}>•</span><span><strong style={{ fontWeight: 600 }}>From Studio to Spotlight.</strong> — We create sounds and put them where audiences are listening.</span></li>
              </ul>
           </div>
-          
-          {/* Faint circles bottom left */}
           <div style={{ position: 'absolute', bottom: -50, left: -50, width: 160, height: 160, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)' }} />
           <div style={{ position: 'absolute', bottom: -10, left: -10, width: 80, height: 80, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)' }} />
         </div>
@@ -171,96 +210,141 @@ export default function RegisterPage() {
           </div>
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label style={labelStyle}>First name*</label>
-                <input type="text" placeholder="Invictus"
-                  value={form.first_name}
-                  onChange={e => setForm({ ...form, first_name: e.target.value })}
-                  required autoFocus style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
+                <input type="text" placeholder="Invictus" value={form.first_name} onChange={e => setForm({ ...form, first_name: e.target.value })} required autoFocus style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
               </div>
               <div>
                 <label style={labelStyle}>Last name*</label>
-                <input type="text" placeholder="Innocent"
-                  value={form.last_name}
-                  onChange={e => setForm({ ...form, last_name: e.target.value })}
-                  required style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
+                <input type="text" placeholder="Innocent" value={form.last_name} onChange={e => setForm({ ...form, last_name: e.target.value })} required style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
               </div>
             </div>
-
             <div>
               <label style={labelStyle}>Email address*</label>
-              <input type="email" placeholder="Enter your email"
-                value={form.email}
-                onChange={e => setForm({ ...form, email: e.target.value })}
-                required style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
+              <input type="email" placeholder="Enter your email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} required style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                <div>
                   <label style={labelStyle}>Business name <span style={{fontWeight:400, color:'#94A3B8'}}>(optional)</span></label>
-                  <input type="text" placeholder="Brand name"
-                     value={form.business_name}
-                     onChange={e => setForm({ ...form, business_name: e.target.value })}
-                     style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
+                  <input type="text" placeholder="Brand name" value={form.business_name} onChange={e => setForm({ ...form, business_name: e.target.value })} style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
                </div>
                <div>
                   <label style={labelStyle}>Phone <span style={{fontWeight:400, color:'#94A3B8'}}>(optional)</span></label>
-                  <input type="tel" placeholder="08012345678"
-                     value={form.phone}
-                     onChange={e => setForm({ ...form, phone: e.target.value })}
-                     style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
+                  <input type="tel" placeholder="08012345678" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
                </div>
             </div>
-
             <div>
               <label style={labelStyle}>Password*</label>
               <div style={{ position: 'relative' }}>
-                <input type={showPw ? 'text' : 'password'} placeholder="Enter password"
-                  value={form.password}
-                  onChange={e => setForm({ ...form, password: e.target.value })}
-                  required style={{ ...inputStyle, paddingRight: 60 }} onFocus={onFocus} onBlur={onBlur} />
-                <button type="button" onClick={() => setShowPw(p => !p)}
-                  style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#0F172A', fontWeight: 600, fontSize: 11 }}>
-                  {showPw ? 'Hide' : 'Show'}
-                </button>
+                <input type={showPw ? 'text' : 'password'} placeholder="Enter password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} required style={{ ...inputStyle, paddingRight: 60 }} onFocus={onFocus} onBlur={onBlur} />
+                <button type="button" onClick={() => setShowPw(p => !p)} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#0F172A', fontWeight: 600, fontSize: 11 }}>{showPw ? 'Hide' : 'Show'}</button>
               </div>
               <PasswordStrength password={form.password} />
             </div>
-
             <div>
               <label style={labelStyle}>Confirm password*</label>
               <div style={{ position: 'relative' }}>
-                <input type={showConfirmPw ? 'text' : 'password'} placeholder="Confirm password"
-                  value={form.confirm_password}
-                  onChange={e => setForm({ ...form, confirm_password: e.target.value })}
-                  required style={{ ...inputStyle, paddingRight: 60 }} onFocus={onFocus} onBlur={onBlur} />
-                <button type="button" onClick={() => setShowConfirmPw(p => !p)}
-                  style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#0F172A', fontWeight: 600, fontSize: 11 }}>
-                  {showConfirmPw ? 'Hide' : 'Show'}
-                </button>
+                <input type={showConfirmPw ? 'text' : 'password'} placeholder="Confirm password" value={form.confirm_password} onChange={e => setForm({ ...form, confirm_password: e.target.value })} required style={{ ...inputStyle, paddingRight: 60 }} onFocus={onFocus} onBlur={onBlur} />
+                <button type="button" onClick={() => setShowConfirmPw(p => !p)} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#0F172A', fontWeight: 600, fontSize: 11 }}>{showConfirmPw ? 'Hide' : 'Show'}</button>
               </div>
             </div>
-
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginTop: 12, marginBottom: 8 }}>
               <input type="checkbox" id="terms" required style={{ marginTop: 2, accentColor: '#D4AF37', cursor: 'pointer', width: 16, height: 16, borderRadius: 4, border: '1px solid #CBD5E1' }} />
               <label htmlFor="terms" style={{ fontSize: 13, color: '#64748B', lineHeight: 1.5, cursor: 'pointer', fontWeight: 500 }}>
                 I agree to terms & conditions. Read terms & conditions <Link href="/terms" style={{ color: '#D4AF37', textDecoration: 'none', fontWeight: 500 }}>here</Link>
               </label>
             </div>
-
-            <AnimatedButton
-              type="submit"
-              loading={isLoading}
-              loadingText="Creating account"
-              style={{ width: '100%', padding: '14px', background: '#D4AF37', color: '#0F172A', borderRadius: 6, fontSize: 15, fontWeight: 700, border: 'none', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(212,175,55,0.2)' }}
-            >
+            <AnimatedButton type="submit" loading={isLoading} loadingText="Creating account" style={{ width: '100%', padding: '14px', background: '#D4AF37', color: '#0F172A', borderRadius: 6, fontSize: 15, fontWeight: 700, border: 'none', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(212,175,55,0.2)' }}>
               Register Account
             </AnimatedButton>
           </form>
         </motion.div>
       </div>
+
+      {/* ── OTP Modal Overlay ── */}
+      <AnimatePresence>
+        {showOtpModal && (
+          <div style={{ position: 'absolute', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {/* Blurred Background Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(10px)' }}
+            />
+            
+            {/* Modal Content */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              style={{ position: 'relative', background: '#FFFFFF', borderRadius: 16, padding: '40px', width: '100%', maxWidth: 460, boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', textAlign: 'center' }}
+            >
+              <h2 style={{ fontSize: 20, fontWeight: 700, color: '#0F172A', margin: '0 0 32px' }}>
+                We sent you a code. Check your work email
+              </h2>
+
+              <div style={{ textAlign: 'left', marginBottom: 8 }}>
+                <label style={{ fontSize: 13, fontWeight: 600, color: '#64748B' }}>Enter code*</label>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, marginBottom: 8 }}>
+                {otpCode.map((digit, index) => (
+                  <input
+                    key={index}
+                    ref={el => { inputRefs.current[index] = el; }}
+                    type="text"
+                    maxLength={1}
+                    value={digit}
+                    placeholder={index === 0 ? '1' : ''}
+                    onChange={(e) => handleOtpChange(index, e.target.value)}
+                    onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                    onPaste={handleOtpPaste}
+                    disabled={verifying}
+                    style={{
+                      width: '100%', height: 56, background: '#FFFFFF',
+                      border: `1px solid ${digit || index === 0 ? '#D4AF37' : '#E2E8F0'}`,
+                      borderRadius: 8, fontSize: 20, fontWeight: 700, color: '#0F172A',
+                      textAlign: 'center', outline: 'none',
+                      boxShadow: digit || index === 0 ? '0 0 0 2px rgba(212,175,55,0.1)' : 'none',
+                      transition: 'all 0.2s',
+                    }}
+                    onFocus={(e) => { e.target.style.borderColor = '#D4AF37'; e.target.style.boxShadow = '0 0 0 2px rgba(212,175,55,0.1)'; }}
+                    onBlur={(e) => { if(!digit && index !== 0) { e.target.style.borderColor = '#E2E8F0'; e.target.style.boxShadow = 'none'; } }}
+                  />
+                ))}
+              </div>
+
+              <div style={{ textAlign: 'right', marginBottom: 24 }}>
+                <span style={{ fontSize: 13, color: '#94A3B8', fontWeight: 500 }}>
+                  Didn't get code?{' '}
+                  <button onClick={handleResend} disabled={resending} style={{ background: 'none', border: 'none', color: '#D4AF37', fontWeight: 600, cursor: resending ? 'wait' : 'pointer', padding: 0 }}>
+                    {resending ? 'Sending...' : 'Resend'}
+                  </button>
+                </span>
+              </div>
+
+              <p style={{ fontSize: 14, color: '#475569', fontWeight: 500, margin: '0 0 32px', lineHeight: 1.5 }}>
+                Enter the verification code sent to your work email
+              </p>
+
+              <AnimatedButton
+                onClick={() => handleVerify(otpCode.join(''))}
+                disabled={verifying || otpCode.some(v => v === '')}
+                loading={verifying}
+                loadingText="Verifying..."
+                style={{ width: '100%', padding: '14px', background: '#D4AF37', color: '#0F172A', borderRadius: 6, fontSize: 15, fontWeight: 700, border: 'none', cursor: (verifying || otpCode.some(v => v === '')) ? 'not-allowed' : 'pointer', opacity: (verifying || otpCode.some(v => v === '')) ? 0.7 : 1, transition: 'all 0.2s' }}
+              >
+                Continue
+              </AnimatedButton>
+
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       <style>{`
         input:-webkit-autofill,
         input:-webkit-autofill:hover, 
