@@ -47,7 +47,7 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
   const linkStyle = (active: boolean) => ({
     display: 'flex', alignItems: 'center', gap: 14, padding: '12px 14px', borderRadius: 8,
     textDecoration: 'none', fontSize: 13, fontWeight: active ? 500 : 400,
-    color: active ? '#000000' : '#64748B',
+    color: active ? '#000000' : '#334155',
     background: active ? '#F1F5F9' : 'transparent',
     transition: 'all 0.2s ease',
   });
@@ -66,7 +66,7 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
             <img src="/logo.png" alt="Studio Arella Logo" style={{ height: 42, objectFit: 'contain' }} />
           </Link>
           {mobileOpen && (
-            <button onClick={onClose} style={{ background: '#F1F5F9', border: 'none', cursor: 'pointer', color: '#64748B', padding: 6, borderRadius: '50%' }}>
+            <button onClick={onClose} style={{ background: '#F1F5F9', border: 'none', cursor: 'pointer', color: '#334155', padding: 6, borderRadius: '50%' }}>
               <X size={16} />
             </button>
           )}
@@ -77,14 +77,14 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
           
           {isAdmin ? (
              <div style={{ marginBottom: 32 }}>
-              <p style={{ fontSize: 11, fontWeight: 600, color: '#94A3B8', padding: '0 14px', marginBottom: 12, letterSpacing: '0.05em' }}>Admin Panel</p>
+              <p style={{ fontSize: 11, fontWeight: 600, color: '#64748B', padding: '0 14px', marginBottom: 12, letterSpacing: '0.05em' }}>Admin Panel</p>
               <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {adminNav.map((item) => {
                   const active = isActive(item.href);
                   return (
                     <li key={item.href}>
                       <Link href={item.href} onClick={onClose} style={linkStyle(active)}>
-                        <item.icon size={18} strokeWidth={1.5} style={{ color: active ? '#000000' : '#64748B' }} />
+                        <item.icon size={18} strokeWidth={1.5} style={{ color: active ? '#000000' : '#334155' }} />
                         <span>{item.label}</span>
                       </Link>
                     </li>
@@ -96,7 +96,7 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
             <>
               {/* Favorites / Recently */}
               <div style={{ display: 'flex', gap: 16, padding: '0 14px', marginBottom: 16 }}>
-                <span style={{ fontSize: 12, fontWeight: 500, color: '#64748B' }}>Favorites</span>
+                <span style={{ fontSize: 12, fontWeight: 500, color: '#334155' }}>Favorites</span>
                 <span style={{ fontSize: 12, fontWeight: 500, color: '#CBD5E1' }}>Recently</span>
               </div>
               <ul style={{ listStyle: 'none', margin: '0 0 32px', padding: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -112,14 +112,14 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
 
               {/* Dashboards */}
               <div style={{ marginBottom: 32 }}>
-                <p style={{ fontSize: 11, fontWeight: 600, color: '#94A3B8', padding: '0 14px', marginBottom: 12, letterSpacing: '0.02em' }}>Dashboards</p>
+                <p style={{ fontSize: 11, fontWeight: 600, color: '#64748B', padding: '0 14px', marginBottom: 12, letterSpacing: '0.02em' }}>Dashboards</p>
                 <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
                   {DASHBOARDS.map((item) => {
                     const active = isActive(item.href);
                     return (
                       <li key={item.href}>
                         <Link href={item.href} onClick={onClose} style={linkStyle(active)}>
-                          <item.icon size={18} strokeWidth={1.5} style={{ color: active ? '#000000' : '#64748B' }} />
+                          <item.icon size={18} strokeWidth={1.5} style={{ color: active ? '#000000' : '#334155' }} />
                           <span>{item.label}</span>
                         </Link>
                       </li>
@@ -130,14 +130,14 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
 
               {/* Pages */}
               <div style={{ marginBottom: 32 }}>
-                <p style={{ fontSize: 11, fontWeight: 600, color: '#94A3B8', padding: '0 14px', marginBottom: 12, letterSpacing: '0.02em' }}>Pages</p>
+                <p style={{ fontSize: 11, fontWeight: 600, color: '#64748B', padding: '0 14px', marginBottom: 12, letterSpacing: '0.02em' }}>Pages</p>
                 <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
                   {PAGES.map((item) => {
                     const active = isActive(item.href);
                     return (
                       <li key={item.href}>
                         <Link href={item.href} onClick={onClose} style={linkStyle(active)}>
-                          <item.icon size={18} strokeWidth={1.5} style={{ color: active ? '#000000' : '#64748B' }} />
+                          <item.icon size={18} strokeWidth={1.5} style={{ color: active ? '#000000' : '#334155' }} />
                           <span>{item.label}</span>
                         </Link>
                       </li>
@@ -151,7 +151,7 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
 
         {/* User footer */}
         <div style={{ padding: '24px', display: 'flex' }}>
-          <button onClick={() => { logout(); window.location.href = '/auth/login'; }} style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', fontSize: 13, fontWeight: 500, fontFamily: F }}>
+          <button onClick={() => { logout(); window.location.href = '/auth/login'; }} style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'none', border: 'none', cursor: 'pointer', color: '#334155', fontSize: 13, fontWeight: 500, fontFamily: F }}>
              <FaArrowRightFromBracket size={18} /> Logout
           </button>
         </div>
