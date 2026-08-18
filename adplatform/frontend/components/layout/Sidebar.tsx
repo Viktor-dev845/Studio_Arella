@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, ShoppingCart, ClipboardList, User, Megaphone, Film, Users, Wallet, FileText, Settings, HelpCircle, X, Mic, LayoutDashboard, Shield, CalendarCheck, Paintbrush, Monitor, DollarSign } from 'lucide-react';
+import { Home, ShoppingCart, ClipboardList, User, Megaphone, Film, Users, Wallet, FileText, X, Mic, LayoutDashboard, Shield, CalendarCheck, Paintbrush, Monitor, DollarSign } from 'lucide-react';
 import { FaArrowRightFromBracket } from 'react-icons/fa6';
 import { useAuthStore } from '@/store/authStore';
 import { theme } from '@/lib/theme';
@@ -45,9 +45,9 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
   const isActive = (href: string) => pathname === href || (href !== '/dashboard' && href !== '/admin' && pathname.startsWith(href + '/'));
 
   const linkStyle = (active: boolean) => ({
-    display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 8,
-    textDecoration: 'none', fontSize: 13, fontWeight: active ? 700 : 500,
-    color: active ? '#0F172A' : '#64748B',
+    display: 'flex', alignItems: 'center', gap: 14, padding: '12px 14px', borderRadius: 8,
+    textDecoration: 'none', fontSize: 13, fontWeight: active ? 500 : 400,
+    color: active ? '#000000' : '#64748B',
     background: active ? '#F1F5F9' : 'transparent',
     transition: 'all 0.2s ease',
   });
@@ -61,9 +61,8 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
       <aside className={`mobile-sidebar ${!mobileOpen ? 'closed' : ''}`} style={{ width: 260, background: '#FFFFFF', height: '100%', borderRight: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', fontFamily: F, position: 'fixed', top: 0, left: 0, zIndex: 30 }}>
 
         {/* Logo */}
-        <div style={{ padding: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ padding: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
           <Link href="/" style={{ textDecoration: 'none' }}>
-            {/* The mockup shows a black logo. Let's use logo.png (assumed black text for light bg) */}
             <img src="/logo.png" alt="Studio Arella Logo" style={{ height: 42, objectFit: 'contain' }} />
           </Link>
           {mobileOpen && (
@@ -77,15 +76,15 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
         <nav style={{ flex: 1, padding: '0 16px 24px', overflowY: 'auto' }}>
           
           {isAdmin ? (
-             <div style={{ marginBottom: 24 }}>
-              <p style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', padding: '0 14px', marginBottom: 8, letterSpacing: '0.05em' }}>Admin Panel</p>
-              <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
+             <div style={{ marginBottom: 32 }}>
+              <p style={{ fontSize: 11, fontWeight: 600, color: '#94A3B8', padding: '0 14px', marginBottom: 12, letterSpacing: '0.05em' }}>Admin Panel</p>
+              <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {adminNav.map((item) => {
                   const active = isActive(item.href);
                   return (
                     <li key={item.href}>
                       <Link href={item.href} onClick={onClose} style={linkStyle(active)}>
-                        <item.icon size={18} strokeWidth={active ? 2.5 : 2} style={{ color: active ? '#0F172A' : '#94A3B8' }} />
+                        <item.icon size={18} strokeWidth={1.5} style={{ color: active ? '#000000' : '#64748B' }} />
                         <span>{item.label}</span>
                       </Link>
                     </li>
@@ -96,31 +95,31 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
           ) : (
             <>
               {/* Favorites / Recently */}
-              <div style={{ display: 'flex', gap: 16, padding: '0 14px', marginBottom: 12 }}>
-                <span style={{ fontSize: 12, fontWeight: 600, color: '#94A3B8' }}>Favorites</span>
-                <span style={{ fontSize: 12, fontWeight: 600, color: '#CBD5E1' }}>Recently</span>
+              <div style={{ display: 'flex', gap: 16, padding: '0 14px', marginBottom: 16 }}>
+                <span style={{ fontSize: 12, fontWeight: 500, color: '#64748B' }}>Favorites</span>
+                <span style={{ fontSize: 12, fontWeight: 500, color: '#CBD5E1' }}>Recently</span>
               </div>
-              <ul style={{ listStyle: 'none', margin: '0 0 24px', padding: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <ul style={{ listStyle: 'none', margin: '0 0 32px', padding: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <li style={{ padding: '4px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
                   <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#CBD5E1' }} />
-                  <Link href="/dashboard" style={{ fontSize: 13, color: '#0F172A', textDecoration: 'none', fontWeight: 600 }}>Overview</Link>
+                  <Link href="/dashboard" style={{ fontSize: 13, color: '#000000', textDecoration: 'none', fontWeight: 400 }}>Overview</Link>
                 </li>
                 <li style={{ padding: '4px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
                   <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#CBD5E1' }} />
-                  <Link href="/podcast" style={{ fontSize: 13, color: '#0F172A', textDecoration: 'none', fontWeight: 600 }}>Podcast</Link>
+                  <Link href="/podcast" style={{ fontSize: 13, color: '#000000', textDecoration: 'none', fontWeight: 400 }}>Podcast</Link>
                 </li>
               </ul>
 
               {/* Dashboards */}
-              <div style={{ marginBottom: 24 }}>
-                <p style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', padding: '0 14px', marginBottom: 8, letterSpacing: '0.05em' }}>Dashboards</p>
-                <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <div style={{ marginBottom: 32 }}>
+                <p style={{ fontSize: 11, fontWeight: 600, color: '#94A3B8', padding: '0 14px', marginBottom: 12, letterSpacing: '0.02em' }}>Dashboards</p>
+                <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
                   {DASHBOARDS.map((item) => {
                     const active = isActive(item.href);
                     return (
                       <li key={item.href}>
                         <Link href={item.href} onClick={onClose} style={linkStyle(active)}>
-                          <item.icon size={18} strokeWidth={active ? 2.5 : 2} style={{ color: active ? '#0F172A' : '#94A3B8' }} />
+                          <item.icon size={18} strokeWidth={1.5} style={{ color: active ? '#000000' : '#64748B' }} />
                           <span>{item.label}</span>
                         </Link>
                       </li>
@@ -130,15 +129,15 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
               </div>
 
               {/* Pages */}
-              <div style={{ marginBottom: 24 }}>
-                <p style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', padding: '0 14px', marginBottom: 8, letterSpacing: '0.05em' }}>Pages</p>
-                <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <div style={{ marginBottom: 32 }}>
+                <p style={{ fontSize: 11, fontWeight: 600, color: '#94A3B8', padding: '0 14px', marginBottom: 12, letterSpacing: '0.02em' }}>Pages</p>
+                <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
                   {PAGES.map((item) => {
                     const active = isActive(item.href);
                     return (
                       <li key={item.href}>
                         <Link href={item.href} onClick={onClose} style={linkStyle(active)}>
-                          <item.icon size={18} strokeWidth={active ? 2.5 : 2} style={{ color: active ? '#0F172A' : '#94A3B8' }} />
+                          <item.icon size={18} strokeWidth={1.5} style={{ color: active ? '#000000' : '#64748B' }} />
                           <span>{item.label}</span>
                         </Link>
                       </li>
@@ -150,9 +149,9 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
           )}
         </nav>
 
-        {/* User footer - simple logout button matching mockup */}
+        {/* User footer */}
         <div style={{ padding: '24px', display: 'flex' }}>
-          <button onClick={() => { logout(); window.location.href = '/auth/login'; }} style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'none', border: 'none', cursor: 'pointer', color: '#0F172A', fontSize: 14, fontWeight: 700, fontFamily: F }}>
+          <button onClick={() => { logout(); window.location.href = '/auth/login'; }} style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', fontSize: 13, fontWeight: 500, fontFamily: F }}>
              <FaArrowRightFromBracket size={18} /> Logout
           </button>
         </div>
