@@ -305,7 +305,7 @@ export default function RegisterPage() {
               ) : (
                 <>
                   <h2 style={{ fontSize: 20, fontWeight: 700, color: '#0F172A', margin: '0 0 32px' }}>
-                    We sent you a code. Check your work email
+                    We sent you a code. Check your email
                   </h2>
 
                   <div style={{ textAlign: 'left', marginBottom: 8 }}>
@@ -349,7 +349,7 @@ export default function RegisterPage() {
                   </div>
 
                   <p style={{ fontSize: 14, color: '#475569', fontWeight: 500, margin: '0 0 32px', lineHeight: 1.5 }}>
-                    Enter the verification code sent to your work email
+                    Enter the verification code sent to your email
                   </p>
 
                   <AnimatedButton

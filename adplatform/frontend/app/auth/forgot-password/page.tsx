@@ -188,7 +188,7 @@ export default function ForgotPasswordPage() {
 
               <form onSubmit={handleRequestOtp} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                 <div>
-                  <label style={labelStyle}>Work email address*</label>
+                  <label style={labelStyle}>Email address*</label>
                   <input type="email" placeholder="you@example.com"
                     value={email} onChange={e => setEmail(e.target.value)}
                     required style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
@@ -211,7 +211,7 @@ export default function ForgotPasswordPage() {
             <motion.div key="step2" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="w-full max-w-[420px]">
               <h1 style={{ fontSize: 32, fontWeight: 800, color: '#0F172A', margin: '0 0 8px', letterSpacing: '-0.5px' }}>Enter code</h1>
               <p style={{ fontSize: 15, color: '#64748B', margin: '0 0 32px', fontWeight: 500 }}>
-                We sent a four digit code to your work email.
+                We sent a four digit code to your email.
               </p>
 
               <div style={{ textAlign: 'left', marginBottom: 8 }}>
