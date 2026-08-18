@@ -60,6 +60,7 @@ export default function RegisterPage() {
 
   // OTP Modal State
   const [showOtpModal, setShowOtpModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [otpCode, setOtpCode] = useState(['', '', '', '', '', '']);
   const [verifying, setVerifying] = useState(false);
   const [resending, setResending] = useState(false);
@@ -104,7 +105,8 @@ export default function RegisterPage() {
       const res = await api.post('/auth/verify-email', { code: codeStr });
       updateUser({ email_verified: true });
       toast(res.data.message || 'Email verified successfully!', 'success');
-      router.push('/onboarding');
+      setShowOtpModal(false);
+      setShowSuccessModal(true);
     } catch (err: any) {
       toast(err?.response?.data?.message || 'Invalid or expired verification code.', 'error');
       setVerifying(false);
@@ -262,9 +264,9 @@ export default function RegisterPage() {
         </motion.div>
       </div>
 
-      {/* ── OTP Modal Overlay ── */}
+      {/* ── Modals Overlay ── */}
       <AnimatePresence>
-        {showOtpModal && (
+        {(showOtpModal || showSuccessModal) && (
           <div style={{ position: 'absolute', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {/* Blurred Background Backdrop */}
             <motion.div
@@ -276,70 +278,91 @@ export default function RegisterPage() {
             
             {/* Modal Content */}
             <motion.div
+              key={showSuccessModal ? 'success' : 'otp'}
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
               style={{ position: 'relative', background: '#FFFFFF', borderRadius: 16, padding: '40px', width: '100%', maxWidth: 460, boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', textAlign: 'center' }}
             >
-              <h2 style={{ fontSize: 20, fontWeight: 700, color: '#0F172A', margin: '0 0 32px' }}>
-                We sent you a code. Check your work email
-              </h2>
+              {showSuccessModal ? (
+                <>
+                  <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
+                    <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#D4AF37', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <FaCheck size={32} color="#FFFFFF" />
+                    </div>
+                  </div>
+                  <h2 style={{ fontSize: 20, fontWeight: 700, color: '#0F172A', margin: '0 0 32px' }}>
+                    Account created successfully
+                  </h2>
+                  <AnimatedButton
+                    onClick={() => router.push('/onboarding')}
+                    style={{ width: '100%', padding: '14px', background: '#D4AF37', color: '#0F172A', borderRadius: 6, fontSize: 15, fontWeight: 700, border: 'none', cursor: 'pointer', transition: 'all 0.2s' }}
+                  >
+                    Continue to home
+                  </AnimatedButton>
+                </>
+              ) : (
+                <>
+                  <h2 style={{ fontSize: 20, fontWeight: 700, color: '#0F172A', margin: '0 0 32px' }}>
+                    We sent you a code. Check your work email
+                  </h2>
 
-              <div style={{ textAlign: 'left', marginBottom: 8 }}>
-                <label style={{ fontSize: 13, fontWeight: 600, color: '#64748B' }}>Enter code*</label>
-              </div>
+                  <div style={{ textAlign: 'left', marginBottom: 8 }}>
+                    <label style={{ fontSize: 13, fontWeight: 600, color: '#64748B' }}>Enter code*</label>
+                  </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, marginBottom: 8 }}>
-                {otpCode.map((digit, index) => (
-                  <input
-                    key={index}
-                    ref={el => { inputRefs.current[index] = el; }}
-                    type="text"
-                    maxLength={1}
-                    value={digit}
-                    placeholder={index === 0 ? '1' : ''}
-                    onChange={(e) => handleOtpChange(index, e.target.value)}
-                    onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                    onPaste={handleOtpPaste}
-                    disabled={verifying}
-                    style={{
-                      width: '100%', height: 56, background: '#FFFFFF',
-                      border: `1px solid ${digit || index === 0 ? '#D4AF37' : '#E2E8F0'}`,
-                      borderRadius: 8, fontSize: 20, fontWeight: 700, color: '#0F172A',
-                      textAlign: 'center', outline: 'none',
-                      boxShadow: digit || index === 0 ? '0 0 0 2px rgba(212,175,55,0.1)' : 'none',
-                      transition: 'all 0.2s',
-                    }}
-                    onFocus={(e) => { e.target.style.borderColor = '#D4AF37'; e.target.style.boxShadow = '0 0 0 2px rgba(212,175,55,0.1)'; }}
-                    onBlur={(e) => { if(!digit && index !== 0) { e.target.style.borderColor = '#E2E8F0'; e.target.style.boxShadow = 'none'; } }}
-                  />
-                ))}
-              </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, marginBottom: 8 }}>
+                    {otpCode.map((digit, index) => (
+                      <input
+                        key={index}
+                        ref={el => { inputRefs.current[index] = el; }}
+                        type="text"
+                        maxLength={1}
+                        value={digit}
+                        placeholder={index === 0 ? '1' : ''}
+                        onChange={(e) => handleOtpChange(index, e.target.value)}
+                        onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                        onPaste={handleOtpPaste}
+                        disabled={verifying}
+                        style={{
+                          width: '100%', height: 56, background: '#FFFFFF',
+                          border: `1px solid ${digit || index === 0 ? '#D4AF37' : '#E2E8F0'}`,
+                          borderRadius: 8, fontSize: 20, fontWeight: 700, color: '#0F172A',
+                          textAlign: 'center', outline: 'none',
+                          boxShadow: digit || index === 0 ? '0 0 0 2px rgba(212,175,55,0.1)' : 'none',
+                          transition: 'all 0.2s',
+                        }}
+                        onFocus={(e) => { e.target.style.borderColor = '#D4AF37'; e.target.style.boxShadow = '0 0 0 2px rgba(212,175,55,0.1)'; }}
+                        onBlur={(e) => { if(!digit && index !== 0) { e.target.style.borderColor = '#E2E8F0'; e.target.style.boxShadow = 'none'; } }}
+                      />
+                    ))}
+                  </div>
 
-              <div style={{ textAlign: 'right', marginBottom: 24 }}>
-                <span style={{ fontSize: 13, color: '#94A3B8', fontWeight: 500 }}>
-                  Didn't get code?{' '}
-                  <button onClick={handleResend} disabled={resending} style={{ background: 'none', border: 'none', color: '#D4AF37', fontWeight: 600, cursor: resending ? 'wait' : 'pointer', padding: 0 }}>
-                    {resending ? 'Sending...' : 'Resend'}
-                  </button>
-                </span>
-              </div>
+                  <div style={{ textAlign: 'right', marginBottom: 24 }}>
+                    <span style={{ fontSize: 13, color: '#94A3B8', fontWeight: 500 }}>
+                      Didn't get code?{' '}
+                      <button onClick={handleResend} disabled={resending} style={{ background: 'none', border: 'none', color: '#D4AF37', fontWeight: 600, cursor: resending ? 'wait' : 'pointer', padding: 0 }}>
+                        {resending ? 'Sending...' : 'Resend'}
+                      </button>
+                    </span>
+                  </div>
 
-              <p style={{ fontSize: 14, color: '#475569', fontWeight: 500, margin: '0 0 32px', lineHeight: 1.5 }}>
-                Enter the verification code sent to your work email
-              </p>
+                  <p style={{ fontSize: 14, color: '#475569', fontWeight: 500, margin: '0 0 32px', lineHeight: 1.5 }}>
+                    Enter the verification code sent to your work email
+                  </p>
 
-              <AnimatedButton
-                onClick={() => handleVerify(otpCode.join(''))}
-                disabled={verifying || otpCode.some(v => v === '')}
-                loading={verifying}
-                loadingText="Verifying..."
-                style={{ width: '100%', padding: '14px', background: '#D4AF37', color: '#0F172A', borderRadius: 6, fontSize: 15, fontWeight: 700, border: 'none', cursor: (verifying || otpCode.some(v => v === '')) ? 'not-allowed' : 'pointer', opacity: (verifying || otpCode.some(v => v === '')) ? 0.7 : 1, transition: 'all 0.2s' }}
-              >
-                Continue
-              </AnimatedButton>
-
+                  <AnimatedButton
+                    onClick={() => handleVerify(otpCode.join(''))}
+                    disabled={verifying || otpCode.some(v => v === '')}
+                    loading={verifying}
+                    loadingText="Verifying..."
+                    style={{ width: '100%', padding: '14px', background: '#D4AF37', color: '#0F172A', borderRadius: 6, fontSize: 15, fontWeight: 700, border: 'none', cursor: (verifying || otpCode.some(v => v === '')) ? 'not-allowed' : 'pointer', opacity: (verifying || otpCode.some(v => v === '')) ? 0.7 : 1, transition: 'all 0.2s' }}
+                  >
+                    Continue
+                  </AnimatedButton>
+                </>
+              )}
             </motion.div>
           </div>
         )}
