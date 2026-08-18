@@ -6,18 +6,18 @@ import { theme } from '@/lib/theme';
 const F = theme.font.body;
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
-interface GoogleButtonProps { label?: string; }
+interface GoogleButtonProps { label?: string; style?: React.CSSProperties; }
 
-export default function GoogleButton({ label = 'Continue with Google' }: GoogleButtonProps) {
+export default function GoogleButton({ label = 'Continue with Google', style }: GoogleButtonProps) {
   const [loading, setLoading] = useState(false);
   const handleClick = () => {
     setLoading(true);
     window.location.href = `${API}/auth/google?t=${Date.now()}`;
   };
   return (
-    <button onClick={handleClick} disabled={loading} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 11, padding: '14px 16px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, color: '#F8FAFC', fontSize: 14, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', fontFamily: F, transition: 'all 0.2s', opacity: loading ? 0.7 : 1, backdropFilter: 'blur(10px)' }}
-      onMouseOver={e => { if (!loading) { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.08)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(255,255,255,0.2)'; } }}
-      onMouseOut={e => { if (!loading) { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.04)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(255,255,255,0.1)'; } }}>
+    <button onClick={handleClick} disabled={loading} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 11, padding: '14px 16px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, color: '#F8FAFC', fontSize: 14, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', fontFamily: F, transition: 'all 0.2s', opacity: loading ? 0.7 : 1, backdropFilter: 'blur(10px)', ...style }}
+      onMouseOver={e => { if (!loading) { (e.currentTarget as HTMLButtonElement).style.opacity = '0.8'; } }}
+      onMouseOut={e => { if (!loading) { (e.currentTarget as HTMLButtonElement).style.opacity = '1'; } }}>
       {loading ? (
         <svg style={{ animation: 'spin 1s linear infinite', width: 18, height: 18, color: theme.color.text3 }} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
           <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" strokeOpacity="0.25"></circle>
