@@ -55,7 +55,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div style={{ 
       display: 'flex', 
       height: '100vh', 
-      background: `radial-gradient(circle at top right, rgba(224, 165, 38, 0.08), transparent 40%), radial-gradient(circle at bottom left, rgba(224, 165, 38, 0.04), transparent 40%), ${theme.color.bg}`, 
+      background: '#FFFFFF', // Clean white background as per Figma
       fontFamily: F, 
       overflow: 'hidden' 
     }}>
@@ -66,12 +66,35 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       }} />}
       <ThemeProvider />
       <Sidebar mobileOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
-      <div className="main-wrapper" style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+      
+      {/* We need margin-left on desktop to account for the fixed sidebar width (260px) */}
+      <div className="main-wrapper" style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, marginLeft: mobileOpen ? 0 : 260, transition: 'margin-left 0.2s ease' }}>
         <Navbar onMenuClick={() => setMobileOpen(o => !o)} />
-        <main style={{ flex: 1, overflowY: 'auto', padding: 'clamp(16px, 4vw, 28px) clamp(16px, 5vw, 32px)' }}>
+        {/* Adjusted padding for the light mode interface */}
+        <main style={{ flex: 1, overflowY: 'auto', padding: '0', background: '#FAFAFA' }}>
           {children}
         </main>
       </div>
+      
+      {/* Media query for mobile to override margin-left */}
+      <style>{`
+        @media (max-width: 1024px) {
+          .main-wrapper {
+            margin-left: 0 !important;
+          }
+          .hide-on-mobile {
+            display: none !important;
+          }
+        }
+        @media (min-width: 1025px) {
+          .show-on-mobile {
+            display: none !important;
+          }
+          .show-on-mobile-flex {
+            display: none !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }
