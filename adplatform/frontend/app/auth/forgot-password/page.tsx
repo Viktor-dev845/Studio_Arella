@@ -1,148 +1,330 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useRef } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { AnimatedButton } from '@/components/ui/Animations';
-import { FaArrowRight, FaEnvelope, FaLocationDot } from 'react-icons/fa6';
+import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/ToastProvider';
+import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatedButton } from '@/components/ui/Animations';
 import api from '@/lib/api';
 
 const F = "'Quicksand', sans-serif";
 
 export default function ForgotPasswordPage() {
-  const router = useRouter();
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   const [email, setEmail] = useState('');
-  const [sent, setSent] = useState(false);
+  const [otpCode, setOtpCode] = useState(['', '', '', '']);
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  
+  const [showPw, setShowPw] = useState(false);
+  const [showConfirmPw, setShowConfirmPw] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
+  const [resending, setResending] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const { toast } = useToast();
+  const router = useRouter();
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  const inputStyle: React.CSSProperties = {
+    width: '100%', padding: '13px 14px', background: '#FFFFFF',
+    border: '1px solid #CBD5E1', borderRadius: 4, fontSize: 13,
+    fontFamily: F, color: '#0F172A', outline: 'none', boxSizing: 'border-box',
+    transition: 'border-color 0.2s, box-shadow 0.2s', fontWeight: 500
+  };
+  const onFocus = (e: any) => { 
+    e.target.style.borderColor = '#D4AF37'; 
+    e.target.style.boxShadow = '0 0 0 2px rgba(212,175,55,0.1)'; 
+  };
+  const onBlur  = (e: any) => { 
+    e.target.style.borderColor = '#CBD5E1'; 
+    e.target.style.boxShadow = 'none'; 
+  };
+
+  const labelStyle: React.CSSProperties = {
+    fontSize: 12, fontWeight: 600, color: '#64748B', display: 'block',
+    marginBottom: 6,
+  };
+
+  // Step 1: Request OTP
+  const handleRequestOtp = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email.trim()) { toast('Please enter your email', 'error'); return; }
+    
     setLoading(true);
     try {
       await api.post('/auth/forgot-password', { email });
-      router.push(`/auth/reset-password?email=${encodeURIComponent(email)}`);
+      setStep(2);
+      toast('Verification code sent to your email', 'success');
+      setTimeout(() => inputRefs.current[0]?.focus(), 100);
     } catch (err: any) {
-      toast(err?.response?.data?.message || 'Failed to send reset link', 'error');
+      toast(err?.response?.data?.message || 'Something went wrong', 'error');
     } finally {
       setLoading(false);
     }
   };
 
-  const inputStyle: React.CSSProperties = {
-    width: '100%', padding: '12px 14px', background: 'rgba(255,255,255,0.03)',
-    border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, fontSize: 14,
-    fontFamily: F, color: '#F8FAFC', outline: 'none', boxSizing: 'border-box',
-    transition: 'border-color 0.2s, box-shadow 0.2s, background 0.2s',
-  };
-  const onFocus = (e: any) => { 
-    e.target.style.borderColor = '#D4AF37'; 
-    e.target.style.boxShadow = '0 0 0 3px rgba(212,175,55,0.15)'; 
-    e.target.style.background = 'rgba(255,255,255,0.05)';
-  };
-  const onBlur  = (e: any) => { 
-    e.target.style.borderColor = 'rgba(255,255,255,0.1)'; 
-    e.target.style.boxShadow = 'none'; 
-    e.target.style.background = 'rgba(255,255,255,0.03)';
+  // Step 2: OTP Entry
+  const handleOtpChange = (index: number, value: string) => {
+    if (!/^[0-9]*$/.test(value)) return;
+    const newCode = [...otpCode];
+    newCode[index] = value;
+    setOtpCode(newCode);
+
+    if (value && index < 3) inputRefs.current[index + 1]?.focus();
+    // In Figma, there's a continue button, so we don't auto-submit.
   };
 
-  const labelStyle: React.CSSProperties = {
-    fontSize: 12, fontWeight: 800, color: '#94A3B8', display: 'block',
-    marginBottom: 7, textTransform: 'uppercase', letterSpacing: '0.06em',
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && !otpCode[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handleOtpPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text/plain').replace(/\D/g, '').slice(0, 4);
+    if (!pastedData) return;
+    const newCode = [...otpCode];
+    for (let i = 0; i < pastedData.length; i++) newCode[i] = pastedData[i];
+    setOtpCode(newCode);
+    const focusIndex = pastedData.length < 4 ? pastedData.length : 3;
+    inputRefs.current[focusIndex]?.focus();
+  };
+
+  const handleResend = async () => {
+    setResending(true);
+    try {
+      await api.post('/auth/forgot-password', { email });
+      toast('Verification code resent!', 'success');
+    } catch (err: any) {
+      toast(err?.response?.data?.message || 'Failed to resend.', 'error');
+    } finally {
+      setResending(false);
+    }
+  };
+
+  const handleVerifyOtp = () => {
+    if (otpCode.some(v => v === '')) {
+      toast('Please enter the full 4-digit code', 'error');
+      return;
+    }
+    setStep(3);
+  };
+
+  // Step 3: Reset Password
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password.length < 6) { toast('Password must be at least 6 characters', 'error'); return; }
+    if (password !== confirmPassword) { toast('Passwords do not match', 'error'); return; }
+    
+    setLoading(true);
+    try {
+      await api.post('/auth/reset-password', { email, code: otpCode.join(''), password });
+      toast('Password changed successfully!', 'success');
+      router.push('/auth/login');
+    } catch (err: any) {
+      toast(err?.response?.data?.message || 'Invalid or expired code.', 'error');
+      // If code is invalid, let them go back to step 2 or resend
+      if (err?.response?.status === 400) setStep(2);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2" style={{ fontFamily: F, minHeight: '100vh', background: 'linear-gradient(135deg, #0f172a 0%, #0a0a0a 100%)', color: '#F8FAFC' }}>
+    <div className="flex" style={{ fontFamily: F, minHeight: '100vh', background: '#FFFFFF' }}>
+      
+      {/* ── Left panel (Image + Overlay) ── */}
+      <div className="hidden lg:flex flex-col justify-center" style={{ flex: '1 1 50%', maxWidth: '50%', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'url("/signup-bg.jpg")', backgroundSize: 'cover', backgroundPosition: 'center', zIndex: 0 }} />
+        <div style={{ position: 'absolute', inset: 0, backgroundColor: '#705F1C', opacity: 0.85, mixBlendMode: 'multiply', zIndex: 1 }} />
+        <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(92, 77, 21, 0.7)', zIndex: 2 }} />
 
-      {/* Left panel */}
-      <div className="hidden lg:flex flex-col justify-between" style={{ background: `linear-gradient(to right, rgba(5,5,5,0.95), rgba(5,5,5,0.6)), url("https://images.unsplash.com/photo-1511268559489-34b624fbfcf5?w=1200&q=85&auto=format&fit=crop")`, backgroundSize: 'cover', backgroundPosition: 'center', padding: 48, position: 'relative', overflow: 'hidden', borderRight: '1px solid rgba(255,255,255,0.15)' }}>
-        <div style={{ position: 'absolute', bottom: -60, right: -60, width: 320, height: 320, background: 'radial-gradient(circle, rgba(212,175,55,0.15) 0%, transparent 70%)', pointerEvents: 'none', filter: 'blur(40px)' }} />
-        <div style={{ position: 'absolute', top: -40, left: -40, width: 200, height: 200, background: 'radial-gradient(circle, rgba(6,182,212,0.1) 0%, transparent 70%)', pointerEvents: 'none', filter: 'blur(40px)' }} />
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, textDecoration: 'none', marginBottom: 56 }}>
-            <img src="/logo-white.png" alt="Studio Arella Logo" style={{ height: 80, objectFit: 'contain' }} />
-          </Link>
-          <h2 style={{ fontSize: 'clamp(28px,3vw,40px)', fontWeight: 900, color: '#F8FAFC', margin: '0 0 16px', letterSpacing: '-1px', lineHeight: 1.15 }}>Welcome back to<br />Studio Arella</h2>
-          <p style={{ fontSize: 16, color: '#94A3B8', lineHeight: 1.7, margin: '0 0 40px', fontWeight: 500, maxWidth: 400 }}>
-            Sign in to manage your ad campaigns, track impressions, and book new slots on the Studio Arella screen at Bems Junction.
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            {[['₦1,000/minute','Starting price for ad slots'],['Bems Junction','Umuahia\'s highest-traffic location'],['Instant delivery','Your ad goes live immediately']].map(([v,l]) => (
-              <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#D4AF37', flexShrink: 0, boxShadow: '0 0 10px rgba(212,175,55,0.5)' }} />
-                <span style={{ fontSize: 14, fontWeight: 700, color: '#F8FAFC' }}>{v}</span>
-                <span style={{ fontSize: 13, color: '#64748B', fontWeight: 500 }}>— {l}</span>
-              </div>
-            ))}
+        <div style={{ position: 'relative', zIndex: 3, padding: '0 10%', display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'center' }}>
+          
+          <div style={{ position: 'absolute', top: 60, left: '10%' }}>
+            <Link href="/">
+              <img src="/logo-white.png" alt="Studio Arella Logo" style={{ height: 60, objectFit: 'contain' }} />
+            </Link>
           </div>
-        </div>
-        
-        <div style={{ position: 'relative', zIndex: 1, background: 'rgba(255,255,255,0.02)', borderRadius: 14, padding: '18px 22px', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(12px)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 6 }}>
-            <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 6px #22c55e' }} />
-            <span style={{ fontSize: 11, fontWeight: 900, color: '#22c55e', letterSpacing: '0.06em' }}>SCREEN ONLINE</span>
+
+          <div style={{ color: '#D4AF37', fontSize: 60, fontFamily: 'serif', fontWeight: 900, lineHeight: 0.5, marginBottom: 24, marginTop: 40 }}>“</div>
+          
+          <div style={{ position: 'relative', display: 'inline-block', alignSelf: 'flex-start' }}>
+            <h2 style={{ fontSize: 24, fontWeight: 500, color: '#FFFFFF', margin: '0', lineHeight: 1.5, maxWidth: 360 }}>
+              Welcome back! Start creating your podcasts, music, and ads in real time.
+            </h2>
+            
+            {/* The white angle accent */}
+            <div style={{ position: 'absolute', bottom: -20, right: -40, width: 20, height: 20, borderBottom: '5px solid #FFFFFF', borderRight: '5px solid #FFFFFF' }} />
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <FaLocationDot size={13} color="#D4AF37" />
-            <span style={{ fontSize: 13, color: '#94A3B8', fontWeight: 600 }}>Bems Junction, Finbars by Bende Road, Umuahia</span>
-          </div>
+          
+          {/* Faint dotted accent top right */}
+          <div style={{ position: 'absolute', top: 180, right: 60, width: 60, height: 60, backgroundImage: 'radial-gradient(circle, rgba(212,175,55,0.4) 2px, transparent 2px)', backgroundSize: '12px 12px' }} />
+
         </div>
       </div>
 
-      {/* Right — form */}
-      <div className="flex items-center justify-center p-6 md:p-12 lg:p-14" style={{ background: '#0a0a0a', position: 'relative' }}>
+      {/* ── Right panel (Dynamic Form) ── */}
+      <div className="flex items-center justify-center p-6 md:p-12 lg:p-16" style={{ flex: '1 1 50%', maxWidth: '100%', position: 'relative', overflow: 'hidden' }}>
         
-        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 400, height: 400, background: 'radial-gradient(circle, rgba(212,175,55,0.05) 0%, transparent 60%)', filter: 'blur(50px)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', top: 40, right: 40, textAlign: 'right' }}>
+           <Link href="/auth/login" style={{ fontSize: 13, color: '#64748B', fontWeight: 700, textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+             <span style={{ fontSize: 11, color: '#CBD5E1', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Go to</span>
+             Log in
+           </Link>
+        </div>
 
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} 
-          className="w-full max-w-[420px] p-6 md:p-10"
-          style={{ position: 'relative', zIndex: 1, background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 24, boxShadow: '0 20px 40px rgba(0,0,0,0.5)', backdropFilter: 'blur(20px)' }}>
+        <AnimatePresence mode="wait">
           
-          {!sent ? (
-            <>
-              <h1 style={{ fontSize: 26, fontWeight: 900, color: '#F8FAFC', margin: '0 0 4px', letterSpacing: '-0.5px' }}>Forgot your password?</h1>
-              <p style={{ fontSize: 14, color: '#94A3B8', margin: '0 0 28px', fontWeight: 500, lineHeight: 1.6 }}>
-                Enter your email address and we'll send you a password reset link valid for 15 minutes.
+          {/* STEP 1: Email Input */}
+          {step === 1 && (
+            <motion.div key="step1" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="w-full max-w-[420px]">
+              <h1 style={{ fontSize: 32, fontWeight: 800, color: '#0F172A', margin: '0 0 8px', letterSpacing: '-0.5px' }}>Forgot password</h1>
+              <p style={{ fontSize: 15, color: '#64748B', margin: '0 0 32px', fontWeight: 500 }}>
+                Enter your email and a verification code will be sent to you
               </p>
 
-              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <form onSubmit={handleRequestOtp} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                 <div>
-                  <label style={labelStyle}>Email address</label>
-                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" required style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
+                  <label style={labelStyle}>Work email address*</label>
+                  <input type="email" placeholder="you@example.com"
+                    value={email} onChange={e => setEmail(e.target.value)}
+                    required style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
                 </div>
-                
+
                 <AnimatedButton
                   type="submit"
                   loading={loading}
-                  loadingText="Sending"
-                  style={{ width: '100%', padding: '13px', background: '#D4AF37', color: '#111111', borderRadius: 12, fontSize: 15, fontWeight: 800, boxShadow: '0 8px 24px rgba(212,175,55,0.3)', marginTop: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7 }}
+                  loadingText="Sending..."
+                  style={{ width: '100%', padding: '14px', background: '#D4AF37', color: '#0F172A', borderRadius: 6, fontSize: 15, fontWeight: 700, border: 'none', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(212,175,55,0.2)' }}
                 >
-                  <FaEnvelope size={14} /> Send reset link
+                  Continue
                 </AnimatedButton>
               </form>
-            </>
-          ) : (
-            <div style={{ textAlign: 'center', padding: '20px 0' }}>
-              <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
-                <FaEnvelope size={28} color="#D4AF37" />
-              </div>
-              <h2 style={{ fontSize: 24, fontWeight: 900, color: '#F8FAFC', margin: '0 0 8px', letterSpacing: '-0.5px' }}>Check your inbox</h2>
-              <p style={{ fontSize: 14, color: '#94A3B8', margin: '0 0 24px', lineHeight: 1.6, fontWeight: 500 }}>
-                If <strong>{email}</strong> is registered, a password reset link has been sent. Check your spam folder if you don't see it.
-              </p>
-              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', margin: '0 0 18px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>The link expires in 15 minutes</p>
-            </div>
+            </motion.div>
           )}
 
-          <div style={{ textAlign: 'center', marginTop: 32 }}>
-            <Link href="/auth/login" style={{ fontSize: 13, color: '#D4AF37', fontWeight: 700, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-              <FaArrowRight style={{ transform: 'rotate(180deg)' }} /> Back to sign in
-            </Link>
-          </div>
-        </motion.div>
+          {/* STEP 2: OTP */}
+          {step === 2 && (
+            <motion.div key="step2" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="w-full max-w-[420px]">
+              <h1 style={{ fontSize: 32, fontWeight: 800, color: '#0F172A', margin: '0 0 8px', letterSpacing: '-0.5px' }}>Enter code</h1>
+              <p style={{ fontSize: 15, color: '#64748B', margin: '0 0 32px', fontWeight: 500 }}>
+                We sent a four digit code to your work email.
+              </p>
+
+              <div style={{ textAlign: 'left', marginBottom: 8 }}>
+                <label style={labelStyle}>Enter code*</label>
+              </div>
+
+              <div style={{ display: 'flex', gap: 16, marginBottom: 8 }}>
+                {otpCode.map((digit, index) => (
+                  <input
+                    key={index}
+                    ref={el => { inputRefs.current[index] = el; }}
+                    type="text"
+                    maxLength={1}
+                    value={digit}
+                    placeholder={index === 0 ? '1' : ''}
+                    onChange={(e) => handleOtpChange(index, e.target.value)}
+                    onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                    onPaste={handleOtpPaste}
+                    style={{
+                      flex: 1, height: 56, background: '#FFFFFF',
+                      border: `1px solid ${digit || index === 0 ? '#D4AF37' : '#CBD5E1'}`,
+                      borderRadius: 8, fontSize: 20, fontWeight: 700, color: '#0F172A',
+                      textAlign: 'center', outline: 'none',
+                      boxShadow: digit || index === 0 ? '0 0 0 2px rgba(212,175,55,0.1)' : 'none',
+                      transition: 'all 0.2s',
+                    }}
+                    onFocus={(e) => { e.target.style.borderColor = '#D4AF37'; e.target.style.boxShadow = '0 0 0 2px rgba(212,175,55,0.1)'; }}
+                    onBlur={(e) => { if(!digit && index !== 0) { e.target.style.borderColor = '#CBD5E1'; e.target.style.boxShadow = 'none'; } }}
+                  />
+                ))}
+              </div>
+
+              <div style={{ textAlign: 'right', marginBottom: 32 }}>
+                <span style={{ fontSize: 13, color: '#94A3B8', fontWeight: 500 }}>
+                  Didn't get code?{' '}
+                  <button onClick={handleResend} disabled={resending} style={{ background: 'none', border: 'none', color: '#D4AF37', fontWeight: 600, cursor: resending ? 'wait' : 'pointer', padding: 0 }}>
+                    {resending ? 'Sending...' : 'Resend'}
+                  </button>
+                </span>
+              </div>
+
+              <AnimatedButton
+                onClick={handleVerifyOtp}
+                disabled={otpCode.some(v => v === '')}
+                style={{ width: '100%', padding: '14px', background: '#D4AF37', color: '#0F172A', borderRadius: 6, fontSize: 15, fontWeight: 700, border: 'none', cursor: (otpCode.some(v => v === '')) ? 'not-allowed' : 'pointer', opacity: (otpCode.some(v => v === '')) ? 0.7 : 1, transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(212,175,55,0.2)' }}
+              >
+                Continue
+              </AnimatedButton>
+            </motion.div>
+          )}
+
+          {/* STEP 3: Change Password */}
+          {step === 3 && (
+            <motion.div key="step3" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="w-full max-w-[420px]">
+              <h1 style={{ fontSize: 32, fontWeight: 800, color: '#0F172A', margin: '0 0 8px', letterSpacing: '-0.5px' }}>Change password</h1>
+              <p style={{ fontSize: 15, color: '#64748B', margin: '0 0 32px', fontWeight: 500 }}>
+                Enter a new password and proceed to Log in
+              </p>
+
+              <form onSubmit={handleResetPassword} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                
+                <div>
+                  <label style={labelStyle}>New password*</label>
+                  <div style={{ position: 'relative' }}>
+                    <input type={showPw ? 'text' : 'password'} placeholder="123 Arella"
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      required style={{ ...inputStyle, paddingRight: 60 }} onFocus={onFocus} onBlur={onBlur} />
+                    <button type="button" onClick={() => setShowPw(p => !p)}
+                      style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#0F172A', fontWeight: 600, fontSize: 11 }}>
+                      {showPw ? 'Hide' : 'Show'}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label style={labelStyle}>Password*</label>
+                  <div style={{ position: 'relative' }}>
+                    <input type={showConfirmPw ? 'text' : 'password'} placeholder="Confirm password"
+                      value={confirmPassword}
+                      onChange={e => setConfirmPassword(e.target.value)}
+                      required style={{ ...inputStyle, paddingRight: 60 }} onFocus={onFocus} onBlur={onBlur} />
+                    <button type="button" onClick={() => setShowConfirmPw(p => !p)}
+                      style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#0F172A', fontWeight: 600, fontSize: 11 }}>
+                      {showConfirmPw ? 'Hide' : 'Show'}
+                    </button>
+                  </div>
+                </div>
+
+                <AnimatedButton
+                  type="submit"
+                  loading={loading}
+                  loadingText="Resetting..."
+                  style={{ width: '100%', padding: '14px', background: '#D4AF37', color: '#0F172A', borderRadius: 6, fontSize: 15, fontWeight: 700, border: 'none', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(212,175,55,0.2)', marginTop: 8 }}
+                >
+                  Proceed to login
+                </AnimatedButton>
+              </form>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
+
+      <style>{`
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus, 
+        input:-webkit-autofill:active{
+            -webkit-box-shadow: 0 0 0 30px #ffffff inset !important;
+            -webkit-text-fill-color: #0F172A !important;
+            transition: background-color 5000s ease-in-out 0s;
+        }
+      `}</style>
     </div>
   );
 }

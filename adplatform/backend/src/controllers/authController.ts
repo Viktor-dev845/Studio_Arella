@@ -96,7 +96,7 @@ export const register: RequestHandler = async (req, res) => {
     const user = result.rows[0];
 
     // Create 6-digit verification code
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const code = Math.floor(1000 + Math.random() * 9000).toString();
     await pool.query(
       `INSERT INTO email_verification_tokens (user_id, token, expires_at)
        VALUES ($1, $2, NOW() + INTERVAL '24 hours')`,
@@ -168,7 +168,7 @@ export const resendVerification: RequestHandler = async (req, res) => {
     // Invalidate old tokens
     await pool.query('UPDATE email_verification_tokens SET used = true WHERE user_id = $1', [user.id]);
 
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const code = Math.floor(1000 + Math.random() * 9000).toString();
     await pool.query(
       `INSERT INTO email_verification_tokens (user_id, token, expires_at)
        VALUES ($1, $2, NOW() + INTERVAL '24 hours')`,
@@ -383,7 +383,7 @@ export const forgotPassword: RequestHandler = async (req, res) => {
     // Invalidate old tokens
     await pool.query('UPDATE password_reset_tokens SET used = true WHERE user_id = $1', [user.rows[0].id]);
 
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const code = Math.floor(1000 + Math.random() * 9000).toString();
     await pool.query(
       `INSERT INTO password_reset_tokens (user_id, token, expires_at)
        VALUES ($1, $2, NOW() + INTERVAL '15 minutes')`,
