@@ -54,6 +54,15 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
 
   return (
     <>
+      <style>{`
+        .sidebar-link {
+          transition: background-color 0.2s ease, opacity 0.2s ease;
+        }
+        .sidebar-link:hover {
+          background-color: #F1F5F9 !important;
+          opacity: 0.85;
+        }
+      `}</style>
       {mobileOpen && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.4)', zIndex: 20, backdropFilter: 'blur(2px)' }}
           onClick={onClose} />
@@ -83,7 +92,7 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                   const active = isActive(item.href);
                   return (
                     <li key={item.href}>
-                      <Link href={item.href} onClick={onClose} style={linkStyle(active)}>
+                      <Link href={item.href} onClick={onClose} style={linkStyle(active)} className="sidebar-link">
                         <item.icon size={18} strokeWidth={1.5} style={{ color: active ? '#000000' : '#000000ff' }} />
                         <span>{item.label}</span>
                       </Link>
@@ -100,13 +109,13 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                 <span style={{ fontSize: 12, fontWeight: 500, color: '#CBD5E1' }}>Recently</span>
               </div>
               <ul style={{ listStyle: 'none', margin: '0 0 32px', padding: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <li style={{ padding: '4px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
+                <li className="sidebar-link" style={{ padding: '6px 14px', display: 'flex', alignItems: 'center', gap: 12, borderRadius: 8, cursor: 'pointer', margin: '0 -4px' }}>
                   <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#CBD5E1' }} />
-                  <Link href="/dashboard" style={{ fontSize: 13, color: '#000000', textDecoration: 'none', fontWeight: 400 }}>Overview</Link>
+                  <Link href="/dashboard" style={{ fontSize: 13, color: '#000000', textDecoration: 'none', fontWeight: 400, flex: 1 }}>Overview</Link>
                 </li>
-                <li style={{ padding: '4px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
+                <li className="sidebar-link" style={{ padding: '6px 14px', display: 'flex', alignItems: 'center', gap: 12, borderRadius: 8, cursor: 'pointer', margin: '0 -4px' }}>
                   <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#CBD5E1' }} />
-                  <Link href="/podcast" style={{ fontSize: 13, color: '#000000', textDecoration: 'none', fontWeight: 400 }}>Podcast</Link>
+                  <Link href="/podcast" style={{ fontSize: 13, color: '#000000', textDecoration: 'none', fontWeight: 400, flex: 1 }}>Podcast</Link>
                 </li>
               </ul>
 
@@ -118,7 +127,7 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                     const active = isActive(item.href);
                     return (
                       <li key={item.href}>
-                        <Link href={item.href} onClick={onClose} style={linkStyle(active)}>
+                        <Link href={item.href} onClick={onClose} style={linkStyle(active)} className="sidebar-link">
                           <item.icon size={18} strokeWidth={1.5} style={{ color: active ? '#000000' : '#000000ff' }} />
                           <span>{item.label}</span>
                         </Link>
@@ -136,7 +145,7 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                     const active = isActive(item.href);
                     return (
                       <li key={item.href}>
-                        <Link href={item.href} onClick={onClose} style={linkStyle(active)}>
+                        <Link href={item.href} onClick={onClose} style={linkStyle(active)} className="sidebar-link">
                           <item.icon size={18} strokeWidth={1.5} style={{ color: active ? '#000000' : '#000000ff' }} />
                           <span>{item.label}</span>
                         </Link>
