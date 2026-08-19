@@ -25,6 +25,14 @@ const CHART_DATA = [
   { name: 'Dec', plays: 70, listeners: 65 },
 ];
 
+const PODCAST_DB: Record<string, { title: string }> = {
+  '1': { title: 'Undressed' },
+  '2': { title: 'Weak in Your Light' },
+  '3': { title: 'Sober Reflection' },
+  '4': { title: 'Father And Son' },
+  '5': { title: 'Business On' },
+};
+
 const TOP_PERFORMING = [
   { title: 'Family life podcast', listeners: '2M active listeners', img: 'https://i.pravatar.cc/100?img=1' },
   { title: 'Growth Lab podcast', listeners: '24 active listeners', img: 'https://i.pravatar.cc/100?img=2' },
@@ -39,14 +47,15 @@ const CALENDAR_EVENTS = [
   { title: 'Podcast booking', time: '13:00', border: '#3B82F6' },
 ];
 
-const EPISODES = [
-  { id: 1, title: 'Undressed', date: 'August 17, 2026', duration: '2 min 22 sec', likes: '2K Likes', img: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=100&q=80' },
-  { id: 2, title: 'Undressed', date: 'August 13, 2026', duration: '2 min 22 sec', likes: '2K Likes', img: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=100&q=80' },
-  { id: 3, title: 'Undressed', date: 'August 10, 2026', duration: '2 min 22 sec', likes: '2K Likes', img: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=100&q=80' },
-];
-
 export default function PodcastDetail({ params }: { params: { id: string } }) {
-  
+  const podcast = PODCAST_DB[params.id] || { title: 'Unknown Podcast' };
+
+  const EPISODES = [
+    { id: 1, title: podcast.title, date: 'August 17, 2026', duration: '2 min 22 sec', likes: '2K Likes', img: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=100&q=80' },
+    { id: 2, title: podcast.title, date: 'August 13, 2026', duration: '2 min 22 sec', likes: '2K Likes', img: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=100&q=80' },
+    { id: 3, title: podcast.title, date: 'August 10, 2026', duration: '2 min 22 sec', likes: '2K Likes', img: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=100&q=80' },
+  ];
+
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       return (
@@ -67,7 +76,7 @@ export default function PodcastDetail({ params }: { params: { id: string } }) {
         
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <h1 style={{ fontSize: 20, fontWeight: 800, color: '#0F172A', margin: 0, letterSpacing: '-0.3px' }}>Undressed podcast</h1>
+          <h1 style={{ fontSize: 20, fontWeight: 800, color: '#0F172A', margin: 0, letterSpacing: '-0.3px' }}>{podcast.title} podcast</h1>
           <button style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 8, padding: '6px 12px', color: '#64748B', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
             Today <ChevronDown size={14} />
           </button>
