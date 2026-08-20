@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { useThemeStore } from '@/store/themeStore';
 import { FaUser, FaSun, FaMoon } from 'react-icons/fa6';
@@ -15,9 +15,30 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const { user } = useAuthStore();
   const { theme: appTheme, toggleTheme } = useThemeStore();
   const router = useRouter();
+  const pathname = usePathname() || '';
   
   // Fake toggle state for Creator/Audience
   const [isAudience, setIsAudience] = useState(false);
+
+  // Determine dynamic breadcrumbs
+  let breadcrumbs = [
+    { label: 'Dashboards', active: false },
+    { label: 'Default', active: true }
+  ];
+
+  if (pathname.includes('/podcast')) {
+    breadcrumbs = [
+      { label: 'Podcasts', active: !pathname.includes('/1') && !pathname.includes('/new') }
+    ];
+    if (pathname.includes('/new') && !pathname.includes('episode')) {
+      breadcrumbs.push({ label: 'Add podcast', active: true });
+    } else if (pathname.includes('/1') || pathname.match(/\/podcast\/\d+/)) {
+      breadcrumbs.push({ label: 'Undressed', active: !pathname.includes('episode') });
+      if (pathname.includes('/episode/new')) {
+        breadcrumbs.push({ label: 'Add new episode', active: true });
+      }
+    }
+  }
 
   return (
     <header style={{ height: 72, background: '#FFFFFF', borderBottom: '1px solid #E2E8F0', padding: '0 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0, fontFamily: F }}>
@@ -44,9 +65,14 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
         </div>
 
         <div className="hide-on-mobile" style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
-           <span style={{ color: '#94A3B8', fontWeight: 500 }}>Dashboards</span>
-           <span style={{ color: '#CBD5E1' }}>/</span>
-           <span style={{ color: '#0F172A', fontWeight: 600 }}>Default</span>
+          {breadcrumbs.map((b, i) => (
+            <React.Fragment key={i}>
+              <span style={{ color: b.active ? '#0F172A' : '#94A3B8', fontWeight: b.active ? 600 : 500 }}>
+                {b.label}
+              </span>
+              {i < breadcrumbs.length - 1 && <span style={{ color: '#CBD5E1' }}>/</span>}
+            </React.Fragment>
+          ))}
         </div>
       </div>
 
