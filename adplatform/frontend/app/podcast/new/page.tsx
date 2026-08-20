@@ -29,8 +29,8 @@ export default function AddPodcastPage() {
     <DashboardLayout>
       <style>{`
         ::placeholder {
-          color: #64748B !important;
-          font-weight: 600 !important;
+          color: #94A3B8 !important;
+          font-weight: 400 !important;
         }
       `}</style>
       <div style={{ fontFamily: F, display: 'flex', gap: 32, padding: '32px 32px 32px 40px', minHeight: '100%', alignItems: 'flex-start' }}>
@@ -69,7 +69,7 @@ export default function AddPodcastPage() {
         <div style={{ display: 'flex', gap: 24 }}>
           <div style={{ flex: 1, position: 'relative' }}>
             <select 
-              style={{ ...inputStyle, appearance: 'none', color: episodeOption ? '#0F172A' : '#64748B' }}
+              style={{ ...inputStyle, appearance: 'none', color: episodeOption ? '#0F172A' : '#94A3B8', fontWeight: episodeOption ? 600 : 400 }}
               value={episodeOption}
               onChange={(e) => setEpisodeOption(e.target.value)}
             >
