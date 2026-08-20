@@ -142,7 +142,7 @@ export default function AddPodcastPage() {
             <p style={{ fontSize: 10, color: '#E2E8F0', margin: '0 0 20px', lineHeight: 1.5, opacity: 0.8 }}>
               Discover how the Top 1% of businesses get customers from our active community.
             </p>
-            <button style={{ background: '#FFFDF5', border: 'none', color: '#715C13', fontSize: 11, fontWeight: 800, borderRadius: 6, padding: '8px 16px', cursor: 'pointer' }}>
+            <button style={{ background: '#F4F860', border: 'none', color: '#0F172A', fontSize: 11, fontWeight: 800, borderRadius: 6, padding: '8px 16px', cursor: 'pointer', boxShadow: '0 0 12px rgba(244,248,96,0.3)' }}>
               BOOK AD SPACE
             </button>
           </div>
@@ -160,7 +160,7 @@ export default function AddPodcastPage() {
           <p style={{ fontSize: 10, color: '#94A3B8', margin: '0 0 24px', lineHeight: 1.5 }}>
             Book a podcast studio session right inside the application. No external messages needed.
           </p>
-          <button style={{ background: '#D4AF37', border: 'none', color: '#1E1E1E', fontSize: 11, fontWeight: 800, borderRadius: 6, padding: '8px 16px', cursor: 'pointer' }}>
+          <button style={{ background: '#F4F860', border: 'none', color: '#0F172A', fontSize: 11, fontWeight: 800, borderRadius: 6, padding: '8px 16px', cursor: 'pointer', boxShadow: '0 0 12px rgba(244,248,96,0.3)' }}>
             BOOK PODCAST SESSION
           </button>
         </div>
