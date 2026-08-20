@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, ChevronDown, Image as ImageIcon, UploadCloud, Calendar, Clock } from 'lucide-react';
+import { ChevronLeft, ChevronDown, Image as ImageIcon, UploadCloud, Calendar, Clock, Check } from 'lucide-react';
 import { theme } from '@/lib/theme';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 
@@ -11,6 +11,7 @@ const F = theme.font.body;
 export default function AddPodcastPage() {
   const [contentRating, setContentRating] = useState('Suitable for everyone');
   const [episodeOption, setEpisodeOption] = useState('');
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const inputStyle = {
     width: '100%',
@@ -130,7 +131,10 @@ export default function AddPodcastPage() {
           <button style={{ background: 'none', border: 'none', color: '#64748B', fontSize: 14, fontWeight: 600, cursor: 'pointer', padding: '12px 24px' }}>
             Cancel
           </button>
-          <button style={{ background: '#D4AF37', border: 'none', color: '#FFFFFF', fontSize: 14, fontWeight: 700, borderRadius: 8, padding: '12px 32px', cursor: 'pointer' }}>
+          <button 
+            onClick={() => setShowSuccessModal(true)}
+            style={{ background: '#D4AF37', border: 'none', color: '#FFFFFF', fontSize: 14, fontWeight: 700, borderRadius: 8, padding: '12px 32px', cursor: 'pointer' }}
+          >
             Post
           </button>
         </div>
@@ -174,6 +178,27 @@ export default function AddPodcastPage() {
 
       </div>
     </div>
+
+    {/* Success Modal Overlay */}
+    {showSuccessModal && (
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255, 255, 255, 0.6)', backdropFilter: 'blur(8px)' }}>
+        <div style={{ background: '#FFFFFF', borderRadius: 24, padding: '48px 32px', width: 340, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', boxShadow: '0 20px 40px -12px rgba(0,0,0,0.15)' }}>
+          
+          <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'linear-gradient(135deg, #E6C245 0%, #B39223 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24, boxShadow: '0 0 40px 10px rgba(212, 175, 55, 0.3)' }}>
+            <Check size={32} color="#0F172A" strokeWidth={3} />
+          </div>
+          
+          <h3 style={{ fontSize: 16, fontWeight: 700, color: '#0F172A', margin: '0 0 24px', fontFamily: F }}>Your podcast was a success</h3>
+          
+          <button 
+            onClick={() => setShowSuccessModal(false)}
+            style={{ background: '#D4AF37', border: 'none', color: '#FFFFFF', fontSize: 14, fontWeight: 700, borderRadius: 8, padding: '12px 48px', cursor: 'pointer', fontFamily: F }}
+          >
+            Finish
+          </button>
+        </div>
+      </div>
+    )}
     </DashboardLayout>
   );
 }
