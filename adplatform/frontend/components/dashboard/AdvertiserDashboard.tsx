@@ -136,12 +136,12 @@ export default function AdvertiserDashboard() {
         {/* 4 Stat Cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
           {[
-            { label: 'Active Campaigns', value: stats?.active_campaigns || 0, trend: '+11.01%', up: true },
-            { label: 'Total Spending', value: `₦${(stats?.total_revenue || 0).toLocaleString()}`, trend: '-0.03%', up: false },
-            { label: 'Total Bookings', value: (stats?.active_screens || 0) + (bookings.length), trend: '+15.03%', up: true },
-            { label: 'Active Screens', value: stats?.active_screens || 0, trend: '', up: true },
+            { label: 'Total Podcast', value: 7, trend: '+11.01%', up: true, bg: '#F9FAEF' },
+            { label: 'Total Active Listeners', value: '3,671', trend: '-0.03%', up: false, bg: '#FFFDF5' },
+            { label: 'Followers', value: '3,671', trend: '+15.03%', up: true, bg: '#F9FAEF' },
+            { label: 'Booked Podcast Slots', value: 2, trend: '', up: true, bg: '#FFFDF5' },
           ].map((stat, i) => (
-            <div key={i} style={{ background: '#FFFDF5', borderRadius: 16, padding: '20px', border: '1px solid rgba(212,175,55,0.1)' }}>
+            <div key={i} style={{ background: stat.bg, borderRadius: 16, padding: '24px 20px', border: '1px solid rgba(212,175,55,0.05)' }}>
               <p style={{ fontSize: 14, color: '#0F172A', margin: '0 0 16px', fontWeight: 700 }}>{stat.label}</p>
               <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
                 <span style={{ fontSize: 28, fontWeight: 800, color: '#0F172A', lineHeight: 1 }}>{stat.value}</span>
