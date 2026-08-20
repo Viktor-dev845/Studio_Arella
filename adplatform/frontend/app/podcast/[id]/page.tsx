@@ -60,7 +60,7 @@ export default function PodcastDetail({ params }: { params: { id: string } }) {
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div style={{ background: '#D4AF37', borderRadius: 4, padding: '4px 8px', color: '#FFFFFF', fontSize: 12, fontWeight: 700, position: 'relative', top: -20 }}>
+        <div style={{ background: '#D4AF37', borderRadius: 4, padding: '4px 8px', color: '#FFFFFF', fontSize: 13, fontWeight: 800, position: 'relative', top: -20 }}>
           {payload[0].value}
           <div style={{ position: 'absolute', bottom: -4, left: '50%', transform: 'translateX(-50%)', width: 0, height: 0, borderLeft: '4px solid transparent', borderRight: '4px solid transparent', borderTop: '4px solid #D4AF37' }} />
         </div>
@@ -79,7 +79,7 @@ export default function PodcastDetail({ params }: { params: { id: string } }) {
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <h1 style={{ fontSize: 20, fontWeight: 800, color: '#0F172A', margin: 0, letterSpacing: '-0.3px' }}>{podcast.title} podcast</h1>
-          <button style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 8, padding: '6px 12px', color: '#64748B', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+          <button style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 8, padding: '6px 12px', color: '#334155', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
             Today <ChevronDown size={14} />
           </button>
         </div>
@@ -93,11 +93,11 @@ export default function PodcastDetail({ params }: { params: { id: string } }) {
             { label: 'Total Likes', value: '367', trend: '', up: true },
           ].map((stat, i) => (
             <div key={i} style={{ background: '#FFFDF5', borderRadius: 16, padding: '20px', border: '1px solid rgba(212,175,55,0.1)' }}>
-              <p style={{ fontSize: 13, color: '#0F172A', margin: '0 0 16px', fontWeight: 600 }}>{stat.label}</p>
+              <p style={{ fontSize: 14, color: '#0F172A', margin: '0 0 16px', fontWeight: 700 }}>{stat.label}</p>
               <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
                 <span style={{ fontSize: 28, fontWeight: 800, color: '#0F172A', lineHeight: 1 }}>{stat.value}</span>
                 {stat.trend && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: stat.up ? '#10B981' : '#EF4444', fontSize: 11, fontWeight: 700 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: stat.up ? '#10B981' : '#EF4444', fontSize: 11, fontWeight: 800 }}>
                     {stat.trend} {stat.up ? <FaArrowTrendUp size={10} /> : <FaArrowTrendDown size={10} />}
                   </div>
                 )}
@@ -110,17 +110,17 @@ export default function PodcastDetail({ params }: { params: { id: string } }) {
         <div style={{ background: '#FFFFFF', borderRadius: 20, padding: '24px', border: '1px solid #F1F5F9' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
             <div>
-              <p style={{ fontSize: 14, fontWeight: 800, color: '#0F172A', margin: '0 0 8px' }}>Recent analytics</p>
+              <p style={{ fontSize: 15, fontWeight: 800, color: '#0F172A', margin: '0 0 8px' }}>Recent analytics</p>
               <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#64748B', fontWeight: 600 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#334155', fontWeight: 700 }}>
                   <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#D4AF37' }} /> Total Plays
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#64748B', fontWeight: 600 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#334155', fontWeight: 700 }}>
                   <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#CBD5E1' }} /> Active Listeners
                 </div>
               </div>
             </div>
-            <button style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 6, padding: '4px 10px', color: '#64748B', fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>
+            <button style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 6, padding: '4px 10px', color: '#334155', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
               Year <ChevronDown size={14} />
             </button>
           </div>
@@ -145,7 +145,7 @@ export default function PodcastDetail({ params }: { params: { id: string } }) {
 
         {/* Episodes List */}
         <div>
-          <p style={{ fontSize: 14, fontWeight: 800, color: '#0F172A', margin: '0 0 20px' }}>All episodes (90)</p>
+          <p style={{ fontSize: 15, fontWeight: 800, color: '#0F172A', margin: '0 0 20px' }}>All episodes (90)</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {EPISODES.map((ep) => (
               <div key={ep.id} style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
@@ -153,8 +153,8 @@ export default function PodcastDetail({ params }: { params: { id: string } }) {
                   <img src={ep.img} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Episode" />
                 </div>
                 <div>
-                  <p style={{ fontSize: 13, fontWeight: 700, color: '#0F172A', margin: '0 0 4px' }}>{ep.title}</p>
-                  <p style={{ fontSize: 11, color: '#94A3B8', margin: 0, fontWeight: 500 }}>Uploaded {ep.date} - 135 {ep.duration} - {ep.likes}</p>
+                  <p style={{ fontSize: 14, fontWeight: 800, color: '#0F172A', margin: '0 0 4px' }}>{ep.title}</p>
+                  <p style={{ fontSize: 11, color: '#64748B', margin: 0, fontWeight: 600 }}>Uploaded {ep.date} - 135 {ep.duration} - {ep.likes}</p>
                 </div>
               </div>
             ))}
@@ -170,7 +170,7 @@ export default function PodcastDetail({ params }: { params: { id: string } }) {
         <Link href="/podcast/new" style={{ 
           display: 'flex', alignItems: 'center', justifyContent: 'center', 
           padding: '16px', background: '#F1F5F9', border: '1px solid #E2E8F0', borderRadius: 12, 
-          color: '#0F172A', fontSize: 14, fontWeight: 700, textDecoration: 'none', textAlign: 'center',
+          color: '#0F172A', fontSize: 15, fontWeight: 800, textDecoration: 'none', textAlign: 'center',
           transition: 'all 0.2s ease'
         }}>
           Add a podcast
@@ -179,8 +179,8 @@ export default function PodcastDetail({ params }: { params: { id: string } }) {
         {/* Top Performing Topics */}
         <div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-            <p style={{ fontSize: 14, fontWeight: 700, color: '#475569', margin: 0 }}>Your top performing topics</p>
-            <button style={{ background: 'none', border: 'none', display: 'flex', cursor: 'pointer', color: '#94A3B8' }}><ChevronDown size={14} /></button>
+            <p style={{ fontSize: 15, fontWeight: 800, color: '#334155', margin: 0 }}>Your top performing topics</p>
+            <button style={{ background: 'none', border: 'none', display: 'flex', cursor: 'pointer', color: '#64748B' }}><ChevronDown size={14} /></button>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {TOP_PERFORMING.map((topic, i) => (
@@ -189,8 +189,8 @@ export default function PodcastDetail({ params }: { params: { id: string } }) {
                   <img src={topic.img} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Avatar" />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 12, color: '#0F172A', fontWeight: 600, margin: '0 0 2px' }}>{topic.title}</p>
-                  <p style={{ fontSize: 10, color: '#94A3B8', margin: 0 }}>{topic.listeners}</p>
+                  <p style={{ fontSize: 13, color: '#0F172A', fontWeight: 700, margin: '0 0 2px' }}>{topic.title}</p>
+                  <p style={{ fontSize: 10, color: '#64748B', margin: 0 }}>{topic.listeners}</p>
                 </div>
               </div>
             ))}
@@ -199,32 +199,32 @@ export default function PodcastDetail({ params }: { params: { id: string } }) {
 
         {/* Recent Booking Calendar */}
         <div>
-          <p style={{ fontSize: 14, fontWeight: 700, color: '#475569', margin: '0 0 16px' }}>Recent Podcast Booking Calendar</p>
+          <p style={{ fontSize: 15, fontWeight: 800, color: '#334155', margin: '0 0 16px' }}>Recent Podcast Booking Calendar</p>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 12, color: '#64748B', fontWeight: 500 }}>Aug 15, Sat</span>
-              <span style={{ fontSize: 9, background: '#0F172A', color: '#FFFFFF', padding: '2px 8px', borderRadius: 100, fontWeight: 700 }}>TODAY</span>
+              <span style={{ fontSize: 13, color: '#334155', fontWeight: 600 }}>Aug 15, Sat</span>
+              <span style={{ fontSize: 9, background: '#0F172A', color: '#FFFFFF', padding: '2px 8px', borderRadius: 100, fontWeight: 800 }}>TODAY</span>
             </div>
             <div style={{ display: 'flex', gap: 4 }}>
-              <button style={{ width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 4, color: '#64748B', cursor: 'pointer' }}><ChevronLeft size={12} /></button>
-              <button style={{ width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 4, color: '#64748B', cursor: 'pointer' }}><ChevronRight size={12} /></button>
+              <button style={{ width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 4, color: '#334155', cursor: 'pointer' }}><ChevronLeft size={12} /></button>
+              <button style={{ width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 4, color: '#334155', cursor: 'pointer' }}><ChevronRight size={12} /></button>
             </div>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}>
             {CALENDAR_EVENTS.map((ev, i) => (
               <div key={i} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderLeft: `3px solid ${ev.border}`, borderRadius: 8, padding: '12px 16px' }}>
-                <p style={{ fontSize: 12, color: '#0F172A', fontWeight: 600, margin: '0 0 4px' }}>{ev.title}</p>
-                <p style={{ fontSize: 11, color: '#94A3B8', margin: 0, fontWeight: 500 }}>{ev.time}</p>
+                <p style={{ fontSize: 13, color: '#0F172A', fontWeight: 700, margin: '0 0 4px' }}>{ev.title}</p>
+                <p style={{ fontSize: 11, color: '#64748B', margin: 0, fontWeight: 600 }}>{ev.time}</p>
               </div>
             ))}
           </div>
 
-          <Link href="/book" style={{ display: 'block', padding: '12px', background: '#FFFDF5', border: '1px solid #E2E8F0', color: '#0F172A', borderRadius: 8, fontSize: 12, fontWeight: 700, textDecoration: 'none', textAlign: 'center' }}>
+          <Link href="/book" style={{ display: 'block', padding: '12px', background: '#FFFDF5', border: '1px solid #E2E8F0', color: '#0F172A', borderRadius: 8, fontSize: 13, fontWeight: 800, textDecoration: 'none', textAlign: 'center' }}>
             Book podcast slot
           </Link>
           <div style={{ textAlign: 'center', marginTop: 16 }}>
-            <Link href="/calendar" style={{ fontSize: 11, color: '#D4AF37', fontWeight: 600, textDecoration: 'none' }}>
+            <Link href="/calendar" style={{ fontSize: 11, color: '#D4AF37', fontWeight: 700, textDecoration: 'none' }}>
               See full calendar &gt;
             </Link>
           </div>
