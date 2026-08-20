@@ -18,7 +18,7 @@ export default function AddPodcastPage() {
     borderRadius: 8,
     border: '1px solid #E2E8F0',
     background: '#FFFFFF',
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: 600,
     color: '#0F172A',
     fontFamily: F,
@@ -30,7 +30,7 @@ export default function AddPodcastPage() {
       <style>{`
         ::placeholder {
           color: #64748B !important;
-          font-weight: 500 !important;
+          font-weight: 600 !important;
         }
       `}</style>
       <div style={{ fontFamily: F, display: 'flex', gap: 32, padding: '32px 32px 32px 40px', minHeight: '100%', alignItems: 'flex-start' }}>
@@ -53,7 +53,7 @@ export default function AddPodcastPage() {
 
         {/* Cover Photo */}
         <div>
-          <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#0F172A', marginBottom: 12 }}>Add cover photo</label>
+          <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: '#0F172A', marginBottom: 12 }}>Add cover photo</label>
           <div style={{ width: 80, height: 80, borderRadius: 12, border: '1px dashed #CBD5E1', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F8FAFC', cursor: 'pointer' }}>
             <ImageIcon size={24} color="#94A3B8" />
           </div>
@@ -90,7 +90,7 @@ export default function AddPodcastPage() {
 
         {/* Upload Audio */}
         <div>
-          <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#0F172A', marginBottom: 12 }}>Upload podcast</label>
+          <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: '#0F172A', marginBottom: 12 }}>Upload podcast</label>
           <div style={{ border: '1.5px dashed #D4AF37', borderRadius: 12, padding: '32px', textAlign: 'center', background: '#FFFDF5', cursor: 'pointer' }}>
             <div style={{ width: 40, height: 40, borderRadius: '50%', background: '#D4AF37', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
               <UploadCloud size={20} color="#FFFFFF" />

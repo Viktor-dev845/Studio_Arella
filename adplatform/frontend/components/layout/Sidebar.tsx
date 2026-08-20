@@ -46,7 +46,7 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
 
   const linkStyle = (active: boolean) => ({
     display: 'flex', alignItems: 'center', gap: 14, padding: '12px 14px', borderRadius: 8,
-    textDecoration: 'none', fontSize: 14, fontWeight: active ? 600 : 500,
+    textDecoration: 'none', fontSize: 15, fontWeight: active ? 700 : 600,
     color: '#0F172A',
     background: active ? '#F1F5F9' : 'transparent',
     transition: 'all 0.2s ease',
@@ -86,7 +86,7 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
 
           {isAdmin ? (
             <div style={{ marginBottom: 32 }}>
-              <p style={{ fontSize: 13, fontWeight: 700, color: '#475569', padding: '0 14px', marginBottom: 12 }}>Admin Panel</p>
+              <p style={{ fontSize: 14, fontWeight: 700, color: '#475569', padding: '0 14px', marginBottom: 12 }}>Admin Panel</p>
               <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {adminNav.map((item) => {
                   const active = isActive(item.href);
@@ -105,23 +105,23 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
             <>
               {/* Favorites / Recently */}
               <div style={{ display: 'flex', gap: 16, padding: '0 14px', marginBottom: 16 }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: '#0F172A' }}>Favorites</span>
-                <span style={{ fontSize: 13, fontWeight: 600, color: '#64748B' }}>Recently</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: '#0F172A' }}>Favorites</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: '#64748B' }}>Recently</span>
               </div>
               <ul style={{ listStyle: 'none', margin: '0 0 32px', padding: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <li className="sidebar-link" style={{ padding: '6px 14px', display: 'flex', alignItems: 'center', gap: 12, borderRadius: 8, cursor: 'pointer', margin: '0 -4px' }}>
                   <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#64748B' }} />
-                  <Link href="/dashboard" style={{ fontSize: 14, color: '#0F172A', textDecoration: 'none', fontWeight: 600, flex: 1 }}>Overview</Link>
+                  <Link href="/dashboard" style={{ fontSize: 15, color: '#0F172A', textDecoration: 'none', fontWeight: 600, flex: 1 }}>Overview</Link>
                 </li>
                 <li className="sidebar-link" style={{ padding: '6px 14px', display: 'flex', alignItems: 'center', gap: 12, borderRadius: 8, cursor: 'pointer', margin: '0 -4px' }}>
                   <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#64748B' }} />
-                  <Link href="/podcast" style={{ fontSize: 14, color: '#0F172A', textDecoration: 'none', fontWeight: 600, flex: 1 }}>Podcast</Link>
+                  <Link href="/podcast" style={{ fontSize: 15, color: '#0F172A', textDecoration: 'none', fontWeight: 600, flex: 1 }}>Podcast</Link>
                 </li>
               </ul>
 
               {/* Dashboards */}
               <div style={{ marginBottom: 32 }}>
-                <p style={{ fontSize: 13, fontWeight: 700, color: '#475569', padding: '0 14px', marginBottom: 12 }}>Dashboards</p>
+                <p style={{ fontSize: 14, fontWeight: 700, color: '#475569', padding: '0 14px', marginBottom: 12 }}>Dashboards</p>
                 <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
                   {DASHBOARDS.map((item) => {
                     const active = isActive(item.href);
@@ -139,7 +139,7 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
 
               {/* Pages */}
               <div style={{ marginBottom: 32 }}>
-                <p style={{ fontSize: 13, fontWeight: 700, color: '#475569', padding: '0 14px', marginBottom: 12 }}>Pages</p>
+                <p style={{ fontSize: 14, fontWeight: 700, color: '#475569', padding: '0 14px', marginBottom: 12 }}>Pages</p>
                 <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
                   {PAGES.map((item) => {
                     const active = isActive(item.href);
