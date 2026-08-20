@@ -10,15 +10,15 @@ const F = theme.font.body;
 // Dummy data matching the Figma mockups
 const TRENDING_PODCASTS = [
   { id: '1', title: 'Undressed', listeners: '2M active listeners', episodes: '135 episodes', img: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=400&q=80' },
-  { id: '2', title: 'Weak in Your Light', listeners: '200k active listeners', episodes: '135 episodes', img: 'https://picsum.photos/seed/pod2/400/400' },
+  { id: '2', title: 'Weak in Your Light', listeners: '200k active listeners', episodes: '135 episodes', img: 'https://images.unsplash.com/photo-1516280440502-628d02166668?w=400&q=80' },
 ];
 
 const ALL_PODCASTS = [
   { id: '1', title: 'Undressed', listeners: '2M active listeners', episodes: '135 episodes', img: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=400&q=80' },
-  { id: '2', title: 'Weak in Your Light', listeners: '200k active listeners', episodes: '135 episodes', img: 'https://picsum.photos/seed/pod2/400/400' },
+  { id: '2', title: 'Weak in Your Light', listeners: '200k active listeners', episodes: '135 episodes', img: 'https://images.unsplash.com/photo-1516280440502-628d02166668?w=400&q=80' },
   { id: '3', title: 'Sober Reflection', listeners: '20k active listeners', episodes: '135 episodes', img: 'https://images.unsplash.com/photo-1524678606370-a47ad25cb82a?w=400&q=80' },
-  { id: '4', title: 'Father And Son', listeners: '2k active listeners', episodes: '135 episodes', img: 'https://picsum.photos/seed/pod4/400/400' },
-  { id: '5', title: 'Business On', listeners: 'Liked Songs', episodes: '135 episodes', img: 'https://picsum.photos/seed/pod5/400/400' },
+  { id: '4', title: 'Father And Son', listeners: '2k active listeners', episodes: '135 episodes', img: 'https://images.unsplash.com/photo-1583335513577-224b11f385ce?w=400&q=80' },
+  { id: '5', title: 'Business On', listeners: 'Liked Songs', episodes: '135 episodes', img: 'https://images.unsplash.com/photo-1493225457124-a1a2a5f5f922?w=400&q=80' },
 ];
 
 const TOP_PERFORMING = [
