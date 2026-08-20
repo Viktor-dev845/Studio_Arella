@@ -182,7 +182,7 @@ export default function AddNewEpisodePage({ params }: { params: { id: string } }
             <Check size={32} color="#0F172A" strokeWidth={3} />
           </div>
           
-          <h3 style={{ fontSize: 16, fontWeight: 700, color: '#0F172A', margin: '0 0 24px', fontFamily: F }}>Your episode was a success</h3>
+          <h3 style={{ fontSize: 16, fontWeight: 700, color: '#0F172A', margin: '0 0 24px', fontFamily: F }}>Episode {episodeOption || '1'} posted successfully</h3>
           
           <button 
             onClick={() => setShowSuccessModal(false)}
