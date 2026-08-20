@@ -46,8 +46,8 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
 
   const linkStyle = (active: boolean) => ({
     display: 'flex', alignItems: 'center', gap: 14, padding: '12px 14px', borderRadius: 8,
-    textDecoration: 'none', fontSize: 13, fontWeight: active ? 500 : 400,
-    color: active ? '#000000' : '#000000ff',
+    textDecoration: 'none', fontSize: 14, fontWeight: active ? 600 : 500,
+    color: '#0F172A',
     background: active ? '#F1F5F9' : 'transparent',
     transition: 'all 0.2s ease',
   });
@@ -86,14 +86,14 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
 
           {isAdmin ? (
             <div style={{ marginBottom: 32 }}>
-              <p style={{ fontSize: 11, fontWeight: 600, color: '#000000ff', padding: '0 14px', marginBottom: 12, letterSpacing: '0.05em' }}>Admin Panel</p>
+              <p style={{ fontSize: 13, fontWeight: 500, color: '#94A3B8', padding: '0 14px', marginBottom: 12 }}>Admin Panel</p>
               <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {adminNav.map((item) => {
                   const active = isActive(item.href);
                   return (
                     <li key={item.href}>
                       <Link href={item.href} onClick={onClose} style={linkStyle(active)} className="sidebar-link">
-                        <item.icon size={18} strokeWidth={1.5} style={{ color: active ? '#000000' : '#000000ff' }} />
+                        <item.icon size={18} strokeWidth={2} style={{ color: '#0F172A' }} />
                         <span>{item.label}</span>
                       </Link>
                     </li>
@@ -121,14 +121,14 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
 
               {/* Dashboards */}
               <div style={{ marginBottom: 32 }}>
-                <p style={{ fontSize: 11, fontWeight: 600, color: '#000000ff', padding: '0 14px', marginBottom: 12, letterSpacing: '0.02em' }}>Dashboards</p>
+                <p style={{ fontSize: 13, fontWeight: 500, color: '#94A3B8', padding: '0 14px', marginBottom: 12 }}>Dashboards</p>
                 <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
                   {DASHBOARDS.map((item) => {
                     const active = isActive(item.href);
                     return (
                       <li key={item.href}>
                         <Link href={item.href} onClick={onClose} style={linkStyle(active)} className="sidebar-link">
-                          <item.icon size={18} strokeWidth={1.5} style={{ color: active ? '#000000' : '#000000ff' }} />
+                          <item.icon size={18} strokeWidth={2} style={{ color: '#0F172A' }} />
                           <span>{item.label}</span>
                         </Link>
                       </li>
@@ -139,14 +139,14 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
 
               {/* Pages */}
               <div style={{ marginBottom: 32 }}>
-                <p style={{ fontSize: 11, fontWeight: 600, color: '#000000ff', padding: '0 14px', marginBottom: 12, letterSpacing: '0.02em' }}>Pages</p>
+                <p style={{ fontSize: 13, fontWeight: 500, color: '#94A3B8', padding: '0 14px', marginBottom: 12 }}>Pages</p>
                 <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
                   {PAGES.map((item) => {
                     const active = isActive(item.href);
                     return (
                       <li key={item.href}>
                         <Link href={item.href} onClick={onClose} style={linkStyle(active)} className="sidebar-link">
-                          <item.icon size={18} strokeWidth={1.5} style={{ color: active ? '#000000' : '#000000ff' }} />
+                          <item.icon size={18} strokeWidth={2} style={{ color: '#0F172A' }} />
                           <span>{item.label}</span>
                         </Link>
                       </li>
