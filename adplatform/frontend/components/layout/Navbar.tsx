@@ -21,10 +21,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const [isAudience, setIsAudience] = useState(false);
 
   // Determine dynamic breadcrumbs
-  let breadcrumbs = [
-    { label: 'Dashboards', active: false },
-    { label: 'Default', active: true }
-  ];
+  let breadcrumbs: { label: string; active: boolean }[] = [];
 
   if (pathname.includes('/podcast')) {
     breadcrumbs = [
@@ -37,6 +34,21 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
       if (pathname.includes('/episode/new')) {
         breadcrumbs.push({ label: 'Add new episode', active: true });
       }
+    }
+  } else if (pathname === '/dashboard' || pathname === '/') {
+    breadcrumbs = [{ label: 'Dashboards', active: false }, { label: 'Overview', active: true }];
+  } else if (pathname === '/cart') {
+    breadcrumbs = [{ label: 'Dashboards', active: false }, { label: 'Cart', active: true }];
+  } else if (pathname === '/bookings') {
+    breadcrumbs = [{ label: 'Dashboards', active: false }, { label: 'My Bookings', active: true }];
+  } else {
+    // Generic fallback for other routes
+    const segments = pathname.split('/').filter(Boolean);
+    if (segments.length > 0) {
+      breadcrumbs = segments.map((s, i) => ({
+        label: s.charAt(0).toUpperCase() + s.slice(1),
+        active: i === segments.length - 1
+      }));
     }
   }
 
