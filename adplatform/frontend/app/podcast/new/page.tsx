@@ -155,7 +155,7 @@ export default function AddPodcastPage() {
           </div>
           {/* Decorative graphic placeholder */}
           <div style={{ position: 'absolute', right: -20, bottom: -10, width: 120, height: 140, background: '#FFFFFF', borderRadius: 12, transform: 'rotate(-10deg)', opacity: 0.9, boxShadow: '0 10px 15px -3px rgba(0,0,0,0.3)', padding: 6 }}>
-             <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=200&q=80" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8 }} alt="Ad Example" />
+             <img src="/billboard.jpg" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8 }} alt="Ad Billboard" />
           </div>
         </div>
 
