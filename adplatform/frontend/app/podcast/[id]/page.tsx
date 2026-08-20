@@ -166,14 +166,14 @@ export default function PodcastDetail({ params }: { params: { id: string } }) {
       {/* ─── RIGHT COLUMN ─── */}
       <div style={{ width: 340, display: 'flex', flexDirection: 'column', gap: 32, flexShrink: 0 }}>
         
-        {/* Add a podcast button */}
-        <Link href="/podcast/new" style={{ 
+        {/* Add a new episode button */}
+        <Link href={`/podcast/${params.id}/episode/new`} style={{ 
           display: 'flex', alignItems: 'center', justifyContent: 'center', 
           padding: '16px', background: '#F1F5F9', border: '1px solid #E2E8F0', borderRadius: 12, 
           color: '#0F172A', fontSize: 15, fontWeight: 800, textDecoration: 'none', textAlign: 'center',
           transition: 'all 0.2s ease'
         }}>
-          Add a podcast
+          Add new episode
         </Link>
 
         {/* Top Performing Topics */}
