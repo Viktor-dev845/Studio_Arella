@@ -86,7 +86,7 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
 
           {isAdmin ? (
             <div style={{ marginBottom: 32 }}>
-              <p style={{ fontSize: 13, fontWeight: 500, color: '#94A3B8', padding: '0 14px', marginBottom: 12 }}>Admin Panel</p>
+              <p style={{ fontSize: 13, fontWeight: 700, color: '#475569', padding: '0 14px', marginBottom: 12 }}>Admin Panel</p>
               <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {adminNav.map((item) => {
                   const active = isActive(item.href);
@@ -105,23 +105,23 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
             <>
               {/* Favorites / Recently */}
               <div style={{ display: 'flex', gap: 16, padding: '0 14px', marginBottom: 16 }}>
-                <span style={{ fontSize: 12, fontWeight: 500, color: '#000000ff' }}>Favorites</span>
-                <span style={{ fontSize: 12, fontWeight: 500, color: '#CBD5E1' }}>Recently</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: '#0F172A' }}>Favorites</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: '#64748B' }}>Recently</span>
               </div>
               <ul style={{ listStyle: 'none', margin: '0 0 32px', padding: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <li className="sidebar-link" style={{ padding: '6px 14px', display: 'flex', alignItems: 'center', gap: 12, borderRadius: 8, cursor: 'pointer', margin: '0 -4px' }}>
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#CBD5E1' }} />
-                  <Link href="/dashboard" style={{ fontSize: 13, color: '#000000', textDecoration: 'none', fontWeight: 400, flex: 1 }}>Overview</Link>
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#64748B' }} />
+                  <Link href="/dashboard" style={{ fontSize: 14, color: '#0F172A', textDecoration: 'none', fontWeight: 600, flex: 1 }}>Overview</Link>
                 </li>
                 <li className="sidebar-link" style={{ padding: '6px 14px', display: 'flex', alignItems: 'center', gap: 12, borderRadius: 8, cursor: 'pointer', margin: '0 -4px' }}>
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#CBD5E1' }} />
-                  <Link href="/podcast" style={{ fontSize: 13, color: '#000000', textDecoration: 'none', fontWeight: 400, flex: 1 }}>Podcast</Link>
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#64748B' }} />
+                  <Link href="/podcast" style={{ fontSize: 14, color: '#0F172A', textDecoration: 'none', fontWeight: 600, flex: 1 }}>Podcast</Link>
                 </li>
               </ul>
 
               {/* Dashboards */}
               <div style={{ marginBottom: 32 }}>
-                <p style={{ fontSize: 13, fontWeight: 500, color: '#94A3B8', padding: '0 14px', marginBottom: 12 }}>Dashboards</p>
+                <p style={{ fontSize: 13, fontWeight: 700, color: '#475569', padding: '0 14px', marginBottom: 12 }}>Dashboards</p>
                 <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
                   {DASHBOARDS.map((item) => {
                     const active = isActive(item.href);
@@ -139,7 +139,7 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
 
               {/* Pages */}
               <div style={{ marginBottom: 32 }}>
-                <p style={{ fontSize: 13, fontWeight: 500, color: '#94A3B8', padding: '0 14px', marginBottom: 12 }}>Pages</p>
+                <p style={{ fontSize: 13, fontWeight: 700, color: '#475569', padding: '0 14px', marginBottom: 12 }}>Pages</p>
                 <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
                   {PAGES.map((item) => {
                     const active = isActive(item.href);

@@ -19,6 +19,7 @@ export default function AddPodcastPage() {
     border: '1px solid #E2E8F0',
     background: '#FFFFFF',
     fontSize: 13,
+    fontWeight: 600,
     color: '#0F172A',
     fontFamily: F,
     outline: 'none',
@@ -26,6 +27,12 @@ export default function AddPodcastPage() {
 
   return (
     <DashboardLayout>
+      <style>{`
+        ::placeholder {
+          color: #64748B !important;
+          font-weight: 500 !important;
+        }
+      `}</style>
       <div style={{ fontFamily: F, display: 'flex', gap: 32, padding: '32px 32px 32px 40px', minHeight: '100%', alignItems: 'flex-start' }}>
       
       {/* ─── LEFT COLUMN (Form Section) ─── */}
@@ -46,7 +53,7 @@ export default function AddPodcastPage() {
 
         {/* Cover Photo */}
         <div>
-          <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#475569', marginBottom: 12 }}>Add cover photo</label>
+          <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#0F172A', marginBottom: 12 }}>Add cover photo</label>
           <div style={{ width: 80, height: 80, borderRadius: 12, border: '1px dashed #CBD5E1', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F8FAFC', cursor: 'pointer' }}>
             <ImageIcon size={24} color="#94A3B8" />
           </div>
@@ -62,7 +69,7 @@ export default function AddPodcastPage() {
         <div style={{ display: 'flex', gap: 24 }}>
           <div style={{ flex: 1, position: 'relative' }}>
             <select 
-              style={{ ...inputStyle, appearance: 'none', color: episodeOption ? '#0F172A' : '#94A3B8' }}
+              style={{ ...inputStyle, appearance: 'none', color: episodeOption ? '#0F172A' : '#64748B' }}
               value={episodeOption}
               onChange={(e) => setEpisodeOption(e.target.value)}
             >
@@ -83,7 +90,7 @@ export default function AddPodcastPage() {
 
         {/* Upload Audio */}
         <div>
-          <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#475569', marginBottom: 12 }}>Upload podcast</label>
+          <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#0F172A', marginBottom: 12 }}>Upload podcast</label>
           <div style={{ border: '1.5px dashed #D4AF37', borderRadius: 12, padding: '32px', textAlign: 'center', background: '#FFFDF5', cursor: 'pointer' }}>
             <div style={{ width: 40, height: 40, borderRadius: '50%', background: '#D4AF37', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
               <UploadCloud size={20} color="#FFFFFF" />
@@ -97,11 +104,11 @@ export default function AddPodcastPage() {
         <div style={{ display: 'flex', gap: 24 }}>
           <div style={{ flex: 1, position: 'relative' }}>
             <input type="text" placeholder="Schedule podcast post (optional)" style={inputStyle} onFocus={(e) => e.target.type = 'date'} onBlur={(e) => { if (!e.target.value) e.target.type = 'text'; }} />
-            <Calendar size={16} color="#94A3B8" style={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+            <Calendar size={16} color="#64748B" style={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
           </div>
           <div style={{ flex: 1, position: 'relative' }}>
             <input type="text" placeholder="Set timer (optional)" style={inputStyle} onFocus={(e) => e.target.type = 'time'} onBlur={(e) => { if (!e.target.value) e.target.type = 'text'; }} />
-            <Clock size={16} color="#94A3B8" style={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+            <Clock size={16} color="#64748B" style={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
           </div>
         </div>
 
