@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { AreaChart, Area, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/api';
 import { ChevronDown, CreditCard, Megaphone } from 'lucide-react';
@@ -15,11 +15,27 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload?.length) return (
     <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 8, padding: '10px 14px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
       <p style={{ fontSize: 11, color: '#334155', margin: '0 0 3px', fontFamily: F }}>{label}</p>
-      <p style={{ fontSize: 14, fontWeight: 800, color: '#0F172A', margin: 0, fontFamily: F }}>{payload[0]?.value} units</p>
+      {payload.map((entry: any, index: number) => (
+        <p key={index} style={{ fontSize: 14, fontWeight: 800, color: entry.color, margin: index > 0 ? '4px 0 0' : 0, fontFamily: F }}>
+          {entry.value}
+        </p>
+      ))}
     </div>
   );
   return null;
 };
+
+// Dummy data for the line chart (matching the Figma visual)
+const PERFORMANCE_DATA = [
+  { name: 'Jan', thisYear: 12000, lastYear: 5000 },
+  { name: 'Feb', thisYear: 8000, lastYear: 13000 },
+  { name: 'Mar', thisYear: 14000, lastYear: 21000 },
+  { name: 'Apr', thisYear: 25000, lastYear: 8000 },
+  { name: 'May', thisYear: 29000, lastYear: 15000 },
+  { name: 'Jun', thisYear: 22000, lastYear: 13000 },
+  { name: 'Jul', thisYear: 19000, lastYear: 25000 },
+  { name: 'Aug', thisYear: 24000, lastYear: 31000 },
+];
 
 // Dummy data to match Figma visual for "Traffic by Podcast"
 const TRAFFIC_DATA = [
@@ -144,30 +160,29 @@ export default function AdvertiserDashboard() {
           {/* Line Chart */}
           <div style={{ background: '#FFFFFF', borderRadius: 20, padding: '24px', border: '1px solid #F1F5F9' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 24, marginBottom: 24 }}>
-              <span style={{ fontSize: 15, fontWeight: 800, color: '#0F172A' }}>Performance</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <span style={{ fontSize: 15, fontWeight: 800, color: '#0F172A' }}>Total Podcast Views</span>
+                <span style={{ fontSize: 14, fontWeight: 500, color: '#94A3B8' }}>Total Followers</span>
+              </div>
+              <div style={{ width: 1, height: 16, background: '#E2E8F0' }} />
               <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#334155', fontWeight: 600 }}>
-                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#0F172A' }} /> This year
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#0F172A' }} /> This year
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#334155', fontWeight: 600 }}>
-                  <div style={{ width: 8, height: 8, borderRadius: '50%', border: '2px solid #E2E8F0' }} /> Last year
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#93C5FD' }} /> Last year
                 </div>
               </div>
             </div>
             <div style={{ height: 240, width: '100%' }}>
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={lineChartData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="colorImp" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#0F172A" stopOpacity={0.1}/>
-                      <stop offset="95%" stopColor="#0F172A" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94A3B8' }} dy={10} minTickGap={20} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94A3B8' }} />
+                <LineChart data={PERFORMANCE_DATA} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94A3B8' }} dy={10} minTickGap={20} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94A3B8' }} tickFormatter={(val) => val === 0 ? '0' : `${val / 1000}K`} />
                   <Tooltip content={<CustomTooltip />} />
-                  <Area type="monotone" dataKey="impressions" stroke="#0F172A" strokeWidth={2} fillOpacity={1} fill="url(#colorImp)" />
-                </AreaChart>
+                  <Line type="monotone" dataKey="thisYear" stroke="#0F172A" strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} />
+                  <Line type="monotone" dataKey="lastYear" stroke="#93C5FD" strokeWidth={1.5} strokeDasharray="4 4" dot={false} activeDot={{ r: 4 }} />
+                </LineChart>
               </ResponsiveContainer>
             </div>
           </div>
