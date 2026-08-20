@@ -6,6 +6,7 @@ import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'rec
 import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { FaArrowTrendUp, FaArrowTrendDown } from 'react-icons/fa6';
 import { theme } from '@/lib/theme';
+import DashboardLayout from '@/components/layout/DashboardLayout';
 
 const F = theme.font.body;
 
@@ -69,7 +70,8 @@ export default function PodcastDetail({ params }: { params: { id: string } }) {
   };
 
   return (
-    <div style={{ fontFamily: F, display: 'flex', gap: 32, padding: '32px 32px 32px 40px', minHeight: '100%', alignItems: 'flex-start' }}>
+    <DashboardLayout>
+      <div style={{ fontFamily: F, display: 'flex', gap: 32, padding: '32px 32px 32px 40px', minHeight: '100%', alignItems: 'flex-start' }}>
       
       {/* ─── LEFT COLUMN (Main Content) ─── */}
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 32 }}>
@@ -230,5 +232,6 @@ export default function PodcastDetail({ params }: { params: { id: string } }) {
 
       </div>
     </div>
+    </DashboardLayout>
   );
 }

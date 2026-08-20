@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Search, LayoutGrid, List } from 'lucide-react';
 import { theme } from '@/lib/theme';
+import DashboardLayout from '@/components/layout/DashboardLayout';
 
 const F = theme.font.body;
 
@@ -52,7 +53,8 @@ export default function PodcastsPage() {
   );
 
   return (
-    <div style={{ fontFamily: F, display: 'flex', gap: 32, padding: '32px 32px 32px 40px', minHeight: '100%', alignItems: 'flex-start' }}>
+    <DashboardLayout>
+      <div style={{ fontFamily: F, display: 'flex', gap: 32, padding: '32px 32px 32px 40px', minHeight: '100%', alignItems: 'flex-start' }}>
       
       {/* ─── LEFT COLUMN (Main Content) ─── */}
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 40 }}>
@@ -165,5 +167,6 @@ export default function PodcastsPage() {
 
       </div>
     </div>
+    </DashboardLayout>
   );
 }

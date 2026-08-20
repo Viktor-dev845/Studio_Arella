@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { ChevronLeft, ChevronDown, Image as ImageIcon, UploadCloud, Calendar, Clock } from 'lucide-react';
 import { theme } from '@/lib/theme';
+import DashboardLayout from '@/components/layout/DashboardLayout';
 
 const F = theme.font.body;
 
@@ -24,7 +25,8 @@ export default function AddPodcastPage() {
   };
 
   return (
-    <div style={{ fontFamily: F, display: 'flex', gap: 32, padding: '32px 32px 32px 40px', minHeight: '100%', alignItems: 'flex-start' }}>
+    <DashboardLayout>
+      <div style={{ fontFamily: F, display: 'flex', gap: 32, padding: '32px 32px 32px 40px', minHeight: '100%', alignItems: 'flex-start' }}>
       
       {/* ─── LEFT COLUMN (Form Section) ─── */}
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 32, background: '#FFFFFF', borderRadius: 16, padding: '24px 32px' }}>
@@ -165,5 +167,6 @@ export default function AddPodcastPage() {
 
       </div>
     </div>
+    </DashboardLayout>
   );
 }
