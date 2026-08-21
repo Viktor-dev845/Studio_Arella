@@ -15,7 +15,7 @@ export default function BookScreenAdPage() {
   return (
     <DashboardLayout>
       <PageTransition>
-        <div className="w-full font-sans pt-4 lg:pl-4 lg:pr-8">
+        <div className="w-full font-body pt-4 lg:pl-4 lg:pr-8">
           <div className="mb-10">
             <h1 className="text-[17px] font-bold text-gray-900">Book Ad</h1>
           </div>
