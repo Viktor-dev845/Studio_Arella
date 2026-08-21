@@ -15,14 +15,14 @@ export default function BookScreenAdPage() {
   return (
     <DashboardLayout>
       <PageTransition>
-        <div className="max-w-[900px] font-sans pt-4 lg:pl-4">
-          <div className="mb-8">
-            <h1 className="text-xl font-bold text-gray-900 mb-1">Book Ad</h1>
+        <div className="max-w-[1100px] w-full font-sans pt-4 lg:pl-4">
+          <div className="mb-10">
+            <h1 className="text-[17px] font-bold text-gray-900">Book Ad</h1>
           </div>
 
-          <div className="flex flex-col lg:flex-row gap-12 lg:items-start">
+          <div className="flex flex-col lg:flex-row justify-between items-start gap-12">
             {/* Form Section */}
-            <div className="flex-1 space-y-5">
+            <div className="w-full lg:max-w-[560px] space-y-6">
               
               {/* Title */}
               <div>
