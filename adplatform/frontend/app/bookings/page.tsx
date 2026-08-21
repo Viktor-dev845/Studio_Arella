@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { theme } from '@/lib/theme';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Monitor, Mic, Search, Filter, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import Link from 'next/link';
 
 const F = theme.font.body;
 
@@ -119,12 +120,13 @@ export default function BookingsPage() {
               </button>
 
               {/* Book Ad Slot Button */}
-              <button style={{ 
+              <Link href="/bookings/screen-ad" style={{ 
                 background: '#D4AF37', border: 'none', borderRadius: 8, 
-                padding: '10px 24px', color: '#0F172A', fontSize: 13, fontWeight: 800, cursor: 'pointer' 
+                padding: '10px 24px', color: '#0F172A', fontSize: 13, fontWeight: 800, cursor: 'pointer',
+                textDecoration: 'none', display: 'inline-flex', alignItems: 'center'
               }}>
                 Book Ad Slot
-              </button>
+              </Link>
             </div>
           </div>
 
