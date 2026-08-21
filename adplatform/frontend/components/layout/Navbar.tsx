@@ -1,126 +1,124 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter, usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
-import { useThemeStore } from '@/store/themeStore';
-import { FaUser, FaSun, FaMoon } from 'react-icons/fa6';
-import { Menu, Search, Star, Sidebar as SidebarIcon, RotateCcw, Bell, PanelRight } from 'lucide-react';
-import { theme } from '@/lib/theme';
+import { FaArrowRightFromBracket } from 'react-icons/fa6';
+import NotificationBell from '@/components/ui/NotificationBell';
+import { Menu, Search, Settings, RotateCcw } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
-const F = theme.font.body;
+const F = "'Quicksand', sans-serif";
 
 export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
-  const { user } = useAuthStore();
-  const { theme: appTheme, toggleTheme } = useThemeStore();
+  const { user, logout } = useAuthStore();
   const router = useRouter();
-  const pathname = usePathname() || '';
-  
-  // Fake toggle state for Creator/Audience
-  const [isAudience, setIsAudience] = useState(false);
+  const pathname = usePathname();
+  const [dropOpen, setDropOpen] = useState(false);
+  const [isCreator, setIsCreator] = useState(true);
+  const [mounted, setMounted] = useState(false);
 
-  // Determine dynamic breadcrumbs
-  let breadcrumbs: { label: string; active: boolean }[] = [];
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
-  if (pathname.includes('/podcast')) {
-    breadcrumbs = [
-      { label: 'Podcasts', active: !pathname.includes('/1') && !pathname.includes('/new') }
-    ];
-    if (pathname.includes('/new') && !pathname.includes('episode')) {
-      breadcrumbs.push({ label: 'Add podcast', active: true });
-    } else if (pathname.includes('/1') || pathname.match(/\/podcast\/\d+/)) {
-      breadcrumbs.push({ label: 'Undressed', active: !pathname.includes('episode') });
-      if (pathname.includes('/episode/new')) {
-        breadcrumbs.push({ label: 'Add new episode', active: true });
-      }
-    }
-  } else if (pathname === '/dashboard' || pathname === '/') {
-    breadcrumbs = [{ label: 'Dashboards', active: false }, { label: 'Overview', active: true }];
-  } else if (pathname === '/cart') {
-    breadcrumbs = [{ label: 'Dashboards', active: false }, { label: 'Cart', active: true }];
-  } else if (pathname === '/bookings') {
-    breadcrumbs = [{ label: 'Dashboards', active: false }, { label: 'My Bookings', active: true }];
-  } else {
-    // Generic fallback for other routes
-    const segments = pathname.split('/').filter(Boolean);
-    if (segments.length > 0) {
-      breadcrumbs = segments.map((s, i) => ({
-        label: s.charAt(0).toUpperCase() + s.slice(1),
-        active: i === segments.length - 1
-      }));
-    }
-  }
+  const handleLogout = () => { logout(); router.push('/auth/login'); };
+
+  const getBreadcrumb = () => {
+    if (!mounted) return 'Dashboards / Overview';
+    if (pathname.includes('/bookings')) return 'Dashboards / My Bookings';
+    if (pathname.includes('/dashboard')) return 'Dashboards / Overview';
+    if (pathname.includes('/campaigns')) return 'Pages / Campaigns';
+    return 'Dashboards / ' + (pathname.split('/')[1] || 'Overview').replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
+  };
 
   return (
-    <header style={{ height: 72, background: '#FFFFFF', borderBottom: '1px solid #E2E8F0', padding: '0 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0, fontFamily: F }}>
-      
-      {/* Left side (Icons, Toggle, Breadcrumbs) */}
+    <header style={{ height: 64, background: '#fff', borderBottom: '1px solid #E2E8F0', padding: '0 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0, fontFamily: F }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-        <button className="show-on-mobile-flex" onClick={onMenuClick} style={{ background: 'transparent', border: 'none', color: '#0F172A', cursor: 'pointer', padding: 0 }}>
-          <Menu size={20} />
-        </button>
-
-        <div className="hide-on-mobile" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <SidebarIcon size={18} color="#0F172A" />
-          <Star size={18} color="#0F172A" />
-        </div>
-
-        <div className="hide-on-mobile" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 13, fontWeight: isAudience ? 500 : 700, color: isAudience ? '#94A3B8' : '#0F172A' }}>Creator</span>
-          
-          <button onClick={() => setIsAudience(!isAudience)} style={{ width: 40, height: 22, borderRadius: 20, background: '#E2E8F0', position: 'relative', border: 'none', cursor: 'pointer', padding: 2 }}>
-            <div style={{ width: 18, height: 18, borderRadius: '50%', background: '#FFFFFF', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', position: 'absolute', top: 2, left: isAudience ? 20 : 2, transition: 'all 0.2s' }} />
+        {onMenuClick && (
+          <button onClick={onMenuClick} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', display: 'flex', padding: 4 }} className="lg:hidden">
+            <Menu size={20} />
           </button>
-          
-          <span style={{ fontSize: 13, fontWeight: isAudience ? 700 : 500, color: isAudience ? '#0F172A' : '#94A3B8' }}>Audience</span>
-        </div>
-
-        <div className="hide-on-mobile" style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
-          {breadcrumbs.map((b, i) => (
-            <React.Fragment key={i}>
-              <span style={{ color: b.active ? '#0F172A' : '#94A3B8', fontWeight: b.active ? 600 : 500 }}>
-                {b.label}
-              </span>
-              {i < breadcrumbs.length - 1 && <span style={{ color: '#CBD5E1' }}>/</span>}
-            </React.Fragment>
-          ))}
-        </div>
-      </div>
-
-      {/* Middle side (Search) */}
-      <div className="hide-on-mobile" style={{ position: 'relative', width: 240 }}>
-        <Search size={14} color="#94A3B8" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }} />
-        <input 
-          placeholder="Search" 
-          style={{ width: '100%', background: '#F1F5F9', border: 'none', borderRadius: 8, padding: '8px 36px 8px 36px', fontSize: 13, color: '#0F172A', outline: 'none', fontFamily: F }}
-        />
-        <div style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 4, padding: '2px 6px', fontSize: 10, color: '#94A3B8', fontWeight: 600 }}>
-          /
-        </div>
-      </div>
-
-      {/* Right side (Icons & Avatar) */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-        <button onClick={toggleTheme} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#0F172A', display: 'flex' }}>
-          {appTheme === 'dark' ? <FaSun size={18} /> : <FaSun size={18} />} {/* The mockup shows a sun outline always for light mode, we will just use FaSun */}
-        </button>
+        )}
         
-        <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#0F172A', display: 'flex' }}>
+        {/* Creator / Audience Toggle */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 13, fontWeight: isCreator ? 800 : 600, color: isCreator ? '#1E293B' : '#94A3B8' }}>Creator</span>
+          <button 
+            onClick={() => setIsCreator(!isCreator)}
+            style={{ width: 36, height: 20, borderRadius: 20, background: '#E2E8F0', position: 'relative', border: 'none', cursor: 'pointer' }}
+          >
+            <div style={{ width: 14, height: 14, borderRadius: '50%', background: '#fff', position: 'absolute', top: 3, left: isCreator ? 3 : 19, transition: 'all 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }} />
+          </button>
+          <span style={{ fontSize: 13, fontWeight: !isCreator ? 800 : 600, color: !isCreator ? '#1E293B' : '#94A3B8' }}>Audience</span>
+        </div>
+
+        {/* Breadcrumb */}
+        <div style={{ fontSize: 13, fontWeight: 700, color: '#64748B' }}>
+          {getBreadcrumb()}
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+        
+        {/* Search */}
+        <div style={{ position: 'relative', width: 200 }} className="hidden sm:block">
+          <Search size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
+          <input 
+            type="text" 
+            placeholder="Search /" 
+            style={{ width: '100%', padding: '8px 12px 8px 36px', background: '#F8FAFC', border: '1px solid #F1F5F9', borderRadius: 8, fontSize: 12, fontWeight: 700, color: '#1E293B', outline: 'none' }}
+          />
+        </div>
+
+        <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', display: 'flex' }}>
+          <Settings size={18} />
+        </button>
+
+        <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', display: 'flex' }}>
           <RotateCcw size={18} />
         </button>
 
-        <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#0F172A', display: 'flex' }}>
-          <Bell size={18} />
-        </button>
+        <NotificationBell />
 
-        <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#0F172A', display: 'flex' }}>
-          <PanelRight size={18} />
-        </button>
-
-        <div style={{ width: 28, height: 28, borderRadius: '50%', background: `linear-gradient(135deg, ${theme.color.gold}, #e8a825)`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1A1A1A', overflow: 'hidden' }}>
-          {/* We would use user profile pic, fallback to first letter */}
-          {user?.name?.[0]?.toUpperCase() || <FaUser size={12} />}
+        <div style={{ position: 'relative' }}>
+          <button onClick={() => setDropOpen(o => !o)}
+            style={{ display: 'flex', alignItems: 'center', gap: 9, background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: F }}>
+            <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#F59E0B', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 900, color: '#fff' }}>
+              {user?.name?.[0]?.toUpperCase() || 'K'}
+            </div>
+          </button>
+          <AnimatePresence>
+            {dropOpen && (
+              <>
+                <div style={{ position: 'fixed', inset: 0, zIndex: 9 }} onClick={() => setDropOpen(false)} />
+                <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 6 }} transition={{ duration: 0.15 }}
+                  style={{ position: 'absolute', top: '100%', right: 0, marginTop: 8, background: '#fff', border: '1px solid #E2E8F0', borderRadius: 16, padding: 8, minWidth: 200, boxShadow: '0 10px 30px rgba(0,0,0,0.08)', zIndex: 10 }}>
+                  <div style={{ padding: '10px 12px', borderBottom: '1px solid #F1F5F9', marginBottom: 6 }}>
+                    <p style={{ fontSize: 13, fontWeight: 800, color: '#1E293B', margin: '0 0 2px' }}>{user?.name || 'Creator'}</p>
+                    <p style={{ fontSize: 11, color: '#94A3B8', margin: 0, fontWeight: 500 }}>{user?.email || 'creator@example.com'}</p>
+                  </div>
+                  {[{ label: 'My Dashboard', href: '/dashboard' }, { label: 'Settings', href: '/settings' }, { label: 'Support', href: '/support' }].map(({ label, href }) => (
+                    <Link key={href} href={href} onClick={() => setDropOpen(false)}
+                      style={{ display: 'block', padding: '9px 12px', fontSize: 13, fontWeight: 700, color: '#475569', textDecoration: 'none', borderRadius: 10, transition: 'background 0.1s' }}
+                      onMouseOver={e => (e.currentTarget.style.background = '#F8FAFC')}
+                      onMouseOut={e => (e.currentTarget.style.background = 'transparent')}>
+                      {label}
+                    </Link>
+                  ))}
+                  <div style={{ borderTop: '1px solid #F1F5F9', marginTop: 6, paddingTop: 6 }}>
+                    <button onClick={handleLogout}
+                      style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '9px 12px', fontSize: 13, fontWeight: 800, color: '#EF4444', background: 'none', border: 'none', cursor: 'pointer', borderRadius: 10, fontFamily: F, textAlign: 'left' }}
+                      onMouseOver={e => (e.currentTarget.style.background = '#FEF2F2')}
+                      onMouseOut={e => (e.currentTarget.style.background = 'transparent')}>
+                      <FaArrowRightFromBracket size={13} /> Sign out
+                    </button>
+                  </div>
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </header>
