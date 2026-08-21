@@ -42,6 +42,9 @@ const getActionColor = (action: string) => {
 
 export default function BookingsPage() {
   const [activeTab, setActiveTab] = useState<'screen' | 'podcast'>('screen');
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [filterStatus, setFilterStatus] = useState(true);
+  const [filterDuration, setFilterDuration] = useState(false);
 
   return (
     <DashboardLayout>
@@ -104,11 +107,14 @@ export default function BookingsPage() {
               </div>
 
               {/* Filter Button */}
-              <button style={{ 
-                display: 'flex', alignItems: 'center', gap: 8, 
-                background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 8, 
-                padding: '10px 16px', color: '#334155', fontSize: 13, fontWeight: 700, cursor: 'pointer' 
-              }}>
+              <button 
+                onClick={() => setShowFilterModal(true)}
+                style={{ 
+                  display: 'flex', alignItems: 'center', gap: 8, 
+                  background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 8, 
+                  padding: '10px 16px', color: '#334155', fontSize: 13, fontWeight: 700, cursor: 'pointer' 
+                }}
+              >
                 <Filter size={14} /> Filter
               </button>
 
@@ -176,6 +182,62 @@ export default function BookingsPage() {
 
         </div>
       </div>
+
+      {/* Filter Modal Overlay */}
+      {showFilterModal && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {/* Backdrop */}
+          <div 
+            style={{ position: 'absolute', inset: 0, background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(2px)' }} 
+            onClick={() => setShowFilterModal(false)}
+          />
+          
+          {/* Modal Box */}
+          <div style={{ position: 'relative', width: 340, background: '#FFFFFF', borderRadius: 16, padding: '24px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', fontFamily: F }}>
+            <h2 style={{ fontSize: 15, fontWeight: 800, color: '#0F172A', margin: '0 0 20px' }}>Filter</h2>
+            
+            <div style={{ position: 'relative', marginBottom: 24 }}>
+              <Search size={14} color="#94A3B8" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }} />
+              <input 
+                placeholder="Search Employee" 
+                style={{ 
+                  width: '100%', background: '#FFFFFF', border: '1px solid #E2E8F0', 
+                  borderRadius: 8, padding: '10px 16px 10px 36px', 
+                  fontSize: 13, color: '#0F172A', outline: 'none', fontFamily: F 
+                }}
+              />
+            </div>
+
+            <p style={{ fontSize: 13, fontWeight: 800, color: '#0F172A', margin: '0 0 12px' }}>All Ad bookings</p>
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: 24, marginBottom: 32 }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, color: '#334155', fontWeight: 600 }}>
+                <input type="checkbox" checked={filterStatus} onChange={(e) => setFilterStatus(e.target.checked)} style={{ accentColor: '#D4AF37', width: 16, height: 16, cursor: 'pointer' }} />
+                Status
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, color: '#334155', fontWeight: 600 }}>
+                <input type="checkbox" checked={filterDuration} onChange={(e) => setFilterDuration(e.target.checked)} style={{ accentColor: '#D4AF37', width: 16, height: 16, cursor: 'pointer' }} />
+                By duration
+              </label>
+            </div>
+
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button 
+                onClick={() => setShowFilterModal(false)}
+                style={{ flex: 1, padding: '12px', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 8, color: '#0F172A', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => setShowFilterModal(false)}
+                style={{ flex: 1, padding: '12px', background: '#D4AF37', border: 'none', borderRadius: 8, color: '#0F172A', fontSize: 13, fontWeight: 800, cursor: 'pointer' }}
+              >
+                Apply
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
