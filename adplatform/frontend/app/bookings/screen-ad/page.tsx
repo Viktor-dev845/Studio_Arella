@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { UploadCloud, Calendar, Clock } from 'lucide-react';
+import { UploadCloud, Calendar, Clock, X, ArrowLeft, Copy } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { PageTransition } from '@/components/ui/Animations';
 
@@ -12,6 +12,8 @@ export default function BookScreenAdPage() {
   const [timeline, setTimeline] = useState('');
   const [timer, setTimer] = useState('');
   const [hasRequestedCreative, setHasRequestedCreative] = useState(false);
+  const [showBillingModal, setShowBillingModal] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'card' | 'wallet'>('wallet');
 
   return (
     <DashboardLayout>
@@ -145,7 +147,10 @@ export default function BookScreenAdPage() {
                 <button className="px-6 py-2.5 rounded-lg text-sm font-bold text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 transition-colors">
                   Cancel
                 </button>
-                <button className="px-10 py-2.5 rounded-lg text-sm font-bold text-gray-900 bg-[#EAB308] hover:bg-[#CA8A04] transition-colors shadow-sm">
+                <button 
+                  onClick={() => setShowBillingModal(true)}
+                  className="px-10 py-2.5 rounded-lg text-sm font-bold text-gray-900 bg-[#EAB308] hover:bg-[#CA8A04] transition-colors shadow-sm"
+                >
                   Book Slot
                 </button>
               </div>
@@ -167,6 +172,78 @@ export default function BookScreenAdPage() {
           </div>
         </div>
       </PageTransition>
+
+      {/* Billing Modal */}
+      {showBillingModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl w-full max-w-[480px] overflow-hidden shadow-2xl relative animate-in fade-in zoom-in duration-200">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-100">
+              <button onClick={() => setShowBillingModal(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-700">
+                <ArrowLeft size={20} />
+              </button>
+              <h2 className="text-[17px] font-bold text-gray-900">Billing</h2>
+              <button onClick={() => setShowBillingModal(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-700">
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-8">
+              <div className="text-center mb-8">
+                <h3 className="text-[15px] font-bold text-gray-900">3 months Ad space at</h3>
+                <p className="text-[15px] font-bold text-gray-900">#300,000</p>
+              </div>
+
+              <div className="space-y-4">
+                {/* Pay with card */}
+                <div 
+                  onClick={() => setPaymentMethod('card')}
+                  className={`flex items-center gap-4 p-5 rounded-2xl cursor-pointer border-2 transition-colors ${paymentMethod === 'card' ? 'border-[#EAB308] bg-[#FEFCE8]/40' : 'border-gray-100 hover:border-gray-200'}`}
+                >
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'card' ? 'border-[#EAB308]' : 'border-gray-300'}`}>
+                    {paymentMethod === 'card' && <div className="w-2.5 h-2.5 rounded-full bg-[#EAB308]" />}
+                  </div>
+                  <span className="text-sm font-semibold text-gray-900">Pay with card</span>
+                </div>
+
+                {/* Pay from wallet */}
+                <div 
+                  onClick={() => setPaymentMethod('wallet')}
+                  className={`flex flex-col gap-2 p-5 rounded-2xl cursor-pointer border-2 transition-colors ${paymentMethod === 'wallet' ? 'border-[#EAB308] bg-[#FEFCE8]/40' : 'border-gray-100 hover:border-gray-200'}`}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'wallet' ? 'border-[#EAB308]' : 'border-gray-300'}`}>
+                        {paymentMethod === 'wallet' && <div className="w-2.5 h-2.5 rounded-full bg-[#EAB308]" />}
+                      </div>
+                      <span className="text-sm font-semibold text-gray-900">Pay from wallet</span>
+                    </div>
+                    <span className="text-xs font-bold text-[#EAB308] hover:underline">Fund wallet</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between pl-9 mt-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] font-semibold text-gray-500">Wallet ID: 23cvo_23759ryi</span>
+                      <button className="flex items-center gap-1 text-[11px] font-bold text-[#EAB308] hover:underline">
+                        Copy <Copy size={10} />
+                      </button>
+                    </div>
+                    <span className="text-[12px] font-bold text-gray-900">NGN 5,215,005.25</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Continue Button */}
+              <div className="mt-8">
+                <button className="w-full py-3.5 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-sm font-bold rounded-xl transition-colors">
+                  Continue
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
