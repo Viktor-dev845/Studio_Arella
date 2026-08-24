@@ -199,7 +199,7 @@ export default function BookScreenAdPage() {
                 {/* Pay with card */}
                 <div 
                   onClick={() => setPaymentMethod('card')}
-                  className={`flex items-center gap-4 px-6 py-7 rounded-2xl cursor-pointer border-[1.5px] transition-colors ${paymentMethod === 'card' ? 'border-[#EAB308] bg-[#FEFCE8]/40' : 'border-gray-200 hover:border-gray-300'}`}
+                  className={`flex items-center gap-4 px-6 py-9 rounded-2xl cursor-pointer border-[1.5px] transition-colors ${paymentMethod === 'card' ? 'border-[#EAB308] bg-[#FEFCE8]/40' : 'border-gray-200 hover:border-gray-300'}`}
                 >
                   <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'card' ? 'border-[#EAB308]' : 'border-gray-300'}`}>
                     {paymentMethod === 'card' && <div className="w-2.5 h-2.5 rounded-full bg-[#EAB308]" />}
@@ -210,7 +210,7 @@ export default function BookScreenAdPage() {
                 {/* Pay from wallet */}
                 <div 
                   onClick={() => setPaymentMethod('wallet')}
-                  className={`flex flex-col gap-2 px-6 py-6 rounded-2xl cursor-pointer border-[1.5px] transition-colors ${paymentMethod === 'wallet' ? 'border-[#EAB308] bg-[#FEFCE8]/40' : 'border-gray-200 hover:border-gray-300'}`}
+                  className={`flex flex-col gap-2 px-6 py-7 rounded-2xl cursor-pointer border-[1.5px] transition-colors ${paymentMethod === 'wallet' ? 'border-[#EAB308] bg-[#FEFCE8]/40' : 'border-gray-200 hover:border-gray-300'}`}
                 >
                   <div className="flex items-center justify-between w-full">
                     <div className="flex items-center gap-4">
