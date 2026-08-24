@@ -13,6 +13,7 @@ export default function BookScreenAdPage() {
   const [timer, setTimer] = useState('');
   const [hasRequestedCreative, setHasRequestedCreative] = useState(false);
   const [showBillingModal, setShowBillingModal] = useState(false);
+  const [modalStep, setModalStep] = useState<'billing' | 'pay_from_wallet'>('billing');
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'wallet'>('wallet');
 
   return (
@@ -179,68 +180,105 @@ export default function BookScreenAdPage() {
           <div className="bg-white rounded-3xl w-full max-w-[540px] overflow-hidden shadow-2xl relative animate-in fade-in zoom-in duration-200">
             {/* Header */}
             <div className="flex items-center justify-between p-6">
-              <button onClick={() => setShowBillingModal(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-700">
+              <button 
+                onClick={() => {
+                  if (modalStep === 'pay_from_wallet') {
+                    setModalStep('billing');
+                  } else {
+                    setShowBillingModal(false);
+                    setModalStep('billing');
+                  }
+                }} 
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-700"
+              >
                 <ArrowLeft size={20} />
               </button>
-              <h2 className="text-[17px] font-bold text-gray-900">Billing</h2>
-              <button onClick={() => setShowBillingModal(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-700">
+              <h2 className="text-[17px] font-bold text-gray-900">
+                {modalStep === 'billing' ? 'Billing' : 'Pay from wallet'}
+              </h2>
+              <button 
+                onClick={() => {
+                  setShowBillingModal(false);
+                  setModalStep('billing');
+                }} 
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-700"
+              >
                 <X size={20} />
               </button>
             </div>
 
             {/* Content */}
-            <div className="px-12 pb-12 pt-2">
-              <div className="text-center mb-12">
-                <h3 className="text-[15px] font-bold text-gray-900">3 months Ad space at</h3>
-                <p className="text-[15px] font-bold text-gray-900">#300,000</p>
-              </div>
-
-              <div className="space-y-6">
-                {/* Pay with card */}
-                <div 
-                  onClick={() => setPaymentMethod('card')}
-                  className={`flex items-center gap-4 px-6 py-9 rounded-2xl cursor-pointer border-[1.5px] transition-colors ${paymentMethod === 'card' ? 'border-[#EAB308] bg-[#FEFCE8]/40' : 'border-gray-200 hover:border-gray-300'}`}
-                >
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'card' ? 'border-[#EAB308]' : 'border-gray-300'}`}>
-                    {paymentMethod === 'card' && <div className="w-2.5 h-2.5 rounded-full bg-[#EAB308]" />}
-                  </div>
-                  <span className="text-sm font-semibold text-gray-900">Pay with card</span>
+            {modalStep === 'billing' ? (
+              <div className="px-12 pb-12 pt-2">
+                <div className="text-center mb-12">
+                  <h3 className="text-[15px] font-bold text-gray-900">3 months Ad space at</h3>
+                  <p className="text-[15px] font-bold text-gray-900">#300,000</p>
                 </div>
 
-                {/* Pay from wallet */}
-                <div 
-                  onClick={() => setPaymentMethod('wallet')}
-                  className={`flex flex-col gap-2 px-6 py-7 rounded-2xl cursor-pointer border-[1.5px] transition-colors ${paymentMethod === 'wallet' ? 'border-[#EAB308] bg-[#FEFCE8]/40' : 'border-gray-200 hover:border-gray-300'}`}
-                >
-                  <div className="flex items-center justify-between w-full">
-                    <div className="flex items-center gap-4">
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'wallet' ? 'border-[#EAB308]' : 'border-gray-300'}`}>
-                        {paymentMethod === 'wallet' && <div className="w-2.5 h-2.5 rounded-full bg-[#EAB308]" />}
+                <div className="space-y-6">
+                  {/* Pay with card */}
+                  <div 
+                    onClick={() => setPaymentMethod('card')}
+                    className={`flex items-center gap-4 px-6 py-9 rounded-2xl cursor-pointer border-[1.5px] transition-colors ${paymentMethod === 'card' ? 'border-[#EAB308] bg-[#FEFCE8]/40' : 'border-gray-200 hover:border-gray-300'}`}
+                  >
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'card' ? 'border-[#EAB308]' : 'border-gray-300'}`}>
+                      {paymentMethod === 'card' && <div className="w-2.5 h-2.5 rounded-full bg-[#EAB308]" />}
+                    </div>
+                    <span className="text-sm font-semibold text-gray-900">Pay with card</span>
+                  </div>
+
+                  {/* Pay from wallet */}
+                  <div 
+                    onClick={() => setPaymentMethod('wallet')}
+                    className={`flex flex-col gap-2 px-6 py-7 rounded-2xl cursor-pointer border-[1.5px] transition-colors ${paymentMethod === 'wallet' ? 'border-[#EAB308] bg-[#FEFCE8]/40' : 'border-gray-200 hover:border-gray-300'}`}
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center gap-4">
+                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'wallet' ? 'border-[#EAB308]' : 'border-gray-300'}`}>
+                          {paymentMethod === 'wallet' && <div className="w-2.5 h-2.5 rounded-full bg-[#EAB308]" />}
+                        </div>
+                        <span className="text-sm font-semibold text-gray-900">Pay from wallet</span>
                       </div>
-                      <span className="text-sm font-semibold text-gray-900">Pay from wallet</span>
+                      <span className="text-[13px] font-bold text-[#EAB308] hover:underline">Fund wallet</span>
                     </div>
-                    <span className="text-[13px] font-bold text-[#EAB308] hover:underline">Fund wallet</span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between pl-9 mt-4">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[12px] font-semibold text-gray-500">Wallet ID: 23cvo_23759ryi</span>
-                      <button className="flex items-center gap-1 text-[11px] font-bold text-[#EAB308] hover:underline">
-                        Copy <Copy size={11} />
-                      </button>
+                    
+                    <div className="flex items-center justify-between pl-9 mt-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[12px] font-semibold text-gray-500">Wallet ID: 23cvo_23759ryi</span>
+                        <button className="flex items-center gap-1 text-[11px] font-bold text-[#EAB308] hover:underline">
+                          Copy <Copy size={11} />
+                        </button>
+                      </div>
+                      <span className="text-[13px] font-bold text-gray-900">NGN 5,215,005.25</span>
                     </div>
-                    <span className="text-[13px] font-bold text-gray-900">NGN 5,215,005.25</span>
                   </div>
                 </div>
-              </div>
 
-              {/* Continue Button */}
-              <div className="mt-10">
+                {/* Continue Button */}
+                <div className="mt-10">
+                  <button 
+                    onClick={() => {
+                      if (paymentMethod === 'wallet') {
+                        setModalStep('pay_from_wallet');
+                      }
+                    }}
+                    className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-sm font-bold rounded-xl transition-colors"
+                  >
+                    Continue
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="px-12 pb-24 pt-8">
+                <div className="flex items-center justify-between px-8 py-10 rounded-2xl border-[1.5px] border-[#EAB308] bg-white shadow-sm mb-6">
+                  <span className="text-sm font-bold text-gray-900">Total amount</span>
+                  <span className="text-sm font-bold text-gray-900">NGN 300,000.25</span>
+                </div>
                 <button className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-sm font-bold rounded-xl transition-colors">
-                  Continue
+                  Pay
                 </button>
               </div>
-            </div>
+            )}
           </div>
         </div>
       )}
