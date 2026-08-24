@@ -271,15 +271,15 @@ export default function BookScreenAdPage() {
                 </div>
               </div>
             ) : modalStep === 'pay_with_card' ? (
-              <div className="px-12 pb-16 pt-2">
-                <div className="text-center mb-10">
+              <div className="px-12 pb-24 pt-2">
+                <div className="text-center mb-12">
                   <h3 className="text-[15px] font-bold text-gray-900">3 months Ad space at</h3>
                   <p className="text-[15px] font-bold text-gray-900">#300,000</p>
                 </div>
-                <div className="space-y-4">
-                  <input type="text" placeholder="Card holder's name" className="w-full px-5 py-4 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
+                <div className="space-y-6">
+                  <input type="text" placeholder="Card holder's name" className="w-full px-5 py-5 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
                   <div className="relative">
-                    <input type="text" placeholder="Card number" className="w-full px-5 py-4 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
+                    <input type="text" placeholder="Card number" className="w-full px-5 py-5 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
                     <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
                       <div className="w-[26px] h-[16px] bg-[#1434CB] rounded text-[8px] font-bold flex items-center justify-center text-white italic tracking-tighter">VISA</div>
                       <div className="w-[26px] h-[16px] flex items-center justify-center relative">
@@ -289,11 +289,11 @@ export default function BookScreenAdPage() {
                     </div>
                   </div>
                   <div className="flex gap-4">
-                    <input type="text" placeholder="Expiry date (MM/YY)" className="w-1/2 px-5 py-4 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
-                    <input type="text" placeholder="CVV" className="w-1/2 px-5 py-4 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
+                    <input type="text" placeholder="Expiry date (MM/YY)" className="w-1/2 px-5 py-5 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
+                    <input type="text" placeholder="CVV" className="w-1/2 px-5 py-5 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
                   </div>
                 </div>
-                <div className="mt-10">
+                <div className="mt-12">
                   <button 
                     onClick={() => setModalStep('success')}
                     className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-sm font-bold rounded-xl transition-colors"
