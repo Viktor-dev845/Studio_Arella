@@ -13,7 +13,7 @@ export default function BookScreenAdPage() {
   const [timer, setTimer] = useState('');
   const [hasRequestedCreative, setHasRequestedCreative] = useState(false);
   const [showBillingModal, setShowBillingModal] = useState(false);
-  const [modalStep, setModalStep] = useState<'billing' | 'pay_from_wallet' | 'success'>('billing');
+  const [modalStep, setModalStep] = useState<'billing' | 'pay_from_wallet' | 'pay_with_card' | 'success'>('billing');
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'wallet'>('wallet');
 
   return (
@@ -182,7 +182,7 @@ export default function BookScreenAdPage() {
             <div className="flex items-center justify-between p-6">
               <button 
                 onClick={() => {
-                  if (modalStep === 'pay_from_wallet') {
+                  if (modalStep === 'pay_from_wallet' || modalStep === 'pay_with_card' || modalStep === 'success') {
                     setModalStep('billing');
                   } else {
                     setShowBillingModal(false);
@@ -194,7 +194,7 @@ export default function BookScreenAdPage() {
                 <ArrowLeft size={20} />
               </button>
               <h2 className="text-[17px] font-bold text-gray-900">
-                {modalStep === 'billing' ? 'Billing' : 'Pay from wallet'}
+                {modalStep === 'billing' ? 'Billing' : modalStep === 'pay_with_card' ? 'Pay with card' : 'Pay from wallet'}
               </h2>
               <button 
                 onClick={() => {
@@ -260,11 +260,45 @@ export default function BookScreenAdPage() {
                     onClick={() => {
                       if (paymentMethod === 'wallet') {
                         setModalStep('pay_from_wallet');
+                      } else if (paymentMethod === 'card') {
+                        setModalStep('pay_with_card');
                       }
                     }}
                     className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-sm font-bold rounded-xl transition-colors"
                   >
                     Continue
+                  </button>
+                </div>
+              </div>
+            ) : modalStep === 'pay_with_card' ? (
+              <div className="px-12 pb-16 pt-2">
+                <div className="text-center mb-10">
+                  <h3 className="text-[15px] font-bold text-gray-900">3 months Ad space at</h3>
+                  <p className="text-[15px] font-bold text-gray-900">#300,000</p>
+                </div>
+                <div className="space-y-4">
+                  <input type="text" placeholder="Card holder's name" className="w-full px-5 py-4 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
+                  <div className="relative">
+                    <input type="text" placeholder="Card number" className="w-full px-5 py-4 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+                      <div className="w-[26px] h-[16px] bg-[#1434CB] rounded text-[8px] font-bold flex items-center justify-center text-white italic tracking-tighter">VISA</div>
+                      <div className="w-[26px] h-[16px] flex items-center justify-center relative">
+                        <div className="w-[14px] h-[14px] rounded-full bg-[#EB001B] absolute left-0 mix-blend-multiply opacity-90"></div>
+                        <div className="w-[14px] h-[14px] rounded-full bg-[#F79E1B] absolute right-0 mix-blend-multiply opacity-90"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-4">
+                    <input type="text" placeholder="Expiry date (MM/YY)" className="w-1/2 px-5 py-4 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
+                    <input type="text" placeholder="CVV" className="w-1/2 px-5 py-4 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
+                  </div>
+                </div>
+                <div className="mt-10">
+                  <button 
+                    onClick={() => setModalStep('success')}
+                    className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-sm font-bold rounded-xl transition-colors"
+                  >
+                    Pay
                   </button>
                 </div>
               </div>
