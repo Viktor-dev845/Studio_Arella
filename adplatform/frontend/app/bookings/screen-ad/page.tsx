@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { UploadCloud, Calendar, Clock, X, ArrowLeft, Copy } from 'lucide-react';
+import { UploadCloud, Calendar, Clock, X, ArrowLeft, Copy, Check } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { PageTransition } from '@/components/ui/Animations';
 
@@ -13,7 +13,7 @@ export default function BookScreenAdPage() {
   const [timer, setTimer] = useState('');
   const [hasRequestedCreative, setHasRequestedCreative] = useState(false);
   const [showBillingModal, setShowBillingModal] = useState(false);
-  const [modalStep, setModalStep] = useState<'billing' | 'pay_from_wallet'>('billing');
+  const [modalStep, setModalStep] = useState<'billing' | 'pay_from_wallet' | 'success'>('billing');
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'wallet'>('wallet');
 
   return (
@@ -268,14 +268,36 @@ export default function BookScreenAdPage() {
                   </button>
                 </div>
               </div>
-            ) : (
+            ) : modalStep === 'pay_from_wallet' ? (
               <div className="px-12 pb-24 pt-8">
                 <div className="flex items-center justify-between px-8 py-10 rounded-2xl border-[1.5px] border-[#EAB308] bg-white shadow-sm mb-6">
                   <span className="text-sm font-bold text-gray-900">Total amount</span>
                   <span className="text-sm font-bold text-gray-900">NGN 300,000.25</span>
                 </div>
-                <button className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-sm font-bold rounded-xl transition-colors">
+                <button 
+                  onClick={() => setModalStep('success')}
+                  className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-sm font-bold rounded-xl transition-colors"
+                >
                   Pay
+                </button>
+              </div>
+            ) : (
+              <div className="px-12 pb-12 pt-16 flex flex-col items-center">
+                <div className="w-32 h-32 rounded-full bg-[#FEFCE8] flex items-center justify-center mb-8 relative">
+                  <div className="w-16 h-16 rounded-full bg-[#CA8A04] flex items-center justify-center relative z-10 shadow-lg">
+                    <Check size={32} className="text-white" strokeWidth={3} />
+                  </div>
+                  <div className="absolute inset-0 rounded-full bg-gradient-radial from-[#FDE047]/50 to-transparent blur-md"></div>
+                </div>
+                <h3 className="text-[17px] font-bold text-gray-900 mb-10">Payment successful</h3>
+                <button 
+                  onClick={() => {
+                    setShowBillingModal(false);
+                    setModalStep('billing');
+                  }}
+                  className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-sm font-bold rounded-xl transition-colors"
+                >
+                  Finish
                 </button>
               </div>
             )}
