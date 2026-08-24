@@ -45,9 +45,9 @@ export default function BookScreenAdPage() {
                     style={{ color: duration ? '#111827' : '#94A3B8', fontWeight: duration ? 700 : 500 }}
                   >
                     <option value="" disabled>Duration</option>
-                    <option value="hourly">Hourly</option>
-                    <option value="weekly">Weekly</option>
-                    <option value="monthly">Monthly</option>
+                    <option value="hourly" style={{ fontWeight: 700 }} className="text-gray-900">Hourly</option>
+                    <option value="weekly" style={{ fontWeight: 700 }} className="text-gray-900">Weekly</option>
+                    <option value="monthly" style={{ fontWeight: 700 }} className="text-gray-900">Monthly</option>
                   </select>
                   <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400"><path d="m6 9 6 6 6-6"/></svg>
@@ -62,8 +62,8 @@ export default function BookScreenAdPage() {
                     style={{ color: campaignType ? '#111827' : '#94A3B8', fontWeight: campaignType ? 700 : 500 }}
                   >
                     <option value="" disabled>How would you run your Ad campaign?</option>
-                    <option value="one_time">One time booking</option>
-                    <option value="recurring">Recurring booking</option>
+                    <option value="one_time" style={{ fontWeight: 700 }} className="text-gray-900">One time booking</option>
+                    <option value="recurring" style={{ fontWeight: 700 }} className="text-gray-900">Recurring booking</option>
                   </select>
                   <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400"><path d="m6 9 6 6 6-6"/></svg>
