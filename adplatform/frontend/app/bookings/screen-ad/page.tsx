@@ -194,7 +194,7 @@ export default function BookScreenAdPage() {
                 <ArrowLeft size={20} />
               </button>
               <h2 className="text-[17px] font-bold text-gray-900">
-                {modalStep === 'billing' ? 'Billing' : modalStep === 'pay_with_card' ? 'Pay with card' : 'Pay from wallet'}
+                {modalStep === 'billing' ? 'Billing' : paymentMethod === 'card' ? 'Pay with card' : 'Pay from wallet'}
               </h2>
               <button 
                 onClick={() => {
