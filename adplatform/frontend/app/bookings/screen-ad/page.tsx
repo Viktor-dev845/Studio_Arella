@@ -44,7 +44,7 @@ export default function BookScreenAdPage() {
                     className="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 appearance-none focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
                     style={{ color: duration ? '#111827' : '#94A3B8', fontWeight: duration ? 700 : 500 }}
                   >
-                    <option value="" disabled>Duration</option>
+                    <option value="" disabled style={{ fontWeight: 700 }}>Duration</option>
                     <option value="hourly" style={{ fontWeight: 700 }} className="text-gray-900">Hourly</option>
                     <option value="weekly" style={{ fontWeight: 700 }} className="text-gray-900">Weekly</option>
                     <option value="monthly" style={{ fontWeight: 700 }} className="text-gray-900">Monthly</option>
@@ -61,7 +61,7 @@ export default function BookScreenAdPage() {
                     className="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 appearance-none focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
                     style={{ color: campaignType ? '#111827' : '#94A3B8', fontWeight: campaignType ? 700 : 500 }}
                   >
-                    <option value="" disabled>How would you run your Ad campaign?</option>
+                    <option value="" disabled style={{ fontWeight: 700 }}>How would you run your Ad campaign?</option>
                     <option value="one_time" style={{ fontWeight: 700 }} className="text-gray-900">One time booking</option>
                     <option value="recurring" style={{ fontWeight: 700 }} className="text-gray-900">Recurring booking</option>
                   </select>
