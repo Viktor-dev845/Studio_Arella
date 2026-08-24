@@ -11,6 +11,7 @@ export default function BookScreenAdPage() {
   const [campaignType, setCampaignType] = useState('');
   const [timeline, setTimeline] = useState('');
   const [timer, setTimer] = useState('');
+  const [hasRequestedCreative, setHasRequestedCreative] = useState(false);
 
   return (
     <DashboardLayout>
@@ -24,14 +25,14 @@ export default function BookScreenAdPage() {
             {/* Form Section */}
             <div className="flex-1 w-full space-y-6">
               
-              {/* Title */}
+              {/* Title / Description */}
               <div>
-                <input
-                  type="text"
-                  placeholder="Title Describe your Ad"
+                <textarea
+                  placeholder="Describe your Ad"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
+                  rows={4}
+                  className="w-full px-4 py-4 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors resize-none"
                 />
               </div>
 
@@ -82,6 +83,32 @@ export default function BookScreenAdPage() {
                   </div>
                   <p className="text-sm font-bold text-gray-800 mb-1.5">Drag & Drop or choose file to upload</p>
                   <p className="text-[11px] font-semibold text-gray-400">Supported formats : jpeg, png, pdf</p>
+                </div>
+
+                {/* Creative Request Toggle */}
+                <div className="mt-4 text-[13px] font-medium text-gray-700">
+                  {!hasRequestedCreative ? (
+                    <p>
+                      Don't have Ad materials yet?{' '}
+                      <button 
+                        onClick={() => setHasRequestedCreative(true)}
+                        className="text-[#EAB308] font-semibold hover:underline"
+                      >
+                        Request Ad creative services
+                      </button>
+                    </p>
+                  ) : (
+                    <p>
+                      Ad banner design on request?{' '}
+                      <button className="text-[#EAB308] font-semibold hover:underline mr-2">Change</button>
+                      <button 
+                        onClick={() => setHasRequestedCreative(false)}
+                        className="text-[#EF4444] font-semibold hover:underline"
+                      >
+                        Cancel
+                      </button>
+                    </p>
+                  )}
                 </div>
               </div>
 
