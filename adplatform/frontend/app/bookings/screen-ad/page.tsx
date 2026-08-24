@@ -31,7 +31,7 @@ export default function BookScreenAdPage() {
                   placeholder="Title Describe your Ad"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:ring-2 focus:ring-purple-100 focus:border-purple-500 transition-colors"
+                  className="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
                 />
               </div>
 
@@ -41,7 +41,7 @@ export default function BookScreenAdPage() {
                   <select
                     value={duration}
                     onChange={(e) => setDuration(e.target.value)}
-                    className="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 appearance-none focus:outline-none focus:ring-2 focus:ring-purple-100 focus:border-purple-500 transition-colors"
+                    className="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 appearance-none focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
                     style={{ color: duration ? '#111827' : '#94A3B8', fontWeight: duration ? 700 : 500 }}
                   >
                     <option value="" disabled>Duration</option>
@@ -58,7 +58,7 @@ export default function BookScreenAdPage() {
                   <select
                     value={campaignType}
                     onChange={(e) => setCampaignType(e.target.value)}
-                    className="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 appearance-none focus:outline-none focus:ring-2 focus:ring-purple-100 focus:border-purple-500 transition-colors"
+                    className="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 appearance-none focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
                     style={{ color: campaignType ? '#111827' : '#94A3B8', fontWeight: campaignType ? 700 : 500 }}
                   >
                     <option value="" disabled>How would you run your Ad campaign?</option>
@@ -96,7 +96,7 @@ export default function BookScreenAdPage() {
                     placeholder="Schedule service delivery timeline"
                     value={timeline}
                     onChange={(e) => setTimeline(e.target.value)}
-                    className="w-full pr-11 pl-4 py-3.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:ring-2 focus:ring-purple-100 focus:border-purple-500 transition-colors"
+                    className="w-full pr-11 pl-4 py-3.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
                   />
                 </div>
                 <div className="relative">
@@ -108,7 +108,7 @@ export default function BookScreenAdPage() {
                     placeholder="Set timer (optional)"
                     value={timer}
                     onChange={(e) => setTimer(e.target.value)}
-                    className="w-full pr-11 pl-4 py-3.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:ring-2 focus:ring-purple-100 focus:border-purple-500 transition-colors"
+                    className="w-full pr-11 pl-4 py-3.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
                   />
                 </div>
               </div>
