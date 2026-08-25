@@ -22,6 +22,8 @@ const mockBookings = [
 export default function BookingsPage() {
   const [activeTab, setActiveTab] = useState('screen');
   const [search, setSearch] = useState('');
+  const [cancelModalOpen, setCancelModalOpen] = useState(false);
+  const [selectedAdId, setSelectedAdId] = useState<number | null>(null);
 
   return (
     <DashboardLayout>
@@ -74,7 +76,7 @@ export default function BookingsPage() {
                   placeholder="Search"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
+                  className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:ring-2 focus:ring-purple-100 focus:border-purple-500 transition-colors"
                 />
               </div>
 
@@ -128,7 +130,14 @@ export default function BookingsPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <button className={`text-xs font-bold transition-colors ${
+                        <button 
+                          onClick={() => {
+                            if (b.action === 'Cancel') {
+                              setSelectedAdId(b.id);
+                              setCancelModalOpen(true);
+                            }
+                          }}
+                          className={`text-xs font-bold transition-colors ${
                           b.action === 'Extend' ? 'text-[#EAB308] hover:text-[#CA8A04]' :
                           b.action === 'Cancel' ? 'text-red-500 hover:text-red-600' :
                           b.action === 'Send a review' ? 'text-blue-500 hover:text-blue-600' :
@@ -144,6 +153,34 @@ export default function BookingsPage() {
             </div>
           </div>
         </div>
+
+        {/* Cancel Modal */}
+        {cancelModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#1C1917]/40 backdrop-blur-sm">
+            <div className="bg-white rounded-[24px] p-8 max-w-[340px] w-full mx-4 shadow-xl flex flex-col items-center text-center">
+              <h3 className="text-[15px] font-bold text-gray-900 mb-8 max-w-[200px] leading-snug">
+                Are you sure you want to cancel this Ad?
+              </h3>
+              <div className="flex items-center gap-4 w-full">
+                <button 
+                  onClick={() => setCancelModalOpen(false)}
+                  className="flex-1 py-3 px-4 rounded-xl border border-gray-200 text-[13px] font-bold text-gray-900 hover:bg-gray-50 transition-colors"
+                >
+                  No
+                </button>
+                <button 
+                  onClick={() => {
+                    // TODO: handle cancel ad
+                    setCancelModalOpen(false);
+                  }}
+                  className="flex-1 py-3 px-4 rounded-xl bg-[#EAB308] hover:bg-[#CA8A04] text-[13px] font-bold text-gray-900 transition-colors shadow-sm"
+                >
+                  Yes
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </PageTransition>
     </DashboardLayout>
   );
