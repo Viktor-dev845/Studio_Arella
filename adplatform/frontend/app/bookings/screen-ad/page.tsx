@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { UploadCloud, Calendar, Clock, ArrowLeft, X } from 'lucide-react';
+import { UploadCloud, Calendar, Clock, X, ArrowLeft, Copy, Check } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { PageTransition } from '@/components/ui/Animations';
 
@@ -15,6 +15,9 @@ export default function BookScreenAdPage() {
   const [showCreativeModal, setShowCreativeModal] = useState(false);
   const [selectedService, setSelectedService] = useState('');
   const [creativeBrief, setCreativeBrief] = useState('');
+  const [showBillingModal, setShowBillingModal] = useState(false);
+  const [modalStep, setModalStep] = useState<'billing' | 'pay_from_wallet' | 'pay_with_card' | 'success'>('billing');
+  const [paymentMethod, setPaymentMethod] = useState<'card' | 'wallet'>('wallet');
 
   return (
     <DashboardLayout>
@@ -28,14 +31,14 @@ export default function BookScreenAdPage() {
             {/* Form Section */}
             <div className="flex-1 w-full space-y-6">
               
-              {/* Title */}
+              {/* Title / Description */}
               <div>
-                <input
-                  type="text"
-                  placeholder="Title Describe your Ad"
+                <textarea
+                  placeholder="Describe your Ad"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:ring-2 focus:ring-purple-100 focus:border-purple-500 transition-colors"
+                  rows={4}
+                  className="w-full px-4 py-4 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors resize-none"
                 />
               </div>
 
@@ -45,13 +48,13 @@ export default function BookScreenAdPage() {
                   <select
                     value={duration}
                     onChange={(e) => setDuration(e.target.value)}
-                    className="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 appearance-none focus:outline-none focus:ring-2 focus:ring-purple-100 focus:border-purple-500 transition-colors"
+                    className="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 appearance-none focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
                     style={{ color: duration ? '#111827' : '#94A3B8', fontWeight: duration ? 700 : 500 }}
                   >
-                    <option value="" disabled>Duration</option>
-                    <option value="hourly">Hourly</option>
-                    <option value="weekly">Weekly</option>
-                    <option value="monthly">Monthly</option>
+                    <option value="" disabled style={{ fontWeight: 700 }}>Duration</option>
+                    <option value="hourly" style={{ fontWeight: 700 }} className="text-gray-900">Hourly</option>
+                    <option value="weekly" style={{ fontWeight: 700 }} className="text-gray-900">Weekly</option>
+                    <option value="monthly" style={{ fontWeight: 700 }} className="text-gray-900">Monthly</option>
                   </select>
                   <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400"><path d="m6 9 6 6 6-6"/></svg>
@@ -62,12 +65,12 @@ export default function BookScreenAdPage() {
                   <select
                     value={campaignType}
                     onChange={(e) => setCampaignType(e.target.value)}
-                    className="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 appearance-none focus:outline-none focus:ring-2 focus:ring-purple-100 focus:border-purple-500 transition-colors"
+                    className="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 appearance-none focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
                     style={{ color: campaignType ? '#111827' : '#94A3B8', fontWeight: campaignType ? 700 : 500 }}
                   >
-                    <option value="" disabled>How would you run your Ad campaign?</option>
-                    <option value="one_time">One time booking</option>
-                    <option value="recurring">Recurring booking</option>
+                    <option value="" disabled style={{ fontWeight: 700 }}>How would you run your Ad campaign?</option>
+                    <option value="one_time" style={{ fontWeight: 700 }} className="text-gray-900">One time booking</option>
+                    <option value="recurring" style={{ fontWeight: 700 }} className="text-gray-900">Recurring booking</option>
                   </select>
                   <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400"><path d="m6 9 6 6 6-6"/></svg>
@@ -135,7 +138,7 @@ export default function BookScreenAdPage() {
                     placeholder="Schedule service delivery timeline"
                     value={timeline}
                     onChange={(e) => setTimeline(e.target.value)}
-                    className="w-full pr-11 pl-4 py-3.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:ring-2 focus:ring-purple-100 focus:border-purple-500 transition-colors"
+                    className="w-full pr-11 pl-4 py-3.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
                   />
                 </div>
                 <div className="relative">
@@ -147,7 +150,7 @@ export default function BookScreenAdPage() {
                     placeholder="Set timer (optional)"
                     value={timer}
                     onChange={(e) => setTimer(e.target.value)}
-                    className="w-full pr-11 pl-4 py-3.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:ring-2 focus:ring-purple-100 focus:border-purple-500 transition-colors"
+                    className="w-full pr-11 pl-4 py-3.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
                   />
                 </div>
               </div>
@@ -157,7 +160,10 @@ export default function BookScreenAdPage() {
                 <button className="px-6 py-2.5 rounded-lg text-sm font-bold text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 transition-colors">
                   Cancel
                 </button>
-                <button className="px-10 py-2.5 rounded-lg text-sm font-bold text-gray-900 bg-[#EAB308] hover:bg-[#CA8A04] transition-colors shadow-sm">
+                <button 
+                  onClick={() => setShowBillingModal(true)}
+                  className="px-10 py-2.5 rounded-lg text-sm font-bold text-gray-900 bg-[#EAB308] hover:bg-[#CA8A04] transition-colors shadow-sm"
+                >
                   Book Slot
                 </button>
               </div>
@@ -179,6 +185,253 @@ export default function BookScreenAdPage() {
           </div>
         </div>
       </PageTransition>
+
+      {/* Billing Modal */}
+      {showBillingModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl w-full max-w-[540px] overflow-hidden shadow-2xl relative animate-in fade-in zoom-in duration-200">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6">
+              <button 
+                onClick={() => {
+                  if (modalStep === 'pay_from_wallet' || modalStep === 'pay_with_card' || modalStep === 'success') {
+                    setModalStep('billing');
+                  } else {
+                    setShowBillingModal(false);
+                    setModalStep('billing');
+                  }
+                }} 
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-700"
+              >
+                <ArrowLeft size={20} />
+              </button>
+              <h2 className="text-[17px] font-bold text-gray-900">
+                {modalStep === 'billing' ? 'Billing' : paymentMethod === 'card' ? 'Pay with card' : 'Pay from wallet'}
+              </h2>
+              <button 
+                onClick={() => {
+                  setShowBillingModal(false);
+                  setModalStep('billing');
+                }} 
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-700"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Content */}
+            {modalStep === 'billing' ? (
+              <div className="px-12 pb-12 pt-2">
+                <div className="text-center mb-12">
+                  <h3 className="text-[15px] font-bold text-gray-900">3 months Ad space at</h3>
+                  <p className="text-[15px] font-bold text-gray-900">#300,000</p>
+                </div>
+
+                <div className="space-y-6">
+                  {/* Pay with card */}
+                  <div 
+                    onClick={() => setPaymentMethod('card')}
+                    className={`flex items-center gap-4 px-6 py-9 rounded-2xl cursor-pointer border-[1.5px] transition-colors ${paymentMethod === 'card' ? 'border-[#EAB308] bg-[#FEFCE8]/40' : 'border-gray-200 hover:border-gray-300'}`}
+                  >
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'card' ? 'border-[#EAB308]' : 'border-gray-300'}`}>
+                      {paymentMethod === 'card' && <div className="w-2.5 h-2.5 rounded-full bg-[#EAB308]" />}
+                    </div>
+                    <span className="text-sm font-semibold text-gray-900">Pay with card</span>
+                  </div>
+
+                  {/* Pay from wallet */}
+                  <div 
+                    onClick={() => setPaymentMethod('wallet')}
+                    className={`flex flex-col gap-2 px-6 py-7 rounded-2xl cursor-pointer border-[1.5px] transition-colors ${paymentMethod === 'wallet' ? 'border-[#EAB308] bg-[#FEFCE8]/40' : 'border-gray-200 hover:border-gray-300'}`}
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center gap-4">
+                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'wallet' ? 'border-[#EAB308]' : 'border-gray-300'}`}>
+                          {paymentMethod === 'wallet' && <div className="w-2.5 h-2.5 rounded-full bg-[#EAB308]" />}
+                        </div>
+                        <span className="text-sm font-semibold text-gray-900">Pay from wallet</span>
+                      </div>
+                      <span className="text-[13px] font-bold text-[#EAB308] hover:underline">Fund wallet</span>
+                    </div>
+                    
+                    <div className="flex items-center justify-between pl-9 mt-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[12px] font-semibold text-gray-500">Wallet ID: 23cvo_23759ryi</span>
+                        <button className="flex items-center gap-1 text-[11px] font-bold text-[#EAB308] hover:underline">
+                          Copy <Copy size={11} />
+                        </button>
+                      </div>
+                      <span className="text-[13px] font-bold text-gray-900">NGN 5,215,005.25</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Continue Button */}
+                <div className="mt-10">
+                  <button 
+                    onClick={() => {
+                      if (paymentMethod === 'wallet') {
+                        setModalStep('pay_from_wallet');
+                      } else if (paymentMethod === 'card') {
+                        setModalStep('pay_with_card');
+                      }
+                    }}
+                    className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-sm font-bold rounded-xl transition-colors"
+                  >
+                    Continue
+                  </button>
+                </div>
+              </div>
+            ) : modalStep === 'pay_with_card' ? (
+              <div className="px-12 pb-24 pt-2">
+                <div className="text-center mb-12">
+                  <h3 className="text-[15px] font-bold text-gray-900">3 months Ad space at</h3>
+                  <p className="text-[15px] font-bold text-gray-900">#300,000</p>
+                </div>
+                <div className="space-y-6">
+                  <input type="text" placeholder="Card holder's name" className="w-full px-5 py-5 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
+                  <div className="relative">
+                    <input type="text" placeholder="Card number" className="w-full px-5 py-5 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+                      <div className="w-[26px] h-[16px] bg-[#1434CB] rounded text-[8px] font-bold flex items-center justify-center text-white italic tracking-tighter">VISA</div>
+                      <div className="w-[26px] h-[16px] flex items-center justify-center relative">
+                        <div className="w-[14px] h-[14px] rounded-full bg-[#EB001B] absolute left-0 mix-blend-multiply opacity-90"></div>
+                        <div className="w-[14px] h-[14px] rounded-full bg-[#F79E1B] absolute right-0 mix-blend-multiply opacity-90"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-4">
+                    <input type="text" placeholder="Expiry date (MM/YY)" className="w-1/2 px-5 py-5 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
+                    <input type="text" placeholder="CVV" className="w-1/2 px-5 py-5 text-sm bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
+                  </div>
+                </div>
+                <div className="mt-12">
+                  <button 
+                    onClick={() => setModalStep('success')}
+                    className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-sm font-bold rounded-xl transition-colors"
+                  >
+                    Pay
+                  </button>
+                </div>
+              </div>
+            ) : modalStep === 'pay_from_wallet' ? (
+              <div className="px-12 pb-24 pt-8">
+                <div className="flex items-center justify-between px-8 py-10 rounded-2xl border-[1.5px] border-[#EAB308] bg-white shadow-sm mb-6">
+                  <span className="text-sm font-bold text-gray-900">Total amount</span>
+                  <span className="text-sm font-bold text-gray-900">NGN 300,000.25</span>
+                </div>
+                <button 
+                  onClick={() => setModalStep('success')}
+                  className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-sm font-bold rounded-xl transition-colors"
+                >
+                  Pay
+                </button>
+              </div>
+            ) : (
+              <div className="px-12 pb-12 pt-16 flex flex-col items-center">
+                <div className="w-32 h-32 rounded-full bg-[#FEFCE8] flex items-center justify-center mb-8 relative">
+                  <div className="w-16 h-16 rounded-full bg-[#CA8A04] flex items-center justify-center relative z-10 shadow-lg">
+                    <Check size={32} className="text-white" strokeWidth={3} />
+                  </div>
+                  <div className="absolute inset-0 rounded-full bg-gradient-radial from-[#FDE047]/50 to-transparent blur-md"></div>
+                </div>
+                <h3 className="text-[17px] font-bold text-gray-900 mb-10">Payment successful</h3>
+                <button 
+                  onClick={() => {
+                    setShowBillingModal(false);
+                    setModalStep('billing');
+                  }}
+                  className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-sm font-bold rounded-xl transition-colors"
+                >
+                  Finish
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Ad Creative Services Modal */}
+      {showCreativeModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-white/60 backdrop-blur-sm">
+          <div className="bg-white rounded-[24px] w-full max-w-[500px] shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-gray-100 relative animate-in fade-in zoom-in duration-200">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 pb-2">
+              <button 
+                onClick={() => setShowCreativeModal(false)} 
+                className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-900"
+              >
+                <ArrowLeft size={20} />
+              </button>
+              <h2 className="text-[15px] font-bold text-gray-900">
+                Ad creative services
+              </h2>
+              <button 
+                onClick={() => setShowCreativeModal(false)} 
+                className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-900"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-8 pt-6 space-y-6">
+              {/* Dropdown */}
+              <div className="relative">
+                <select
+                  value={selectedService}
+                  onChange={(e) => setSelectedService(e.target.value)}
+                  className="w-full px-4 py-4 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 appearance-none focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
+                  style={{ color: selectedService ? '#111827' : '#94A3B8', fontWeight: selectedService ? 700 : 500 }}
+                >
+                  <option value="" disabled style={{ fontWeight: 700 }}>Select creative services</option>
+                  <option value="banner" style={{ fontWeight: 700 }} className="text-gray-900">Ad Banner design</option>
+                  <option value="storytelling" style={{ fontWeight: 700 }} className="text-gray-900">Ad storytelling</option>
+                </select>
+                <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-gray-600"><path d="m6 9 6 6 6-6"/></svg>
+                </div>
+              </div>
+
+              {/* Textarea */}
+              <textarea
+                placeholder="Describe your Ad creative brief"
+                value={creativeBrief}
+                onChange={(e) => setCreativeBrief(e.target.value)}
+                rows={4}
+                className="w-full px-4 py-4 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors resize-none"
+              />
+
+              {/* Upload section */}
+              <div>
+                <p className="text-[13px] font-semibold text-gray-800 mb-3 text-left">Or upload Ad creative brief</p>
+                <div className="w-full border-2 border-dashed border-[#FDE047] bg-[#FEFCE8]/20 rounded-[16px] p-8 flex flex-col items-center justify-center cursor-pointer hover:bg-[#FEFCE8]/50 transition-colors">
+                  <div className="w-12 h-12 bg-[#FEF08A] rounded-full flex items-center justify-center mb-3 shadow-sm">
+                    <UploadCloud size={20} className="text-[#854D0E]" />
+                  </div>
+                  <p className="text-[13px] font-bold text-gray-800 mb-1">Drag & Drop or choose file to upload</p>
+                  <p className="text-[11px] font-semibold text-gray-400">Supported formats : jpeg, png, pdf</p>
+                </div>
+              </div>
+
+              {/* Add service button */}
+              <div className="pt-2">
+                <button 
+                  onClick={() => {
+                    if(selectedService) {
+                      setHasRequestedCreative(true);
+                    }
+                    setShowCreativeModal(false);
+                  }}
+                  className="w-full py-3.5 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-[14px] font-bold rounded-xl transition-colors shadow-sm"
+                >
+                  Add service
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
