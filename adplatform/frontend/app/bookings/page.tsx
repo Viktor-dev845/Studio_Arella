@@ -156,15 +156,15 @@ export default function BookingsPage() {
 
         {/* Cancel Modal */}
         {cancelModalOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white/50 backdrop-blur-md">
-            <div className="bg-white rounded-[24px] p-10 max-w-[420px] w-full mx-4 shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-gray-50 flex flex-col items-center text-center">
-              <h3 className="text-[15px] font-semibold text-gray-900 mb-10 max-w-[220px] leading-relaxed">
-                Are you sure you want to cancel this Ad?
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-[2px]">
+            <div className="bg-white rounded-[24px] pt-12 pb-10 px-8 max-w-[340px] w-full mx-4 shadow-2xl flex flex-col items-center text-center">
+              <h3 className="text-[15px] font-bold text-gray-900 mb-10 leading-[1.4] max-w-[240px]">
+                Are you sure you want to cancel<br/>this Ad?
               </h3>
-              <div className="flex items-center gap-5 w-full px-2">
+              <div className="flex items-center justify-center gap-3 w-full">
                 <button 
                   onClick={() => setCancelModalOpen(false)}
-                  className="flex-1 py-2.5 px-4 rounded-[10px] border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="flex-1 py-2.5 rounded-[10px] border border-gray-200 bg-white text-[11px] font-bold text-gray-900 hover:bg-gray-50 transition-colors"
                 >
                   No
                 </button>
@@ -173,7 +173,7 @@ export default function BookingsPage() {
                     // TODO: handle cancel ad
                     setCancelModalOpen(false);
                   }}
-                  className="flex-1 py-2.5 px-4 rounded-[10px] bg-[#EAB308] hover:bg-[#CA8A04] text-xs font-semibold text-gray-900 transition-colors shadow-sm"
+                  className="flex-1 py-2.5 rounded-[10px] bg-[#EAB308] hover:bg-[#CA8A04] text-[11px] font-bold text-gray-900 transition-colors shadow-sm"
                 >
                   Yes
                 </button>
