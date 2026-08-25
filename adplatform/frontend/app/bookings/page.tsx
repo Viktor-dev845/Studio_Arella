@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Search, Filter, Monitor, Mic, X, ArrowLeft, UploadCloud, Copy, Check } from 'lucide-react';
+import { Search, Filter, Monitor, Mic, X, ArrowLeft, UploadCloud, Copy, Check, Star } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { PageTransition } from '@/components/ui/Animations';
 
@@ -31,6 +31,12 @@ export default function BookingsPage() {
   const [extendBillingModalOpen, setExtendBillingModalOpen] = useState(false);
   const [modalStep, setModalStep] = useState<'billing' | 'pay_from_wallet' | 'pay_with_card' | 'success'>('billing');
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'wallet'>('wallet');
+
+  // Review Modal State
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [reviewTitle, setReviewTitle] = useState('');
+  const [reviewText, setReviewText] = useState('');
+  const [rating, setRating] = useState(4); // default to 4
 
   return (
     <DashboardLayout>
@@ -145,6 +151,9 @@ export default function BookingsPage() {
                             } else if (b.action === 'Extend') {
                               setSelectedAdId(b.id);
                               setExtendModalOpen(true);
+                            } else if (b.action === 'Send a review') {
+                              setSelectedAdId(b.id);
+                              setReviewModalOpen(true);
                             }
                           }}
                           className={`text-xs font-bold transition-colors ${
@@ -452,6 +461,89 @@ export default function BookingsPage() {
                   </button>
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* Review Modal */}
+        {reviewModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-[24px] w-full max-w-[500px] shadow-2xl relative animate-in fade-in zoom-in duration-200">
+              {/* Header */}
+              <div className="flex items-center justify-between p-6 pb-2">
+                <button 
+                  onClick={() => setReviewModalOpen(false)} 
+                  className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-900"
+                >
+                  <ArrowLeft size={20} />
+                </button>
+                <h2 className="text-[15px] font-bold text-gray-900">
+                  Send a review
+                </h2>
+                <button 
+                  onClick={() => setReviewModalOpen(false)} 
+                  className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-900"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="px-10 pb-12 pt-6 space-y-6">
+                <input
+                  type="text"
+                  placeholder="Title of your review"
+                  value={reviewTitle}
+                  onChange={(e) => setReviewTitle(e.target.value)}
+                  className="w-full px-5 py-5 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
+                />
+
+                <textarea
+                  placeholder="Type your review"
+                  value={reviewText}
+                  onChange={(e) => setReviewText(e.target.value)}
+                  rows={4}
+                  className="w-full px-5 py-5 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors resize-none"
+                />
+
+                <div>
+                  <p className="text-[13px] font-semibold text-gray-800 mb-3 text-left">Rate our service</p>
+                  <div className="w-full border-2 border-dashed border-[#FDE047] bg-[#FEFCE8]/20 rounded-[16px] py-10 flex flex-col items-center justify-center transition-colors">
+                    <div className="flex gap-2 mb-3">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          onClick={() => setRating(star)}
+                          className="focus:outline-none transition-transform hover:scale-110 active:scale-95"
+                        >
+                          <Star 
+                            size={24} 
+                            className={star <= rating ? "fill-[#EAB308] text-[#EAB308]" : "text-[#EAB308]"} 
+                            strokeWidth={1.5}
+                          />
+                        </button>
+                      ))}
+                    </div>
+                    <p className="text-[11px] font-bold text-gray-800">
+                      {rating === 5 ? 'Excellent' : rating === 4 ? 'Good' : rating === 3 ? 'Average' : rating === 2 ? 'Poor' : 'Terrible'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="pt-4">
+                  <button 
+                    onClick={() => {
+                      setReviewModalOpen(false);
+                      setReviewTitle('');
+                      setReviewText('');
+                      setRating(4);
+                    }}
+                    className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
+                  >
+                    Send review
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}
