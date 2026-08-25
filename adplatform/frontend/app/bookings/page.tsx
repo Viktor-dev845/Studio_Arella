@@ -553,7 +553,7 @@ export default function BookingsPage() {
         {/* Review Success Modal */}
         {reviewSuccessOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-            <div className="bg-white rounded-[24px] pt-14 pb-12 px-10 max-w-[400px] w-full mx-4 shadow-2xl flex flex-col items-center text-center animate-in fade-in zoom-in duration-200">
+            <div className="bg-white rounded-[24px] py-16 px-10 max-w-[380px] w-full mx-4 shadow-2xl flex flex-col items-center text-center animate-in fade-in zoom-in duration-200">
               <div className="w-28 h-28 rounded-full bg-[#FEFCE8] flex items-center justify-center mb-8 relative">
                 <div className="w-14 h-14 rounded-full bg-[#CA8A04] flex items-center justify-center relative z-10 shadow-lg">
                   <Check size={28} className="text-white" strokeWidth={3} />
