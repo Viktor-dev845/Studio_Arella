@@ -34,6 +34,7 @@ export default function BookingsPage() {
 
   // Review Modal State
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [reviewSuccessOpen, setReviewSuccessOpen] = useState(false);
   const [reviewTitle, setReviewTitle] = useState('');
   const [reviewText, setReviewText] = useState('');
   const [rating, setRating] = useState(4); // default to 4
@@ -537,6 +538,7 @@ export default function BookingsPage() {
                       setReviewTitle('');
                       setReviewText('');
                       setRating(4);
+                      setReviewSuccessOpen(true);
                     }}
                     className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
                   >
@@ -544,6 +546,29 @@ export default function BookingsPage() {
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Review Success Modal */}
+        {reviewSuccessOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-[24px] pt-14 pb-12 px-10 max-w-[400px] w-full mx-4 shadow-2xl flex flex-col items-center text-center animate-in fade-in zoom-in duration-200">
+              <div className="w-28 h-28 rounded-full bg-[#FEFCE8] flex items-center justify-center mb-8 relative">
+                <div className="w-14 h-14 rounded-full bg-[#CA8A04] flex items-center justify-center relative z-10 shadow-lg">
+                  <Check size={28} className="text-white" strokeWidth={3} />
+                </div>
+                <div className="absolute inset-0 rounded-full bg-gradient-radial from-[#FDE047]/50 to-transparent blur-md"></div>
+              </div>
+              <h3 className="text-[16px] font-bold text-gray-900 mb-10">
+                We received your feedback
+              </h3>
+              <button 
+                onClick={() => setReviewSuccessOpen(false)}
+                className="w-[140px] py-3.5 bg-[#EAB308] hover:bg-[#CA8A04] text-[13px] font-bold text-gray-900 rounded-[12px] transition-colors shadow-sm"
+              >
+                Finish
+              </button>
             </div>
           </div>
         )}
