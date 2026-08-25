@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Search, Filter, Monitor, Mic } from 'lucide-react';
+import { Search, Filter, Monitor, Mic, X } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { PageTransition } from '@/components/ui/Animations';
 
@@ -23,6 +23,7 @@ export default function BookingsPage() {
   const [activeTab, setActiveTab] = useState('screen');
   const [search, setSearch] = useState('');
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
+  const [cancelSuccessOpen, setCancelSuccessOpen] = useState(false);
   const [selectedAdId, setSelectedAdId] = useState<number | null>(null);
 
   return (
@@ -170,14 +171,37 @@ export default function BookingsPage() {
                 </button>
                 <button 
                   onClick={() => {
-                    // TODO: handle cancel ad
                     setCancelModalOpen(false);
+                    setCancelSuccessOpen(true);
                   }}
                   className="flex-1 py-2.5 rounded-[10px] bg-[#EAB308] hover:bg-[#CA8A04] text-[11px] font-bold text-gray-900 transition-colors shadow-sm"
                 >
                   Yes
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Cancel Success Modal */}
+        {cancelSuccessOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-[2px]">
+            <div className="bg-white rounded-[24px] pt-12 pb-10 px-8 max-w-[340px] w-full mx-4 shadow-2xl flex flex-col items-center text-center">
+              <div className="relative mb-6">
+                <div className="absolute inset-0 bg-[#EAB308]/20 blur-xl rounded-full scale-[2]"></div>
+                <div className="relative w-16 h-16 rounded-full bg-gradient-to-br from-[#D97706] to-[#713F12] flex items-center justify-center shadow-lg">
+                  <X className="text-white/90" size={24} strokeWidth={2.5} />
+                </div>
+              </div>
+              <h3 className="text-[15px] font-bold text-gray-900 mb-8">
+                Ads cancelled
+              </h3>
+              <button 
+                onClick={() => setCancelSuccessOpen(false)}
+                className="w-[130px] py-2.5 rounded-[10px] bg-[#EAB308] hover:bg-[#CA8A04] text-[11px] font-bold text-gray-900 transition-colors shadow-sm"
+              >
+                Finish
+              </button>
             </div>
           </div>
         )}
