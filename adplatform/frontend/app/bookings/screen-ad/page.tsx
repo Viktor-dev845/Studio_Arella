@@ -375,7 +375,7 @@ export default function BookScreenAdPage() {
             </div>
 
             {/* Content */}
-            <div className="p-8 pt-6 space-y-6">
+            <div className="px-8 pb-10 pt-6 space-y-8">
               {/* Dropdown */}
               <div className="relative">
                 <select
@@ -398,24 +398,24 @@ export default function BookScreenAdPage() {
                 placeholder="Describe your Ad creative brief"
                 value={creativeBrief}
                 onChange={(e) => setCreativeBrief(e.target.value)}
-                rows={4}
-                className="w-full px-4 py-4 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors resize-none"
+                rows={5}
+                className="w-full px-4 py-5 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors resize-none"
               />
 
               {/* Upload section */}
               <div>
                 <p className="text-[13px] font-semibold text-gray-800 mb-3 text-left">Or upload Ad creative brief</p>
-                <div className="w-full border-2 border-dashed border-[#FDE047] bg-[#FEFCE8]/20 rounded-[16px] p-8 flex flex-col items-center justify-center cursor-pointer hover:bg-[#FEFCE8]/50 transition-colors">
-                  <div className="w-12 h-12 bg-[#FEF08A] rounded-full flex items-center justify-center mb-3 shadow-sm">
+                <div className="w-full border-2 border-dashed border-[#FDE047] bg-[#FEFCE8]/20 rounded-[16px] py-12 px-8 flex flex-col items-center justify-center cursor-pointer hover:bg-[#FEFCE8]/50 transition-colors">
+                  <div className="w-12 h-12 bg-[#FEF08A] rounded-full flex items-center justify-center mb-4 shadow-sm">
                     <UploadCloud size={20} className="text-[#854D0E]" />
                   </div>
-                  <p className="text-[13px] font-bold text-gray-800 mb-1">Drag & Drop or choose file to upload</p>
+                  <p className="text-[13px] font-bold text-gray-800 mb-1.5">Drag & Drop or choose file to upload</p>
                   <p className="text-[11px] font-semibold text-gray-400">Supported formats : jpeg, png, pdf</p>
                 </div>
               </div>
 
               {/* Add service button */}
-              <div className="pt-2">
+              <div className="pt-4">
                 <button 
                   onClick={() => {
                     if(selectedService) {
@@ -423,7 +423,7 @@ export default function BookScreenAdPage() {
                     }
                     setShowCreativeModal(false);
                   }}
-                  className="w-full py-3.5 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-[14px] font-bold rounded-xl transition-colors shadow-sm"
+                  className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
                 >
                   Add service
                 </button>
