@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Search, Filter, Monitor, Mic, X } from 'lucide-react';
+import { Search, Filter, Monitor, Mic, X, ArrowLeft, UploadCloud } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { PageTransition } from '@/components/ui/Animations';
 
@@ -24,6 +24,9 @@ export default function BookingsPage() {
   const [search, setSearch] = useState('');
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [cancelSuccessOpen, setCancelSuccessOpen] = useState(false);
+  const [extendModalOpen, setExtendModalOpen] = useState(false);
+  const [extendBy, setExtendBy] = useState('');
+  const [additionalInfo, setAdditionalInfo] = useState('');
   const [selectedAdId, setSelectedAdId] = useState<number | null>(null);
 
   return (
@@ -136,6 +139,9 @@ export default function BookingsPage() {
                             if (b.action === 'Cancel') {
                               setSelectedAdId(b.id);
                               setCancelModalOpen(true);
+                            } else if (b.action === 'Extend') {
+                              setSelectedAdId(b.id);
+                              setExtendModalOpen(true);
                             }
                           }}
                           className={`text-xs font-bold transition-colors ${
@@ -202,6 +208,80 @@ export default function BookingsPage() {
               >
                 Finish
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* Extend Ad Booking Modal */}
+        {extendModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-[24px] w-full max-w-[500px] shadow-2xl relative animate-in fade-in zoom-in duration-200">
+              {/* Header */}
+              <div className="flex items-center justify-between p-6 pb-2">
+                <button 
+                  onClick={() => setExtendModalOpen(false)} 
+                  className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-900"
+                >
+                  <ArrowLeft size={20} />
+                </button>
+                <h2 className="text-[15px] font-bold text-gray-900">
+                  Extend Ad Booking
+                </h2>
+                <button 
+                  onClick={() => setExtendModalOpen(false)} 
+                  className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-900"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="px-8 pb-10 pt-6 space-y-6">
+                {/* Extend By Input */}
+                <input
+                  type="text"
+                  placeholder="Extend by? (e.g 2 hours, 2 weeks, 2 months)"
+                  value={extendBy}
+                  onChange={(e) => setExtendBy(e.target.value)}
+                  className="w-full px-4 py-4 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
+                />
+
+                {/* Additional Info Textarea */}
+                <textarea
+                  placeholder="Add any additional info"
+                  value={additionalInfo}
+                  onChange={(e) => setAdditionalInfo(e.target.value)}
+                  rows={4}
+                  className="w-full px-4 py-5 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors resize-none"
+                />
+
+                {/* Upload section */}
+                <div>
+                  <p className="text-[13px] font-semibold text-gray-800 mb-3 text-left">Or upload additional Ads materials</p>
+                  <div className="w-full border-2 border-dashed border-[#FDE047] bg-[#FEFCE8]/20 rounded-[16px] py-10 px-8 flex flex-col items-center justify-center cursor-pointer hover:bg-[#FEFCE8]/50 transition-colors">
+                    <div className="w-12 h-12 bg-[#FEF08A] rounded-full flex items-center justify-center mb-4 shadow-sm">
+                      <UploadCloud size={20} className="text-[#854D0E]" />
+                    </div>
+                    <p className="text-[13px] font-bold text-gray-800 mb-1.5">Drag & Drop or choose file to upload</p>
+                    <p className="text-[11px] font-semibold text-gray-400">Supported formats : jpeg, png, pdf</p>
+                  </div>
+                </div>
+
+                {/* Submit button */}
+                <div className="pt-2">
+                  <button 
+                    onClick={() => {
+                      setExtendModalOpen(false);
+                      // Reset state
+                      setExtendBy('');
+                      setAdditionalInfo('');
+                    }}
+                    className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
+                  >
+                    Extend Ad space
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}
