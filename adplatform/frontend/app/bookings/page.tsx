@@ -324,17 +324,17 @@ export default function BookingsPage() {
 
               {/* Content */}
               {modalStep === 'billing' ? (
-                <div className="px-8 pb-10 pt-6">
-                  <div className="text-center mb-8">
-                    <h3 className="text-[14px] font-bold text-gray-900 mb-1">3 months Ad space</h3>
+                <div className="px-10 pb-16 pt-8">
+                  <div className="text-center mb-10">
+                    <h3 className="text-[14px] font-bold text-gray-900 mb-1">{extendBy || '3 months'} Ad space</h3>
                     <p className="text-[14px] font-bold text-gray-900">extension at #300,000</p>
                   </div>
 
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     {/* Pay with card */}
                     <div 
                       onClick={() => setPaymentMethod('card')}
-                      className={`flex items-center gap-4 px-5 py-6 rounded-[16px] cursor-pointer border-[1.5px] transition-colors ${paymentMethod === 'card' ? 'border-[#EAB308] bg-[#FEFCE8]/40' : 'border-gray-200 hover:border-gray-300'}`}
+                      className={`flex items-center gap-4 px-6 py-7 rounded-[16px] cursor-pointer border-[1.5px] transition-colors ${paymentMethod === 'card' ? 'border-[#EAB308] bg-[#FEFCE8]/40' : 'border-gray-200 hover:border-gray-300'}`}
                     >
                       <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'card' ? 'border-[#EAB308]' : 'border-gray-300'}`}>
                         {paymentMethod === 'card' && <div className="w-2 h-2 rounded-full bg-[#EAB308]" />}
@@ -345,7 +345,7 @@ export default function BookingsPage() {
                     {/* Pay from wallet */}
                     <div 
                       onClick={() => setPaymentMethod('wallet')}
-                      className={`flex flex-col gap-2 px-5 py-5 rounded-[16px] cursor-pointer border-[1.5px] transition-colors ${paymentMethod === 'wallet' ? 'border-[#EAB308] bg-[#FEFCE8]/40' : 'border-gray-200 hover:border-gray-300'}`}
+                      className={`flex flex-col gap-2 px-6 py-6 rounded-[16px] cursor-pointer border-[1.5px] transition-colors ${paymentMethod === 'wallet' ? 'border-[#EAB308] bg-[#FEFCE8]/40' : 'border-gray-200 hover:border-gray-300'}`}
                     >
                       <div className="flex items-center justify-between w-full">
                         <div className="flex items-center gap-4">
@@ -370,7 +370,7 @@ export default function BookingsPage() {
                   </div>
 
                   {/* Continue Button */}
-                  <div className="mt-8">
+                  <div className="mt-10">
                     <button 
                       onClick={() => {
                         if (paymentMethod === 'wallet') {
@@ -379,22 +379,22 @@ export default function BookingsPage() {
                           setModalStep('pay_with_card');
                         }
                       }}
-                      className="w-full py-3.5 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-[13px] font-bold rounded-[12px] transition-colors shadow-sm"
+                      className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
                     >
                       Continue
                     </button>
                   </div>
                 </div>
               ) : modalStep === 'pay_with_card' ? (
-                <div className="px-8 pb-12 pt-6">
-                  <div className="text-center mb-8">
-                    <h3 className="text-[14px] font-bold text-gray-900 mb-1">3 months Ad space</h3>
+                <div className="px-10 pb-16 pt-8">
+                  <div className="text-center mb-10">
+                    <h3 className="text-[14px] font-bold text-gray-900 mb-1">{extendBy || '3 months'} Ad space</h3>
                     <p className="text-[14px] font-bold text-gray-900">extension at #300,000</p>
                   </div>
-                  <div className="space-y-4">
-                    <input type="text" placeholder="Card holder's name" className="w-full px-5 py-4 text-[13px] font-bold bg-white border border-gray-200 rounded-[14px] focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
+                  <div className="space-y-6">
+                    <input type="text" placeholder="Card holder's name" className="w-full px-5 py-5 text-[13px] font-bold bg-white border border-gray-200 rounded-[14px] focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
                     <div className="relative">
-                      <input type="text" placeholder="Card number" className="w-full px-5 py-4 text-[13px] font-bold bg-white border border-gray-200 rounded-[14px] focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
+                      <input type="text" placeholder="Card number" className="w-full px-5 py-5 text-[13px] font-bold bg-white border border-gray-200 rounded-[14px] focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
                       <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
                         <div className="w-[24px] h-[14px] bg-[#1434CB] rounded-[2px] text-[7px] font-bold flex items-center justify-center text-white italic tracking-tighter">VISA</div>
                         <div className="w-[24px] h-[14px] flex items-center justify-center relative">
@@ -404,41 +404,41 @@ export default function BookingsPage() {
                       </div>
                     </div>
                     <div className="flex gap-4">
-                      <input type="text" placeholder="Expiry date (MM/YY)" className="w-1/2 px-5 py-4 text-[13px] font-bold bg-white border border-gray-200 rounded-[14px] focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
-                      <input type="text" placeholder="CVV" className="w-1/2 px-5 py-4 text-[13px] font-bold bg-white border border-gray-200 rounded-[14px] focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
+                      <input type="text" placeholder="Expiry date (MM/YY)" className="w-1/2 px-5 py-5 text-[13px] font-bold bg-white border border-gray-200 rounded-[14px] focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
+                      <input type="text" placeholder="CVV" className="w-1/2 px-5 py-5 text-[13px] font-bold bg-white border border-gray-200 rounded-[14px] focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
                     </div>
                   </div>
-                  <div className="mt-8">
+                  <div className="mt-10">
                     <button 
                       onClick={() => setModalStep('success')}
-                      className="w-full py-3.5 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-[13px] font-bold rounded-[12px] transition-colors shadow-sm"
+                      className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
                     >
                       Pay
                     </button>
                   </div>
                 </div>
               ) : modalStep === 'pay_from_wallet' ? (
-                <div className="px-8 pb-12 pt-6">
-                  <div className="flex items-center justify-between px-6 py-8 rounded-[16px] border-[1.5px] border-[#EAB308] bg-white shadow-sm mb-6">
+                <div className="px-10 pb-16 pt-8">
+                  <div className="flex items-center justify-between px-6 py-10 rounded-[16px] border-[1.5px] border-[#EAB308] bg-white shadow-sm mb-8">
                     <span className="text-[13px] font-bold text-gray-900">Total amount</span>
                     <span className="text-[13px] font-bold text-gray-900">NGN 300,000.25</span>
                   </div>
                   <button 
                     onClick={() => setModalStep('success')}
-                    className="w-full py-3.5 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-[13px] font-bold rounded-[12px] transition-colors shadow-sm"
+                    className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
                   >
                     Pay
                   </button>
                 </div>
               ) : (
-                <div className="px-8 pb-10 pt-12 flex flex-col items-center">
-                  <div className="w-28 h-28 rounded-full bg-[#FEFCE8] flex items-center justify-center mb-6 relative">
+                <div className="px-10 pb-12 pt-14 flex flex-col items-center">
+                  <div className="w-28 h-28 rounded-full bg-[#FEFCE8] flex items-center justify-center mb-8 relative">
                     <div className="w-14 h-14 rounded-full bg-[#CA8A04] flex items-center justify-center relative z-10 shadow-lg">
                       <Check size={28} className="text-white" strokeWidth={3} />
                     </div>
                     <div className="absolute inset-0 rounded-full bg-gradient-radial from-[#FDE047]/50 to-transparent blur-md"></div>
                   </div>
-                  <h3 className="text-[16px] font-bold text-gray-900 mb-8">Payment successful</h3>
+                  <h3 className="text-[16px] font-bold text-gray-900 mb-10">Payment successful</h3>
                   <button 
                     onClick={() => {
                       setExtendBillingModalOpen(false);
@@ -446,7 +446,7 @@ export default function BookingsPage() {
                       setExtendBy('');
                       setAdditionalInfo('');
                     }}
-                    className="w-full py-3.5 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-[13px] font-bold rounded-[12px] transition-colors shadow-sm"
+                    className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
                   >
                     Finish
                   </button>
