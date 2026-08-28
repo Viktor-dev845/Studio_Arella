@@ -59,6 +59,12 @@ export default function BookingsPage() {
   const [bookTo, setBookTo] = useState('');
   const [bookSlots, setBookSlots] = useState('');
 
+  // Filter Modal State
+  const [filterModalOpen, setFilterModalOpen] = useState(false);
+  const [filterSearch, setFilterSearch] = useState('');
+  const [filterStatus, setFilterStatus] = useState(true);
+  const [filterDuration, setFilterDuration] = useState(false);
+
   return (
     <DashboardLayout>
       <PageTransition>
@@ -117,7 +123,10 @@ export default function BookingsPage() {
               </div>
 
               {/* Filter */}
-              <button className="flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-600 hover:bg-gray-50 transition-colors">
+              <button 
+                onClick={() => setFilterModalOpen(true)}
+                className="flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-600 hover:bg-gray-50 transition-colors"
+              >
                 <Filter size={14} />
                 Filter
               </button>
@@ -206,6 +215,79 @@ export default function BookingsPage() {
             </div>
           </div>
         </div>
+
+        {/* Filter Modal */}
+        {filterModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
+            <div className="bg-white rounded-[24px] w-full max-w-[400px] shadow-2xl relative animate-in fade-in zoom-in duration-200">
+              {/* Header */}
+              <div className="flex items-center justify-between p-6 pb-4">
+                <h2 className="text-[15px] font-bold text-gray-900">
+                  Filter
+                </h2>
+                <button 
+                  onClick={() => setFilterModalOpen(false)} 
+                  className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-700"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="px-6 pb-8">
+                <div className="relative mb-6">
+                  <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search Employee"
+                    value={filterSearch}
+                    onChange={(e) => setFilterSearch(e.target.value)}
+                    className="w-full pl-11 pr-4 py-3.5 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:ring-1 focus:ring-gray-200 focus:border-gray-300 transition-colors"
+                  />
+                </div>
+
+                <div className="mb-8">
+                  <p className="text-[12px] font-bold text-gray-900 mb-4">All podcast studio session bookings</p>
+                  <div className="flex items-center gap-8">
+                    {/* Status Checkbox */}
+                    <label className="flex items-center gap-2.5 cursor-pointer group">
+                      <div className={`w-[18px] h-[18px] rounded-[4px] border flex items-center justify-center transition-colors ${filterStatus ? 'bg-[#EAB308] border-[#EAB308]' : 'bg-white border-gray-300 group-hover:border-[#EAB308]'}`}>
+                        {filterStatus && <Check size={12} className="text-white" strokeWidth={4} />}
+                      </div>
+                      <input type="checkbox" checked={filterStatus} onChange={() => setFilterStatus(!filterStatus)} className="hidden" />
+                      <span className="text-[12px] font-semibold text-gray-700">Status</span>
+                    </label>
+
+                    {/* Duration Checkbox */}
+                    <label className="flex items-center gap-2.5 cursor-pointer group">
+                      <div className={`w-[18px] h-[18px] rounded-[4px] border flex items-center justify-center transition-colors ${filterDuration ? 'bg-[#EAB308] border-[#EAB308]' : 'bg-white border-gray-300 group-hover:border-[#EAB308]'}`}>
+                        {filterDuration && <Check size={12} className="text-white" strokeWidth={4} />}
+                      </div>
+                      <input type="checkbox" checked={filterDuration} onChange={() => setFilterDuration(!filterDuration)} className="hidden" />
+                      <span className="text-[12px] font-semibold text-gray-700">By duration</span>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-4">
+                  <button 
+                    onClick={() => setFilterModalOpen(false)}
+                    className="flex-1 py-3.5 rounded-[12px] border border-gray-200 bg-white text-[13px] font-bold text-gray-900 hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={() => setFilterModalOpen(false)}
+                    className="flex-1 py-3.5 rounded-[12px] bg-[#EAB308] hover:bg-[#CA8A04] text-[13px] font-bold text-gray-900 transition-colors shadow-sm"
+                  >
+                    Apply
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Cancel Modal */}
         {cancelModalOpen && (
