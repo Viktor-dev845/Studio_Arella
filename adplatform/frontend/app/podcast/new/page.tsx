@@ -20,6 +20,38 @@ export default function BookPodcastSessionPage() {
   const [modalStep, setModalStep] = useState<'billing' | 'pay_from_wallet' | 'pay_with_card' | 'success'>('billing');
   const [paymentMethod, setPaymentMethod] = useState<'card' | 'wallet'>('wallet');
 
+  // Card Input State
+  const [cardName, setCardName] = useState('');
+  const [cardNumber, setCardNumber] = useState('');
+  const [expiryDate, setExpiryDate] = useState('');
+  const [cvv, setCvv] = useState('');
+
+  const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, '');
+    const formattedValue = value.replace(/(.{4})/g, '$1 ').trim();
+    setCardNumber(formattedValue.substring(0, 19));
+  };
+
+  const handleExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length > 2) {
+      value = `${value.slice(0, 2)}/${value.slice(2, 4)}`;
+    }
+    setExpiryDate(value.substring(0, 5));
+  };
+
+  const handleCvvChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCvv(e.target.value.replace(/\D/g, '').substring(0, 4));
+  };
+
+  const cardType = (() => {
+    const num = cardNumber.replace(/\D/g, '');
+    if (num.startsWith('4')) return 'visa';
+    if (/^5[1-5]/.test(num)) return 'mastercard';
+    if (/^50|^6/.test(num)) return 'verve';
+    return null;
+  })();
+
   return (
     <DashboardLayout>
       <PageTransition>
@@ -259,20 +291,51 @@ export default function BookPodcastSessionPage() {
                     <p className="text-[14px] font-bold text-gray-900">₦300,000</p>
                   </div>
                   <div className="space-y-6">
-                    <input type="text" placeholder="Card holder's name" className="w-full px-5 py-5 text-[13px] font-bold text-gray-900 bg-white border border-gray-200 rounded-[14px] focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
+                    <input 
+                      type="text" 
+                      placeholder="Card holder's name" 
+                      value={cardName}
+                      onChange={(e) => setCardName(e.target.value)}
+                      className="w-full px-5 py-5 text-[13px] font-bold text-gray-900 bg-white border border-gray-200 rounded-[14px] focus:outline-none focus:border-[#EAB308] placeholder-gray-400" 
+                    />
                     <div className="relative">
-                      <input type="text" placeholder="Card number" maxLength={19} className="w-full px-5 py-5 text-[13px] font-bold text-gray-900 bg-white border border-gray-200 rounded-[14px] focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
+                      <input 
+                        type="text" 
+                        placeholder="Card number" 
+                        value={cardNumber}
+                        onChange={handleCardNumberChange}
+                        className="w-full px-5 py-5 text-[13px] font-bold text-gray-900 bg-white border border-gray-200 rounded-[14px] focus:outline-none focus:border-[#EAB308] placeholder-gray-400" 
+                      />
                       <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-                        <div className="w-[24px] h-[14px] bg-[#1434CB] rounded-[2px] text-[7px] font-bold flex items-center justify-center text-white italic tracking-tighter">VISA</div>
-                        <div className="w-[24px] h-[14px] flex items-center justify-center relative">
-                          <div className="w-[12px] h-[12px] rounded-full bg-[#EB001B] absolute left-0 mix-blend-multiply opacity-90"></div>
-                          <div className="w-[12px] h-[12px] rounded-full bg-[#F79E1B] absolute right-0 mix-blend-multiply opacity-90"></div>
-                        </div>
+                        {cardType === 'visa' || !cardType ? (
+                          <div className="w-[24px] h-[14px] bg-[#1434CB] rounded-[2px] text-[7px] font-bold flex items-center justify-center text-white italic tracking-tighter">VISA</div>
+                        ) : null}
+                        {cardType === 'mastercard' || !cardType ? (
+                          <div className="w-[24px] h-[14px] flex items-center justify-center relative">
+                            <div className="w-[12px] h-[12px] rounded-full bg-[#EB001B] absolute left-0 mix-blend-multiply opacity-90"></div>
+                            <div className="w-[12px] h-[12px] rounded-full bg-[#F79E1B] absolute right-0 mix-blend-multiply opacity-90"></div>
+                          </div>
+                        ) : null}
+                        {cardType === 'verve' && (
+                          <div className="w-[30px] h-[14px] bg-red-600 rounded-[2px] text-[8px] font-bold flex items-center justify-center text-white italic tracking-tighter">Verve</div>
+                        )}
                       </div>
                     </div>
                     <div className="flex gap-4">
-                      <input type="text" placeholder="Expiry date (MM/YY)" maxLength={5} className="w-1/2 px-5 py-5 text-[13px] font-bold text-gray-900 bg-white border border-gray-200 rounded-[14px] focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
-                      <input type="text" placeholder="CVV" maxLength={4} className="w-1/2 px-5 py-5 text-[13px] font-bold text-gray-900 bg-white border border-gray-200 rounded-[14px] focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
+                      <input 
+                        type="text" 
+                        placeholder="Expiry date (MM/YY)" 
+                        value={expiryDate}
+                        onChange={handleExpiryChange}
+                        className="w-1/2 px-5 py-5 text-[13px] font-bold text-gray-900 bg-white border border-gray-200 rounded-[14px] focus:outline-none focus:border-[#EAB308] placeholder-gray-400" 
+                      />
+                      <input 
+                        type="text" 
+                        placeholder="CVV" 
+                        value={cvv}
+                        onChange={handleCvvChange}
+                        className="w-1/2 px-5 py-5 text-[13px] font-bold text-gray-900 bg-white border border-gray-200 rounded-[14px] focus:outline-none focus:border-[#EAB308] placeholder-gray-400" 
+                      />
                     </div>
                   </div>
                   <div className="mt-10">
