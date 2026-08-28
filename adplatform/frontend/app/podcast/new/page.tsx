@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, ChevronDown, Calendar } from 'lucide-react';
+import { ChevronLeft, ChevronDown, Calendar, Clock } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { PageTransition } from '@/components/ui/Animations';
 
@@ -94,19 +94,28 @@ export default function BookPodcastSessionPage() {
                     placeholder="Schedule a date"
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
+                    onFocus={(e) => (e.target.type = 'date')}
+                    onBlur={(e) => {
+                      if (!e.target.value) e.target.type = 'text';
+                    }}
                     className="w-full px-5 py-4 pr-12 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
                   />
                   <Calendar size={18} className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                 </div>
                 
-                <div className="flex-1">
+                <div className="flex-1 relative">
                   <input
                     type="text"
                     placeholder="Select time"
                     value={time}
                     onChange={(e) => setTime(e.target.value)}
-                    className="w-full px-5 py-4 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
+                    onFocus={(e) => (e.target.type = 'time')}
+                    onBlur={(e) => {
+                      if (!e.target.value) e.target.type = 'text';
+                    }}
+                    className="w-full px-5 py-4 pr-12 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
                   />
+                  <Clock size={18} className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                 </div>
               </div>
             </div>
