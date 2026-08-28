@@ -293,8 +293,8 @@ export default function BookingsPage() {
         {cancelModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-[2px]">
             <div className="bg-white rounded-[24px] pt-12 pb-10 px-8 max-w-[340px] w-full mx-4 shadow-2xl flex flex-col items-center text-center">
-              <h3 className="text-[15px] font-bold text-gray-900 mb-10 leading-[1.4] max-w-[240px]">
-                Are you sure you want to cancel<br/>this Ad?
+              <h3 className="text-[14px] font-semibold text-gray-900 mb-8 leading-relaxed">
+                Are you sure you want to cancel<br/>this {activeTab === 'podcast' ? 'studio session' : 'Ad'}?
               </h3>
               <div className="flex items-center justify-center gap-3 w-full">
                 <button 
@@ -320,19 +320,21 @@ export default function BookingsPage() {
         {/* Cancel Success Modal */}
         {cancelSuccessOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-[2px]">
-            <div className="bg-white rounded-[24px] pt-12 pb-10 px-8 max-w-[320px] w-full mx-4 shadow-2xl flex flex-col items-center text-center">
-              <div className="relative mb-8 mt-2 flex items-center justify-center">
-                <div className="absolute w-24 h-24 bg-[#EAB308]/20 blur-[20px] rounded-full"></div>
-                <div className="relative w-14 h-14 rounded-full bg-gradient-to-b from-[#A17116] to-[#714603] flex items-center justify-center shadow-lg">
-                  <X className="text-[#FDE047]" size={14} strokeWidth={2.5} />
+            <div className="bg-white rounded-[24px] pt-12 pb-10 px-8 max-w-[340px] w-full mx-4 shadow-2xl flex flex-col items-center text-center">
+              <div className="w-full flex justify-center mb-6">
+                <div className="relative flex items-center justify-center w-40 h-40">
+                  <div className="absolute inset-0 bg-[#EAB308]/20 blur-2xl rounded-full"></div>
+                  <div className="relative w-[52px] h-[52px] bg-[#927116] rounded-full flex items-center justify-center shadow-[0_4px_14px_rgba(146,113,22,0.3)]">
+                    <X size={20} className="text-white" strokeWidth={3} />
+                  </div>
                 </div>
               </div>
               <h3 className="text-[14px] font-semibold text-gray-900 mb-8">
-                Ads cancelled
+                {activeTab === 'podcast' ? 'Studio session cancelled' : 'Ad cancelled'}
               </h3>
               <button 
                 onClick={() => setCancelSuccessOpen(false)}
-                className="w-[110px] py-2.5 rounded-[10px] bg-[#EAB308] hover:bg-[#CA8A04] text-[11px] font-bold text-gray-900 transition-colors shadow-sm"
+                className="w-[160px] py-3 rounded-xl bg-[#EAB308] hover:bg-[#CA8A04] text-[13px] font-bold text-gray-900 transition-colors shadow-sm"
               >
                 Finish
               </button>
