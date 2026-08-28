@@ -288,7 +288,7 @@ export default function BookPodcastSessionPage() {
                 <div className="px-10 pb-16 pt-8">
                   <div className="flex items-center justify-between px-6 py-10 rounded-[16px] border-[1.5px] border-[#EAB308] bg-white shadow-sm mb-8">
                     <span className="text-[13px] font-bold text-gray-900">Total amount</span>
-                    <span className="text-[13px] font-bold text-gray-900">₦300,000</span>
+                    <span className="text-[13px] font-bold text-gray-900">NGN 300,000.25</span>
                   </div>
                   <button 
                     onClick={() => setModalStep('success')}
