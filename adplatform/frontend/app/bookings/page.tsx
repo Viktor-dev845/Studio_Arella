@@ -19,6 +19,19 @@ const mockBookings = [
   { id: 9, info: 'Bemsoft Bulletin Highway', date: '16-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 month', status: 'Pending', action: 'Extend' },
 ];
 
+const mockPodcastBookings = [
+  { id: 101, info: 'Pop podcast studio session', date: '16-08-2026 12PM', reschedule: false, billing: '200,000', duration: '1 hour', status: 'Active', action: 'Extend' },
+  { id: 102, info: 'Pop podcast studio session', date: '18-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 hour', status: 'Pending', action: 'Cancel' },
+  { id: 103, info: 'Pop podcast studio session', date: '16-08-2026 12PM', reschedule: false, billing: '200,000', duration: '2 hours', status: 'Ended', action: 'Send a review' },
+  { id: 104, info: 'Pop podcast studio session', date: '16-08-2026 12PM', reschedule: false, billing: '200,000', duration: '1 hour', status: 'Cancelled', action: 'Book a slot' },
+  { id: 105, info: 'Pop podcast studio session', date: '18-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 hour', status: 'Pending', action: 'Extend' },
+  { id: 106, info: 'Pop podcast studio session', date: '16-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 hour', status: 'Pending', action: 'Extend' },
+  { id: 107, info: 'Pop podcast studio session', date: '16-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 hour', status: 'Pending', action: 'Extend' },
+  { id: 108, info: 'Pop podcast studio session', date: '16-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 hour', status: 'Pending', action: 'Extend' },
+  { id: 109, info: 'Pop podcast studio session', date: '16-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 hour', status: 'Pending', action: 'Extend' },
+  { id: 110, info: 'Pop podcast studio session', date: '18-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 hour', status: 'Pending', action: 'Extend' },
+];
+
 export default function BookingsPage() {
   const [activeTab, setActiveTab] = useState('screen');
   const [search, setSearch] = useState('');
@@ -86,7 +99,9 @@ export default function BookingsPage() {
 
           {/* Controls */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-            <h2 className="text-sm font-bold text-gray-900">All bookings</h2>
+            <h2 className="text-sm font-bold text-gray-900">
+              {activeTab === 'podcast' ? 'All podcast bookings' : 'All bookings'}
+            </h2>
             
             <div className="flex items-center gap-3 w-full sm:w-auto">
               {/* Search */}
@@ -107,12 +122,17 @@ export default function BookingsPage() {
                 Filter
               </button>
 
+              {/* Export */}
+              <button className="px-5 py-2.5 bg-white border border-[#EAB308] rounded-lg text-xs font-bold text-[#EAB308] hover:bg-[#FEFCE8] transition-colors">
+                Export
+              </button>
+
               {/* Book Ad Slot */}
               <Link
-                href="/bookings/screen-ad"
+                href={activeTab === 'podcast' ? "/podcast/new" : "/bookings/screen-ad"}
                 className="flex items-center justify-center px-6 py-2.5 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 rounded-lg text-xs font-bold transition-colors whitespace-nowrap shadow-sm"
               >
-                Book Ad Slot
+                {activeTab === 'podcast' ? 'Book Podcast Slot' : 'Book Ad Slot'}
               </Link>
             </div>
           </div>
@@ -123,13 +143,16 @@ export default function BookingsPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-100 bg-white">
-                    {['CAMPAIGN INFO', 'SCHEDULE', 'BILLING (NGN)', 'DURATION', 'STATUS', 'ACTION'].map((h) => (
+                    {(activeTab === 'podcast' ? 
+                      ['SESSION INFO', 'SCHEDULE', 'BILLING (NGN)', 'DURATION', 'STATUS', 'ACTION'] : 
+                      ['CAMPAIGN INFO', 'SCHEDULE', 'BILLING (NGN)', 'DURATION', 'STATUS', 'ACTION']
+                    ).map((h) => (
                       <th key={h} className="text-left px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {mockBookings.map((b, i) => (
+                  {(activeTab === 'podcast' ? mockPodcastBookings : mockBookings).map((b, i) => (
                     <tr key={i} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors">
                       <td className="px-6 py-4 text-[13px] font-bold text-gray-700">{b.info}</td>
                       <td className="px-6 py-4 text-xs font-semibold text-gray-500">
