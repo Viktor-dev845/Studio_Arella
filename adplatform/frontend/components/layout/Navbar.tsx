@@ -36,11 +36,6 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
   return (
     <header style={{ height: 64, background: '#fff', borderBottom: '1px solid #E2E8F0', padding: '0 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0, fontFamily: F }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-        {onMenuClick && (
-          <button onClick={onMenuClick} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', display: 'flex', padding: 4 }} className="lg:hidden">
-            <Menu size={20} />
-          </button>
-        )}
         
         {/* Creator / Audience Toggle */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

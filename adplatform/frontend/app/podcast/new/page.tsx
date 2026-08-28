@@ -24,7 +24,7 @@ export default function BookPodcastSessionPage() {
             box-shadow: none !important;
           }
         `}</style>
-        <div className="font-body max-w-7xl mx-auto flex gap-10">
+        <div className="font-body w-full flex gap-10 p-8">
           
           {/* Left Column (Form) */}
           <div className="flex-1 min-w-0 bg-white rounded-[32px] p-10 shadow-sm border border-gray-50 flex flex-col gap-10">
