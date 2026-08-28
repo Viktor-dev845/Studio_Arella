@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Search, Filter, Monitor, Mic, X, ArrowLeft, UploadCloud, Copy, Check, Star } from 'lucide-react';
+import { Search, Filter, Monitor, Mic, X, ArrowLeft, UploadCloud, Copy, Check, Star, Calendar, ChevronDown } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { PageTransition } from '@/components/ui/Animations';
 
@@ -38,6 +38,13 @@ export default function BookingsPage() {
   const [reviewTitle, setReviewTitle] = useState('');
   const [reviewText, setReviewText] = useState('');
   const [rating, setRating] = useState(4); // default to 4
+
+  // Book Slot Modal State
+  const [bookSlotModalOpen, setBookSlotModalOpen] = useState(false);
+  const [bookDate, setBookDate] = useState('');
+  const [bookFrom, setBookFrom] = useState('');
+  const [bookTo, setBookTo] = useState('');
+  const [bookSlots, setBookSlots] = useState('');
 
   return (
     <DashboardLayout>
@@ -155,6 +162,9 @@ export default function BookingsPage() {
                             } else if (b.action === 'Send a review') {
                               setSelectedAdId(b.id);
                               setReviewModalOpen(true);
+                            } else if (b.action === 'Book a slot') {
+                              setSelectedAdId(b.id);
+                              setBookSlotModalOpen(true);
                             }
                           }}
                           className={`text-xs font-bold transition-colors ${
@@ -569,6 +579,112 @@ export default function BookingsPage() {
               >
                 Finish
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* Book a Slot Modal */}
+        {bookSlotModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-[24px] w-full max-w-[500px] shadow-2xl relative animate-in fade-in zoom-in duration-200">
+              {/* Header */}
+              <div className="flex items-center justify-between p-6 pb-2">
+                <button 
+                  onClick={() => setBookSlotModalOpen(false)} 
+                  className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-900"
+                >
+                  <ArrowLeft size={20} />
+                </button>
+                <h2 className="text-[15px] font-bold text-gray-900">
+                  Book a slot
+                </h2>
+                <button 
+                  onClick={() => setBookSlotModalOpen(false)} 
+                  className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-900"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="px-10 pb-12 pt-6 space-y-6">
+                <p className="text-[13px] font-bold text-gray-900">
+                  Please provide the details below
+                </p>
+
+                {/* Info Card */}
+                <div className="bg-[#F8FAFC] rounded-[16px] p-5 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[13px] font-semibold text-gray-500">Location</span>
+                    <span className="text-[13px] font-bold text-gray-900">Lekki toll gate</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[13px] font-semibold text-gray-500">Size</span>
+                    <span className="text-[13px] font-bold text-gray-900">20m by 10m</span>
+                  </div>
+                </div>
+
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Select Dates"
+                    value={bookDate}
+                    onChange={(e) => setBookDate(e.target.value)}
+                    className="w-full px-5 py-4 pl-12 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
+                  />
+                  <Calendar size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" />
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <div className="flex-1 space-y-1">
+                    <label className="text-[11px] font-bold text-gray-900">From</label>
+                    <input
+                      type="text"
+                      placeholder="10:00 AM"
+                      value={bookFrom}
+                      onChange={(e) => setBookFrom(e.target.value)}
+                      className="w-full px-5 py-4 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
+                    />
+                  </div>
+                  <div className="flex-1 space-y-1">
+                    <label className="text-[11px] font-bold text-gray-900">To</label>
+                    <input
+                      type="text"
+                      placeholder="05:00 PM"
+                      value={bookTo}
+                      onChange={(e) => setBookTo(e.target.value)}
+                      className="w-full px-5 py-4 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="Number of slots"
+                      value={bookSlots}
+                      onChange={(e) => setBookSlots(e.target.value)}
+                      className="w-full px-5 py-4 pr-12 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
+                    />
+                    <ChevronDown size={18} className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400" />
+                  </div>
+                  <p className="text-[11px] font-medium text-gray-500 leading-tight pr-4">
+                    Number of slots are the number of intervals you'd like your ads to be displayed per loop.
+                  </p>
+                </div>
+
+                <div className="pt-4">
+                  <button 
+                    onClick={() => {
+                      setBookSlotModalOpen(false);
+                    }}
+                    className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
+                  >
+                    Proceed to add creative
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}
