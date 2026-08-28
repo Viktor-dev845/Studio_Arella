@@ -18,6 +18,12 @@ export default function BookPodcastSessionPage() {
   return (
     <DashboardLayout>
       <PageTransition>
+        <style>{`
+          textarea:focus, input:focus {
+            outline: none !important;
+            box-shadow: none !important;
+          }
+        `}</style>
         <div className="font-body max-w-7xl mx-auto flex gap-10">
           
           {/* Left Column (Form) */}
