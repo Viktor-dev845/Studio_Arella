@@ -362,11 +362,13 @@ export default function BookPodcastSessionPage() {
                 </div>
               ) : (
                 <div className="px-10 pb-12 pt-14 flex flex-col items-center">
-                  <div className="w-28 h-28 rounded-full bg-[#FEFCE8] flex items-center justify-center mb-8 relative">
-                    <div className="w-14 h-14 rounded-full bg-[#CA8A04] flex items-center justify-center relative z-10 shadow-lg">
-                      <Check size={28} className="text-white" strokeWidth={3} />
+                  <div className="w-full flex justify-center mb-6">
+                    <div className="relative flex items-center justify-center w-40 h-40">
+                      <div className="absolute inset-0 bg-[#EAB308]/20 blur-2xl rounded-full"></div>
+                      <div className="relative w-[52px] h-[52px] bg-[#927116] rounded-full flex items-center justify-center shadow-[0_4px_14px_rgba(146,113,22,0.3)]">
+                        <Check size={24} className="text-white" strokeWidth={3} />
+                      </div>
                     </div>
-                    <div className="absolute inset-0 rounded-full bg-gradient-radial from-[#FDE047]/50 to-transparent blur-md"></div>
                   </div>
                   <h3 className="text-[16px] font-bold text-gray-900 mb-10">Payment successful</h3>
                   <button 
