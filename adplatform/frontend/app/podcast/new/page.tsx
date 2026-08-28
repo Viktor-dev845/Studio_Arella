@@ -259,9 +259,9 @@ export default function BookPodcastSessionPage() {
                     <p className="text-[14px] font-bold text-gray-900">₦300,000</p>
                   </div>
                   <div className="space-y-6">
-                    <input type="text" placeholder="Card holder's name" className="w-full px-5 py-5 text-[13px] font-bold bg-white border border-gray-200 rounded-[14px] focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
+                    <input type="text" placeholder="Card holder's name" className="w-full px-5 py-5 text-[13px] font-bold text-gray-900 bg-white border border-gray-200 rounded-[14px] focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
                     <div className="relative">
-                      <input type="text" placeholder="Card number" className="w-full px-5 py-5 text-[13px] font-bold bg-white border border-gray-200 rounded-[14px] focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
+                      <input type="text" placeholder="Card number" maxLength={19} className="w-full px-5 py-5 text-[13px] font-bold text-gray-900 bg-white border border-gray-200 rounded-[14px] focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
                       <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
                         <div className="w-[24px] h-[14px] bg-[#1434CB] rounded-[2px] text-[7px] font-bold flex items-center justify-center text-white italic tracking-tighter">VISA</div>
                         <div className="w-[24px] h-[14px] flex items-center justify-center relative">
@@ -271,8 +271,8 @@ export default function BookPodcastSessionPage() {
                       </div>
                     </div>
                     <div className="flex gap-4">
-                      <input type="text" placeholder="Expiry date (MM/YY)" className="w-1/2 px-5 py-5 text-[13px] font-bold bg-white border border-gray-200 rounded-[14px] focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
-                      <input type="text" placeholder="CVV" className="w-1/2 px-5 py-5 text-[13px] font-bold bg-white border border-gray-200 rounded-[14px] focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
+                      <input type="text" placeholder="Expiry date (MM/YY)" maxLength={5} className="w-1/2 px-5 py-5 text-[13px] font-bold text-gray-900 bg-white border border-gray-200 rounded-[14px] focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
+                      <input type="text" placeholder="CVV" maxLength={4} className="w-1/2 px-5 py-5 text-[13px] font-bold text-gray-900 bg-white border border-gray-200 rounded-[14px] focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
                     </div>
                   </div>
                   <div className="mt-10">
