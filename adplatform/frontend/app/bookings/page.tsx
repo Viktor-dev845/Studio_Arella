@@ -141,7 +141,7 @@ export default function BookingsPage() {
   return (
     <DashboardLayout>
       <PageTransition>
-        <div className="font-body w-full">
+        <div className="font-body max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-8">
             {/* Tabs & Filter */}
@@ -263,7 +263,7 @@ export default function BookingsPage() {
                 </div>
 
                 {/* Scrollable time grid */}
-                <div className="overflow-y-auto" style={{ maxHeight: 560 }}>
+                <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 300px)' }}>
                   <div className="grid" style={{ gridTemplateColumns: '100px repeat(7, 1fr)' }}>
 
                     {/* Time labels */}
