@@ -13,6 +13,7 @@ const DASHBOARDS = [
   { href: '/dashboard', label: 'Overview', icon: Home },
   { href: '/cart', label: 'Cart', icon: ShoppingCart },
   { href: '/bookings', label: 'My Bookings', icon: ClipboardList },
+  { href: '/calendar', label: 'Calendar', icon: CalendarCheck },
 ];
 
 const PAGES = [

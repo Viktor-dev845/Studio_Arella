@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Search, Filter, Monitor, Mic, X, ArrowLeft, UploadCloud, Copy, Check, Star, Calendar, ChevronDown } from 'lucide-react';
+import { Search, Filter, Monitor, Mic, X, ArrowLeft, UploadCloud, Copy, Check, Star, Calendar, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { PageTransition } from '@/components/ui/Animations';
 
@@ -30,6 +30,40 @@ const mockPodcastBookings = [
   { id: 108, info: 'Pop podcast studio session', date: '16-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 hour', status: 'Pending', action: 'Extend' },
   { id: 109, info: 'Pop podcast studio session', date: '16-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 hour', status: 'Pending', action: 'Extend' },
   { id: 110, info: 'Pop podcast studio session', date: '18-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 hour', status: 'Pending', action: 'Extend' },
+];
+
+// ─── Calendar constants & mock data ───────────────────────────────────────────
+const HOUR_HEIGHT = 64;
+const CAL_START_HOUR = 6;
+const CAL_END_HOUR = 22;
+const CAL_HOURS = Array.from({ length: CAL_END_HOUR - CAL_START_HOUR }, (_, i) => i + CAL_START_HOUR);
+const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+interface CalendarEvent {
+  id: string;
+  title: string;
+  dateIndex: number; // 0 = Sun … 6 = Sat within the displayed week
+  startHour: number;
+  endHour: number;
+  color: string;
+  bgColor: string;
+}
+
+const mockCalendarEvents: CalendarEvent[] = [
+  { id: 'ce1',  title: 'All campaign',             dateIndex: 0, startHour: 6.0,  endHour: 8.5,  color: '#3B82F6', bgColor: '#DBEAFE' },
+  { id: 'ce2',  title: 'Pop & Music year end show', dateIndex: 1, startHour: 6.5,  endHour: 8.5,  color: '#EAB308', bgColor: '#FEF9C3' },
+  { id: 'ce3',  title: 'All campaign',             dateIndex: 2, startHour: 7.0,  endHour: 8.0,  color: '#8B5CF6', bgColor: '#EDE9FE' },
+  { id: 'ce4',  title: 'All campaign',             dateIndex: 3, startHour: 6.0,  endHour: 9.0,  color: '#EF4444', bgColor: '#FEE2E2' },
+  { id: 'ce5',  title: 'All campaign',             dateIndex: 4, startHour: 6.0,  endHour: 8.5,  color: '#10B981', bgColor: '#D1FAE5' },
+  { id: 'ce6',  title: 'Pick & Move year end...',  dateIndex: 5, startHour: 6.5,  endHour: 8.0,  color: '#F97316', bgColor: '#FFEDD5' },
+  { id: 'ce7',  title: 'All campaign',             dateIndex: 1, startHour: 9.0,  endHour: 10.5, color: '#EAB308', bgColor: '#FEF9C3' },
+  { id: 'ce8',  title: 'Pop & Music year end show', dateIndex: 3, startHour: 8.0,  endHour: 9.0,  color: '#8B5CF6', bgColor: '#EDE9FE' },
+  { id: 'ce9',  title: 'All campaign',             dateIndex: 4, startHour: 8.5,  endHour: 10.0, color: '#3B82F6', bgColor: '#DBEAFE' },
+  { id: 'ce10', title: 'Pick & Move year end...',  dateIndex: 5, startHour: 9.5,  endHour: 11.0, color: '#10B981', bgColor: '#D1FAE5' },
+  { id: 'ce11', title: 'All campaign',             dateIndex: 0, startHour: 10.5, endHour: 11.5, color: '#EF4444', bgColor: '#FEE2E2' },
+  { id: 'ce12', title: 'All campaign',             dateIndex: 6, startHour: 6.0,  endHour: 8.0,  color: '#8B5CF6', bgColor: '#EDE9FE' },
+  { id: 'ce13', title: 'Pop & Music year end show', dateIndex: 4, startHour: 10.5, endHour: 12.0, color: '#EAB308', bgColor: '#FEF9C3' },
+  { id: 'ce14', title: 'All campaign',             dateIndex: 6, startHour: 9.5,  endHour: 11.0, color: '#F97316', bgColor: '#FFEDD5' },
 ];
 
 export default function BookingsPage() {
@@ -64,6 +98,47 @@ export default function BookingsPage() {
   const [filterSearch, setFilterSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState(true);
   const [filterDuration, setFilterDuration] = useState(false);
+
+  // ─── Calendar state ───────────────────────────────────────────────────────
+  const [calendarView, setCalendarView] = useState<'month' | 'week' | 'day'>('week');
+  const [currentDate, setCurrentDate] = useState(new Date(2026, 7, 10)); // Aug 10 2026
+
+  // Calendar helpers
+  const getWeekDates = (date: Date) => {
+    const start = new Date(date);
+    start.setDate(start.getDate() - start.getDay()); // snap to Sunday
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(start);
+      d.setDate(start.getDate() + i);
+      return d;
+    });
+  };
+
+  const formatWeekRange = (date: Date) => {
+    const dates = getWeekDates(date);
+    const m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const s = dates[0], e = dates[6];
+    return `${s.getDate()} ${m[s.getMonth()]} ${s.getFullYear()} \u2013 ${e.getDate()} ${m[e.getMonth()]} ${e.getFullYear()}`;
+  };
+
+  const fmtHour = (h: number) => {
+    if (h === 0) return '12 AM';
+    if (h === 12) return '12 PM';
+    return h < 12 ? `${h} AM` : `${h - 12} PM`;
+  };
+
+  const fmtTime = (h: number) => {
+    const hour = Math.floor(h), min = Math.round((h - hour) * 60);
+    const ampm = hour < 12 ? 'AM' : 'PM';
+    const dh = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+    return min > 0 ? `${dh}:${String(min).padStart(2, '0')} ${ampm}` : `${dh}:00 ${ampm}`;
+  };
+
+  const weekDates = getWeekDates(currentDate);
+  const eventsForDay = (dayIdx: number) => mockCalendarEvents.filter(e => e.dateIndex === dayIdx);
+  const goToToday  = () => setCurrentDate(new Date());
+  const goToPrev   = () => { const d = new Date(currentDate); d.setDate(d.getDate() - 7); setCurrentDate(d); };
+  const goToNext   = () => { const d = new Date(currentDate); d.setDate(d.getDate() + 7); setCurrentDate(d); };
 
   return (
     <DashboardLayout>
@@ -100,120 +175,265 @@ export default function BookingsPage() {
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#EAB308] rounded-t-full" />
                 )}
               </button>
+
+              <button
+                onClick={() => setActiveTab('calendar')}
+                className={`flex items-center gap-2 pb-3 text-[13px] font-bold transition-colors relative ${
+                  activeTab === 'calendar' ? 'text-[#EAB308]' : 'text-gray-400 hover:text-gray-600'
+                }`}
+              >
+                <Calendar size={16} />
+                Calendar
+                {activeTab === 'calendar' && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#EAB308] rounded-t-full" />
+                )}
+              </button>
             </div>
           </div>
 
-          {/* Controls */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-            <h2 className="text-sm font-bold text-gray-900">
-              {activeTab === 'podcast' ? 'All podcast bookings' : 'All bookings'}
-            </h2>
-            
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-              {/* Search */}
-              <div className="relative flex-1 sm:w-72">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:ring-1 focus:ring-gray-200 focus:border-gray-300 transition-colors"
-                />
+          {activeTab === 'calendar' ? (
+            <>
+              {/* ── Calendar toolbar ─────────────────────────────────────── */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-5">
+                {/* Navigation */}
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={goToToday}
+                    className="px-4 py-2 border border-gray-200 rounded-lg text-xs font-bold text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    Today
+                  </button>
+                  <button
+                    onClick={goToPrev}
+                    className="p-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
+                  >
+                    <ChevronLeft size={14} />
+                  </button>
+                  <button
+                    onClick={goToNext}
+                    className="p-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
+                  >
+                    <ChevronRight size={14} />
+                  </button>
+                </div>
+
+                {/* Date range */}
+                <span className="text-sm font-bold text-gray-900">{formatWeekRange(currentDate)}</span>
+
+                {/* View toggle */}
+                <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
+                  {(['Month', 'Week', 'Day'] as const).map((v) => (
+                    <button
+                      key={v}
+                      onClick={() => setCalendarView(v.toLowerCase() as 'month' | 'week' | 'day')}
+                      className={`px-4 py-2 text-xs font-bold transition-colors ${
+                        calendarView === v.toLowerCase()
+                          ? 'bg-[#EAB308] text-gray-900'
+                          : 'text-gray-600 hover:bg-gray-50'
+                      }`}
+                    >
+                      {v}
+                    </button>
+                  ))}
+                </div>
               </div>
 
-              {/* Filter */}
-              <button 
-                onClick={() => setFilterModalOpen(true)}
-                className="flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-600 hover:bg-gray-50 transition-colors"
-              >
-                <Filter size={14} />
-                Filter
-              </button>
+              {/* ── Calendar grid (week view) ─────────────────────────────── */}
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                {/* Day column headers */}
+                <div className="grid border-b border-gray-100" style={{ gridTemplateColumns: '72px repeat(7, 1fr)' }}>
+                  <div className="py-4" />
+                  {weekDates.map((date, i) => {
+                    const isToday = date.toDateString() === new Date().toDateString();
+                    return (
+                      <div key={i} className="py-4 px-2 text-center border-l border-gray-100">
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
+                          {DAY_NAMES[i]}
+                        </p>
+                        <p className={`text-[13px] font-bold ${ isToday ? 'text-[#EAB308]' : 'text-gray-900' }`}>
+                          {String(date.getDate()).padStart(2,'0')}/{String(date.getMonth()+1).padStart(2,'0')}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
 
-              {/* Export */}
-              <button className="px-5 py-2.5 bg-white border border-[#EAB308] rounded-lg text-xs font-bold text-[#EAB308] hover:bg-[#FEFCE8] transition-colors">
-                Export
-              </button>
+                {/* Scrollable time grid */}
+                <div className="overflow-y-auto" style={{ maxHeight: 560 }}>
+                  <div className="grid" style={{ gridTemplateColumns: '72px repeat(7, 1fr)' }}>
 
-              {/* Book Ad Slot */}
-              <Link
-                href={activeTab === 'podcast' ? "/podcast/new" : "/bookings/screen-ad"}
-                className="flex items-center justify-center px-6 py-2.5 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 rounded-lg text-xs font-bold transition-colors whitespace-nowrap shadow-sm"
-              >
-                {activeTab === 'podcast' ? 'Book Podcast Slot' : 'Book Ad Slot'}
-              </Link>
-            </div>
-          </div>
-
-          {/* Table */}
-          <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-gray-100 bg-white">
-                    {(activeTab === 'podcast' ? 
-                      ['SESSION INFO', 'SCHEDULE', 'BILLING (NGN)', 'DURATION', 'STATUS', 'ACTION'] : 
-                      ['CAMPAIGN INFO', 'SCHEDULE', 'BILLING (NGN)', 'DURATION', 'STATUS', 'ACTION']
-                    ).map((h) => (
-                      <th key={h} className="text-left px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {(activeTab === 'podcast' ? mockPodcastBookings : mockBookings).map((b, i) => (
-                    <tr key={i} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors">
-                      <td className="px-6 py-4 text-[13px] font-bold text-gray-700">{b.info}</td>
-                      <td className="px-6 py-4 text-xs font-semibold text-gray-500">
-                        <div className="flex items-center gap-2">
-                          {b.date}
-                          {b.reschedule && <span className="text-[10px] text-[#EAB308] font-bold italic">Reschedule</span>}
+                    {/* Time labels */}
+                    <div>
+                      {CAL_HOURS.map(h => (
+                        <div
+                          key={h}
+                          style={{ height: HOUR_HEIGHT }}
+                          className="border-b border-gray-50 flex items-start px-3 pt-2"
+                        >
+                          <span className="text-[10px] font-semibold text-gray-400 whitespace-nowrap">
+                            {fmtHour(h)}
+                          </span>
                         </div>
-                      </td>
-                      <td className="px-6 py-4 text-[13px] font-bold text-gray-700">{b.billing}</td>
-                      <td className="px-6 py-4 text-[13px] font-semibold text-gray-500">{b.duration}</td>
-                      <td className="px-6 py-4">
-                        <span className={`text-xs font-bold ${
-                          b.status === 'Active' ? 'text-green-600' :
-                          b.status === 'Pending' ? 'text-gray-400' :
-                          b.status === 'Ended' ? 'text-gray-400' :
-                          b.status === 'Cancelled' ? 'text-gray-400' : 'text-gray-500'
-                        }`}>
-                          {b.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <button 
-                          onClick={() => {
-                            if (b.action === 'Cancel') {
-                              setSelectedAdId(b.id);
-                              setCancelModalOpen(true);
-                            } else if (b.action === 'Extend') {
-                              setSelectedAdId(b.id);
-                              setExtendModalOpen(true);
-                            } else if (b.action === 'Send a review') {
-                              setSelectedAdId(b.id);
-                              setReviewModalOpen(true);
-                            } else if (b.action === 'Book a slot') {
-                              setSelectedAdId(b.id);
-                              setBookSlotModalOpen(true);
-                            }
-                          }}
-                          className={`text-xs font-bold transition-colors ${
-                          b.action === 'Extend' ? 'text-[#EAB308] hover:text-[#CA8A04]' :
-                          b.action === 'Cancel' ? 'text-red-500 hover:text-red-600' :
-                          b.action === 'Send a review' ? 'text-blue-500 hover:text-blue-600' :
-                          b.action === 'Book a slot' ? 'text-green-600 hover:text-green-700' : 'text-gray-600'
-                        }`}>
-                          {b.action}
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+                      ))}
+                    </div>
+
+                    {/* One column per day */}
+                    {weekDates.map((_, dayIdx) => (
+                      <div key={dayIdx} className="relative border-l border-gray-100">
+                        {/* Hour row backgrounds */}
+                        {CAL_HOURS.map(h => (
+                          <div
+                            key={h}
+                            style={{ height: HOUR_HEIGHT }}
+                            className="border-b border-gray-50"
+                          />
+                        ))}
+
+                        {/* Booking event blocks */}
+                        {eventsForDay(dayIdx).map(evt => (
+                          <div
+                            key={evt.id}
+                            style={{
+                              position: 'absolute',
+                              top: (evt.startHour - CAL_START_HOUR) * HOUR_HEIGHT + 2,
+                              height: Math.max((evt.endHour - evt.startHour) * HOUR_HEIGHT - 4, 24),
+                              left: 3,
+                              right: 3,
+                              backgroundColor: evt.bgColor,
+                              borderLeft: `3px solid ${evt.color}`,
+                              borderRadius: 6,
+                            }}
+                            className="px-2 py-1 overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                          >
+                            <p
+                              style={{ color: evt.color }}
+                              className="text-[9px] font-bold truncate leading-tight"
+                            >
+                              {fmtTime(evt.startHour)} – {fmtTime(evt.endHour)}
+                            </p>
+                            <p className="text-[9px] font-semibold text-gray-700 truncate leading-tight mt-0.5">
+                              {evt.title}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Controls */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
+                <h2 className="text-sm font-bold text-gray-900">
+                  {activeTab === 'podcast' ? 'All podcast bookings' : 'All bookings'}
+                </h2>
+
+                <div className="flex items-center gap-3 w-full sm:w-auto">
+                  {/* Search */}
+                  <div className="relative flex-1 sm:w-72">
+                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="Search"
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:ring-1 focus:ring-gray-200 focus:border-gray-300 transition-colors"
+                    />
+                  </div>
+
+                  {/* Filter */}
+                  <button
+                    onClick={() => setFilterModalOpen(true)}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-600 hover:bg-gray-50 transition-colors"
+                  >
+                    <Filter size={14} />
+                    Filter
+                  </button>
+
+                  {/* Export */}
+                  <button className="px-5 py-2.5 bg-white border border-[#EAB308] rounded-lg text-xs font-bold text-[#EAB308] hover:bg-[#FEFCE8] transition-colors">
+                    Export
+                  </button>
+
+                  {/* Book Ad Slot */}
+                  <Link
+                    href={activeTab === 'podcast' ? "/podcast/new" : "/bookings/screen-ad"}
+                    className="flex items-center justify-center px-6 py-2.5 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 rounded-lg text-xs font-bold transition-colors whitespace-nowrap shadow-sm"
+                  >
+                    {activeTab === 'podcast' ? 'Book Podcast Slot' : 'Book Ad Slot'}
+                  </Link>
+                </div>
+              </div>
+
+              {/* Table */}
+              <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-gray-100 bg-white">
+                        {(activeTab === 'podcast'
+                          ? ['SESSION INFO', 'SCHEDULE', 'BILLING (NGN)', 'DURATION', 'STATUS', 'ACTION']
+                          : ['CAMPAIGN INFO', 'SCHEDULE', 'BILLING (NGN)', 'DURATION', 'STATUS', 'ACTION']
+                        ).map((h) => (
+                          <th key={h} className="text-left px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(activeTab === 'podcast' ? mockPodcastBookings : mockBookings).map((b, i) => (
+                        <tr key={i} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors">
+                          <td className="px-6 py-4 text-[13px] font-bold text-gray-700">{b.info}</td>
+                          <td className="px-6 py-4 text-xs font-semibold text-gray-500">
+                            <div className="flex items-center gap-2">
+                              {b.date}
+                              {b.reschedule && <span className="text-[10px] text-[#EAB308] font-bold italic">Reschedule</span>}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-[13px] font-bold text-gray-700">{b.billing}</td>
+                          <td className="px-6 py-4 text-[13px] font-semibold text-gray-500">{b.duration}</td>
+                          <td className="px-6 py-4">
+                            <span className={`text-xs font-bold ${
+                              b.status === 'Active'    ? 'text-green-600' :
+                              b.status === 'Pending'   ? 'text-gray-400'  :
+                              b.status === 'Ended'     ? 'text-gray-400'  :
+                              b.status === 'Cancelled' ? 'text-gray-400'  : 'text-gray-500'
+                            }`}>
+                              {b.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <button
+                              onClick={() => {
+                                if (b.action === 'Cancel') {
+                                  setSelectedAdId(b.id); setCancelModalOpen(true);
+                                } else if (b.action === 'Extend') {
+                                  setSelectedAdId(b.id); setExtendModalOpen(true);
+                                } else if (b.action === 'Send a review') {
+                                  setSelectedAdId(b.id); setReviewModalOpen(true);
+                                } else if (b.action === 'Book a slot') {
+                                  setSelectedAdId(b.id); setBookSlotModalOpen(true);
+                                }
+                              }}
+                              className={`text-xs font-bold transition-colors ${
+                                b.action === 'Extend'        ? 'text-[#EAB308] hover:text-[#CA8A04]' :
+                                b.action === 'Cancel'        ? 'text-red-500 hover:text-red-600'    :
+                                b.action === 'Send a review' ? 'text-blue-500 hover:text-blue-600'  :
+                                b.action === 'Book a slot'   ? 'text-green-600 hover:text-green-700': 'text-gray-600'
+                              }`}
+                            >
+                              {b.action}
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Filter Modal */}
