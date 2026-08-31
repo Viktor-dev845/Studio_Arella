@@ -37,7 +37,7 @@ const HOUR_HEIGHT = 64;
 const CAL_START_HOUR = 6;
 const CAL_END_HOUR = 22;
 const CAL_HOURS = Array.from({ length: CAL_END_HOUR - CAL_START_HOUR }, (_, i) => i + CAL_START_HOUR);
-const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 interface CalendarEvent {
   id: string;
@@ -50,20 +50,18 @@ interface CalendarEvent {
 }
 
 const mockCalendarEvents: CalendarEvent[] = [
-  { id: 'ce1',  title: 'All campaign',             dateIndex: 0, startHour: 6.0,  endHour: 8.5,  color: '#3B82F6', bgColor: '#DBEAFE' },
-  { id: 'ce2',  title: 'Pop & Music year end show', dateIndex: 1, startHour: 6.5,  endHour: 8.5,  color: '#EAB308', bgColor: '#FEF9C3' },
-  { id: 'ce3',  title: 'All campaign',             dateIndex: 2, startHour: 7.0,  endHour: 8.0,  color: '#8B5CF6', bgColor: '#EDE9FE' },
-  { id: 'ce4',  title: 'All campaign',             dateIndex: 3, startHour: 6.0,  endHour: 9.0,  color: '#EF4444', bgColor: '#FEE2E2' },
-  { id: 'ce5',  title: 'All campaign',             dateIndex: 4, startHour: 6.0,  endHour: 8.5,  color: '#10B981', bgColor: '#D1FAE5' },
-  { id: 'ce6',  title: 'Pick & Move year end...',  dateIndex: 5, startHour: 6.5,  endHour: 8.0,  color: '#F97316', bgColor: '#FFEDD5' },
-  { id: 'ce7',  title: 'All campaign',             dateIndex: 1, startHour: 9.0,  endHour: 10.5, color: '#EAB308', bgColor: '#FEF9C3' },
-  { id: 'ce8',  title: 'Pop & Music year end show', dateIndex: 3, startHour: 8.0,  endHour: 9.0,  color: '#8B5CF6', bgColor: '#EDE9FE' },
-  { id: 'ce9',  title: 'All campaign',             dateIndex: 4, startHour: 8.5,  endHour: 10.0, color: '#3B82F6', bgColor: '#DBEAFE' },
-  { id: 'ce10', title: 'Pick & Move year end...',  dateIndex: 5, startHour: 9.5,  endHour: 11.0, color: '#10B981', bgColor: '#D1FAE5' },
-  { id: 'ce11', title: 'All campaign',             dateIndex: 0, startHour: 10.5, endHour: 11.5, color: '#EF4444', bgColor: '#FEE2E2' },
-  { id: 'ce12', title: 'All campaign',             dateIndex: 6, startHour: 6.0,  endHour: 8.0,  color: '#8B5CF6', bgColor: '#EDE9FE' },
-  { id: 'ce13', title: 'Pop & Music year end show', dateIndex: 4, startHour: 10.5, endHour: 12.0, color: '#EAB308', bgColor: '#FEF9C3' },
-  { id: 'ce14', title: 'All campaign',             dateIndex: 6, startHour: 9.5,  endHour: 11.0, color: '#F97316', bgColor: '#FFEDD5' },
+  { id: 'ce1',  title: 'Pack & Move podcast\nstudio session', dateIndex: 1, startHour: 6.0,  endHour: 8.0,  color: '#46B6E6', bgColor: '#46B6E6' },
+  { id: 'ce2',  title: 'Ad campaign',             dateIndex: 4, startHour: 12.0, endHour: 13.5, color: '#A92B2B', bgColor: '#A92B2B' },
+  { id: 'ce3',  title: 'Pack & Move podcast\nstudio session', dateIndex: 5, startHour: 6.0,  endHour: 8.0,  color: '#3475D6', bgColor: '#3475D6' },
+  { id: 'ce4',  title: 'Ad campaign',             dateIndex: 3, startHour: 12.0, endHour: 13.5, color: '#CD4FE6', bgColor: '#CD4FE6' },
+  { id: 'ce5',  title: 'Ad campaign',             dateIndex: 3, startHour: 8.0,  endHour: 9.5,  color: '#89CFF0', bgColor: '#89CFF0' },
+  { id: 'ce6',  title: 'Pack & Move podcast\nstudio session', dateIndex: 4, startHour: 8.0,  endHour: 10.0, color: '#13C78B', bgColor: '#13C78B' },
+  { id: 'ce7',  title: 'Ad campaign',             dateIndex: 1, startHour: 9.0,  endHour: 10.5, color: '#CD4FE6', bgColor: '#CD4FE6' },
+  { id: 'ce8',  title: 'Pack & Move podcast\nstudio session', dateIndex: 5, startHour: 9.0,  endHour: 11.0, color: '#3475D6', bgColor: '#3475D6' },
+  { id: 'ce9',  title: 'Pack & Move podcast\nstudio session', dateIndex: 1, startHour: 10.0, endHour: 11.5, color: '#A92B2B', bgColor: '#A92B2B' },
+  { id: 'ce10', title: 'Ad campaign',             dateIndex: 3, startHour: 10.0, endHour: 11.5, color: '#EF6666', bgColor: '#EF6666' },
+  { id: 'ce11', title: 'Pack & Move podcast\nstudio session', dateIndex: 2, startHour: 11.0, endHour: 12.5, color: '#F39C12', bgColor: '#F39C12' },
+  { id: 'ce12', title: 'Ad campaign',             dateIndex: 4, startHour: 11.0, endHour: 12.5, color: '#46B6E6', bgColor: '#46B6E6' },
 ];
 
 export default function BookingsPage() {
@@ -118,7 +116,7 @@ export default function BookingsPage() {
     const dates = getWeekDates(date);
     const m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     const s = dates[0], e = dates[6];
-    return `${s.getDate()} ${m[s.getMonth()]} ${s.getFullYear()} \u2013 ${e.getDate()} ${m[e.getMonth()]} ${e.getFullYear()}`;
+    return `${s.getDate()} ${m[s.getMonth()]} ${s.getFullYear()} - ${e.getDate()} ${m[e.getMonth()]} ${e.getFullYear()}`;
   };
 
   const fmtHour = (h: number) => {
@@ -131,7 +129,7 @@ export default function BookingsPage() {
     const hour = Math.floor(h), min = Math.round((h - hour) * 60);
     const ampm = hour < 12 ? 'AM' : 'PM';
     const dh = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-    return min > 0 ? `${dh}:${String(min).padStart(2, '0')} ${ampm}` : `${dh}:00 ${ampm}`;
+    return min > 0 ? `${String(dh).padStart(2, '0')}:${String(min).padStart(2, '0')} ${ampm}` : `${String(dh).padStart(2, '0')}:00 ${ampm}`;
   };
 
   const weekDates = getWeekDates(currentDate);
@@ -148,45 +146,56 @@ export default function BookingsPage() {
           <div className="mb-8">
             <h1 className="text-xl font-bold text-gray-900 mb-6">My bookings</h1>
             
-            {/* Tabs */}
-            <div className="flex items-center gap-8 border-b border-gray-200">
-              <button
-                onClick={() => setActiveTab('screen')}
-                className={`flex items-center gap-2 pb-3 text-[13px] font-bold transition-colors relative ${
-                  activeTab === 'screen' ? 'text-[#EAB308]' : 'text-gray-400 hover:text-gray-600'
-                }`}
-              >
-                <Monitor size={16} />
-                Screen Ads
-                {activeTab === 'screen' && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#EAB308] rounded-t-full" />
-                )}
-              </button>
-              
-              <button
-                onClick={() => setActiveTab('podcast')}
-                className={`flex items-center gap-2 pb-3 text-[13px] font-bold transition-colors relative ${
-                  activeTab === 'podcast' ? 'text-[#EAB308]' : 'text-gray-400 hover:text-gray-600'
-                }`}
-              >
-                <Mic size={16} />
-                Podcast studio
-                {activeTab === 'podcast' && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#EAB308] rounded-t-full" />
-                )}
-              </button>
+            {/* Tabs & Filter */}
+            <div className="flex items-center justify-between border-b border-gray-200 mb-8">
+              <div className="flex items-center gap-8">
+                <button
+                  onClick={() => setActiveTab('screen')}
+                  className={`flex items-center gap-2 pb-3 text-[13px] font-bold transition-colors relative ${
+                    activeTab === 'screen' ? 'text-[#EAB308]' : 'text-gray-400 hover:text-gray-600'
+                  }`}
+                >
+                  <Monitor size={16} />
+                  Screen Ads
+                  {activeTab === 'screen' && (
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#EAB308] rounded-t-full" />
+                  )}
+                </button>
+                
+                <button
+                  onClick={() => setActiveTab('podcast')}
+                  className={`flex items-center gap-2 pb-3 text-[13px] font-bold transition-colors relative ${
+                    activeTab === 'podcast' ? 'text-[#EAB308]' : 'text-gray-400 hover:text-gray-600'
+                  }`}
+                >
+                  <Mic size={16} />
+                  Podcast studio
+                  {activeTab === 'podcast' && (
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#EAB308] rounded-t-full" />
+                  )}
+                </button>
 
+                <button
+                  onClick={() => setActiveTab('calendar')}
+                  className={`flex items-center gap-2 pb-3 text-[13px] font-bold transition-colors relative ${
+                    activeTab === 'calendar' ? 'text-[#EAB308]' : 'text-gray-400 hover:text-gray-600'
+                  }`}
+                >
+                  <Calendar size={16} />
+                  Calendar
+                  {activeTab === 'calendar' && (
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#EAB308] rounded-t-full" />
+                  )}
+                </button>
+              </div>
+
+              {/* Global Filter Button aligned to the right of tabs */}
               <button
-                onClick={() => setActiveTab('calendar')}
-                className={`flex items-center gap-2 pb-3 text-[13px] font-bold transition-colors relative ${
-                  activeTab === 'calendar' ? 'text-[#EAB308]' : 'text-gray-400 hover:text-gray-600'
-                }`}
+                onClick={() => setFilterModalOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-600 hover:bg-gray-50 transition-colors mb-3"
               >
-                <Calendar size={16} />
-                Calendar
-                {activeTab === 'calendar' && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#EAB308] rounded-t-full" />
-                )}
+                <Filter size={14} />
+                Filter
               </button>
             </div>
           </div>
@@ -196,41 +205,41 @@ export default function BookingsPage() {
               {/* ── Calendar toolbar ─────────────────────────────────────── */}
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-5">
                 {/* Navigation */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center rounded-lg border border-gray-200 overflow-hidden shadow-sm">
                   <button
                     onClick={goToToday}
-                    className="px-4 py-2 border border-gray-200 rounded-lg text-xs font-bold text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="px-6 py-2.5 bg-white text-[13px] font-bold text-gray-700 hover:bg-gray-50 transition-colors border-r border-gray-200"
                   >
                     Today
                   </button>
                   <button
                     onClick={goToPrev}
-                    className="p-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
+                    className="px-6 py-2.5 bg-white text-[13px] font-bold text-gray-700 hover:bg-gray-50 transition-colors border-r border-gray-200"
                   >
-                    <ChevronLeft size={14} />
+                    Back
                   </button>
                   <button
                     onClick={goToNext}
-                    className="p-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
+                    className="px-6 py-2.5 bg-white text-[13px] font-bold text-gray-700 hover:bg-gray-50 transition-colors"
                   >
-                    <ChevronRight size={14} />
+                    Next
                   </button>
                 </div>
 
                 {/* Date range */}
-                <span className="text-sm font-bold text-gray-900">{formatWeekRange(currentDate)}</span>
+                <span className="text-[14px] font-bold text-gray-900">{formatWeekRange(currentDate)}</span>
 
                 {/* View toggle */}
-                <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
+                <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden shadow-sm">
                   {(['Month', 'Week', 'Day'] as const).map((v) => (
                     <button
                       key={v}
                       onClick={() => setCalendarView(v.toLowerCase() as 'month' | 'week' | 'day')}
-                      className={`px-4 py-2 text-xs font-bold transition-colors ${
+                      className={`px-6 py-2.5 text-[13px] font-bold transition-colors ${
                         calendarView === v.toLowerCase()
-                          ? 'bg-[#EAB308] text-gray-900'
-                          : 'text-gray-600 hover:bg-gray-50'
-                      }`}
+                          ? 'bg-[#EAB308] text-white'
+                          : 'bg-white text-gray-700 hover:bg-gray-50'
+                      } ${v !== 'Day' ? 'border-r border-gray-200' : ''}`}
                     >
                       {v}
                     </button>
@@ -241,18 +250,15 @@ export default function BookingsPage() {
               {/* ── Calendar grid (week view) ─────────────────────────────── */}
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 {/* Day column headers */}
-                <div className="grid border-b border-gray-100" style={{ gridTemplateColumns: '72px repeat(7, 1fr)' }}>
-                  <div className="py-4" />
+                <div className="grid border-b border-gray-100" style={{ gridTemplateColumns: '100px repeat(7, 1fr)' }}>
+                  <div className="py-4 border-r border-gray-100" />
                   {weekDates.map((date, i) => {
-                    const isToday = date.toDateString() === new Date().toDateString();
                     return (
-                      <div key={i} className="py-4 px-2 text-center border-l border-gray-100">
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
-                          {DAY_NAMES[i]}
+                      <div key={i} className="py-4 px-2 text-center border-r border-gray-100 last:border-r-0">
+                        <p className="text-[12px] font-semibold text-gray-900 mb-0.5">
+                          {DAY_NAMES[i]} {String(date.getMonth()+1).padStart(2,'0')}/{String(date.getDate()).padStart(2,'0')}
                         </p>
-                        <p className={`text-[13px] font-bold ${ isToday ? 'text-[#EAB308]' : 'text-gray-900' }`}>
-                          {String(date.getDate()).padStart(2,'0')}/{String(date.getMonth()+1).padStart(2,'0')}
-                        </p>
+                        <p className="text-[10px] text-gray-500 font-medium">0 Task(s)</p>
                       </div>
                     );
                   })}
@@ -260,7 +266,7 @@ export default function BookingsPage() {
 
                 {/* Scrollable time grid */}
                 <div className="overflow-y-auto" style={{ maxHeight: 560 }}>
-                  <div className="grid" style={{ gridTemplateColumns: '72px repeat(7, 1fr)' }}>
+                  <div className="grid" style={{ gridTemplateColumns: '100px repeat(7, 1fr)' }}>
 
                     {/* Time labels */}
                     <div>
@@ -268,10 +274,10 @@ export default function BookingsPage() {
                         <div
                           key={h}
                           style={{ height: HOUR_HEIGHT }}
-                          className="border-b border-gray-50 flex items-start px-3 pt-2"
+                          className="border-b border-gray-100 border-r border-gray-100 flex items-center justify-center px-2"
                         >
-                          <span className="text-[10px] font-semibold text-gray-400 whitespace-nowrap">
-                            {fmtHour(h)}
+                          <span className="text-[11px] font-semibold text-gray-700 whitespace-nowrap">
+                            {h === 0 ? '12:00 AM' : h === 12 ? '12:00 PM' : h < 12 ? `${String(h).padStart(2, '0')}:00 AM` : `${String(h-12).padStart(2, '0')}:00 PM`}
                           </span>
                         </div>
                       ))}
@@ -279,13 +285,13 @@ export default function BookingsPage() {
 
                     {/* One column per day */}
                     {weekDates.map((_, dayIdx) => (
-                      <div key={dayIdx} className="relative border-l border-gray-100">
+                      <div key={dayIdx} className="relative border-r border-gray-100 last:border-r-0">
                         {/* Hour row backgrounds */}
                         {CAL_HOURS.map(h => (
                           <div
                             key={h}
                             style={{ height: HOUR_HEIGHT }}
-                            className="border-b border-gray-50"
+                            className="border-b border-gray-100"
                           />
                         ))}
 
@@ -297,21 +303,17 @@ export default function BookingsPage() {
                               position: 'absolute',
                               top: (evt.startHour - CAL_START_HOUR) * HOUR_HEIGHT + 2,
                               height: Math.max((evt.endHour - evt.startHour) * HOUR_HEIGHT - 4, 24),
-                              left: 3,
-                              right: 3,
+                              left: 2,
+                              right: 2,
                               backgroundColor: evt.bgColor,
-                              borderLeft: `3px solid ${evt.color}`,
-                              borderRadius: 6,
+                              borderRadius: 0,
                             }}
-                            className="px-2 py-1 overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                            className="px-2.5 py-1.5 overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
                           >
-                            <p
-                              style={{ color: evt.color }}
-                              className="text-[9px] font-bold truncate leading-tight"
-                            >
-                              {fmtTime(evt.startHour)} – {fmtTime(evt.endHour)}
+                            <p className="text-[9px] font-bold text-white truncate leading-tight">
+                              {fmtTime(evt.startHour)} - {fmtTime(evt.endHour)}
                             </p>
-                            <p className="text-[9px] font-semibold text-gray-700 truncate leading-tight mt-0.5">
+                            <p className="text-[10px] font-medium text-white leading-tight mt-0.5" style={{ whiteSpace: 'pre-wrap' }}>
                               {evt.title}
                             </p>
                           </div>
@@ -342,15 +344,6 @@ export default function BookingsPage() {
                       className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:ring-1 focus:ring-gray-200 focus:border-gray-300 transition-colors"
                     />
                   </div>
-
-                  {/* Filter */}
-                  <button
-                    onClick={() => setFilterModalOpen(true)}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-600 hover:bg-gray-50 transition-colors"
-                  >
-                    <Filter size={14} />
-                    Filter
-                  </button>
 
                   {/* Export */}
                   <button className="px-5 py-2.5 bg-white border border-[#EAB308] rounded-lg text-xs font-bold text-[#EAB308] hover:bg-[#FEFCE8] transition-colors">
