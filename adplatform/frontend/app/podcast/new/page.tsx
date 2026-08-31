@@ -11,7 +11,6 @@ export default function BookPodcastSessionPage() {
   const [duration, setDuration] = useState('');
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
-  const [timeOpen, setTimeOpen] = useState(false);
   
   const [sessionTypeOpen, setSessionTypeOpen] = useState(false);
   const [sessionType, setSessionType] = useState('One time booking');
@@ -142,38 +141,18 @@ export default function BookPodcastSessionPage() {
                 </div>
                 
                 <div className="flex-1 relative">
-                  <button 
-                    type="button"
-                    onClick={() => setTimeOpen(!timeOpen)}
-                    className="w-full px-5 py-4 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 text-left flex items-center justify-between focus:outline-none focus:border-gray-400 transition-colors"
-                  >
-                    <span className={time ? 'text-gray-900' : 'text-[#94A3B8] font-medium'}>
-                      {time || 'Select time'}
-                    </span>
-                    <Clock size={18} className="text-gray-400" />
-                  </button>
-                  
-                  {timeOpen && (
-                    <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-100 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] rounded-[16px] py-3 z-20 animate-in fade-in zoom-in-95 duration-100 max-h-[260px] overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
-                      {Array.from({ length: 24 }).map((_, i) => {
-                        const hour = i % 12 || 12;
-                        const ampm = i < 12 ? 'AM' : 'PM';
-                        return [`${hour < 10 ? '0'+hour : hour}:00 ${ampm}`, `${hour < 10 ? '0'+hour : hour}:30 ${ampm}`];
-                      }).flat().map((t) => (
-                        <button
-                          key={t}
-                          type="button"
-                          onClick={() => { setTime(t); setTimeOpen(false); }}
-                          className="w-full px-6 py-2.5 text-left text-[13px] font-bold text-gray-900 hover:bg-gray-50 flex items-center justify-between transition-colors"
-                        >
-                          {t}
-                          {time === t && (
-                            <div className="h-4 w-[3px] bg-[#EAB308] rounded-full"></div>
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                  <input
+                    type="text"
+                    placeholder="Select time"
+                    value={time}
+                    onChange={(e) => setTime(e.target.value)}
+                    onFocus={(e) => (e.target.type = 'time')}
+                    onBlur={(e) => {
+                      if (!e.target.value) e.target.type = 'text';
+                    }}
+                    className="w-full px-5 py-4 pr-12 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
+                  />
+                  <Clock size={18} className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                 </div>
               </div>
             </div>
