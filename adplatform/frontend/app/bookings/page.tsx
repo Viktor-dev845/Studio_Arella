@@ -141,11 +141,9 @@ export default function BookingsPage() {
   return (
     <DashboardLayout>
       <PageTransition>
-        <div className="font-body max-w-7xl mx-auto">
+        <div className="font-body w-full">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-xl font-bold text-gray-900 mb-6">My bookings</h1>
-            
             {/* Tabs & Filter */}
             <div className="flex items-center justify-between border-b border-gray-200 mb-8">
               <div className="flex items-center gap-8">
