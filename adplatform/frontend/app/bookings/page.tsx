@@ -9,14 +9,15 @@ import { PageTransition } from '@/components/ui/Animations';
 // Mock data based on the screenshot provided
 const mockBookings = [
   { id: 1, info: 'Bemsoft Bulletin Highway', date: '16-08-2026 12PM', reschedule: false, billing: '200,000', duration: '1 month', status: 'Active', action: 'Extend' },
-  { id: 2, info: 'Monnify Bulletin Highway', date: '18-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 month', status: 'Pending', action: 'Cancel' },
+  { id: 2, info: 'Bemsoft Bulletin Highway', date: '16-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 month', status: 'Pending', action: 'Cancel' },
   { id: 3, info: 'Bemsoft Bulletin Highway', date: '16-08-2026 12PM', reschedule: false, billing: '200,000', duration: '2 hours', status: 'Ended', action: 'Send a review' },
   { id: 4, info: 'Bemsoft Bulletin Highway', date: '16-08-2026 12PM', reschedule: false, billing: '200,000', duration: '1 month', status: 'Cancelled', action: 'Book a slot' },
-  { id: 5, info: 'Bemsoft Bulletin Highway', date: '18-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 month', status: 'Pending', action: 'Extend' },
+  { id: 5, info: 'Bemsoft Bulletin Highway', date: '16-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 month', status: 'Pending', action: 'Extend' },
   { id: 6, info: 'Bemsoft Bulletin Highway', date: '16-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 month', status: 'Pending', action: 'Extend' },
   { id: 7, info: 'Bemsoft Bulletin Highway', date: '16-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 month', status: 'Pending', action: 'Extend' },
   { id: 8, info: 'Bemsoft Bulletin Highway', date: '16-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 month', status: 'Pending', action: 'Extend' },
   { id: 9, info: 'Bemsoft Bulletin Highway', date: '16-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 month', status: 'Pending', action: 'Extend' },
+  { id: 10, info: 'Bemsoft Bulletin Highway', date: '16-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 month', status: 'Pending', action: 'Extend' },
 ];
 
 const mockPodcastBookings = [
@@ -350,7 +351,7 @@ export default function BookingsPage() {
               {/* Controls */}
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
                 <h2 className="text-sm font-bold text-gray-900">
-                  {activeTab === 'podcast' ? 'All podcast bookings' : 'All bookings'}
+                  {activeTab === 'podcast' ? 'All podcast bookings' : 'All Ad bookings'}
                 </h2>
 
                 <div className="flex items-center gap-3 w-full sm:w-auto">
@@ -564,7 +565,9 @@ export default function BookingsPage() {
                 ) : (
                   <>
                     <div className="mb-8">
-                      <p className="text-[12px] font-bold text-gray-900 mb-4">All podcast studio session bookings</p>
+                      <p className="text-[12px] font-bold text-gray-900 mb-4">
+                        {activeTab === 'podcast' ? 'All podcast studio session bookings' : 'All Ad bookings'}
+                      </p>
                       <div className="flex items-center gap-8">
                         {/* Status Checkbox */}
                         <label className="flex items-center gap-2.5 cursor-pointer group">

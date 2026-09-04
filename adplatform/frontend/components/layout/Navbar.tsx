@@ -27,6 +27,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
 
   const getBreadcrumb = () => {
     if (!mounted) return 'My bookings / Screen Ads';
+    if (pathname.includes('/chat')) return 'Dashboards / Default';
     if (pathname.includes('/podcast/new')) return 'My bookings / Screen Ads';
     if (pathname.includes('/bookings')) return 'My bookings / Screen Ads';
     if (pathname.includes('/dashboard')) return 'Dashboards / Overview';
@@ -63,7 +64,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
       <div className="hidden md:flex items-center">
         <button 
           type="button"
-          onClick={() => router.push('/support')}
+          onClick={() => router.push('/chat')}
           className="flex items-center gap-2 text-[13px] font-bold text-gray-800 hover:text-gray-900 transition-colors px-3 py-1.5 rounded-full hover:bg-gray-50"
         >
           <span>Chat with Arella</span>

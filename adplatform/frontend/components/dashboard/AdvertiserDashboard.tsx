@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { AreaChart, Area, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/api';
-import { ChevronDown, CreditCard, Megaphone } from 'lucide-react';
+import { ChevronDown, CreditCard, Megaphone, Globe } from 'lucide-react';
 import { FaArrowTrendUp, FaArrowTrendDown } from 'react-icons/fa6';
 import { theme } from '@/lib/theme';
 
@@ -189,7 +189,7 @@ export default function AdvertiserDashboard() {
 
           {/* Traffic by Podcast */}
           <div style={{ background: '#FFFFFF', borderRadius: 20, padding: '24px', border: '1px solid #F1F5F9' }}>
-            <p style={{ fontSize: 15, fontWeight: 800, color: '#0F172A', margin: '0 0 24px' }}>Traffic by Campaign</p>
+            <p style={{ fontSize: 15, fontWeight: 800, color: '#0F172A', margin: '0 0 24px' }}>Traffic by Podcast</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {TRAFFIC_DATA.map(t => (
                 <div key={t.name} style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
@@ -206,7 +206,7 @@ export default function AdvertiserDashboard() {
 
         {/* Bottom Row: Bar Chart */}
         <div style={{ background: '#FFFFFF', borderRadius: 20, padding: '24px', border: '1px solid #F1F5F9' }}>
-          <p style={{ fontSize: 15, fontWeight: 800, color: '#0F172A', margin: '0 0 24px' }}>Booking Trends</p>
+          <p style={{ fontSize: 15, fontWeight: 800, color: '#0F172A', margin: '0 0 24px' }}>Podcast Bookings</p>
           <div style={{ height: 200, width: '100%' }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={BAR_DATA} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
@@ -249,7 +249,7 @@ export default function AdvertiserDashboard() {
               <div style={{ position: 'absolute', bottom: -20, right: -20, width: 80, height: 80, background: '#FDE68A', borderRadius: '50%', opacity: 0.9 }} />
               <p style={{ fontSize: 13, color: '#FFFFFF', fontWeight: 700, margin: '0 0 8px' }}>Wallet Bal</p>
               <div style={{ borderTop: '1px dashed rgba(255,255,255,0.4)', margin: '8px 0', width: '100%' }} />
-              <p style={{ fontSize: 16, color: '#FFFFFF', fontWeight: 800, margin: '0 0 16px' }}>₦ {(balance?.credits || 0).toLocaleString()}</p>
+              <p style={{ fontSize: 16, color: '#FFFFFF', fontWeight: 800, margin: '0 0 16px' }}>$ {(balance?.credits ? balance.credits.toLocaleString() : '10,000')}</p>
               <div style={{ position: 'relative', zIndex: 1 }}>
                 <CreditCard size={18} color="#FFFFFF" />
               </div>
@@ -317,6 +317,39 @@ export default function AdvertiserDashboard() {
             </Link>
             <Link href="/podcast" style={{ flex: 1, padding: '10px', background: '#FFFFFF', border: '1px solid #E2E8F0', color: '#D4AF37', borderRadius: 8, fontSize: 13, fontWeight: 800, textDecoration: 'none', textAlign: 'center' }}>
               Book podcast
+            </Link>
+          </div>
+
+          <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+            <Link href="/bookings?tab=calendar" style={{ fontSize: 12, fontWeight: 700, color: '#C69A2C', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
+              See full calendar &gt;
+            </Link>
+
+            <Link 
+              href="/chat"
+              style={{ 
+                display: 'inline-flex', 
+                alignItems: 'center', 
+                gap: 10, 
+                padding: '12px 24px', 
+                background: '#FFFFFF', 
+                border: '1px solid #E2E8F0', 
+                borderRadius: 24, 
+                boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
+                textDecoration: 'none',
+                color: '#1E293B',
+                fontSize: 13,
+                fontWeight: 700,
+                transition: 'all 0.2s',
+                marginTop: 8
+              }}
+            >
+              <span>Chat with Arella</span>
+              <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'linear-gradient(135deg, #6366F1, #A855F7, #EC4899)', padding: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: '100%', height: '100%', background: '#fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Globe size={13} color="#4F46E5" />
+                </div>
+              </div>
             </Link>
           </div>
         </div>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronDown, Image as ImageIcon, UploadCloud, Calendar, Clock, Check } from 'lucide-react';
 import { theme } from '@/lib/theme';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -9,6 +10,7 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 const F = theme.font.body;
 
 export default function AddNewEpisodePage({ params }: { params: { id: string } }) {
+  const router = useRouter();
   const [contentRating, setContentRating] = useState('Suitable for everyone');
   const [episodeOption, setEpisodeOption] = useState('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -173,20 +175,31 @@ export default function AddNewEpisodePage({ params }: { params: { id: string } }
       </div>
     </div>
 
-    {/* Success Modal Overlay */}
+    {/* Success Modal Overlay (Screenshot 5) */}
     {showSuccessModal && (
-      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255, 255, 255, 0.6)', backdropFilter: 'blur(8px)' }}>
-        <div style={{ background: '#FFFFFF', borderRadius: 24, padding: '48px 32px', width: 340, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', boxShadow: '0 20px 40px -12px rgba(0,0,0,0.15)' }}>
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255, 255, 255, 0.5)', backdropFilter: 'blur(8px)' }}>
+        <div style={{ background: '#FFFFFF', borderRadius: 20, padding: '44px 36px', width: 340, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', boxShadow: '0 20px 40px -10px rgba(0,0,0,0.08)' }}>
           
-          <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'linear-gradient(135deg, #E6C245 0%, #B39223 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24, boxShadow: '0 0 40px 10px rgba(212, 175, 55, 0.3)' }}>
-            <Check size={32} color="#0F172A" strokeWidth={3} />
+          {/* Aura Halo + Circle Badge */}
+          <div style={{ position: 'relative', width: 88, height: 88, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+            <div style={{ position: 'absolute', width: 88, height: 88, borderRadius: '50%', background: 'radial-gradient(circle, rgba(198,154,44,0.38) 0%, rgba(198,154,44,0.12) 50%, transparent 75%)', filter: 'blur(8px)' }} />
+            <div style={{ position: 'relative', zIndex: 2, width: 54, height: 54, borderRadius: '50%', background: '#9E7B21', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 10px rgba(158,123,33,0.3)' }}>
+              <Check size={26} color="#FFFFFF" strokeWidth={3} />
+            </div>
           </div>
           
-          <h3 style={{ fontSize: 16, fontWeight: 700, color: '#0F172A', margin: '0 0 24px', fontFamily: F }}>Episode {episodeOption || '1'} posted successfully</h3>
+          <h3 style={{ fontSize: 16, fontWeight: 700, color: '#0F172A', margin: '0 0 24px', fontFamily: F }}>
+            Episode {episodeOption || '1'} posted successfully
+          </h3>
           
           <button 
-            onClick={() => setShowSuccessModal(false)}
-            style={{ background: '#D4AF37', border: 'none', color: '#FFFFFF', fontSize: 14, fontWeight: 700, borderRadius: 8, padding: '12px 48px', cursor: 'pointer', fontFamily: F }}
+            onClick={() => {
+              setShowSuccessModal(false);
+              router.push('/podcast');
+            }}
+            style={{ background: '#C69A2C', border: 'none', color: '#FFFFFF', fontSize: 13, fontWeight: 700, borderRadius: 6, padding: '10px 48px', cursor: 'pointer', fontFamily: F, transition: 'background 0.2s' }}
+            onMouseOver={e => (e.currentTarget.style.background = '#B58B24')}
+            onMouseOut={e => (e.currentTarget.style.background = '#C69A2C')}
           >
             Finish
           </button>
