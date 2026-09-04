@@ -150,39 +150,39 @@ export default function BookingsPage() {
                 <button
                   onClick={() => setActiveTab('screen')}
                   className={`flex items-center gap-2 pb-3 text-[13px] font-bold transition-colors relative ${
-                    activeTab === 'screen' ? 'text-[#EAB308]' : 'text-gray-400 hover:text-gray-600'
+                    activeTab === 'screen' ? 'text-[#C69A2C]' : 'text-gray-400 hover:text-gray-600'
                   }`}
                 >
                   <Monitor size={16} />
                   Screen Ads
                   {activeTab === 'screen' && (
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#EAB308] rounded-t-full" />
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#C69A2C] rounded-t-full" />
                   )}
                 </button>
                 
                 <button
                   onClick={() => setActiveTab('podcast')}
                   className={`flex items-center gap-2 pb-3 text-[13px] font-bold transition-colors relative ${
-                    activeTab === 'podcast' ? 'text-[#EAB308]' : 'text-gray-400 hover:text-gray-600'
+                    activeTab === 'podcast' ? 'text-[#C69A2C]' : 'text-gray-400 hover:text-gray-600'
                   }`}
                 >
                   <Mic size={16} />
                   Podcast studio
                   {activeTab === 'podcast' && (
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#EAB308] rounded-t-full" />
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#C69A2C] rounded-t-full" />
                   )}
                 </button>
 
                 <button
                   onClick={() => setActiveTab('calendar')}
                   className={`flex items-center gap-2 pb-3 text-[13px] font-bold transition-colors relative ${
-                    activeTab === 'calendar' ? 'text-[#EAB308]' : 'text-gray-400 hover:text-gray-600'
+                    activeTab === 'calendar' ? 'text-[#C69A2C]' : 'text-gray-400 hover:text-gray-600'
                   }`}
                 >
                   <Calendar size={16} />
                   Calendar
                   {activeTab === 'calendar' && (
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#EAB308] rounded-t-full" />
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#C69A2C] rounded-t-full" />
                   )}
                 </button>
               </div>
@@ -235,7 +235,7 @@ export default function BookingsPage() {
                       onClick={() => setCalendarView(v.toLowerCase() as 'month' | 'week' | 'day')}
                       className={`px-6 py-2.5 text-[13px] font-bold transition-colors ${
                         calendarView === v.toLowerCase()
-                          ? 'bg-[#EAB308] text-white'
+                          ? 'bg-[#C69A2C] text-white'
                           : 'bg-white text-gray-700 hover:bg-gray-50'
                       } ${v !== 'Day' ? 'border-r border-gray-200' : ''}`}
                     >
@@ -344,14 +344,14 @@ export default function BookingsPage() {
                   </div>
 
                   {/* Export */}
-                  <button className="px-5 py-2.5 bg-white border border-[#EAB308] rounded-lg text-xs font-bold text-[#EAB308] hover:bg-[#FEFCE8] transition-colors">
+                  <button className="px-5 py-2.5 bg-white border border-[#C69A2C] rounded-lg text-xs font-bold text-[#C69A2C] hover:bg-[#C69A2C]/5 transition-colors">
                     Export
                   </button>
 
                   {/* Book Ad Slot */}
                   <Link
                     href={activeTab === 'podcast' ? "/podcast/new" : "/bookings/screen-ad"}
-                    className="flex items-center justify-center px-6 py-2.5 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 rounded-lg text-xs font-bold transition-colors whitespace-nowrap shadow-sm"
+                    className="flex items-center justify-center px-6 py-2.5 bg-[#C69A2C] hover:bg-[#b58b24] text-white rounded-lg text-xs font-bold transition-colors whitespace-nowrap shadow-sm"
                   >
                     {activeTab === 'podcast' ? 'Book Podcast Slot' : 'Book Ad Slot'}
                   </Link>
@@ -379,7 +379,7 @@ export default function BookingsPage() {
                           <td className="px-6 py-4 text-xs font-semibold text-gray-500">
                             <div className="flex items-center gap-2">
                               {b.date}
-                              {b.reschedule && <span className="text-[10px] text-[#EAB308] font-bold italic">Reschedule</span>}
+                              {b.reschedule && <span className="text-[10px] text-[#C69A2C] font-bold italic">Reschedule</span>}
                             </div>
                           </td>
                           <td className="px-6 py-4 text-[13px] font-bold text-gray-700">{b.billing}</td>
@@ -398,17 +398,17 @@ export default function BookingsPage() {
                             <button
                               onClick={() => {
                                 if (b.action === 'Cancel') {
-                                  setSelectedAdId(b.id); setCancelModalOpen(true);
+                                   setSelectedAdId(b.id); setCancelModalOpen(true);
                                 } else if (b.action === 'Extend') {
-                                  setSelectedAdId(b.id); setExtendModalOpen(true);
+                                   setSelectedAdId(b.id); setExtendModalOpen(true);
                                 } else if (b.action === 'Send a review') {
-                                  setSelectedAdId(b.id); setReviewModalOpen(true);
+                                   setSelectedAdId(b.id); setReviewModalOpen(true);
                                 } else if (b.action === 'Book a slot') {
-                                  setSelectedAdId(b.id); setBookSlotModalOpen(true);
+                                   setSelectedAdId(b.id); setBookSlotModalOpen(true);
                                 }
                               }}
                               className={`text-xs font-bold transition-colors ${
-                                b.action === 'Extend'        ? 'text-[#EAB308] hover:text-[#CA8A04]' :
+                                b.action === 'Extend'        ? 'text-[#C69A2C] hover:text-[#b58b24]' :
                                 b.action === 'Cancel'        ? 'text-red-500 hover:text-red-600'    :
                                 b.action === 'Send a review' ? 'text-blue-500 hover:text-blue-600'  :
                                 b.action === 'Book a slot'   ? 'text-green-600 hover:text-green-700': 'text-gray-600'
@@ -462,7 +462,7 @@ export default function BookingsPage() {
                   <div className="flex items-center gap-8">
                     {/* Status Checkbox */}
                     <label className="flex items-center gap-2.5 cursor-pointer group">
-                      <div className={`w-[18px] h-[18px] rounded-[4px] border flex items-center justify-center transition-colors ${filterStatus ? 'bg-[#EAB308] border-[#EAB308]' : 'bg-white border-gray-300 group-hover:border-[#EAB308]'}`}>
+                      <div className={`w-[18px] h-[18px] rounded-[4px] border flex items-center justify-center transition-colors ${filterStatus ? 'bg-[#C69A2C] border-[#C69A2C]' : 'bg-white border-gray-300 group-hover:border-[#C69A2C]'}`}>
                         {filterStatus && <Check size={12} className="text-white" strokeWidth={4} />}
                       </div>
                       <input type="checkbox" checked={filterStatus} onChange={() => setFilterStatus(!filterStatus)} className="hidden" />
@@ -471,7 +471,7 @@ export default function BookingsPage() {
 
                     {/* Duration Checkbox */}
                     <label className="flex items-center gap-2.5 cursor-pointer group">
-                      <div className={`w-[18px] h-[18px] rounded-[4px] border flex items-center justify-center transition-colors ${filterDuration ? 'bg-[#EAB308] border-[#EAB308]' : 'bg-white border-gray-300 group-hover:border-[#EAB308]'}`}>
+                      <div className={`w-[18px] h-[18px] rounded-[4px] border flex items-center justify-center transition-colors ${filterDuration ? 'bg-[#C69A2C] border-[#C69A2C]' : 'bg-white border-gray-300 group-hover:border-[#C69A2C]'}`}>
                         {filterDuration && <Check size={12} className="text-white" strokeWidth={4} />}
                       </div>
                       <input type="checkbox" checked={filterDuration} onChange={() => setFilterDuration(!filterDuration)} className="hidden" />
@@ -490,7 +490,7 @@ export default function BookingsPage() {
                   </button>
                   <button 
                     onClick={() => setFilterModalOpen(false)}
-                    className="flex-1 py-3.5 rounded-[12px] bg-[#EAB308] hover:bg-[#CA8A04] text-[13px] font-bold text-gray-900 transition-colors shadow-sm"
+                    className="flex-1 py-3.5 rounded-[12px] bg-[#C69A2C] hover:bg-[#b58b24] text-[13px] font-bold text-white transition-colors shadow-sm"
                   >
                     Apply
                   </button>
@@ -500,26 +500,28 @@ export default function BookingsPage() {
           </div>
         )}
 
-        {/* Cancel Modal */}
+        {/* Cancel Modal (Screenshot 1 Left) */}
         {cancelModalOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-[2px]">
-            <div className="bg-white rounded-[24px] pt-12 pb-10 px-8 max-w-[340px] w-full mx-4 shadow-2xl flex flex-col items-center text-center">
-              <h3 className="text-[14px] font-semibold text-gray-900 mb-8 leading-relaxed">
-                Are you sure you want to cancel<br/>this {activeTab === 'podcast' ? 'studio session' : 'Ad'}?
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px]">
+            <div className="bg-white rounded-[24px] pt-10 pb-8 px-8 max-w-[360px] w-full mx-4 shadow-2xl flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-150">
+              <h3 className="text-[15px] font-bold text-gray-900 mb-8 leading-snug">
+                Are you sure you want to cancel this Ad?
               </h3>
               <div className="flex items-center justify-center gap-3 w-full">
                 <button 
+                  type="button"
                   onClick={() => setCancelModalOpen(false)}
-                  className="flex-1 py-2.5 rounded-[10px] border border-gray-200 bg-white text-[11px] font-bold text-gray-900 hover:bg-gray-50 transition-colors"
+                  className="flex-1 py-2.5 rounded-[12px] border border-gray-200 bg-white text-[13px] font-bold text-gray-800 hover:bg-gray-50 transition-colors"
                 >
                   No
                 </button>
                 <button 
+                  type="button"
                   onClick={() => {
                     setCancelModalOpen(false);
                     setCancelSuccessOpen(true);
                   }}
-                  className="flex-1 py-2.5 rounded-[10px] bg-[#EAB308] hover:bg-[#CA8A04] text-[11px] font-bold text-gray-900 transition-colors shadow-sm"
+                  className="flex-1 py-2.5 rounded-[12px] bg-[#C69A2C] hover:bg-[#b58b24] text-[13px] font-bold text-white transition-colors shadow-sm"
                 >
                   Yes
                 </button>
@@ -528,24 +530,23 @@ export default function BookingsPage() {
           </div>
         )}
 
-        {/* Cancel Success Modal */}
+        {/* Cancel Success Modal (Screenshot 1 Right) */}
         {cancelSuccessOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-[2px]">
-            <div className="bg-white rounded-[24px] pt-12 pb-10 px-8 max-w-[340px] w-full mx-4 shadow-2xl flex flex-col items-center text-center">
-              <div className="w-full flex justify-center mb-6">
-                <div className="relative flex items-center justify-center w-40 h-40">
-                  <div className="absolute inset-0 bg-[#EAB308]/20 blur-2xl rounded-full"></div>
-                  <div className="relative w-[52px] h-[52px] bg-[#927116] rounded-full flex items-center justify-center shadow-[0_4px_14px_rgba(146,113,22,0.3)]">
-                    <X size={20} className="text-white" strokeWidth={3} />
-                  </div>
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px]">
+            <div className="bg-white rounded-[24px] pt-10 pb-8 px-8 max-w-[360px] w-full mx-4 shadow-2xl flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-150">
+              <div className="relative flex items-center justify-center w-36 h-36 mb-3">
+                <div className="absolute inset-0 bg-[#C69A2C]/25 blur-2xl rounded-full"></div>
+                <div className="relative w-[64px] h-[64px] bg-[#9E7B21] rounded-full flex items-center justify-center shadow-[0_4px_20px_rgba(158,123,33,0.35)]">
+                  <X size={26} className="text-white" strokeWidth={3} />
                 </div>
               </div>
-              <h3 className="text-[14px] font-semibold text-gray-900 mb-8">
-                {activeTab === 'podcast' ? 'Studio session cancelled' : 'Ad cancelled'}
+              <h3 className="text-[16px] font-bold text-gray-900 mb-8">
+                Ads cancelled
               </h3>
               <button 
+                type="button"
                 onClick={() => setCancelSuccessOpen(false)}
-                className="w-[160px] py-3 rounded-xl bg-[#EAB308] hover:bg-[#CA8A04] text-[13px] font-bold text-gray-900 transition-colors shadow-sm"
+                className="w-[140px] py-2.5 rounded-[12px] bg-[#C69A2C] hover:bg-[#b58b24] text-[13px] font-bold text-white transition-colors shadow-sm"
               >
                 Finish
               </button>
@@ -599,9 +600,9 @@ export default function BookingsPage() {
                 {/* Upload section */}
                 <div>
                   <p className="text-[13px] font-semibold text-gray-800 mb-3 text-left">Or upload additional Ads materials</p>
-                  <div className="w-full border-2 border-dashed border-[#FDE047] bg-[#FEFCE8]/20 rounded-[16px] py-10 px-8 flex flex-col items-center justify-center cursor-pointer hover:bg-[#FEFCE8]/50 transition-colors">
-                    <div className="w-12 h-12 bg-[#FEF08A] rounded-full flex items-center justify-center mb-4 shadow-sm">
-                      <UploadCloud size={20} className="text-[#854D0E]" />
+                  <div className="w-full border-2 border-dashed border-[#C69A2C]/30 bg-[#FFFDF0] rounded-[16px] py-10 px-8 flex flex-col items-center justify-center cursor-pointer hover:bg-[#FFF9E6] transition-colors">
+                    <div className="w-12 h-12 bg-[#C69A2C]/15 rounded-full flex items-center justify-center mb-4 shadow-sm">
+                      <UploadCloud size={20} className="text-[#C69A2C]" />
                     </div>
                     <p className="text-[13px] font-bold text-gray-800 mb-1.5">Drag & Drop or choose file to upload</p>
                     <p className="text-[11px] font-semibold text-gray-400">Supported formats : jpeg, png, pdf</p>
@@ -617,7 +618,7 @@ export default function BookingsPage() {
                       setModalStep('billing');
                       setPaymentMethod('wallet');
                     }}
-                    className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
+                    className="w-full py-4 bg-[#C69A2C] hover:bg-[#b58b24] text-white text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
                   >
                     Extend Ad space
                   </button>
@@ -672,10 +673,10 @@ export default function BookingsPage() {
                     {/* Pay with card */}
                     <div 
                       onClick={() => setPaymentMethod('card')}
-                      className={`flex items-center gap-4 px-6 py-7 rounded-[16px] cursor-pointer border-[1.5px] transition-colors ${paymentMethod === 'card' ? 'border-[#EAB308] bg-[#FEFCE8]/40' : 'border-gray-200 hover:border-gray-300'}`}
+                      className={`flex items-center gap-4 px-6 py-7 rounded-[16px] cursor-pointer border-[1.5px] transition-colors ${paymentMethod === 'card' ? 'border-[#C69A2C] bg-[#C69A2C]/5' : 'border-gray-200 hover:border-gray-300'}`}
                     >
-                      <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'card' ? 'border-[#EAB308]' : 'border-gray-300'}`}>
-                        {paymentMethod === 'card' && <div className="w-2 h-2 rounded-full bg-[#EAB308]" />}
+                      <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'card' ? 'border-[#C69A2C]' : 'border-gray-300'}`}>
+                        {paymentMethod === 'card' && <div className="w-2 h-2 rounded-full bg-[#C69A2C]" />}
                       </div>
                       <span className="text-[13px] font-bold text-gray-900">Pay with card</span>
                     </div>
@@ -683,22 +684,22 @@ export default function BookingsPage() {
                     {/* Pay from wallet */}
                     <div 
                       onClick={() => setPaymentMethod('wallet')}
-                      className={`flex flex-col gap-2 px-6 py-6 rounded-[16px] cursor-pointer border-[1.5px] transition-colors ${paymentMethod === 'wallet' ? 'border-[#EAB308] bg-[#FEFCE8]/40' : 'border-gray-200 hover:border-gray-300'}`}
+                      className={`flex flex-col gap-2 px-6 py-6 rounded-[16px] cursor-pointer border-[1.5px] transition-colors ${paymentMethod === 'wallet' ? 'border-[#C69A2C] bg-[#C69A2C]/5' : 'border-gray-200 hover:border-gray-300'}`}
                     >
                       <div className="flex items-center justify-between w-full">
                         <div className="flex items-center gap-4">
-                          <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'wallet' ? 'border-[#EAB308]' : 'border-gray-300'}`}>
-                            {paymentMethod === 'wallet' && <div className="w-2 h-2 rounded-full bg-[#EAB308]" />}
+                          <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'wallet' ? 'border-[#C69A2C]' : 'border-gray-300'}`}>
+                            {paymentMethod === 'wallet' && <div className="w-2 h-2 rounded-full bg-[#C69A2C]" />}
                           </div>
                           <span className="text-[13px] font-bold text-gray-900">Pay from wallet</span>
                         </div>
-                        <span className="text-[11px] font-bold text-[#EAB308] hover:underline">Fund wallet</span>
+                        <span className="text-[11px] font-bold text-[#C69A2C] hover:underline">Fund wallet</span>
                       </div>
                       
                       <div className="flex items-center justify-between pl-8 mt-2">
                         <div className="flex items-center gap-1.5">
                           <span className="text-[11px] font-semibold text-gray-500">Wallet ID: 23cvo_23759ryi</span>
-                          <button className="flex items-center gap-1 text-[10px] font-bold text-[#EAB308] hover:underline">
+                          <button className="flex items-center gap-1 text-[10px] font-bold text-[#C69A2C] hover:underline">
                             Copy <Copy size={10} />
                           </button>
                         </div>
@@ -717,7 +718,7 @@ export default function BookingsPage() {
                           setModalStep('pay_with_card');
                         }
                       }}
-                      className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
+                      className="w-full py-4 bg-[#C69A2C] hover:bg-[#b58b24] text-white text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
                     >
                       Continue
                     </button>
@@ -730,9 +731,9 @@ export default function BookingsPage() {
                     <p className="text-[14px] font-bold text-gray-900">extension at #300,000</p>
                   </div>
                   <div className="space-y-6">
-                    <input type="text" placeholder="Card holder's name" className="w-full px-5 py-5 text-[13px] font-bold bg-white border border-gray-200 rounded-[14px] focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
+                    <input type="text" placeholder="Card holder's name" className="w-full px-5 py-5 text-[13px] font-bold bg-white border border-gray-200 rounded-[14px] focus:outline-none focus:border-[#C69A2C] placeholder-gray-400" />
                     <div className="relative">
-                      <input type="text" placeholder="Card number" className="w-full px-5 py-5 text-[13px] font-bold bg-white border border-gray-200 rounded-[14px] focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
+                      <input type="text" placeholder="Card number" className="w-full px-5 py-5 text-[13px] font-bold bg-white border border-gray-200 rounded-[14px] focus:outline-none focus:border-[#C69A2C] placeholder-gray-400" />
                       <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
                         <div className="w-[24px] h-[14px] bg-[#1434CB] rounded-[2px] text-[7px] font-bold flex items-center justify-center text-white italic tracking-tighter">VISA</div>
                         <div className="w-[24px] h-[14px] flex items-center justify-center relative">
@@ -742,14 +743,14 @@ export default function BookingsPage() {
                       </div>
                     </div>
                     <div className="flex gap-4">
-                      <input type="text" placeholder="Expiry date (MM/YY)" className="w-1/2 px-5 py-5 text-[13px] font-bold bg-white border border-gray-200 rounded-[14px] focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
-                      <input type="text" placeholder="CVV" className="w-1/2 px-5 py-5 text-[13px] font-bold bg-white border border-gray-200 rounded-[14px] focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
+                      <input type="text" placeholder="Expiry date (MM/YY)" className="w-1/2 px-5 py-5 text-[13px] font-bold bg-white border border-gray-200 rounded-[14px] focus:outline-none focus:border-[#C69A2C] placeholder-gray-400" />
+                      <input type="text" placeholder="CVV" className="w-1/2 px-5 py-5 text-[13px] font-bold bg-white border border-gray-200 rounded-[14px] focus:outline-none focus:border-[#C69A2C] placeholder-gray-400" />
                     </div>
                   </div>
                   <div className="mt-10">
                     <button 
                       onClick={() => setModalStep('success')}
-                      className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
+                      className="w-full py-4 bg-[#C69A2C] hover:bg-[#b58b24] text-white text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
                     >
                       Pay
                     </button>
@@ -757,26 +758,26 @@ export default function BookingsPage() {
                 </div>
               ) : modalStep === 'pay_from_wallet' ? (
                 <div className="px-10 pb-16 pt-8">
-                  <div className="flex items-center justify-between px-6 py-10 rounded-[16px] border-[1.5px] border-[#EAB308] bg-white shadow-sm mb-8">
+                  <div className="flex items-center justify-between px-6 py-10 rounded-[16px] border-[1.5px] border-[#C69A2C] bg-white shadow-sm mb-8">
                     <span className="text-[13px] font-bold text-gray-900">Total amount</span>
                     <span className="text-[13px] font-bold text-gray-900">NGN 300,000.25</span>
                   </div>
                   <button 
                     onClick={() => setModalStep('success')}
-                    className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
+                    className="w-full py-4 bg-[#C69A2C] hover:bg-[#b58b24] text-white text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
                   >
                     Pay
                   </button>
                 </div>
               ) : (
                 <div className="px-10 pb-12 pt-14 flex flex-col items-center">
-                  <div className="w-28 h-28 rounded-full bg-[#FEFCE8] flex items-center justify-center mb-8 relative">
-                    <div className="w-14 h-14 rounded-full bg-[#CA8A04] flex items-center justify-center relative z-10 shadow-lg">
+                  <div className="relative flex items-center justify-center w-36 h-36 mb-3">
+                    <div className="absolute inset-0 bg-[#C69A2C]/25 blur-2xl rounded-full"></div>
+                    <div className="relative w-[64px] h-[64px] bg-[#9E7B21] rounded-full flex items-center justify-center shadow-[0_4px_20px_rgba(158,123,33,0.35)]">
                       <Check size={28} className="text-white" strokeWidth={3} />
                     </div>
-                    <div className="absolute inset-0 rounded-full bg-gradient-radial from-[#FDE047]/50 to-transparent blur-md"></div>
                   </div>
-                  <h3 className="text-[16px] font-bold text-gray-900 mb-10">Payment successful</h3>
+                  <h3 className="text-[16px] font-bold text-gray-900 mb-8">Payment successful</h3>
                   <button 
                     onClick={() => {
                       setExtendBillingModalOpen(false);
@@ -784,7 +785,7 @@ export default function BookingsPage() {
                       setExtendBy('');
                       setAdditionalInfo('');
                     }}
-                    className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
+                    className="w-[140px] py-2.5 rounded-[12px] bg-[#C69A2C] hover:bg-[#b58b24] text-[13px] font-bold text-white transition-colors shadow-sm"
                   >
                     Finish
                   </button>
@@ -837,7 +838,7 @@ export default function BookingsPage() {
 
                 <div>
                   <p className="text-[13px] font-semibold text-gray-800 mb-3 text-left">Rate our service</p>
-                  <div className="w-full border-2 border-dashed border-[#FDE047] bg-[#FEFCE8]/20 rounded-[16px] py-10 flex flex-col items-center justify-center transition-colors">
+                  <div className="w-full border-2 border-dashed border-[#C69A2C]/30 bg-[#FFFDF0] rounded-[16px] py-10 flex flex-col items-center justify-center transition-colors">
                     <div className="flex gap-2 mb-3">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <button
@@ -847,7 +848,7 @@ export default function BookingsPage() {
                         >
                           <Star 
                             size={24} 
-                            className={star <= rating ? "fill-[#EAB308] text-[#EAB308]" : "text-[#EAB308]"} 
+                            className={star <= rating ? "fill-[#C69A2C] text-[#C69A2C]" : "text-[#C69A2C]/40"} 
                             strokeWidth={1.5}
                           />
                         </button>
@@ -868,7 +869,7 @@ export default function BookingsPage() {
                       setRating(4);
                       setReviewSuccessOpen(true);
                     }}
-                    className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
+                    className="w-full py-4 bg-[#C69A2C] hover:bg-[#b58b24] text-white text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
                   >
                     Send review
                   </button>
@@ -880,20 +881,20 @@ export default function BookingsPage() {
 
         {/* Review Success Modal */}
         {reviewSuccessOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-            <div className="bg-white rounded-[24px] py-16 px-10 max-w-[380px] w-full mx-4 shadow-2xl flex flex-col items-center text-center animate-in fade-in zoom-in duration-200">
-              <div className="w-28 h-28 rounded-full bg-[#FEFCE8] flex items-center justify-center mb-8 relative">
-                <div className="w-14 h-14 rounded-full bg-[#CA8A04] flex items-center justify-center relative z-10 shadow-lg">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px] p-4">
+            <div className="bg-white rounded-[24px] pt-10 pb-8 px-8 max-w-[360px] w-full mx-4 shadow-2xl flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-150">
+              <div className="relative flex items-center justify-center w-36 h-36 mb-3">
+                <div className="absolute inset-0 bg-[#C69A2C]/25 blur-2xl rounded-full"></div>
+                <div className="relative w-[64px] h-[64px] bg-[#9E7B21] rounded-full flex items-center justify-center shadow-[0_4px_20px_rgba(158,123,33,0.35)]">
                   <Check size={28} className="text-white" strokeWidth={3} />
                 </div>
-                <div className="absolute inset-0 rounded-full bg-gradient-radial from-[#FDE047]/50 to-transparent blur-md"></div>
               </div>
-              <h3 className="text-[16px] font-bold text-gray-900 mb-10">
+              <h3 className="text-[16px] font-bold text-gray-900 mb-8">
                 We received your feedback
               </h3>
               <button 
                 onClick={() => setReviewSuccessOpen(false)}
-                className="w-[140px] py-3.5 bg-[#EAB308] hover:bg-[#CA8A04] text-[13px] font-bold text-gray-900 rounded-[12px] transition-colors shadow-sm"
+                className="w-[140px] py-2.5 rounded-[12px] bg-[#C69A2C] hover:bg-[#b58b24] text-[13px] font-bold text-white transition-colors shadow-sm"
               >
                 Finish
               </button>
@@ -948,7 +949,7 @@ export default function BookingsPage() {
                     placeholder="Select Dates"
                     value={bookDate}
                     onChange={(e) => setBookDate(e.target.value)}
-                    className="w-full px-5 py-4 pl-12 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
+                    className="w-full px-5 py-4 pl-12 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-[#C69A2C] focus:ring-0 transition-colors"
                   />
                   <Calendar size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" />
                 </div>
@@ -961,7 +962,7 @@ export default function BookingsPage() {
                       placeholder="10:00 AM"
                       value={bookFrom}
                       onChange={(e) => setBookFrom(e.target.value)}
-                      className="w-full px-5 py-4 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
+                      className="w-full px-5 py-4 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-[#C69A2C] focus:ring-0 transition-colors"
                     />
                   </div>
                   <div className="flex-1 space-y-1">
@@ -971,7 +972,7 @@ export default function BookingsPage() {
                       placeholder="05:00 PM"
                       value={bookTo}
                       onChange={(e) => setBookTo(e.target.value)}
-                      className="w-full px-5 py-4 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
+                      className="w-full px-5 py-4 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-[#C69A2C] focus:ring-0 transition-colors"
                     />
                   </div>
                 </div>
@@ -983,7 +984,7 @@ export default function BookingsPage() {
                       placeholder="Number of slots"
                       value={bookSlots}
                       onChange={(e) => setBookSlots(e.target.value)}
-                      className="w-full px-5 py-4 pr-12 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
+                      className="w-full px-5 py-4 pr-12 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-[#C69A2C] focus:ring-0 transition-colors"
                     />
                     <ChevronDown size={18} className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400" />
                   </div>
@@ -997,7 +998,7 @@ export default function BookingsPage() {
                     onClick={() => {
                       setBookSlotModalOpen(false);
                     }}
-                    className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
+                    className="w-full py-4 bg-[#C69A2C] hover:bg-[#b58b24] text-white text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
                   >
                     Proceed to add creative
                   </button>

@@ -1,29 +1,45 @@
 'use client';
 
 import { useState } from 'react';
-import { UploadCloud, Calendar, Clock, X, ArrowLeft, Copy, Check } from 'lucide-react';
+import Link from 'next/link';
+import { ChevronLeft, ChevronDown, Calendar, Clock, X, ArrowLeft, Copy, Check, Upload, Globe } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { PageTransition } from '@/components/ui/Animations';
 
 export default function BookScreenAdPage() {
-  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
   const [duration, setDuration] = useState('');
-  const [campaignType, setCampaignType] = useState('');
+  const [durationOpen, setDurationOpen] = useState(false);
+  const [campaignType, setCampaignType] = useState('One time booking');
+  const [campaignTypeOpen, setCampaignTypeOpen] = useState(false);
+  const [numberOfMonths, setNumberOfMonths] = useState('');
   const [timeline, setTimeline] = useState('');
   const [timer, setTimer] = useState('');
-  const [hasRequestedCreative, setHasRequestedCreative] = useState(false);
+
+  // Modals state
+  const [billingModalOpen, setBillingModalOpen] = useState(false);
+  const [modalStep, setModalStep] = useState<'billing' | 'pay_from_wallet' | 'pay_with_card' | 'success'>('billing');
+  const [paymentMethod, setPaymentMethod] = useState<'card' | 'wallet'>('wallet');
+  const [copied, setCopied] = useState(false);
+
+  // Creative Modal State
   const [showCreativeModal, setShowCreativeModal] = useState(false);
   const [selectedService, setSelectedService] = useState('');
   const [creativeBrief, setCreativeBrief] = useState('');
-  const [showBillingModal, setShowBillingModal] = useState(false);
-  const [modalStep, setModalStep] = useState<'billing' | 'pay_from_wallet' | 'pay_with_card' | 'success'>('billing');
-  const [paymentMethod, setPaymentMethod] = useState<'card' | 'wallet'>('wallet');
+  const [hasRequestedCreative, setHasRequestedCreative] = useState(false);
 
   // Card Input State
   const [cardName, setCardName] = useState('');
   const [cardNumber, setCardNumber] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
   const [cvv, setCvv] = useState('');
+
+  const handleCopyWalletId = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText('23cvo_23759ryi');
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, '');
@@ -51,452 +67,535 @@ export default function BookScreenAdPage() {
     return null;
   })();
 
+  const resetModals = () => {
+    setBillingModalOpen(false);
+    setModalStep('billing');
+  };
+
   return (
     <DashboardLayout>
       <PageTransition>
-        <div className="w-full font-body pt-4 lg:pl-4 lg:pr-8">
-          <div className="mb-10">
-            <h1 className="text-[17px] font-bold text-gray-900">Book Ad</h1>
-          </div>
-
-          <div className="flex flex-col lg:flex-row justify-between items-start gap-16 lg:gap-24">
-            {/* Form Section */}
-            <div className="flex-1 w-full space-y-6">
+        <style>{`
+          textarea:focus, input:focus {
+            outline: none !important;
+            box-shadow: none !important;
+          }
+        `}</style>
+        
+        <div className="font-body w-full min-h-[calc(100vh-64px)] p-6 sm:p-10 relative flex flex-col justify-between">
+          <div className="w-full flex flex-col lg:flex-row gap-8 lg:gap-10 max-w-[1240px] items-start">
+            
+            {/* Left Column (Form) */}
+            <div className="flex-1 w-full min-w-0 bg-white rounded-[24px] p-6 sm:p-10 border border-gray-100/80 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col gap-8">
               
-              {/* Title / Description */}
-              <div>
+              {/* Header */}
+              <div className="flex items-center gap-3">
+                <Link 
+                  href="/bookings" 
+                  className="flex items-center gap-1 text-gray-500 hover:text-gray-900 font-semibold text-[13px] transition-colors"
+                >
+                  <ChevronLeft size={16} /> Back
+                </Link>
+                <h1 className="text-[16px] font-bold text-gray-900 ml-1">Book Ad</h1>
+              </div>
+
+              {/* Form Fields */}
+              <div className="flex flex-col gap-6">
+                {/* Description Textarea */}
                 <textarea
                   placeholder="Describe your Ad"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  rows={4}
-                  className="w-full px-4 py-4 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors resize-none"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="w-full px-5 py-4 bg-white border border-gray-200 rounded-[16px] text-[13px] font-medium text-gray-900 placeholder:text-[#94A3B8] focus:border-[#C69A2C] transition-colors min-h-[150px] resize-y"
                 />
-              </div>
 
-              {/* Dropdowns row */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="relative">
-                  <select
-                    value={duration}
-                    onChange={(e) => setDuration(e.target.value)}
-                    className="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 appearance-none focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
-                    style={{ color: duration ? '#111827' : '#94A3B8', fontWeight: duration ? 700 : 500 }}
-                  >
-                    <option value="" disabled style={{ fontWeight: 700 }}>Duration</option>
-                    <option value="hourly" style={{ fontWeight: 700 }} className="text-gray-900">Hourly</option>
-                    <option value="weekly" style={{ fontWeight: 700 }} className="text-gray-900">Weekly</option>
-                    <option value="monthly" style={{ fontWeight: 700 }} className="text-gray-900">Monthly</option>
-                  </select>
-                  <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400"><path d="m6 9 6 6 6-6"/></svg>
+                {/* Duration & Campaign Type Row */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  {/* Duration Dropdown */}
+                  <div className="relative">
+                    <button 
+                      type="button"
+                      onClick={() => setDurationOpen(!durationOpen)}
+                      className="w-full px-5 py-4 bg-white border border-gray-200 rounded-[14px] text-[13px] font-medium text-left flex items-center justify-between focus:border-[#C69A2C] transition-colors"
+                    >
+                      <span className={duration ? 'text-gray-900 font-medium' : 'text-[#94A3B8]'}>
+                        {duration || 'Duration'}
+                      </span>
+                      <ChevronDown size={18} className="text-gray-400" />
+                    </button>
+                    
+                    {durationOpen && (
+                      <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-100 shadow-[0_10px_30px_-5px_rgba(0,0,0,0.08)] rounded-[14px] py-2 z-20 animate-in fade-in zoom-in-95 duration-100">
+                        {['1 month', '2 months', '3 months', '6 months', '1 year'].map((option) => (
+                          <button
+                            key={option}
+                            type="button"
+                            onClick={() => { setDuration(option); setDurationOpen(false); }}
+                            className="w-full px-5 py-2.5 text-left text-[13px] font-medium text-gray-800 hover:bg-gray-50 flex items-center justify-between transition-colors"
+                          >
+                            <span>{option}</span>
+                            {duration === option && (
+                              <div className="h-3.5 w-[3px] bg-[#C69A2C] rounded-full"></div>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Campaign Type Dropdown */}
+                  <div className="relative">
+                    <button 
+                      type="button"
+                      onClick={() => setCampaignTypeOpen(!campaignTypeOpen)}
+                      className="w-full px-5 py-4 bg-white border border-gray-200 rounded-[14px] text-[13px] font-medium text-left flex items-center justify-between focus:border-[#C69A2C] transition-colors"
+                    >
+                      <span className={campaignType ? 'text-gray-900 font-medium' : 'text-[#94A3B8]'}>
+                        {campaignType || 'How would you run your Ad campaign?'}
+                      </span>
+                      <ChevronDown size={18} className="text-gray-400" />
+                    </button>
+                    
+                    {campaignTypeOpen && (
+                      <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-100 shadow-[0_10px_30px_-5px_rgba(0,0,0,0.08)] rounded-[14px] py-2 z-20 animate-in fade-in zoom-in-95 duration-100">
+                        {['One time booking', 'Recurring booking'].map((option) => (
+                          <button
+                            key={option}
+                            type="button"
+                            onClick={() => { setCampaignType(option); setCampaignTypeOpen(false); }}
+                            className="w-full px-5 py-2.5 text-left text-[13px] font-medium text-gray-800 hover:bg-gray-50 flex items-center justify-between transition-colors"
+                          >
+                            <span>{option}</span>
+                            {campaignType === option && (
+                              <div className="h-3.5 w-[3px] bg-[#C69A2C] rounded-full"></div>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                <div className="relative">
-                  <select
-                    value={campaignType}
-                    onChange={(e) => setCampaignType(e.target.value)}
-                    className="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 appearance-none focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
-                    style={{ color: campaignType ? '#111827' : '#94A3B8', fontWeight: campaignType ? 700 : 500 }}
-                  >
-                    <option value="" disabled style={{ fontWeight: 700 }}>How would you run your Ad campaign?</option>
-                    <option value="one_time" style={{ fontWeight: 700 }} className="text-gray-900">One time booking</option>
-                    <option value="recurring" style={{ fontWeight: 700 }} className="text-gray-900">Recurring booking</option>
-                  </select>
-                  <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400"><path d="m6 9 6 6 6-6"/></svg>
-                  </div>
-                </div>
-              </div>
-
-              {/* Upload Materials */}
-              <div>
-                <label className="block text-sm font-bold text-gray-900 mb-3">
-                  Upload Ad materials <span className="text-gray-400 font-semibold ml-1">(You can upload multiple files at once)</span>
-                </label>
-                <div className="w-full border-2 border-dashed border-[#FDE047] bg-[#FEFCE8]/40 rounded-xl p-10 flex flex-col items-center justify-center cursor-pointer hover:bg-[#FEFCE8]/70 transition-colors">
-                  <div className="w-12 h-12 bg-[#FEF08A] rounded-full flex items-center justify-center mb-4">
-                    <UploadCloud size={20} className="text-[#854D0E]" />
-                  </div>
-                  <p className="text-sm font-bold text-gray-800 mb-1.5">Drag & Drop or choose file to upload</p>
-                  <p className="text-[11px] font-semibold text-gray-400">Supported formats : jpeg, png, pdf</p>
-                </div>
-
-                {/* Creative Request Toggle */}
-                <div className="mt-4 text-[13px] font-medium text-gray-700">
-                  {!hasRequestedCreative ? (
-                    <p>
-                      Don't have Ad materials yet?{' '}
-                      <button 
-                        onClick={() => setShowCreativeModal(true)}
-                        className="text-[#EAB308] font-semibold hover:underline"
-                      >
-                        Request Ad creative services
-                      </button>
-                    </p>
-                  ) : (
-                    <p>
-                      {selectedService === 'storytelling' ? 'Ad storytelling on request?' : 'Ad banner design on request?'}{' '}
-                      <button 
-                        onClick={() => setShowCreativeModal(true)}
-                        className="text-[#EAB308] font-semibold hover:underline mr-2"
-                      >
-                        Change
-                      </button>
-                      <button 
-                        onClick={() => {
-                          setHasRequestedCreative(false);
-                          setSelectedService('');
-                          setCreativeBrief('');
-                        }}
-                        className="text-[#EF4444] font-semibold hover:underline"
-                      >
-                        Cancel
-                      </button>
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Timeline & Timer */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="relative">
-                  <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
-                    <Calendar size={16} className="text-gray-400" />
-                  </div>
+                {/* Enter number of months input */}
+                <div>
                   <input
                     type="text"
-                    placeholder="Schedule service delivery timeline"
-                    value={timeline}
-                    onChange={(e) => setTimeline(e.target.value)}
-                    className="w-full pr-11 pl-4 py-3.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
+                    placeholder="Enter number of months"
+                    value={numberOfMonths}
+                    onChange={(e) => setNumberOfMonths(e.target.value)}
+                    className="w-full px-5 py-4 bg-white border border-gray-200 rounded-[14px] text-[13px] font-medium text-gray-900 placeholder:text-[#94A3B8] focus:border-[#C69A2C] transition-colors"
                   />
                 </div>
-                <div className="relative">
-                  <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
-                    <Clock size={16} className="text-gray-400" />
+
+                {/* Upload Materials Section */}
+                <div>
+                  <label className="block text-[13px] font-bold text-gray-900 mb-2.5">
+                    Upload Ad materials <span className="text-gray-400 font-normal text-[12px]">(You can upload multiple files at once)</span>
+                  </label>
+                  
+                  {/* Upload Box matching Figma */}
+                  <div className="w-full border-[1.5px] border-dashed border-[#C69A2C]/60 bg-[#FEFCE8]/20 hover:bg-[#FEFCE8]/40 rounded-[18px] p-8 flex flex-col items-center justify-center cursor-pointer transition-colors group">
+                    <div className="w-10 h-10 bg-[#C69A2C] rounded-[10px] flex items-center justify-center mb-3 shadow-sm group-hover:scale-105 transition-transform">
+                      <Upload size={18} className="text-white" />
+                    </div>
+                    <p className="text-[13px] font-bold text-gray-800 mb-1">Drag & Drop or choose file to upload</p>
+                    <p className="text-[11px] font-medium text-gray-400">Supported formats : jpeg, png, gif</p>
                   </div>
-                  <input
-                    type="text"
-                    placeholder="Set timer (optional)"
-                    value={timer}
-                    onChange={(e) => setTimer(e.target.value)}
-                    className="w-full pr-11 pl-4 py-3.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
-                  />
+
+                  {/* Creative Request link */}
+                  <div className="mt-2.5 text-[12px] font-medium text-gray-600">
+                    <span>Don't have Ad materials yet? </span>
+                    <button 
+                      type="button"
+                      onClick={() => setShowCreativeModal(true)} 
+                      className="text-[#C69A2C] font-semibold hover:underline"
+                    >
+                      Request creative services
+                    </button>
+                  </div>
+                </div>
+
+                {/* Timeline & Timer Pickers */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="Schedule service delivery timeline"
+                      value={timeline}
+                      onChange={(e) => setTimeline(e.target.value)}
+                      onFocus={(e) => (e.target.type = 'date')}
+                      onBlur={(e) => {
+                        if (!e.target.value) e.target.type = 'text';
+                      }}
+                      className="w-full px-5 py-4 pr-12 bg-white border border-gray-200 rounded-[14px] text-[13px] font-medium text-gray-900 placeholder:text-[#94A3B8] focus:border-[#C69A2C] transition-colors"
+                    />
+                    <Calendar size={18} className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                  </div>
+                  
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="Set timer (optional)"
+                      value={timer}
+                      onChange={(e) => setTimer(e.target.value)}
+                      onFocus={(e) => (e.target.type = 'time')}
+                      onBlur={(e) => {
+                        if (!e.target.value) e.target.type = 'text';
+                      }}
+                      className="w-full px-5 py-4 pr-12 bg-white border border-gray-200 rounded-[14px] text-[13px] font-medium text-gray-900 placeholder:text-[#94A3B8] focus:border-[#C69A2C] transition-colors"
+                    />
+                    <Clock size={18} className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                  </div>
                 </div>
               </div>
 
               {/* Actions */}
-              <div className="flex items-center justify-end gap-4 pt-6">
-                <button className="px-6 py-2.5 rounded-lg text-sm font-bold text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 transition-colors">
+              <div className="flex items-center justify-end gap-3 mt-4">
+                <button 
+                  type="button"
+                  className="px-6 py-2.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-[13px] font-semibold rounded-[12px] transition-colors"
+                >
                   Cancel
                 </button>
                 <button 
-                  onClick={() => setShowBillingModal(true)}
-                  className="px-10 py-2.5 rounded-lg text-sm font-bold text-gray-900 bg-[#EAB308] hover:bg-[#CA8A04] transition-colors shadow-sm"
+                  type="button"
+                  onClick={() => {
+                    setModalStep('billing');
+                    setBillingModalOpen(true);
+                  }}
+                  className="px-6 py-2.5 bg-[#C69A2C] hover:bg-[#b58b24] text-white text-[13px] font-bold rounded-[12px] transition-all shadow-sm"
                 >
                   Book Slot
                 </button>
               </div>
-
+              
             </div>
 
-            {/* Promo Card Right Sidebar */}
-            <div className="w-full lg:w-[280px] shrink-0 pt-1">
-              <div className="bg-[#191919] rounded-[20px] p-6 shadow-sm flex flex-col gap-5">
-                <p className="text-[13px] font-bold leading-normal text-white">
-                  We are running Ad space promo, get a discount for more than 5months booking
+            {/* Right Column (Promo Banner) */}
+            <div className="w-full lg:w-[320px] flex-shrink-0">
+              <div className="bg-[#18181B] rounded-[24px] p-7 shadow-xl flex flex-col justify-between min-h-[160px]">
+                <p className="text-[14px] font-semibold text-white/90 leading-[1.6] mb-6">
+                  we are running Ad space promo, get a discount for more than 3months booking
                 </p>
-                <button className="w-full py-3 bg-[#FCE365] rounded-xl text-[11px] font-bold uppercase tracking-wider text-[#1C1917] hover:bg-[#FACC15] transition-colors">
+                <button 
+                  type="button"
+                  className="bg-[#F4F860] hover:bg-[#e4ec30] text-[#0F172A] text-[11px] font-black tracking-wider uppercase rounded-lg py-2.5 px-5 transition-colors w-fit shadow-sm"
+                >
                   BOOK PODCAST SESSION
                 </button>
               </div>
             </div>
 
           </div>
+
+          {/* Floating Widget: Chat with Arella */}
+          <div className="fixed bottom-8 right-8 z-30">
+            <button
+              type="button"
+              onClick={() => {
+                setModalStep('billing');
+                setBillingModalOpen(true);
+              }}
+              className="bg-white hover:bg-gray-50 text-[#0F172A] border border-gray-200 shadow-[0_4px_24px_rgba(0,0,0,0.08)] px-4 py-2.5 rounded-full text-[13px] font-bold flex items-center gap-2 transition-all hover:shadow-lg"
+            >
+              <span>Chat with Arella</span>
+              <span className="text-[15px]">🌐</span>
+            </button>
+          </div>
         </div>
-      </PageTransition>
 
-      {/* Billing Modal */}
-      {showBillingModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl w-full max-w-[540px] overflow-hidden shadow-2xl relative animate-in fade-in zoom-in duration-200">
-            {/* Header */}
-            <div className="flex items-center justify-between p-6">
-              <button 
-                onClick={() => {
-                  if (modalStep === 'pay_from_wallet' || modalStep === 'pay_with_card' || modalStep === 'success') {
-                    setModalStep('billing');
-                  } else {
-                    setShowBillingModal(false);
-                    setModalStep('billing');
-                  }
-                }} 
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-700"
-              >
-                <ArrowLeft size={20} />
-              </button>
-              <h2 className="text-[17px] font-bold text-gray-900">
-                {modalStep === 'billing' ? 'Billing' : paymentMethod === 'card' ? 'Pay with card' : 'Pay from wallet'}
-              </h2>
-              <button 
-                onClick={() => {
-                  setShowBillingModal(false);
-                  setModalStep('billing');
-                }} 
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-700"
-              >
-                <X size={20} />
-              </button>
-            </div>
+        {/* ─── MODAL OVERLAY ─── */}
+        {billingModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px] p-4">
+            <div className="bg-white rounded-[28px] w-full max-w-[480px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.2)] relative animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
+              
+              {/* Header */}
+              <div className="flex items-center justify-between px-7 pt-6 pb-2">
+                <button 
+                  type="button"
+                  onClick={() => {
+                    if (modalStep === 'pay_from_wallet' || modalStep === 'pay_with_card') {
+                      setModalStep('billing');
+                    } else {
+                      resetModals();
+                    }
+                  }} 
+                  className="p-1 hover:bg-gray-100 rounded-full transition-colors text-gray-700"
+                >
+                  <ArrowLeft size={18} />
+                </button>
 
-            {/* Content */}
-            {modalStep === 'billing' ? (
-              <div className="px-12 pb-12 pt-2">
-                <div className="text-center mb-12">
-                  <h3 className="text-[15px] font-bold text-gray-900">3 months Ad space at</h3>
-                  <p className="text-[15px] font-bold text-gray-900">#300,000</p>
-                </div>
+                <h2 className="text-[15px] font-bold text-gray-900">
+                  {modalStep === 'billing' ? 'Billing' : modalStep === 'pay_with_card' ? 'Pay with card' : 'Pay from wallet'}
+                </h2>
 
-                <div className="space-y-6">
-                  {/* Pay with card */}
-                  <div 
-                    onClick={() => setPaymentMethod('card')}
-                    className={`flex items-center gap-4 px-6 py-9 rounded-2xl cursor-pointer border-[1.5px] transition-colors ${paymentMethod === 'card' ? 'border-[#EAB308] bg-[#FEFCE8]/40' : 'border-gray-200 hover:border-gray-300'}`}
-                  >
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'card' ? 'border-[#EAB308]' : 'border-gray-300'}`}>
-                      {paymentMethod === 'card' && <div className="w-2.5 h-2.5 rounded-full bg-[#EAB308]" />}
-                    </div>
-                    <span className="text-sm font-semibold text-gray-900">Pay with card</span>
-                  </div>
-
-                  {/* Pay from wallet */}
-                  <div 
-                    onClick={() => setPaymentMethod('wallet')}
-                    className={`flex flex-col gap-2 px-6 py-7 rounded-2xl cursor-pointer border-[1.5px] transition-colors ${paymentMethod === 'wallet' ? 'border-[#EAB308] bg-[#FEFCE8]/40' : 'border-gray-200 hover:border-gray-300'}`}
-                  >
-                    <div className="flex items-center justify-between w-full">
-                      <div className="flex items-center gap-4">
-                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'wallet' ? 'border-[#EAB308]' : 'border-gray-300'}`}>
-                          {paymentMethod === 'wallet' && <div className="w-2.5 h-2.5 rounded-full bg-[#EAB308]" />}
-                        </div>
-                        <span className="text-sm font-semibold text-gray-900">Pay from wallet</span>
-                      </div>
-                      <span className="text-[13px] font-bold text-[#EAB308] hover:underline">Fund wallet</span>
-                    </div>
-                    
-                    <div className="flex items-center justify-between pl-9 mt-4">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[12px] font-semibold text-gray-500">Wallet ID: 23cvo_23759ryi</span>
-                        <button className="flex items-center gap-1 text-[11px] font-bold text-[#EAB308] hover:underline">
-                          Copy <Copy size={11} />
-                        </button>
-                      </div>
-                      <span className="text-[13px] font-bold text-gray-900">NGN 5,215,005.25</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Continue Button */}
-                <div className="mt-10">
-                  <button 
-                    onClick={() => {
-                      if (paymentMethod === 'wallet') {
-                        setModalStep('pay_from_wallet');
-                      } else if (paymentMethod === 'card') {
-                        setModalStep('pay_with_card');
-                      }
-                    }}
-                    className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-sm font-bold rounded-xl transition-colors"
-                  >
-                    Continue
-                  </button>
-                </div>
+                <button 
+                  type="button"
+                  onClick={resetModals} 
+                  className="p-1 hover:bg-gray-100 rounded-full transition-colors text-gray-700"
+                >
+                  <X size={18} />
+                </button>
               </div>
-            ) : modalStep === 'pay_with_card' ? (
-              <div className="px-12 pb-24 pt-2">
-                <div className="text-center mb-12">
-                  <h3 className="text-[15px] font-bold text-gray-900">3 months Ad space at</h3>
-                  <p className="text-[15px] font-bold text-gray-900">#300,000</p>
-                </div>
-                <div className="space-y-6">
-                  <input 
-                    type="text" 
-                    placeholder="Card holder's name" 
-                    value={cardName}
-                    onChange={(e) => setCardName(e.target.value)}
-                    className="w-full px-5 py-5 text-sm font-semibold text-gray-900 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#EAB308] placeholder-gray-400" 
-                  />
-                  <div className="relative">
-                    <input 
-                      type="text" 
-                      placeholder="Card number" 
-                      value={cardNumber}
-                      onChange={handleCardNumberChange}
-                      className="w-full px-5 py-5 text-sm font-semibold text-gray-900 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#EAB308] placeholder-gray-400" 
-                    />
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-                      {cardType === 'visa' || !cardType ? (
-                        <div className="w-[26px] h-[16px] bg-[#1434CB] rounded text-[8px] font-bold flex items-center justify-center text-white italic tracking-tighter">VISA</div>
-                      ) : null}
-                      {cardType === 'mastercard' || !cardType ? (
-                        <div className="w-[26px] h-[16px] flex items-center justify-center relative">
-                          <div className="w-[14px] h-[14px] rounded-full bg-[#EB001B] absolute left-0 mix-blend-multiply opacity-90"></div>
-                          <div className="w-[14px] h-[14px] rounded-full bg-[#F79E1B] absolute right-0 mix-blend-multiply opacity-90"></div>
+
+              {/* ─── STEP 1: BILLING (Frames 13098 & 2121459588) ─── */}
+              {modalStep === 'billing' && (
+                <div className="px-7 sm:px-8 pb-8 pt-4">
+                  {/* Session Title & Amount */}
+                  <div className="text-center my-6">
+                    <h3 className="text-[14px] font-bold text-gray-900 mb-1">3 months Ad space at</h3>
+                    <p className="text-[15px] font-black text-gray-900">#300,000</p>
+                  </div>
+
+                  <div className="space-y-4">
+                    {/* Pay with card (Frame 2121459588 shows this selected) */}
+                    <div 
+                      onClick={() => setPaymentMethod('card')}
+                      className={`flex items-center gap-3.5 px-5 py-4 rounded-[16px] cursor-pointer border-[1.5px] transition-all ${
+                        paymentMethod === 'card' 
+                          ? 'border-[#C69A2C] bg-white' 
+                          : 'border-gray-200 hover:border-gray-300 bg-white'
+                      }`}
+                    >
+                      <div className={`w-4 h-4 rounded-full border-[1.5px] flex items-center justify-center ${
+                        paymentMethod === 'card' ? 'border-[#C69A2C]' : 'border-gray-300'
+                      }`}>
+                        {paymentMethod === 'card' && <div className="w-2 h-2 rounded-full bg-[#C69A2C]" />}
+                      </div>
+                      <span className="text-[13px] font-bold text-gray-900">Pay with card</span>
+                    </div>
+
+                    {/* Pay from wallet (Frame 13098 shows this selected) */}
+                    <div 
+                      onClick={() => setPaymentMethod('wallet')}
+                      className={`flex flex-col gap-2 px-5 py-4 rounded-[16px] cursor-pointer border-[1.5px] transition-all ${
+                        paymentMethod === 'wallet' 
+                          ? 'border-[#C69A2C] bg-white' 
+                          : 'border-gray-200 hover:border-gray-300 bg-white'
+                      }`}
+                    >
+                      {/* Top Row: Radio + Title + Fund wallet */}
+                      <div className="flex items-center justify-between w-full">
+                        <div className="flex items-center gap-3.5">
+                          <div className={`w-4 h-4 rounded-full border-[1.5px] flex items-center justify-center ${
+                            paymentMethod === 'wallet' ? 'border-[#C69A2C]' : 'border-gray-300'
+                          }`}>
+                            {paymentMethod === 'wallet' && <div className="w-2 h-2 rounded-full bg-[#C69A2C]" />}
+                          </div>
+                          <span className="text-[13px] font-bold text-gray-900">Pay from wallet</span>
                         </div>
-                      ) : null}
-                      {cardType === 'verve' && (
-                        <div className="w-[34px] h-[16px] bg-red-600 rounded text-[9px] font-bold flex items-center justify-center text-white italic tracking-tighter">Verve</div>
-                      )}
+                        <span className="text-[12px] font-bold text-[#C69A2C] hover:underline">
+                          Fund wallet
+                        </span>
+                      </div>
+                      
+                      {/* Bottom Row: Wallet ID + Balance */}
+                      <div className="flex items-center justify-between pl-[30px] pt-1">
+                        <div className="flex items-center gap-1.5 text-[11px] text-gray-500 font-medium">
+                          <span>Wallet ID: 23cvo_23759ryi</span>
+                          <button 
+                            type="button"
+                            onClick={handleCopyWalletId}
+                            className="flex items-center gap-0.5 text-[11px] font-bold text-[#C69A2C] hover:underline ml-1"
+                          >
+                            <span>{copied ? 'Copied' : 'Copy'}</span>
+                            <Copy size={11} />
+                          </button>
+                        </div>
+                        <span className="text-[12px] font-bold text-gray-900">NGN 5,215,005.25</span>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex gap-4">
-                    <input 
-                      type="text" 
-                      placeholder="Expiry date (MM/YY)" 
-                      value={expiryDate}
-                      onChange={handleExpiryChange}
-                      className="w-1/2 px-5 py-5 text-sm font-semibold text-gray-900 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#EAB308] placeholder-gray-400" 
-                    />
-                    <input 
-                      type="text" 
-                      placeholder="CVV" 
-                      value={cvv}
-                      onChange={handleCvvChange}
-                      className="w-1/2 px-5 py-5 text-sm font-semibold text-gray-900 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-[#EAB308] placeholder-gray-400" 
-                    />
+
+                  {/* Continue Button */}
+                  <div className="mt-8">
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        if (paymentMethod === 'wallet') {
+                          setModalStep('pay_from_wallet');
+                        } else {
+                          setModalStep('pay_with_card');
+                        }
+                      }}
+                      className="w-full py-3.5 bg-[#C69A2C] hover:bg-[#b58b24] text-white text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
+                    >
+                      Continue
+                    </button>
                   </div>
                 </div>
-                <div className="mt-12">
+              )}
+
+              {/* ─── STEP 2A: PAY WITH CARD (Screenshot 3, bottom-left) ─── */}
+              {modalStep === 'pay_with_card' && (
+                <div className="px-7 sm:px-8 pb-8 pt-4">
+                  <div className="text-center my-4">
+                    <h3 className="text-[14px] font-bold text-gray-900 mb-1">3 months Ad space at</h3>
+                    <p className="text-[15px] font-black text-gray-900">#300,000</p>
+                  </div>
+                  <div className="space-y-4">
+                    <input 
+                      type="text" 
+                      placeholder="Card holder's name" 
+                      value={cardName}
+                      onChange={(e) => setCardName(e.target.value)}
+                      className="w-full px-4 py-3 text-[13px] font-medium text-gray-900 bg-white border border-gray-200 rounded-[12px] focus:outline-none focus:border-[#C69A2C]" 
+                    />
+                    <div className="relative">
+                      <input 
+                        type="text" 
+                        placeholder="Card number" 
+                        value={cardNumber}
+                        onChange={handleCardNumberChange}
+                        className="w-full px-4 py-3 text-[13px] font-medium text-gray-900 bg-white border border-gray-200 rounded-[12px] focus:outline-none focus:border-[#C69A2C]" 
+                      />
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+                        {cardType === 'visa' || !cardType ? (
+                          <div className="w-[24px] h-[14px] bg-[#1434CB] rounded-[2px] text-[7px] font-bold flex items-center justify-center text-white italic tracking-tighter">VISA</div>
+                        ) : null}
+                        {cardType === 'mastercard' || !cardType ? (
+                          <div className="w-[24px] h-[14px] flex items-center justify-center relative">
+                            <div className="w-[12px] h-[12px] rounded-full bg-[#EB001B] absolute left-0 mix-blend-multiply opacity-90"></div>
+                            <div className="w-[12px] h-[12px] rounded-full bg-[#F79E1B] absolute right-0 mix-blend-multiply opacity-90"></div>
+                          </div>
+                        ) : null}
+                      </div>
+                    </div>
+                    <div className="flex gap-4">
+                      <input 
+                        type="text" 
+                        placeholder="Expiry date (MM/YY)" 
+                        value={expiryDate}
+                        onChange={handleExpiryChange}
+                        className="w-1/2 px-4 py-3 text-[13px] font-medium text-gray-900 bg-white border border-gray-200 rounded-[12px] focus:outline-none focus:border-[#C69A2C]" 
+                      />
+                      <input 
+                        type="text" 
+                        placeholder="CVV" 
+                        value={cvv}
+                        onChange={handleCvvChange}
+                        className="w-1/2 px-4 py-3 text-[13px] font-medium text-gray-900 bg-white border border-gray-200 rounded-[12px] focus:outline-none focus:border-[#C69A2C]" 
+                      />
+                    </div>
+                  </div>
+                  <div className="mt-6">
+                    <button 
+                      type="button"
+                      onClick={() => setModalStep('success')}
+                      className="w-full py-3.5 bg-[#C69A2C] hover:bg-[#b58b24] text-white text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
+                    >
+                      Pay
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* ─── STEP 2B: PAY FROM WALLET (Screenshot 3, top-left & top-right) ─── */}
+              {modalStep === 'pay_from_wallet' && (
+                <div className="px-7 sm:px-8 pb-8 pt-6">
+                  {/* Amount Card with Golden Border */}
+                  <div className="flex items-center justify-between px-6 py-6 rounded-[18px] border-[1.5px] border-[#C69A2C] bg-white mb-6">
+                    <span className="text-[13px] font-medium text-gray-800">Total amount</span>
+                    <span className="text-[13px] font-bold text-gray-900">NGN 300,000.25</span>
+                  </div>
+
+                  {/* Pay Button */}
                   <button 
+                    type="button"
                     onClick={() => setModalStep('success')}
-                    className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-sm font-bold rounded-xl transition-colors"
+                    className="w-full py-3.5 bg-[#C69A2C] hover:bg-[#b58b24] text-white text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
                   >
                     Pay
                   </button>
                 </div>
-              </div>
-            ) : modalStep === 'pay_from_wallet' ? (
-              <div className="px-12 pb-24 pt-8">
-                <div className="flex items-center justify-between px-8 py-10 rounded-2xl border-[1.5px] border-[#EAB308] bg-white shadow-sm mb-6">
-                  <span className="text-sm font-bold text-gray-900">Total amount</span>
-                  <span className="text-sm font-bold text-gray-900">NGN 300,000.25</span>
-                </div>
-                <button 
-                  onClick={() => setModalStep('success')}
-                  className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-sm font-bold rounded-xl transition-colors"
-                >
-                  Pay
-                </button>
-              </div>
-            ) : (
-              <div className="px-12 pb-12 pt-16 flex flex-col items-center">
-                <div className="w-full flex justify-center mb-6">
-                  <div className="relative flex items-center justify-center w-40 h-40">
-                    <div className="absolute inset-0 bg-[#EAB308]/20 blur-2xl rounded-full"></div>
-                    <div className="relative w-[52px] h-[52px] bg-[#927116] rounded-full flex items-center justify-center shadow-[0_4px_14px_rgba(146,113,22,0.3)]">
-                      <Check size={24} className="text-white" strokeWidth={3} />
+              )}
+
+              {/* ─── STEP 3: PAYMENT SUCCESSFUL (Screenshots 2 & 3) ─── */}
+              {modalStep === 'success' && (
+                <div className="px-7 sm:px-8 pb-8 pt-8 flex flex-col items-center">
+                  {/* Golden Glow Aura & Checkmark Badge */}
+                  <div className="relative flex items-center justify-center w-36 h-36 mb-4">
+                    <div className="absolute inset-0 bg-[#C69A2C]/25 blur-2xl rounded-full"></div>
+                    <div className="relative w-[64px] h-[64px] bg-[#9E7B21] rounded-full flex items-center justify-center shadow-[0_4px_20px_rgba(158,123,33,0.35)]">
+                      <Check size={30} className="text-white" strokeWidth={3} />
                     </div>
                   </div>
+
+                  {/* Title */}
+                  <h3 className="text-[17px] font-bold text-gray-900 mb-8">Payment successful</h3>
+
+                  {/* Finish Button */}
+                  <button 
+                    type="button"
+                    onClick={resetModals}
+                    className="w-full py-3.5 bg-[#C69A2C] hover:bg-[#b58b24] text-white text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
+                  >
+                    Finish
+                  </button>
                 </div>
-                <h3 className="text-[17px] font-bold text-gray-900 mb-10">Payment successful</h3>
+              )}
+
+            </div>
+          </div>
+        )}
+
+        {/* ─── CREATIVE REQUEST MODAL ─── */}
+        {showCreativeModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px] p-4">
+            <div className="bg-white rounded-[24px] w-full max-w-[480px] shadow-2xl relative animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
+              <div className="flex items-center justify-between px-7 pt-6 pb-2">
                 <button 
-                  onClick={() => {
-                    setShowBillingModal(false);
-                    setModalStep('billing');
-                  }}
-                  className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-sm font-bold rounded-xl transition-colors"
+                  type="button"
+                  onClick={() => setShowCreativeModal(false)}
+                  className="p-1 hover:bg-gray-100 rounded-full transition-colors text-gray-700"
                 >
-                  Finish
+                  <ArrowLeft size={18} />
+                </button>
+                <h2 className="text-[15px] font-bold text-gray-900">Ad creative services</h2>
+                <button 
+                  type="button"
+                  onClick={() => setShowCreativeModal(false)}
+                  className="p-1 hover:bg-gray-100 rounded-full transition-colors text-gray-700"
+                >
+                  <X size={18} />
                 </button>
               </div>
-            )}
-          </div>
-        </div>
-      )}
 
-      {/* Ad Creative Services Modal */}
-      {showCreativeModal && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-white/60 backdrop-blur-sm">
-          <div className="bg-white rounded-[24px] w-full max-w-[500px] shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-gray-100 relative animate-in fade-in zoom-in duration-200">
-            {/* Header */}
-            <div className="flex items-center justify-between p-6 pb-2">
-              <button 
-                onClick={() => setShowCreativeModal(false)} 
-                className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-900"
-              >
-                <ArrowLeft size={20} />
-              </button>
-              <h2 className="text-[15px] font-bold text-gray-900">
-                Ad creative services
-              </h2>
-              <button 
-                onClick={() => setShowCreativeModal(false)} 
-                className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-900"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            {/* Content */}
-            <div className="px-8 pb-10 pt-6 space-y-8">
-              {/* Dropdown */}
-              <div className="relative">
+              <div className="px-7 pb-8 pt-4 space-y-5">
                 <select
                   value={selectedService}
                   onChange={(e) => setSelectedService(e.target.value)}
-                  className="w-full px-4 py-4 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 appearance-none focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
-                  style={{ color: selectedService ? '#111827' : '#94A3B8', fontWeight: selectedService ? 700 : 500 }}
+                  className="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-[12px] text-[13px] font-medium text-gray-900 focus:outline-none focus:border-[#C69A2C]"
                 >
-                  <option value="" disabled style={{ fontWeight: 700 }}>Select creative services</option>
-                  <option value="banner" style={{ fontWeight: 700 }} className="text-gray-900">Ad Banner design</option>
-                  <option value="storytelling" style={{ fontWeight: 700 }} className="text-gray-900">Ad storytelling</option>
+                  <option value="">Select creative services</option>
+                  <option value="banner">Ad Banner design</option>
+                  <option value="storytelling">Ad storytelling</option>
                 </select>
-                <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-gray-600"><path d="m6 9 6 6 6-6"/></svg>
-                </div>
-              </div>
 
-              {/* Textarea */}
-              <textarea
-                placeholder="Describe your Ad creative brief"
-                value={creativeBrief}
-                onChange={(e) => setCreativeBrief(e.target.value)}
-                rows={5}
-                className="w-full px-4 py-5 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors resize-none"
-              />
+                <textarea
+                  placeholder="Describe your Ad creative brief"
+                  value={creativeBrief}
+                  onChange={(e) => setCreativeBrief(e.target.value)}
+                  rows={4}
+                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-[12px] text-[13px] font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#C69A2C] resize-none"
+                />
 
-              {/* Upload section */}
-              <div>
-                <p className="text-[13px] font-semibold text-gray-800 mb-3 text-left">Or upload Ad creative brief</p>
-                <div className="w-full border-2 border-dashed border-[#FDE047] bg-[#FEFCE8]/20 rounded-[16px] py-12 px-8 flex flex-col items-center justify-center cursor-pointer hover:bg-[#FEFCE8]/50 transition-colors">
-                  <div className="w-12 h-12 bg-[#FEF08A] rounded-full flex items-center justify-center mb-4 shadow-sm">
-                    <UploadCloud size={20} className="text-[#854D0E]" />
-                  </div>
-                  <p className="text-[13px] font-bold text-gray-800 mb-1.5">Drag & Drop or choose file to upload</p>
-                  <p className="text-[11px] font-semibold text-gray-400">Supported formats : jpeg, png, pdf</p>
-                </div>
-              </div>
-
-              {/* Add service button */}
-              <div className="pt-4">
-                <button 
+                <button
+                  type="button"
                   onClick={() => {
-                    if(selectedService) {
-                      setHasRequestedCreative(true);
-                    }
+                    if (selectedService) setHasRequestedCreative(true);
                     setShowCreativeModal(false);
                   }}
-                  className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
+                  className="w-full py-3.5 bg-[#C69A2C] hover:bg-[#b58b24] text-white text-[14px] font-bold rounded-[12px] transition-colors shadow-sm"
                 >
                   Add service
                 </button>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+
+      </PageTransition>
     </DashboardLayout>
   );
 }
