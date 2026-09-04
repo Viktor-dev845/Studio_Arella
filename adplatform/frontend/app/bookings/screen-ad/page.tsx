@@ -349,7 +349,7 @@ export default function BookScreenAdPage() {
                     if (modalStep === 'pay_from_wallet' || modalStep === 'pay_with_card') {
                       setModalStep('billing');
                     } else if (modalStep === 'success') {
-                      setModalStep('pay_from_wallet');
+                      setModalStep(paymentMethod === 'card' ? 'pay_with_card' : 'pay_from_wallet');
                     } else {
                       resetModals();
                     }
@@ -360,7 +360,7 @@ export default function BookScreenAdPage() {
                 </button>
 
                 <h2 className="text-[15px] font-bold text-gray-900">
-                  {modalStep === 'billing' ? 'Billing' : modalStep === 'pay_with_card' ? 'Pay with card' : 'Pay from wallet'}
+                  {modalStep === 'billing' ? 'Billing' : paymentMethod === 'card' ? 'Pay with card' : 'Pay from wallet'}
                 </h2>
 
                 <button 

@@ -654,15 +654,11 @@ export default function BookingsPage() {
                 <div className="relative flex items-center justify-center w-36 h-36 mb-3">
                   <div className="absolute inset-0 bg-[#C69A2C]/25 blur-2xl rounded-full"></div>
                   <div className="relative w-[64px] h-[64px] bg-[#9E7B21] rounded-full flex items-center justify-center shadow-[0_4px_20px_rgba(158,123,33,0.35)]">
-                    {isPodcast ? (
-                      <X size={28} className="text-white" strokeWidth={3} />
-                    ) : (
-                      <Check size={28} className="text-white" strokeWidth={3} />
-                    )}
+                    <X size={28} className="text-white" strokeWidth={3} />
                   </div>
                 </div>
                 <h3 className="text-[16px] font-bold text-gray-900 mb-8">
-                  {isPodcast ? 'Studio session cancelled' : `${cancelledName} Ad cancelled`}
+                  {isPodcast ? 'Studio session cancelled' : 'Ads cancelled'}
                 </h3>
                 <button 
                   type="button"
