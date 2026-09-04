@@ -18,7 +18,7 @@ import {
 } from '../controllers/bookingController';
 import { getAds, createAd, updateAd, deleteAd, getAdminReviewQueue, reviewAd } from '../controllers/adController';
 import { getScreens, createScreen, updateScreen, deleteScreen } from '../controllers/screenController';
-import { getBalance, getTransactions, addCredits, getTotalRevenue } from '../controllers/financeController';
+import { getBalance, getTransactions, getTotalRevenue } from '../controllers/financeController';
 import { getDashboardStats, getHourlyAnalytics, getAdvertiserProofOfPlay } from '../controllers/analyticsController';
 import { getPlatformStats, getAllUsers, getAllBookings, getAllCampaigns, getAllScreens, updateUserRole, getAllTransactions, getAllPodcastBookings } from '../controllers/adminController';
 import { getPlans, getBaseRate } from '../controllers/pricingController';
@@ -94,7 +94,6 @@ router.delete('/screens/:id', authenticate, deleteScreen);
 // ── Finances ──────────────────────────────────────────────────────────────────
 router.get('/finances/balance', authenticate, getBalance);
 router.get('/finances/transactions', authenticate, getTransactions);
-router.post('/finances/add-credits', authenticate, addCredits);
 router.get('/finances/revenue', authenticate, getTotalRevenue);
 
 // ── Plans ─────────────────────────────────────────────────────────────────────

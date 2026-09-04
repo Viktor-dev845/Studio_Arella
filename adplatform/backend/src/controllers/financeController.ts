@@ -56,34 +56,6 @@ export const getTransactions : RequestHandler = async (req, res) => {
   }
 };
 
-export const addCredits : RequestHandler = async (req, res) => {
-    const authReq = req as AuthRequest;
-  try {
-    const { amount, reference } = req.body;
-    const client = await pool.connect();
-    try {
-      await client.query('BEGIN');
-      await client.query('UPDATE users SET credits = credits + $1 WHERE id = $2', [amount, authReq.user?.id]);
-      await client.query(
-        `INSERT INTO transactions (user_id, type, source, amount, description, reference)
-         VALUES ($1, 'credit', 'top_up', $2, 'Credit top-up', $3)`,
-        [authReq.user?.id, amount, reference]
-      );
-      await client.query('COMMIT');
-
-      const userResult = await pool.query('SELECT credits FROM users WHERE id = $1', [authReq.user?.id]);
-      res.json({ message: 'Credits added', credits: parseFloat(userResult.rows[0].credits) });
-    } catch (err) {
-      await client.query('ROLLBACK');
-      throw err;
-    } finally {
-      client.release();
-    }
-  } catch (err) {
-    res.status(500).json({ message: 'Server error' });
-  }
-};
-
 export const getTotalRevenue : RequestHandler = async (req, res) => {
     const authReq = req as AuthRequest;
   try {
