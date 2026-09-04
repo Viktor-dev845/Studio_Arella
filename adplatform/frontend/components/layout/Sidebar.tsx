@@ -17,6 +17,7 @@ const DASHBOARDS = [
 
 const PAGES = [
   { href: '/settings', label: 'User Profile', icon: User },
+  { href: '/creative', label: 'Creative Studio', icon: Paintbrush },
   { href: '/podcast', label: 'Podcasts', icon: Mic },
   { href: '/campaigns', label: 'Campaigns', icon: Megaphone },
   { href: '/ads', label: 'Ads', icon: Film },
