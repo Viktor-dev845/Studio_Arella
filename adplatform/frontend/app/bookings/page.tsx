@@ -9,7 +9,7 @@ import { PageTransition } from '@/components/ui/Animations';
 // Mock data based on the screenshot provided
 const mockBookings = [
   { id: 1, info: 'Bemsoft Bulletin Highway', date: '16-08-2026 12PM', reschedule: false, billing: '200,000', duration: '1 month', status: 'Active', action: 'Extend' },
-  { id: 2, info: 'Bemsoft Bulletin Highway', date: '18-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 month', status: 'Pending', action: 'Cancel' },
+  { id: 2, info: 'Monnify Bulletin Highway', date: '18-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 month', status: 'Pending', action: 'Cancel' },
   { id: 3, info: 'Bemsoft Bulletin Highway', date: '16-08-2026 12PM', reschedule: false, billing: '200,000', duration: '2 hours', status: 'Ended', action: 'Send a review' },
   { id: 4, info: 'Bemsoft Bulletin Highway', date: '16-08-2026 12PM', reschedule: false, billing: '200,000', duration: '1 month', status: 'Cancelled', action: 'Book a slot' },
   { id: 5, info: 'Bemsoft Bulletin Highway', date: '18-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 month', status: 'Pending', action: 'Extend' },
@@ -33,35 +33,46 @@ const mockPodcastBookings = [
 ];
 
 // ─── Calendar constants & mock data ───────────────────────────────────────────
-const HOUR_HEIGHT = 64;
+const HOUR_HEIGHT = 88;
 const CAL_START_HOUR = 6;
-const CAL_END_HOUR = 22;
-const CAL_HOURS = Array.from({ length: CAL_END_HOUR - CAL_START_HOUR }, (_, i) => i + CAL_START_HOUR);
+const CAL_END_HOUR = 12;
+const CAL_HOURS = [6, 7, 8, 9, 10, 11];
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const DAY_TASKS = [0, 1, 0, 1, 1, 2, 0];
 
 interface CalendarEvent {
   id: string;
+  timeDisplay: string;
   title: string;
-  dateIndex: number; // 0 = Sun … 6 = Sat within the displayed week
+  dateIndex: number; // 0 = Sun … 6 = Sat
   startHour: number;
   endHour: number;
-  color: string;
   bgColor: string;
+  type: 'ad' | 'podcast';
 }
 
 const mockCalendarEvents: CalendarEvent[] = [
-  { id: 'ce1',  title: 'Pack & Move podcast\nstudio session', dateIndex: 1, startHour: 6.0,  endHour: 8.0,  color: '#46B6E6', bgColor: '#46B6E6' },
-  { id: 'ce2',  title: 'Ad campaign',             dateIndex: 4, startHour: 12.0, endHour: 13.5, color: '#A92B2B', bgColor: '#A92B2B' },
-  { id: 'ce3',  title: 'Pack & Move podcast\nstudio session', dateIndex: 5, startHour: 6.0,  endHour: 8.0,  color: '#3475D6', bgColor: '#3475D6' },
-  { id: 'ce4',  title: 'Ad campaign',             dateIndex: 3, startHour: 12.0, endHour: 13.5, color: '#CD4FE6', bgColor: '#CD4FE6' },
-  { id: 'ce5',  title: 'Ad campaign',             dateIndex: 3, startHour: 8.0,  endHour: 9.5,  color: '#89CFF0', bgColor: '#89CFF0' },
-  { id: 'ce6',  title: 'Pack & Move podcast\nstudio session', dateIndex: 4, startHour: 8.0,  endHour: 10.0, color: '#13C78B', bgColor: '#13C78B' },
-  { id: 'ce7',  title: 'Ad campaign',             dateIndex: 1, startHour: 9.0,  endHour: 10.5, color: '#CD4FE6', bgColor: '#CD4FE6' },
-  { id: 'ce8',  title: 'Pack & Move podcast\nstudio session', dateIndex: 5, startHour: 9.0,  endHour: 11.0, color: '#3475D6', bgColor: '#3475D6' },
-  { id: 'ce9',  title: 'Pack & Move podcast\nstudio session', dateIndex: 1, startHour: 10.0, endHour: 11.5, color: '#A92B2B', bgColor: '#A92B2B' },
-  { id: 'ce10', title: 'Ad campaign',             dateIndex: 3, startHour: 10.0, endHour: 11.5, color: '#EF6666', bgColor: '#EF6666' },
-  { id: 'ce11', title: 'Pack & Move podcast\nstudio session', dateIndex: 2, startHour: 11.0, endHour: 12.5, color: '#F39C12', bgColor: '#F39C12' },
-  { id: 'ce12', title: 'Ad campaign',             dateIndex: 4, startHour: 11.0, endHour: 12.5, color: '#46B6E6', bgColor: '#46B6E6' },
+  // Monday (dateIndex 1)
+  { id: 'ce1', timeDisplay: '06:00 AM - 07:00 PM', title: 'Pack & Move podcast\nstudio session', dateIndex: 1, startHour: 6, endHour: 7, bgColor: '#46B6E6', type: 'podcast' },
+  { id: 'ce2', timeDisplay: '12:00 PM', title: 'Ad campaign', dateIndex: 1, startHour: 9, endHour: 10, bgColor: '#CD4FE6', type: 'ad' },
+  { id: 'ce3', timeDisplay: '06:00 AM - 07:00 PM', title: 'Pack & Move podcast\nstudio session', dateIndex: 1, startHour: 10, endHour: 11, bgColor: '#A92B2B', type: 'podcast' },
+
+  // Tuesday (dateIndex 2)
+  { id: 'ce4', timeDisplay: '01:00 PM', title: 'Ad campaign', dateIndex: 2, startHour: 8, endHour: 9, bgColor: '#89CFF0', type: 'ad' },
+  { id: 'ce5', timeDisplay: '06:00 AM - 07:00 PM', title: 'Pack & Move podcast\nstudio session', dateIndex: 2, startHour: 11, endHour: 12, bgColor: '#F39C12', type: 'podcast' },
+
+  // Wednesday (dateIndex 3)
+  { id: 'ce6', timeDisplay: '01:00 PM', title: 'Ad campaign', dateIndex: 3, startHour: 7, endHour: 8, bgColor: '#CD4FE6', type: 'ad' },
+  { id: 'ce7', timeDisplay: '12:00 PM', title: 'Ad campaign', dateIndex: 3, startHour: 10, endHour: 11, bgColor: '#EF6666', type: 'ad' },
+
+  // Thursday (dateIndex 4)
+  { id: 'ce8', timeDisplay: '12:00 PM', title: 'Ad campaign', dateIndex: 4, startHour: 6, endHour: 7, bgColor: '#A92B2B', type: 'ad' },
+  { id: 'ce9', timeDisplay: '05:00 AM - 07:00 PM', title: 'Pack & Move podcast\nstudio session', dateIndex: 4, startHour: 8, endHour: 9, bgColor: '#13C78B', type: 'podcast' },
+
+  // Friday (dateIndex 5)
+  { id: 'ce10', timeDisplay: '06:00 AM - 07:00 PM', title: 'Pack & Move podcast\nstudio session', dateIndex: 5, startHour: 6, endHour: 7, bgColor: '#3475D6', type: 'podcast' },
+  { id: 'ce11', timeDisplay: '06:00 AM - 07:00 PM', title: 'Pack & Move podcast\nstudio session', dateIndex: 5, startHour: 9, endHour: 10, bgColor: '#3475D6', type: 'podcast' },
+  { id: 'ce12', timeDisplay: '12:00 PM', title: 'Ad campaign', dateIndex: 5, startHour: 11, endHour: 12, bgColor: '#46B6E6', type: 'ad' },
 ];
 
 export default function BookingsPage() {
@@ -96,6 +107,8 @@ export default function BookingsPage() {
   const [filterSearch, setFilterSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState(true);
   const [filterDuration, setFilterDuration] = useState(false);
+  const [filterByAds, setFilterByAds] = useState(true);
+  const [filterByPodcast, setFilterByPodcast] = useState(false);
 
   // ─── Calendar state ───────────────────────────────────────────────────────
   const [calendarView, setCalendarView] = useState<'month' | 'week' | 'day'>('week');
@@ -120,20 +133,20 @@ export default function BookingsPage() {
   };
 
   const fmtHour = (h: number) => {
-    if (h === 0) return '12 AM';
-    if (h === 12) return '12 PM';
-    return h < 12 ? `${h} AM` : `${h - 12} PM`;
-  };
-
-  const fmtTime = (h: number) => {
-    const hour = Math.floor(h), min = Math.round((h - hour) * 60);
-    const ampm = hour < 12 ? 'AM' : 'PM';
-    const dh = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-    return min > 0 ? `${String(dh).padStart(2, '0')}:${String(min).padStart(2, '0')} ${ampm}` : `${String(dh).padStart(2, '0')}:00 ${ampm}`;
+    if (h === 0) return '12:00 AM';
+    if (h === 12) return '12:00 PM';
+    return h < 12 ? `${h}:00 AM` : `${h - 12}:00 PM`;
   };
 
   const weekDates = getWeekDates(currentDate);
-  const eventsForDay = (dayIdx: number) => mockCalendarEvents.filter(e => e.dateIndex === dayIdx);
+  const eventsForDay = (dayIdx: number) => {
+    return mockCalendarEvents.filter(e => {
+      if (e.dateIndex !== dayIdx) return false;
+      if (filterByAds && !filterByPodcast) return true; // default in screenshot
+      if (!filterByAds && filterByPodcast) return e.type === 'podcast';
+      return true;
+    });
+  };
   const goToToday  = () => setCurrentDate(new Date());
   const goToPrev   = () => { const d = new Date(currentDate); d.setDate(d.getDate() - 7); setCurrentDate(d); };
   const goToNext   = () => { const d = new Date(currentDate); d.setDate(d.getDate() + 7); setCurrentDate(d); };
@@ -248,7 +261,7 @@ export default function BookingsPage() {
               {/* ── Calendar grid (week view) ─────────────────────────────── */}
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 {/* Day column headers */}
-                <div className="grid border-b border-gray-100" style={{ gridTemplateColumns: '100px repeat(7, 1fr)' }}>
+                <div className="grid border-b border-gray-100" style={{ gridTemplateColumns: '120px repeat(7, 1fr)' }}>
                   <div className="py-4 border-r border-gray-100" />
                   {weekDates.map((date, i) => {
                     return (
@@ -256,15 +269,15 @@ export default function BookingsPage() {
                         <p className="text-[12px] font-semibold text-gray-900 mb-0.5">
                           {DAY_NAMES[i]} {String(date.getMonth()+1).padStart(2,'0')}/{String(date.getDate()).padStart(2,'0')}
                         </p>
-                        <p className="text-[10px] text-gray-500 font-medium">0 Task(s)</p>
+                        <p className="text-[10px] text-gray-500 font-medium">{DAY_TASKS[i]} Task(s)</p>
                       </div>
                     );
                   })}
                 </div>
 
                 {/* Scrollable time grid */}
-                <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 300px)' }}>
-                  <div className="grid" style={{ gridTemplateColumns: '100px repeat(7, 1fr)' }}>
+                <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 280px)' }}>
+                  <div className="grid" style={{ gridTemplateColumns: '120px repeat(7, 1fr)' }}>
 
                     {/* Time labels */}
                     <div>
@@ -274,8 +287,8 @@ export default function BookingsPage() {
                           style={{ height: HOUR_HEIGHT }}
                           className="border-b border-gray-100 border-r border-gray-100 flex items-center justify-center px-2"
                         >
-                          <span className="text-[11px] font-semibold text-gray-700 whitespace-nowrap">
-                            {h === 0 ? '12:00 AM' : h === 12 ? '12:00 PM' : h < 12 ? `${String(h).padStart(2, '0')}:00 AM` : `${String(h-12).padStart(2, '0')}:00 PM`}
+                          <span className="text-[12px] font-semibold text-gray-700 whitespace-nowrap">
+                            {fmtHour(h)}
                           </span>
                         </div>
                       ))}
@@ -299,19 +312,19 @@ export default function BookingsPage() {
                             key={evt.id}
                             style={{
                               position: 'absolute',
-                              top: (evt.startHour - CAL_START_HOUR) * HOUR_HEIGHT + 2,
-                              height: Math.max((evt.endHour - evt.startHour) * HOUR_HEIGHT - 4, 24),
-                              left: 2,
-                              right: 2,
+                              top: (evt.startHour - CAL_START_HOUR) * HOUR_HEIGHT + 4,
+                              height: HOUR_HEIGHT - 8,
+                              left: 4,
+                              right: 4,
                               backgroundColor: evt.bgColor,
-                              borderRadius: 0,
+                              borderRadius: 4,
                             }}
-                            className="px-2.5 py-1.5 overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                            className="px-2 py-2 flex flex-col items-center justify-center text-center overflow-hidden cursor-pointer hover:opacity-90 transition-opacity shadow-sm"
                           >
-                            <p className="text-[9px] font-bold text-white truncate leading-tight">
-                              {fmtTime(evt.startHour)} - {fmtTime(evt.endHour)}
+                            <p className="text-[10px] font-bold text-white leading-tight">
+                              {evt.timeDisplay}
                             </p>
-                            <p className="text-[10px] font-medium text-white leading-tight mt-0.5" style={{ whiteSpace: 'pre-wrap' }}>
+                            <p className="text-[10px] font-medium text-white leading-tight mt-1 whitespace-pre-line">
                               {evt.title}
                             </p>
                           </div>
@@ -457,44 +470,81 @@ export default function BookingsPage() {
                   />
                 </div>
 
-                <div className="mb-8">
-                  <p className="text-[12px] font-bold text-gray-900 mb-4">All podcast studio session bookings</p>
-                  <div className="flex items-center gap-8">
-                    {/* Status Checkbox */}
-                    <label className="flex items-center gap-2.5 cursor-pointer group">
-                      <div className={`w-[18px] h-[18px] rounded-[4px] border flex items-center justify-center transition-colors ${filterStatus ? 'bg-[#C69A2C] border-[#C69A2C]' : 'bg-white border-gray-300 group-hover:border-[#C69A2C]'}`}>
-                        {filterStatus && <Check size={12} className="text-white" strokeWidth={4} />}
-                      </div>
-                      <input type="checkbox" checked={filterStatus} onChange={() => setFilterStatus(!filterStatus)} className="hidden" />
-                      <span className="text-[12px] font-semibold text-gray-700">Status</span>
-                    </label>
+                {activeTab === 'calendar' ? (
+                  <div className="mb-8">
+                    <p className="text-[12px] font-bold text-gray-900 mb-4">All Calendar bookings</p>
+                    <div className="flex items-center gap-6">
+                      {/* By Ads bookings */}
+                      <label className="flex items-center gap-2.5 cursor-pointer group">
+                        <div className={`w-[18px] h-[18px] rounded-[4px] border flex items-center justify-center transition-colors ${filterByAds ? 'bg-[#C69A2C] border-[#C69A2C]' : 'bg-white border-gray-300 group-hover:border-[#C69A2C]'}`}>
+                          {filterByAds && <Check size={12} className="text-white" strokeWidth={4} />}
+                        </div>
+                        <input type="checkbox" checked={filterByAds} onChange={() => setFilterByAds(!filterByAds)} className="hidden" />
+                        <span className="text-[12px] font-semibold text-gray-700">By Ads bookings</span>
+                      </label>
 
-                    {/* Duration Checkbox */}
-                    <label className="flex items-center gap-2.5 cursor-pointer group">
-                      <div className={`w-[18px] h-[18px] rounded-[4px] border flex items-center justify-center transition-colors ${filterDuration ? 'bg-[#C69A2C] border-[#C69A2C]' : 'bg-white border-gray-300 group-hover:border-[#C69A2C]'}`}>
-                        {filterDuration && <Check size={12} className="text-white" strokeWidth={4} />}
-                      </div>
-                      <input type="checkbox" checked={filterDuration} onChange={() => setFilterDuration(!filterDuration)} className="hidden" />
-                      <span className="text-[12px] font-semibold text-gray-700">By duration</span>
-                    </label>
+                      {/* By podcast studio session */}
+                      <label className="flex items-center gap-2.5 cursor-pointer group">
+                        <div className={`w-[18px] h-[18px] rounded-[4px] border flex items-center justify-center transition-colors ${filterByPodcast ? 'bg-[#C69A2C] border-[#C69A2C]' : 'bg-white border-gray-300 group-hover:border-[#C69A2C]'}`}>
+                          {filterByPodcast && <Check size={12} className="text-white" strokeWidth={4} />}
+                        </div>
+                        <input type="checkbox" checked={filterByPodcast} onChange={() => setFilterByPodcast(!filterByPodcast)} className="hidden" />
+                        <span className="text-[12px] font-semibold text-gray-700">By podcast studio session</span>
+                      </label>
+                    </div>
+
+                    {/* Centered Apply button (Screenshot 4) */}
+                    <div className="mt-8 flex justify-center">
+                      <button 
+                        onClick={() => setFilterModalOpen(false)}
+                        className="w-[140px] py-2.5 rounded-[12px] bg-[#C69A2C] hover:bg-[#b58b24] text-[13px] font-bold text-white transition-colors shadow-sm"
+                      >
+                        Apply
+                      </button>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <>
+                    <div className="mb-8">
+                      <p className="text-[12px] font-bold text-gray-900 mb-4">All podcast studio session bookings</p>
+                      <div className="flex items-center gap-8">
+                        {/* Status Checkbox */}
+                        <label className="flex items-center gap-2.5 cursor-pointer group">
+                          <div className={`w-[18px] h-[18px] rounded-[4px] border flex items-center justify-center transition-colors ${filterStatus ? 'bg-[#C69A2C] border-[#C69A2C]' : 'bg-white border-gray-300 group-hover:border-[#C69A2C]'}`}>
+                            {filterStatus && <Check size={12} className="text-white" strokeWidth={4} />}
+                          </div>
+                          <input type="checkbox" checked={filterStatus} onChange={() => setFilterStatus(!filterStatus)} className="hidden" />
+                          <span className="text-[12px] font-semibold text-gray-700">Status</span>
+                        </label>
 
-                {/* Actions */}
-                <div className="flex gap-4">
-                  <button 
-                    onClick={() => setFilterModalOpen(false)}
-                    className="flex-1 py-3.5 rounded-[12px] border border-gray-200 bg-white text-[13px] font-bold text-gray-900 hover:bg-gray-50 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button 
-                    onClick={() => setFilterModalOpen(false)}
-                    className="flex-1 py-3.5 rounded-[12px] bg-[#C69A2C] hover:bg-[#b58b24] text-[13px] font-bold text-white transition-colors shadow-sm"
-                  >
-                    Apply
-                  </button>
-                </div>
+                        {/* Duration Checkbox */}
+                        <label className="flex items-center gap-2.5 cursor-pointer group">
+                          <div className={`w-[18px] h-[18px] rounded-[4px] border flex items-center justify-center transition-colors ${filterDuration ? 'bg-[#C69A2C] border-[#C69A2C]' : 'bg-white border-gray-300 group-hover:border-[#C69A2C]'}`}>
+                            {filterDuration && <Check size={12} className="text-white" strokeWidth={4} />}
+                          </div>
+                          <input type="checkbox" checked={filterDuration} onChange={() => setFilterDuration(!filterDuration)} className="hidden" />
+                          <span className="text-[12px] font-semibold text-gray-700">By duration</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-4">
+                      <button 
+                        onClick={() => setFilterModalOpen(false)}
+                        className="flex-1 py-3.5 rounded-[12px] border border-gray-200 bg-white text-[13px] font-bold text-gray-900 hover:bg-gray-50 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button 
+                        onClick={() => setFilterModalOpen(false)}
+                        className="flex-1 py-3.5 rounded-[12px] bg-[#C69A2C] hover:bg-[#b58b24] text-[13px] font-bold text-white transition-colors shadow-sm"
+                      >
+                        Apply
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -530,29 +580,33 @@ export default function BookingsPage() {
           </div>
         )}
 
-        {/* Cancel Success Modal (Screenshot 1 Right) */}
-        {cancelSuccessOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px]">
-            <div className="bg-white rounded-[24px] pt-10 pb-8 px-8 max-w-[360px] w-full mx-4 shadow-2xl flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-150">
-              <div className="relative flex items-center justify-center w-36 h-36 mb-3">
-                <div className="absolute inset-0 bg-[#C69A2C]/25 blur-2xl rounded-full"></div>
-                <div className="relative w-[64px] h-[64px] bg-[#9E7B21] rounded-full flex items-center justify-center shadow-[0_4px_20px_rgba(158,123,33,0.35)]">
-                  <X size={26} className="text-white" strokeWidth={3} />
+        {/* Cancel Success Modal (Screenshot 5) */}
+        {cancelSuccessOpen && (() => {
+          const selectedBooking = (activeTab === 'podcast' ? mockPodcastBookings : mockBookings).find(b => b.id === selectedAdId);
+          const cancelledName = selectedBooking ? selectedBooking.info.split(' ')[0] : 'Monnify';
+          return (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px]">
+              <div className="bg-white rounded-[24px] pt-10 pb-8 px-8 max-w-[360px] w-full mx-4 shadow-2xl flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-150">
+                <div className="relative flex items-center justify-center w-36 h-36 mb-3">
+                  <div className="absolute inset-0 bg-[#C69A2C]/25 blur-2xl rounded-full"></div>
+                  <div className="relative w-[64px] h-[64px] bg-[#9E7B21] rounded-full flex items-center justify-center shadow-[0_4px_20px_rgba(158,123,33,0.35)]">
+                    <Check size={28} className="text-white" strokeWidth={3} />
+                  </div>
                 </div>
+                <h3 className="text-[16px] font-bold text-gray-900 mb-8">
+                  {cancelledName} Ad cancelled
+                </h3>
+                <button 
+                  type="button"
+                  onClick={() => setCancelSuccessOpen(false)}
+                  className="w-[140px] py-2.5 rounded-[12px] bg-[#C69A2C] hover:bg-[#b58b24] text-[13px] font-bold text-white transition-colors shadow-sm"
+                >
+                  Finish
+                </button>
               </div>
-              <h3 className="text-[16px] font-bold text-gray-900 mb-8">
-                Ads cancelled
-              </h3>
-              <button 
-                type="button"
-                onClick={() => setCancelSuccessOpen(false)}
-                className="w-[140px] py-2.5 rounded-[12px] bg-[#C69A2C] hover:bg-[#b58b24] text-[13px] font-bold text-white transition-colors shadow-sm"
-              >
-                Finish
-              </button>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* Extend Ad Booking Modal */}
         {extendModalOpen && (
@@ -795,17 +849,17 @@ export default function BookingsPage() {
           </div>
         )}
 
-        {/* Review Modal */}
+        {/* Review Modal (Screenshot 1) */}
         {reviewModalOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-            <div className="bg-white rounded-[24px] w-full max-w-[500px] shadow-2xl relative animate-in fade-in zoom-in duration-200">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px] p-4">
+            <div className="bg-white rounded-[24px] w-full max-w-[420px] shadow-2xl relative animate-in fade-in zoom-in duration-200">
               {/* Header */}
               <div className="flex items-center justify-between p-6 pb-2">
                 <button 
                   onClick={() => setReviewModalOpen(false)} 
                   className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-900"
                 >
-                  <ArrowLeft size={20} />
+                  <ArrowLeft size={18} />
                 </button>
                 <h2 className="text-[15px] font-bold text-gray-900">
                   Send a review
@@ -814,18 +868,18 @@ export default function BookingsPage() {
                   onClick={() => setReviewModalOpen(false)} 
                   className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-900"
                 >
-                  <X size={20} />
+                  <X size={18} />
                 </button>
               </div>
 
               {/* Content */}
-              <div className="px-10 pb-12 pt-6 space-y-6">
+              <div className="px-8 pb-10 pt-4 space-y-5">
                 <input
                   type="text"
                   placeholder="Title of your review"
                   value={reviewTitle}
                   onChange={(e) => setReviewTitle(e.target.value)}
-                  className="w-full px-5 py-5 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
+                  className="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-[12px] text-[13px] font-medium text-gray-900 placeholder:text-[#94A3B8] placeholder:font-normal focus:outline-none focus:border-[#C69A2C] transition-colors"
                 />
 
                 <textarea
@@ -833,13 +887,13 @@ export default function BookingsPage() {
                   value={reviewText}
                   onChange={(e) => setReviewText(e.target.value)}
                   rows={4}
-                  className="w-full px-5 py-5 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors resize-none"
+                  className="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-[12px] text-[13px] font-medium text-gray-900 placeholder:text-[#94A3B8] placeholder:font-normal focus:outline-none focus:border-[#C69A2C] transition-colors resize-none"
                 />
 
                 <div>
-                  <p className="text-[13px] font-semibold text-gray-800 mb-3 text-left">Rate our service</p>
-                  <div className="w-full border-2 border-dashed border-[#C69A2C]/30 bg-[#FFFDF0] rounded-[16px] py-10 flex flex-col items-center justify-center transition-colors">
-                    <div className="flex gap-2 mb-3">
+                  <p className="text-[12px] font-semibold text-gray-800 mb-2.5 text-left">Rate our service</p>
+                  <div className="w-full border border-dashed border-gray-300 rounded-[12px] py-6 flex flex-col items-center justify-center bg-white transition-colors">
+                    <div className="flex gap-2.5 mb-2">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <button
                           key={star}
@@ -847,20 +901,20 @@ export default function BookingsPage() {
                           className="focus:outline-none transition-transform hover:scale-110 active:scale-95"
                         >
                           <Star 
-                            size={24} 
-                            className={star <= rating ? "fill-[#C69A2C] text-[#C69A2C]" : "text-[#C69A2C]/40"} 
+                            size={22} 
+                            className={star <= rating ? "fill-[#C69A2C] text-[#C69A2C]" : "text-[#C69A2C]/30"} 
                             strokeWidth={1.5}
                           />
                         </button>
                       ))}
                     </div>
-                    <p className="text-[11px] font-bold text-gray-800">
+                    <p className="text-[12px] font-medium text-gray-700">
                       {rating === 5 ? 'Excellent' : rating === 4 ? 'Good' : rating === 3 ? 'Average' : rating === 2 ? 'Poor' : 'Terrible'}
                     </p>
                   </div>
                 </div>
 
-                <div className="pt-4">
+                <div className="pt-2">
                   <button 
                     onClick={() => {
                       setReviewModalOpen(false);
@@ -869,7 +923,7 @@ export default function BookingsPage() {
                       setRating(4);
                       setReviewSuccessOpen(true);
                     }}
-                    className="w-full py-4 bg-[#C69A2C] hover:bg-[#b58b24] text-white text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
+                    className="w-full py-3.5 bg-[#C69A2C] hover:bg-[#b58b24] text-white text-[13px] font-bold rounded-[12px] transition-colors shadow-sm"
                   >
                     Send review
                   </button>
@@ -879,7 +933,7 @@ export default function BookingsPage() {
           </div>
         )}
 
-        {/* Review Success Modal */}
+        {/* Review Success Modal (Screenshot 3) */}
         {reviewSuccessOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px] p-4">
             <div className="bg-white rounded-[24px] pt-10 pb-8 px-8 max-w-[360px] w-full mx-4 shadow-2xl flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-150">
@@ -889,7 +943,7 @@ export default function BookingsPage() {
                   <Check size={28} className="text-white" strokeWidth={3} />
                 </div>
               </div>
-              <h3 className="text-[16px] font-bold text-gray-900 mb-8">
+              <h3 className="text-[15px] font-bold text-gray-900 mb-8">
                 We received your feedback
               </h3>
               <button 
