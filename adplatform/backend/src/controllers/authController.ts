@@ -84,8 +84,10 @@ export const register: RequestHandler = async (req, res) => {
     const fullName = `${first_name.trim()} ${last_name.trim()}`;
     const hashed = await bcrypt.hash(password, 12);
     
-    // Default to advertiser if role is missing or invalid
-    const userRole = (role === 'screen_owner' || role === 'advertiser' || role === 'admin') ? role : 'advertiser';
+    // Self-registration can only ever create advertiser or screen_owner accounts.
+    // 'admin' must never be settable from client input — admins are promoted
+    // by an existing admin through the admin panel, not created via signup.
+    const userRole = role === 'screen_owner' ? 'screen_owner' : 'advertiser';
 
     const result = await pool.query(
        `INSERT INTO users (name, first_name, last_name, email, password, role, business_name, phone, email_verified)

@@ -1,7 +1,7 @@
 import { Request, Response, RequestHandler } from 'express';
 import pool from '../db/pool';
 import { AuthRequest } from '../middleware/auth';
-import { sendBookingConfirmationEmail, sendCancellationEmail } from '../services/emailService';
+import { sendCancellationEmail } from '../services/emailService';
 import { createNotification, notifyAdmins } from '../services/notificationService';
 
 // ── Get bookings ──────────────────────────────────────────────────────────────
@@ -267,50 +267,6 @@ export const createBooking: RequestHandler = async (req, res) => {
   }
 };
 
-// ── Confirm booking (called after Paystack webhook verifies payment) ───────────
-export const confirmBooking: RequestHandler = async (req, res) => {
-  const authReq = req as AuthRequest;
-  try {
-    const { payment_reference, booking_id } = req.body;
-
-    const booking = await pool.query(
-      `UPDATE bookings SET status = 'active', payment_reference = $1
-       WHERE id = $2 RETURNING *`,
-      [payment_reference, booking_id]
-    );
-    if (!booking.rows[0]) { res.status(404).json({ message: 'Booking not found' }); return; }
-
-    const b = booking.rows[0];
-
-    // Generate invoice number
-    const invoiceNumber = `INV-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`;
-    await pool.query(
-      `INSERT INTO invoices (booking_id, invoice_number, advertiser_id, amount)
-       VALUES ($1, $2, $3, $4) ON CONFLICT (booking_id) DO NOTHING`,
-      [b.id, invoiceNumber, b.user_id, b.total_cost]
-    );
-
-    // Get user + screen for email
-    const [userRes, screenRes] = await Promise.all([
-      pool.query('SELECT name, email FROM users WHERE id = $1', [b.user_id]),
-      pool.query('SELECT name FROM screens WHERE id = $1', [b.screen_id]),
-    ]);
-
-    sendBookingConfirmationEmail(userRes.rows[0].email, userRes.rows[0].name, {
-      booking_number: b.booking_number,
-      screen_name: screenRes.rows[0]?.name || 'Studio Arella',
-      start_time: b.start_time,
-      duration_minutes: Math.round(b.interval_seconds / 60),
-      total_cost: b.total_cost,
-      payment_reference,
-    }).catch(console.error);
-
-    res.json({ booking: b, invoice_number: invoiceNumber });
-  } catch (err) {
-    res.status(500).json({ message: 'Confirmation failed' });
-  }
-};
-
 // ── Cancel booking ────────────────────────────────────────────────────────────
 export const cancelBooking: RequestHandler = async (req, res) => {
   const authReq = req as AuthRequest;
@@ -379,21 +335,5 @@ export const cancelBooking: RequestHandler = async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ message: 'Cancellation failed' });
-  }
-};
-
-// ── Update booking status (admin) ─────────────────────────────────────────────
-export const updateBookingStatus: RequestHandler = async (req, res) => {
-  const authReq = req as AuthRequest;
-  try {
-    const { status } = req.body;
-    const result = await pool.query(
-      'UPDATE bookings SET status = $1 WHERE id = $2 RETURNING *',
-      [status, req.params.id]
-    );
-    if (!result.rows[0]) { res.status(404).json({ message: 'Booking not found' }); return; }
-    res.json(result.rows[0]);
-  } catch (err) {
-    res.status(500).json({ message: 'Server error' });
   }
 };

@@ -13,9 +13,7 @@ import {
   getBookings,
   getBookingSlots,
   createBooking,
-  confirmBooking,
   cancelBooking,
-  updateBookingStatus,
   reserveSlots
 } from '../controllers/bookingController';
 import { getAds, createAd, updateAd, deleteAd, getAdminReviewQueue, reviewAd } from '../controllers/adController';
@@ -32,39 +30,6 @@ import { getAvailability, reserveSlot, getMyBookings } from '../controllers/podc
 import pool from '../db/pool';
 
 const router = Router();
-
-// TEMPORARY: Clear database
-router.get('/nuke-db', async (req: Request, res: Response) => {
-  try {
-    const tables = ['booking_slots', 'proof_of_play_logs', 'analytics', 'invoices', 'podcast_bookings', 'bookings'];
-    for (const table of tables) {
-      try {
-        await pool.query(`DELETE FROM ${table};`);
-      } catch (e) {
-        // Ignore if table doesn't exist
-        console.log(`Skipped ${table} or error:`, e);
-      }
-    }
-    res.json({ message: 'Successfully cleared all bookings and related logs!' });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// TEMPORARY: Delete specific user
-router.get('/dev-delete-user', async (req: Request, res: Response) => {
-  const email = req.query.email as string;
-  if (!email) {
-    res.send('Need email query param');
-    return;
-  }
-  try {
-    await pool.query('DELETE FROM users WHERE email = $1', [email]);
-    res.json({ message: `Deleted user ${email}` });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
 
 // ── Podcasts ──────────────────────────────────────────────────────────────────
 router.get('/podcasts/availability', getAvailability);
@@ -108,9 +73,7 @@ router.get('/bookings/slots', getBookingSlots);
 router.post('/bookings/reserve', authenticate, reserveSlots);
 router.get('/bookings', authenticate, getBookings);
 router.post('/bookings', authenticate, createBooking);
-router.post('/bookings/confirm', authenticate, confirmBooking);
 router.put('/bookings/:id/cancel', authenticate, cancelBooking);
-router.put('/bookings/:id/status', authenticate, updateBookingStatus);
 
 // ── Ads / Creatives ───────────────────────────────────────────────────────────
 router.get('/ads', authenticate, getAds);
