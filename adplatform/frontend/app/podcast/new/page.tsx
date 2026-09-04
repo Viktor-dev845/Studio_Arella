@@ -1,476 +1,509 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, ChevronDown, Calendar, Clock, X, ArrowLeft, Copy, Check, Globe } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import {
+  ChevronLeft,
+  ChevronDown,
+  Camera,
+  Upload,
+  Calendar,
+  Clock,
+} from 'lucide-react';
+import { theme } from '@/lib/theme';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { PageTransition } from '@/components/ui/Animations';
+import PodcastRightPanel from '@/components/podcast/PodcastRightPanel';
 
-export default function BookPodcastSessionPage() {
-  const [description, setDescription] = useState('');
-  const [duration, setDuration] = useState('');
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
+const F = theme.font.body;
+
+export default function AddPodcastPage() {
+  const router = useRouter();
+
+  const [coverPhoto, setCoverPhoto] = useState<string | null>(null);
+  const [title, setTitle] = useState('');
+  const [titleDescription, setTitleDescription] = useState('');
   
-  const [sessionTypeOpen, setSessionTypeOpen] = useState(false);
-  const [sessionType, setSessionType] = useState('');
+  const [selectedEpisode, setSelectedEpisode] = useState('');
+  const [episodeDropdownOpen, setEpisodeDropdownOpen] = useState(false);
+  const [episodeTitle, setEpisodeTitle] = useState('');
+  const [episodeDescription, setEpisodeDescription] = useState('');
 
-  // Billing Modal State
-  const [billingModalOpen, setBillingModalOpen] = useState(false);
-  const [modalStep, setModalStep] = useState<'billing' | 'pay_from_wallet' | 'pay_with_card' | 'success'>('billing');
-  const [paymentMethod, setPaymentMethod] = useState<'card' | 'wallet'>('wallet');
-  const [copied, setCopied] = useState(false);
+  const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [scheduleDate, setScheduleDate] = useState('');
+  const [timerTime, setTimerTime] = useState('');
 
-  // Card Input State
-  const [cardName, setCardName] = useState('');
-  const [cardNumber, setCardNumber] = useState('');
-  const [expiryDate, setExpiryDate] = useState('');
-  const [cvv, setCvv] = useState('');
+  const [contentRating, setContentRating] = useState('');
+  const [ratingDropdownOpen, setRatingDropdownOpen] = useState(false);
 
-  const handleCopyWalletId = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    navigator.clipboard.writeText('23cvo_23759ryi');
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const audioInputRef = useRef<HTMLInputElement>(null);
 
-  const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, '');
-    const formattedValue = value.replace(/(.{4})/g, '$1 ').trim();
-    setCardNumber(formattedValue.substring(0, 19));
-  };
-
-  const handleExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value.replace(/\D/g, '');
-    if (value.length > 2) {
-      value = `${value.slice(0, 2)}/${value.slice(2, 4)}`;
+  const handleCoverPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setCoverPhoto(URL.createObjectURL(file));
     }
-    setExpiryDate(value.substring(0, 5));
   };
 
-  const handleCvvChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCvv(e.target.value.replace(/\D/g, '').substring(0, 4));
+  const handleAudioUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setAudioFile(e.target.files[0]);
+    }
   };
 
-  const cardType = (() => {
-    const num = cardNumber.replace(/\D/g, '');
-    if (num.startsWith('4')) return 'visa';
-    if (/^5[1-5]/.test(num)) return 'mastercard';
-    if (/^50|^6/.test(num)) return 'verve';
-    return null;
-  })();
+  const handlePost = () => {
+    // Navigate back to the podcast hub on post
+    router.push('/podcast');
+  };
 
-  const resetModals = () => {
-    setBillingModalOpen(false);
-    setModalStep('billing');
+  const commonInputStyle: React.CSSProperties = {
+    width: '100%',
+    padding: '12px 16px',
+    borderRadius: 8,
+    border: '1px solid #E2E8F0',
+    background: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: 500,
+    color: '#0F172A',
+    fontFamily: F,
+    outline: 'none',
+    boxSizing: 'border-box',
   };
 
   return (
     <DashboardLayout>
       <PageTransition>
-        <style>{`
-          textarea:focus, input:focus {
-            outline: none !important;
-            box-shadow: none !important;
-          }
-        `}</style>
-        
-        <div className="font-body w-full min-h-[calc(100vh-64px)] p-6 sm:p-10 relative flex flex-col justify-between">
-          <div className="w-full flex flex-col lg:flex-row gap-8 lg:gap-10 max-w-[1240px] items-start">
-            
-            {/* Left Column (Form) */}
-            <div className="flex-1 w-full min-w-0 bg-white rounded-[24px] p-6 sm:p-10 border border-gray-100/80 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col gap-8">
-              
-              {/* Header */}
-              <div className="flex items-center gap-3">
-                <Link 
-                  href="/bookings" 
-                  className="flex items-center gap-1 text-gray-500 hover:text-gray-900 font-semibold text-[13px] transition-colors"
+        <div
+          style={{
+            fontFamily: F,
+            padding: '24px 32px 48px',
+            background: '#FFFFFF',
+            minHeight: '100%',
+            display: 'flex',
+            gap: 36,
+            alignItems: 'flex-start',
+          }}
+        >
+          {/* ─── MAIN COLUMN ─── */}
+          <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 24 }}>
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+                <Link
+                  href="/podcast"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: '#0F172A',
+                    textDecoration: 'none',
+                  }}
                 >
-                  <ChevronLeft size={16} /> Back
+                  <ChevronLeft size={16} />
+                  <span>Back</span>
                 </Link>
-                <h1 className="text-[16px] font-bold text-gray-900 ml-1">Book podcast slot</h1>
+
+                <h1 style={{ fontSize: 14, fontWeight: 700, color: '#0F172A', margin: 0 }}>
+                  Add podcast
+                </h1>
               </div>
 
-              {/* Form Fields */}
-              <div className="flex flex-col gap-6">
-                {/* Description Textarea */}
-                <textarea
-                  placeholder="Describe your session"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="w-full px-5 py-4 bg-white border border-gray-200 rounded-[16px] text-[13px] font-medium text-gray-900 placeholder:text-[#94A3B8] focus:border-[#C69A2C] transition-colors min-h-[160px] resize-y"
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
+                <span style={{ fontSize: 12, fontWeight: 600, color: '#64748B' }}>Today</span>
+                <ChevronDown size={14} color="#64748B" />
+              </div>
+            </div>
+
+            {/* Cover photo section */}
+            <div>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleCoverPhotoUpload}
+                accept="image/*"
+                style={{ display: 'none' }}
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                style={{
+                  width: 76,
+                  height: 76,
+                  borderRadius: 12,
+                  border: '1px solid #E2E8F0',
+                  background: '#F8FAFC',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  overflow: 'hidden',
+                  padding: 0,
+                }}
+              >
+                {coverPhoto ? (
+                  <img src={coverPhoto} alt="Cover Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <Camera size={22} color="#94A3B8" strokeWidth={1.75} />
+                )}
+              </button>
+              <p style={{ fontSize: 13, fontWeight: 700, color: '#0F172A', margin: '10px 0 0' }}>
+                Add cover photo
+              </p>
+            </div>
+
+            {/* Title Input */}
+            <div>
+              <input
+                type="text"
+                placeholder="Title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                style={commonInputStyle}
+              />
+            </div>
+
+            {/* Title description Textarea */}
+            <div>
+              <textarea
+                placeholder="Title description"
+                value={titleDescription}
+                onChange={(e) => setTitleDescription(e.target.value)}
+                style={{
+                  ...commonInputStyle,
+                  minHeight: 110,
+                  resize: 'vertical',
+                }}
+              />
+            </div>
+
+            {/* Episode Selector & Episode Title Row */}
+            <div style={{ display: 'flex', gap: 16 }}>
+              {/* Select episode (optional) Dropdown */}
+              <div style={{ flex: 1, position: 'relative' }}>
+                <div
+                  onClick={() => setEpisodeDropdownOpen(!episodeDropdownOpen)}
+                  style={{
+                    ...commonInputStyle,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                    color: selectedEpisode ? '#0F172A' : '#94A3B8',
+                  }}
+                >
+                  <span>{selectedEpisode ? `Episode ${selectedEpisode}` : 'Select episode (optional)'}</span>
+                  <ChevronDown size={15} color="#94A3B8" />
+                </div>
+
+                {episodeDropdownOpen && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '100%',
+                      left: 0,
+                      marginTop: 4,
+                      width: 140,
+                      background: '#FFFFFF',
+                      border: '1px solid #E2E8F0',
+                      borderRadius: 8,
+                      boxShadow: '0 10px 25px rgba(0,0,0,0.08)',
+                      zIndex: 20,
+                      overflow: 'hidden',
+                      display: 'flex',
+                    }}
+                  >
+                    <div style={{ flex: 1, padding: '4px 0' }}>
+                      {['1', '2', '3'].map((ep) => (
+                        <div
+                          key={ep}
+                          onClick={() => {
+                            setSelectedEpisode(ep);
+                            setEpisodeDropdownOpen(false);
+                          }}
+                          style={{
+                            padding: '8px 16px',
+                            fontSize: 13,
+                            fontWeight: 600,
+                            color: '#0F172A',
+                            cursor: 'pointer',
+                          }}
+                          onMouseOver={(e) => (e.currentTarget.style.background = '#F8FAFC')}
+                          onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
+                        >
+                          {ep}
+                        </div>
+                      ))}
+                    </div>
+                    {/* Gold indicator bar matching screenshot */}
+                    <div style={{ width: 4, background: '#F8FAFC', position: 'relative' }}>
+                      <div
+                        style={{
+                          width: 3,
+                          height: 16,
+                          background: '#CCA336',
+                          borderRadius: 2,
+                          position: 'absolute',
+                          top: 8,
+                          right: 1,
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Episode Title Input */}
+              <div style={{ flex: 1 }}>
+                <input
+                  type="text"
+                  placeholder="Episode title"
+                  value={episodeTitle}
+                  onChange={(e) => setEpisodeTitle(e.target.value)}
+                  style={commonInputStyle}
                 />
+              </div>
+            </div>
 
-                {/* Duration & Session Type */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <div>
-                    <input
-                      type="text"
-                      placeholder="Enter studio duration (e.g 2 hours)"
-                      value={duration}
-                      onChange={(e) => setDuration(e.target.value)}
-                      className="w-full px-5 py-4 bg-white border border-gray-200 rounded-[14px] text-[13px] font-medium text-gray-900 placeholder:text-[#94A3B8] focus:border-[#C69A2C] transition-colors"
-                    />
-                  </div>
-                  
-                  <div className="relative">
-                    <button 
-                      type="button"
-                      onClick={() => setSessionTypeOpen(!sessionTypeOpen)}
-                      className="w-full px-5 py-4 bg-white border border-gray-200 rounded-[14px] text-[13px] font-medium text-left flex items-center justify-between focus:border-[#C69A2C] transition-colors"
-                    >
-                      <span className={sessionType ? 'text-gray-900 font-medium' : 'text-[#94A3B8]'}>
-                        {sessionType || 'How would you run your studio session?'}
-                      </span>
-                      <ChevronDown size={18} className="text-gray-400" />
-                    </button>
-                    
-                    {sessionTypeOpen && (
-                      <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-100 shadow-[0_10px_30px_-5px_rgba(0,0,0,0.08)] rounded-[14px] py-2 z-20 animate-in fade-in zoom-in-95 duration-100">
-                        {['One time booking', 'Recurring booking'].map((option) => (
-                          <button
-                            key={option}
-                            type="button"
-                            onClick={() => { setSessionType(option); setSessionTypeOpen(false); }}
-                            className="w-full px-5 py-2.5 text-left text-[13px] font-medium text-gray-800 hover:bg-gray-50 flex items-center justify-between transition-colors"
-                          >
-                            <span>{option}</span>
-                            {sessionType === option && (
-                              <div className="h-3.5 w-[3px] bg-[#C69A2C] rounded-full"></div>
-                            )}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+            {/* Episode description Textarea */}
+            <div>
+              <textarea
+                placeholder="Episode description"
+                value={episodeDescription}
+                onChange={(e) => setEpisodeDescription(e.target.value)}
+                style={{
+                  ...commonInputStyle,
+                  minHeight: 110,
+                  resize: 'vertical',
+                }}
+              />
+            </div>
+
+            {/* Upload podcast box */}
+            <div>
+              <p style={{ fontSize: 13, fontWeight: 700, color: '#0F172A', margin: '0 0 10px' }}>
+                Upload podcast
+              </p>
+
+              <input
+                type="file"
+                ref={audioInputRef}
+                onChange={handleAudioUpload}
+                accept="audio/*"
+                style={{ display: 'none' }}
+              />
+
+              <div
+                onClick={() => audioInputRef.current?.click()}
+                style={{
+                  border: '1.5px dashed #CCA336',
+                  borderRadius: 12,
+                  padding: '30px 20px',
+                  background: '#FFFDF9',
+                  textAlign: 'center',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'background 0.15s ease',
+                }}
+                onMouseOver={(e) => (e.currentTarget.style.background = '#FFFBEB')}
+                onMouseOut={(e) => (e.currentTarget.style.background = '#FFFDF9')}
+              >
+                <div
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: '50%',
+                    background: '#CCA336',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: 10,
+                  }}
+                >
+                  <Upload size={16} color="#FFFFFF" strokeWidth={2.5} />
                 </div>
 
-                {/* Date & Time Pickers */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <div className="relative">
-                    <input
-                      type="text"
-                      placeholder="Schedule a date"
-                      value={date}
-                      onChange={(e) => setDate(e.target.value)}
-                      onFocus={(e) => (e.target.type = 'date')}
-                      onBlur={(e) => {
-                        if (!e.target.value) e.target.type = 'text';
-                      }}
-                      className="w-full px-5 py-4 pr-12 bg-white border border-gray-200 rounded-[14px] text-[13px] font-medium text-gray-900 placeholder:text-[#94A3B8] focus:border-[#C69A2C] transition-colors"
-                    />
-                    <Calendar size={18} className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                  </div>
-                  
-                  <div className="relative">
-                    <input
-                      type="text"
-                      placeholder="Select time"
-                      value={time}
-                      onChange={(e) => setTime(e.target.value)}
-                      onFocus={(e) => (e.target.type = 'time')}
-                      onBlur={(e) => {
-                        if (!e.target.value) e.target.type = 'text';
-                      }}
-                      className="w-full px-5 py-4 pr-12 bg-white border border-gray-200 rounded-[14px] text-[13px] font-medium text-gray-900 placeholder:text-[#94A3B8] focus:border-[#C69A2C] transition-colors"
-                    />
-                    <Clock size={18} className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                  </div>
-                </div>
+                <p style={{ fontSize: 13, fontWeight: 700, color: '#0F172A', margin: '0 0 4px' }}>
+                  {audioFile ? audioFile.name : 'Drag & Drop or choose file to upload'}
+                </p>
+                <p style={{ fontSize: 11, color: '#94A3B8', margin: 0, fontWeight: 500 }}>
+                  Supported formats : mp3
+                </p>
+              </div>
+            </div>
+
+            {/* Schedule podcast post & Set timer row */}
+            <div style={{ display: 'flex', gap: 16 }}>
+              {/* Schedule post */}
+              <div style={{ flex: 1, position: 'relative' }}>
+                <input
+                  type="text"
+                  placeholder="Schedule podcast post (optional)"
+                  value={scheduleDate}
+                  onChange={(e) => setScheduleDate(e.target.value)}
+                  style={{ ...commonInputStyle, paddingRight: 40 }}
+                />
+                <Calendar
+                  size={16}
+                  color="#94A3B8"
+                  style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)' }}
+                />
               </div>
 
-              {/* Actions */}
-              <div className="flex items-center justify-end gap-3 mt-4">
-                <Link 
-                  href="/bookings"
-                  className="px-6 py-2.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-[13px] font-semibold rounded-[12px] transition-colors"
+              {/* Set timer */}
+              <div style={{ flex: 1, position: 'relative' }}>
+                <input
+                  type="text"
+                  placeholder="Set timer (optional)"
+                  value={timerTime}
+                  onChange={(e) => setTimerTime(e.target.value)}
+                  style={{ ...commonInputStyle, paddingRight: 40 }}
+                />
+                <Clock
+                  size={16}
+                  color="#94A3B8"
+                  style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)' }}
+                />
+              </div>
+            </div>
+
+            {/* Bottom Row: Content rating and Actions */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginTop: 4,
+                position: 'relative',
+              }}
+            >
+              {/* Content rating Dropdown */}
+              <div style={{ width: '48%', position: 'relative' }}>
+                <div
+                  onClick={() => setRatingDropdownOpen(!ratingDropdownOpen)}
+                  style={{
+                    ...commonInputStyle,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                    color: contentRating ? '#0F172A' : '#94A3B8',
+                  }}
+                >
+                  <span>{contentRating || 'Content rating'}</span>
+                  <ChevronDown size={15} color="#94A3B8" />
+                </div>
+
+                {ratingDropdownOpen && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      bottom: '100%',
+                      left: 0,
+                      marginBottom: 4,
+                      width: '100%',
+                      background: '#FFFFFF',
+                      border: '1px solid #E2E8F0',
+                      borderRadius: 8,
+                      boxShadow: '0 10px 25px rgba(0,0,0,0.08)',
+                      zIndex: 20,
+                      overflow: 'hidden',
+                      display: 'flex',
+                    }}
+                  >
+                    <div style={{ flex: 1, padding: '4px 0' }}>
+                      {['Suitable for everyone', 'Contain adult content'].map((item) => (
+                        <div
+                          key={item}
+                          onClick={() => {
+                            setContentRating(item);
+                            setRatingDropdownOpen(false);
+                          }}
+                          style={{
+                            padding: '9px 16px',
+                            fontSize: 12.5,
+                            fontWeight: 600,
+                            color: '#0F172A',
+                            cursor: 'pointer',
+                          }}
+                          onMouseOver={(e) => (e.currentTarget.style.background = '#F8FAFC')}
+                          onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
+                        >
+                          {item}
+                        </div>
+                      ))}
+                    </div>
+                    {/* Gold indicator bar */}
+                    <div style={{ width: 4, background: '#F8FAFC', position: 'relative' }}>
+                      <div
+                        style={{
+                          width: 3,
+                          height: 16,
+                          background: '#CCA336',
+                          borderRadius: 2,
+                          position: 'absolute',
+                          top: 8,
+                          right: 1,
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <button
+                  type="button"
+                  onClick={() => router.push('/podcast')}
+                  style={{
+                    padding: '10px 24px',
+                    borderRadius: 8,
+                    border: '1px solid #E2E8F0',
+                    background: '#FFFFFF',
+                    fontSize: 12.5,
+                    fontWeight: 700,
+                    color: '#0F172A',
+                    cursor: 'pointer',
+                    fontFamily: F,
+                  }}
                 >
                   Cancel
-                </Link>
-                <button 
+                </button>
+
+                <button
                   type="button"
-                  onClick={() => {
-                    setModalStep('billing');
-                    setBillingModalOpen(true);
+                  onClick={handlePost}
+                  style={{
+                    padding: '10px 32px',
+                    borderRadius: 8,
+                    border: 'none',
+                    background: '#CCA336',
+                    fontSize: 12.5,
+                    fontWeight: 700,
+                    color: '#FFFFFF',
+                    cursor: 'pointer',
+                    fontFamily: F,
+                    boxShadow: '0 2px 6px rgba(204,163,54,0.3)',
                   }}
-                  className="px-6 py-2.5 bg-[#C69A2C] hover:bg-[#b58b24] text-white text-[13px] font-bold rounded-[12px] transition-all shadow-sm"
                 >
-                  Book Slot
-                </button>
-              </div>
-              
-            </div>
-
-            {/* Right Column (Promo Banner) */}
-            <div className="w-full lg:w-[320px] flex-shrink-0">
-              <div className="bg-[#18181B] rounded-[24px] p-7 shadow-xl flex flex-col justify-between min-h-[160px]">
-                <p className="text-[14px] font-semibold text-white/90 leading-[1.6] mb-6">
-                  we are running Ad space promo, get a discount for more than 3months booking
-                </p>
-                <button 
-                  type="button"
-                  className="bg-[#F4F860] hover:bg-[#e4ec30] text-[#0F172A] text-[11px] font-black tracking-wider uppercase rounded-lg py-2.5 px-5 transition-colors w-fit shadow-sm"
-                >
-                  BOOK PODCAST SESSION
+                  Post
                 </button>
               </div>
             </div>
-
           </div>
 
-          {/* Floating Widget: Book with Arella */}
-          <div className="fixed bottom-8 right-8 z-30">
-            <button
-              type="button"
-              onClick={() => {
-                setModalStep('billing');
-                setBillingModalOpen(true);
-              }}
-              className="bg-white hover:bg-gray-50 text-[#0F172A] border border-gray-200 shadow-[0_4px_24px_rgba(0,0,0,0.08)] px-4 py-2.5 rounded-full text-[13px] font-bold flex items-center gap-2 transition-all hover:shadow-lg"
-            >
-              <span>Book with Arella</span>
-              <span className="text-[15px]">🌐</span>
-            </button>
-          </div>
+          {/* ─── RIGHT COLUMN (Promos) ─── */}
+          <PodcastRightPanel variant="promos" />
         </div>
-
-        {/* ─── MODAL OVERLAY ─── */}
-        {billingModalOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px] p-4">
-            <div className="bg-white rounded-[24px] w-full max-w-[420px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.2)] relative animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
-              
-              {/* Header */}
-              <div className="flex items-center justify-between px-6 pt-6 pb-2">
-                <button 
-                  type="button"
-                  onClick={() => {
-                    if (modalStep === 'pay_from_wallet' || modalStep === 'pay_with_card') {
-                      setModalStep('billing');
-                    } else if (modalStep === 'success') {
-                      setModalStep('pay_from_wallet');
-                    } else {
-                      resetModals();
-                    }
-                  }} 
-                  className="p-1 hover:bg-gray-100 rounded-full transition-colors text-gray-800"
-                >
-                  <ArrowLeft size={18} />
-                </button>
-
-                <h2 className="text-[15px] font-bold text-gray-900">
-                  {modalStep === 'billing' ? 'Billing' : 'Pay from wallet'}
-                </h2>
-
-                <button 
-                  type="button"
-                  onClick={resetModals} 
-                  className="p-1 hover:bg-gray-100 rounded-full transition-colors text-gray-800"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              {/* ─── STEP 1: BILLING (Frame 2121459606 - Screenshot 4) ─── */}
-              {modalStep === 'billing' && (
-                <div className="px-6 pb-8 pt-4">
-                  {/* Session Title & Amount */}
-                  <div className="text-center my-6">
-                    <h3 className="text-[14px] font-bold text-gray-900 mb-1">3 hours studio session at</h3>
-                    <p className="text-[15px] font-black text-gray-900">₦300,000</p>
-                  </div>
-
-                  <div className="space-y-4">
-                    {/* Pay with card */}
-                    <div 
-                      onClick={() => setPaymentMethod('card')}
-                      className={`flex items-center gap-3.5 px-5 py-4 rounded-[14px] cursor-pointer border transition-all ${
-                        paymentMethod === 'card' 
-                          ? 'border-[#C69A2C] bg-white' 
-                          : 'border-gray-200 hover:border-gray-300 bg-white'
-                      }`}
-                    >
-                      <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                        paymentMethod === 'card' ? 'border-[#C69A2C]' : 'border-gray-300'
-                      }`}>
-                        {paymentMethod === 'card' && <div className="w-2 h-2 rounded-full bg-[#C69A2C]" />}
-                      </div>
-                      <span className="text-[13px] font-bold text-gray-900">Pay with card</span>
-                    </div>
-
-                    {/* Pay from wallet (Selected as in Screenshot 4) */}
-                    <div 
-                      onClick={() => setPaymentMethod('wallet')}
-                      className={`flex flex-col gap-2 px-5 py-4 rounded-[14px] cursor-pointer border transition-all ${
-                        paymentMethod === 'wallet' 
-                          ? 'border-[#C69A2C] bg-white' 
-                          : 'border-gray-200 hover:border-gray-300 bg-white'
-                      }`}
-                    >
-                      {/* Top Row: Radio + Title + Fund wallet */}
-                      <div className="flex items-center justify-between w-full">
-                        <div className="flex items-center gap-3.5">
-                          <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                            paymentMethod === 'wallet' ? 'border-[#C69A2C]' : 'border-gray-300'
-                          }`}>
-                            {paymentMethod === 'wallet' && <div className="w-2 h-2 rounded-full bg-[#C69A2C]" />}
-                          </div>
-                          <span className="text-[13px] font-bold text-gray-900">Pay from wallet</span>
-                        </div>
-                        <span className="text-[12px] font-semibold text-[#C69A2C] hover:underline">
-                          Fund wallet
-                        </span>
-                      </div>
-                      
-                      {/* Bottom Row: Wallet ID + Balance */}
-                      <div className="flex items-center justify-between pl-[30px] pt-1">
-                        <div className="flex items-center gap-1.5 text-[11px] text-gray-500 font-medium">
-                          <span>Wallet ID: 23cvo_23759ryi</span>
-                          <button 
-                            type="button"
-                            onClick={handleCopyWalletId}
-                            className="flex items-center gap-0.5 text-[11px] font-bold text-[#C69A2C] hover:underline ml-1"
-                          >
-                            <span>{copied ? 'Copied' : 'Copy'}</span>
-                            <Copy size={11} />
-                          </button>
-                        </div>
-                        <span className="text-[12px] font-bold text-gray-900">NGN 5,215,005.25</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Continue Button */}
-                  <div className="mt-8">
-                    <button 
-                      type="button"
-                      onClick={() => {
-                        if (paymentMethod === 'wallet') {
-                          setModalStep('pay_from_wallet');
-                        } else {
-                          setModalStep('pay_with_card');
-                        }
-                      }}
-                      className="w-full py-3 bg-[#C69A2C] hover:bg-[#b58b24] text-white text-[13px] font-bold rounded-[12px] transition-colors shadow-sm"
-                    >
-                      Continue
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* ─── STEP 2: PAY FROM WALLET (Frames 2121459610 & 2121459611 - Screenshots 1 & 3) ─── */}
-              {modalStep === 'pay_from_wallet' && (
-                <div className="px-6 pb-8 pt-6">
-                  {/* Amount Card with Golden Border */}
-                  <div className="flex items-center justify-between px-6 py-5 rounded-[14px] border border-[#C69A2C] bg-white mb-6">
-                    <span className="text-[13px] font-medium text-gray-900">Total amount</span>
-                    <span className="text-[13px] font-bold text-gray-900">NGN 300,000.25</span>
-                  </div>
-
-                  {/* Pay Button */}
-                  <button 
-                    type="button"
-                    onClick={() => setModalStep('success')}
-                    className="w-full py-3 bg-[#C69A2C] hover:bg-[#b58b24] text-white text-[13px] font-bold rounded-[12px] transition-colors shadow-sm"
-                  >
-                    Pay
-                  </button>
-                </div>
-              )}
-
-              {/* ─── OPTIONAL CARD PAYMENT FORM ─── */}
-              {modalStep === 'pay_with_card' && (
-                <div className="px-7 sm:px-8 pb-8 pt-4">
-                  <div className="text-center my-4">
-                    <h3 className="text-[14px] font-bold text-gray-900 mb-1">3 hours studio session at</h3>
-                    <p className="text-[15px] font-black text-gray-900">#300,000</p>
-                  </div>
-                  <div className="space-y-4">
-                    <input 
-                      type="text" 
-                      placeholder="Card holder's name" 
-                      value={cardName}
-                      onChange={(e) => setCardName(e.target.value)}
-                      className="w-full px-4 py-3 text-[13px] font-medium text-gray-900 bg-white border border-gray-200 rounded-[12px] focus:outline-none focus:border-[#C69A2C]" 
-                    />
-                    <div className="relative">
-                      <input 
-                        type="text" 
-                        placeholder="Card number" 
-                        value={cardNumber}
-                        onChange={handleCardNumberChange}
-                        className="w-full px-4 py-3 text-[13px] font-medium text-gray-900 bg-white border border-gray-200 rounded-[12px] focus:outline-none focus:border-[#C69A2C]" 
-                      />
-                      <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-                        {cardType === 'visa' || !cardType ? (
-                          <div className="w-[24px] h-[14px] bg-[#1434CB] rounded-[2px] text-[7px] font-bold flex items-center justify-center text-white italic tracking-tighter">VISA</div>
-                        ) : null}
-                        {cardType === 'mastercard' || !cardType ? (
-                          <div className="w-[24px] h-[14px] flex items-center justify-center relative">
-                            <div className="w-[12px] h-[12px] rounded-full bg-[#EB001B] absolute left-0 mix-blend-multiply opacity-90"></div>
-                            <div className="w-[12px] h-[12px] rounded-full bg-[#F79E1B] absolute right-0 mix-blend-multiply opacity-90"></div>
-                          </div>
-                        ) : null}
-                      </div>
-                    </div>
-                    <div className="flex gap-4">
-                      <input 
-                        type="text" 
-                        placeholder="MM/YY" 
-                        value={expiryDate}
-                        onChange={handleExpiryChange}
-                        className="w-1/2 px-4 py-3 text-[13px] font-medium text-gray-900 bg-white border border-gray-200 rounded-[12px] focus:outline-none focus:border-[#C69A2C]" 
-                      />
-                      <input 
-                        type="text" 
-                        placeholder="CVV" 
-                        value={cvv}
-                        onChange={handleCvvChange}
-                        className="w-1/2 px-4 py-3 text-[13px] font-medium text-gray-900 bg-white border border-gray-200 rounded-[12px] focus:outline-none focus:border-[#C69A2C]" 
-                      />
-                    </div>
-                  </div>
-                  <div className="mt-6">
-                    <button 
-                      type="button"
-                      onClick={() => setModalStep('success')}
-                      className="w-full py-3.5 bg-[#C69A2C] hover:bg-[#b58b24] text-white text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
-                    >
-                      Pay
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* ─── STEP 3: PAYMENT SUCCESSFUL (Frame 2121459612 - Screenshot 2) ─── */}
-              {modalStep === 'success' && (
-                <div className="px-6 pb-8 pt-8 flex flex-col items-center">
-                  {/* Golden Glow Aura & Checkmark Badge */}
-                  <div className="relative flex items-center justify-center w-32 h-32 mb-4">
-                    <div className="absolute inset-0 bg-[#C69A2C]/25 blur-2xl rounded-full"></div>
-                    <div className="relative w-[60px] h-[60px] bg-[#9E7B21] rounded-full flex items-center justify-center shadow-[0_4px_20px_rgba(158,123,33,0.35)]">
-                      <Check size={26} className="text-white" strokeWidth={3} />
-                    </div>
-                  </div>
-
-                  {/* Title */}
-                  <h3 className="text-[16px] font-bold text-gray-900 mb-6">Payment successful</h3>
-
-                  {/* Finish Button */}
-                  <button 
-                    type="button"
-                    onClick={resetModals}
-                    className="w-full py-3 bg-[#C69A2C] hover:bg-[#b58b24] text-white text-[13px] font-bold rounded-[12px] transition-colors shadow-sm"
-                  >
-                    Finish
-                  </button>
-                </div>
-              )}
-
-            </div>
-          </div>
-        )}
       </PageTransition>
     </DashboardLayout>
   );

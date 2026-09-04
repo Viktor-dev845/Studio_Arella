@@ -28,8 +28,10 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const getBreadcrumb = () => {
     if (!mounted) return 'My bookings / Screen Ads';
     if (pathname.includes('/chat')) return 'Dashboards / Default';
-    if (pathname.includes('/podcast/new')) return 'My bookings / Podcast studio';
-    if (pathname.includes('/podcast')) return 'Pages / Podcasts';
+    if (pathname.includes('/episode/new')) return 'Podcasts / Undressed / Add new episode';
+    if (pathname === '/podcast/new') return 'Podcasts / Undressed / Add podcast';
+    if (pathname.startsWith('/podcast/') && pathname !== '/podcast') return 'Podcasts / Undressed';
+    if (pathname === '/podcast') return 'Podcasts / Default';
     if (pathname.includes('/bookings')) return 'My bookings / Screen Ads';
     if (pathname.includes('/dashboard')) return 'Dashboards / Default';
     if (pathname.includes('/campaigns')) return 'Pages / Campaigns';

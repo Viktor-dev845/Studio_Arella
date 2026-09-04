@@ -268,7 +268,20 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                         </Link>
                       </li>
                       <li>
-                        <Link href="/podcast" style={{ fontSize: 13, color: pathname === '/podcast' ? '#0F172A' : '#475569', textDecoration: 'none', fontWeight: pathname === '/podcast' ? 700 : 500, padding: '4px 8px', display: 'block', borderRadius: 6 }} className="sidebar-item">
+                        <Link 
+                          href="/podcast" 
+                          style={{ 
+                            fontSize: 13, 
+                            color: pathname.startsWith('/podcast') ? '#0F172A' : '#475569', 
+                            textDecoration: 'none', 
+                            fontWeight: pathname.startsWith('/podcast') ? 700 : 500, 
+                            padding: '6px 10px', 
+                            display: 'block', 
+                            borderRadius: 8,
+                            background: pathname.startsWith('/podcast') ? '#F1F5F9' : 'transparent',
+                          }} 
+                          className="sidebar-item"
+                        >
                           Podcasts
                         </Link>
                       </li>

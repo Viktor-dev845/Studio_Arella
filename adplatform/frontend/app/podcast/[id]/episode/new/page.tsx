@@ -1,211 +1,482 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, ChevronDown, Image as ImageIcon, UploadCloud, Calendar, Clock, Check } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronDown,
+  Camera,
+  Upload,
+  Calendar,
+  Clock,
+} from 'lucide-react';
 import { theme } from '@/lib/theme';
 import DashboardLayout from '@/components/layout/DashboardLayout';
+import { PageTransition } from '@/components/ui/Animations';
+import PodcastRightPanel from '@/components/podcast/PodcastRightPanel';
 
 const F = theme.font.body;
 
 export default function AddNewEpisodePage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const [contentRating, setContentRating] = useState('Suitable for everyone');
-  const [episodeOption, setEpisodeOption] = useState('');
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-  const inputStyle = {
+  const [coverPhoto, setCoverPhoto] = useState<string | null>(null);
+  
+  const [selectedEpisode, setSelectedEpisode] = useState('');
+  const [episodeDropdownOpen, setEpisodeDropdownOpen] = useState(false);
+  const [episodeTitle, setEpisodeTitle] = useState('');
+  const [episodeDescription, setEpisodeDescription] = useState('');
+
+  const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [scheduleDate, setScheduleDate] = useState('');
+  const [timerTime, setTimerTime] = useState('');
+
+  const [contentRating, setContentRating] = useState('');
+  const [ratingDropdownOpen, setRatingDropdownOpen] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const audioInputRef = useRef<HTMLInputElement>(null);
+
+  const handleCoverPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setCoverPhoto(URL.createObjectURL(file));
+    }
+  };
+
+  const handleAudioUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setAudioFile(e.target.files[0]);
+    }
+  };
+
+  const handlePost = () => {
+    router.push(`/podcast/${params.id}`);
+  };
+
+  const commonInputStyle: React.CSSProperties = {
     width: '100%',
-    padding: '14px 16px',
+    padding: '12px 16px',
     borderRadius: 8,
     border: '1px solid #E2E8F0',
     background: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: 600,
+    fontSize: 13,
+    fontWeight: 500,
     color: '#0F172A',
     fontFamily: F,
     outline: 'none',
+    boxSizing: 'border-box',
   };
 
   return (
     <DashboardLayout>
-      <style>{`
-        ::placeholder {
-          color: #94A3B8 !important;
-          font-weight: 400 !important;
-        }
-      `}</style>
-      <div style={{ fontFamily: F, display: 'flex', gap: 32, padding: '32px 32px 32px 40px', minHeight: '100%', alignItems: 'flex-start' }}>
-      
-      {/* ─── LEFT COLUMN (Form Section) ─── */}
-      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 32, background: '#FFFFFF', borderRadius: 16, padding: '24px 32px' }}>
-        
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <Link href="/podcast" style={{ display: 'flex', alignItems: 'center', color: '#64748B', textDecoration: 'none', fontWeight: 600, fontSize: 13, gap: 4 }}>
-              <ChevronLeft size={16} /> Back
-            </Link>
-            <h1 style={{ fontSize: 18, fontWeight: 800, color: '#0F172A', margin: 0 }}>Add new episode</h1>
-          </div>
-          <button style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#FFFFFF', border: 'none', color: '#64748B', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
-            Today <ChevronDown size={14} />
-          </button>
-        </div>
+      <PageTransition>
+        <div
+          style={{
+            fontFamily: F,
+            padding: '24px 32px 48px',
+            background: '#FFFFFF',
+            minHeight: '100%',
+            display: 'flex',
+            gap: 36,
+            alignItems: 'flex-start',
+          }}
+        >
+          {/* ─── MAIN COLUMN ─── */}
+          <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 24 }}>
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+                <Link
+                  href={`/podcast/${params.id}`}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: '#0F172A',
+                    textDecoration: 'none',
+                  }}
+                >
+                  <ChevronLeft size={16} />
+                  <span>Back</span>
+                </Link>
 
-        {/* Cover Photo */}
-        <div>
-          <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: '#0F172A', marginBottom: 12 }}>Add cover photo</label>
-          <div style={{ width: 80, height: 80, borderRadius: 12, border: '1px dashed #CBD5E1', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F8FAFC', cursor: 'pointer' }}>
-            <ImageIcon size={24} color="#94A3B8" />
-          </div>
-        </div>
+                <h1 style={{ fontSize: 14, fontWeight: 700, color: '#0F172A', margin: 0 }}>
+                  Add new episode
+                </h1>
+              </div>
 
-        {/* Episode Row */}
-        <div style={{ display: 'flex', gap: 24 }}>
-          <div style={{ flex: 1, position: 'relative' }}>
-            <select 
-              style={{ ...inputStyle, appearance: 'none', color: episodeOption ? '#0F172A' : '#94A3B8', fontWeight: episodeOption ? 600 : 400 }}
-              value={episodeOption}
-              onChange={(e) => setEpisodeOption(e.target.value)}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
+                <span style={{ fontSize: 12, fontWeight: 600, color: '#64748B' }}>Today</span>
+                <ChevronDown size={14} color="#64748B" />
+              </div>
+            </div>
+
+            {/* Cover photo section */}
+            <div>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleCoverPhotoUpload}
+                accept="image/*"
+                style={{ display: 'none' }}
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                style={{
+                  width: 76,
+                  height: 76,
+                  borderRadius: 12,
+                  border: '1px solid #E2E8F0',
+                  background: '#F8FAFC',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  overflow: 'hidden',
+                  padding: 0,
+                }}
+              >
+                {coverPhoto ? (
+                  <img src={coverPhoto} alt="Cover Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <Camera size={22} color="#94A3B8" strokeWidth={1.75} />
+                )}
+              </button>
+              <p style={{ fontSize: 13, fontWeight: 700, color: '#0F172A', margin: '10px 0 0' }}>
+                Add cover photo
+              </p>
+            </div>
+
+            {/* Episode Selector & Episode Title Row */}
+            <div style={{ display: 'flex', gap: 16 }}>
+              {/* Select episode Dropdown */}
+              <div style={{ flex: 1, position: 'relative' }}>
+                <div
+                  onClick={() => setEpisodeDropdownOpen(!episodeDropdownOpen)}
+                  style={{
+                    ...commonInputStyle,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                    color: selectedEpisode ? '#0F172A' : '#94A3B8',
+                  }}
+                >
+                  <span>{selectedEpisode ? `Episode ${selectedEpisode}` : 'Select episode'}</span>
+                  <ChevronDown size={15} color="#94A3B8" />
+                </div>
+
+                {episodeDropdownOpen && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '100%',
+                      left: 0,
+                      marginTop: 4,
+                      width: 140,
+                      background: '#FFFFFF',
+                      border: '1px solid #E2E8F0',
+                      borderRadius: 8,
+                      boxShadow: '0 10px 25px rgba(0,0,0,0.08)',
+                      zIndex: 20,
+                      overflow: 'hidden',
+                      display: 'flex',
+                    }}
+                  >
+                    <div style={{ flex: 1, padding: '4px 0' }}>
+                      {['1', '2', '3'].map((ep) => (
+                        <div
+                          key={ep}
+                          onClick={() => {
+                            setSelectedEpisode(ep);
+                            setEpisodeDropdownOpen(false);
+                          }}
+                          style={{
+                            padding: '8px 16px',
+                            fontSize: 13,
+                            fontWeight: 600,
+                            color: '#0F172A',
+                            cursor: 'pointer',
+                          }}
+                          onMouseOver={(e) => (e.currentTarget.style.background = '#F8FAFC')}
+                          onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
+                        >
+                          {ep}
+                        </div>
+                      ))}
+                    </div>
+                    {/* Gold indicator bar */}
+                    <div style={{ width: 4, background: '#F8FAFC', position: 'relative' }}>
+                      <div
+                        style={{
+                          width: 3,
+                          height: 16,
+                          background: '#CCA336',
+                          borderRadius: 2,
+                          position: 'absolute',
+                          top: 8,
+                          right: 1,
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Episode Title Input */}
+              <div style={{ flex: 1 }}>
+                <input
+                  type="text"
+                  placeholder="Episode title"
+                  value={episodeTitle}
+                  onChange={(e) => setEpisodeTitle(e.target.value)}
+                  style={commonInputStyle}
+                />
+              </div>
+            </div>
+
+            {/* Episode description Textarea */}
+            <div>
+              <textarea
+                placeholder="Episode description"
+                value={episodeDescription}
+                onChange={(e) => setEpisodeDescription(e.target.value)}
+                style={{
+                  ...commonInputStyle,
+                  minHeight: 110,
+                  resize: 'vertical',
+                }}
+              />
+            </div>
+
+            {/* Upload episode box */}
+            <div>
+              <p style={{ fontSize: 13, fontWeight: 700, color: '#0F172A', margin: '0 0 10px' }}>
+                Upload episode
+              </p>
+
+              <input
+                type="file"
+                ref={audioInputRef}
+                onChange={handleAudioUpload}
+                accept="audio/*"
+                style={{ display: 'none' }}
+              />
+
+              <div
+                onClick={() => audioInputRef.current?.click()}
+                style={{
+                  border: '1.5px dashed #CCA336',
+                  borderRadius: 12,
+                  padding: '30px 20px',
+                  background: '#FFFDF9',
+                  textAlign: 'center',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'background 0.15s ease',
+                }}
+                onMouseOver={(e) => (e.currentTarget.style.background = '#FFFBEB')}
+                onMouseOut={(e) => (e.currentTarget.style.background = '#FFFDF9')}
+              >
+                <div
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: '50%',
+                    background: '#CCA336',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: 10,
+                  }}
+                >
+                  <Upload size={16} color="#FFFFFF" strokeWidth={2.5} />
+                </div>
+
+                <p style={{ fontSize: 13, fontWeight: 700, color: '#0F172A', margin: '0 0 4px' }}>
+                  {audioFile ? audioFile.name : 'Drag & Drop or choose file to upload'}
+                </p>
+                <p style={{ fontSize: 11, color: '#94A3B8', margin: 0, fontWeight: 500 }}>
+                  Supported formats : mp3
+                </p>
+              </div>
+            </div>
+
+            {/* Schedule post & Set timer row */}
+            <div style={{ display: 'flex', gap: 16 }}>
+              {/* Schedule post */}
+              <div style={{ flex: 1, position: 'relative' }}>
+                <input
+                  type="text"
+                  placeholder="Schedule post (optional)"
+                  value={scheduleDate}
+                  onChange={(e) => setScheduleDate(e.target.value)}
+                  style={{ ...commonInputStyle, paddingRight: 40 }}
+                />
+                <Calendar
+                  size={16}
+                  color="#94A3B8"
+                  style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)' }}
+                />
+              </div>
+
+              {/* Set timer */}
+              <div style={{ flex: 1, position: 'relative' }}>
+                <input
+                  type="text"
+                  placeholder="Set timer (optional)"
+                  value={timerTime}
+                  onChange={(e) => setTimerTime(e.target.value)}
+                  style={{ ...commonInputStyle, paddingRight: 40 }}
+                />
+                <Clock
+                  size={16}
+                  color="#94A3B8"
+                  style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)' }}
+                />
+              </div>
+            </div>
+
+            {/* Bottom Row: Content rating and Actions */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginTop: 4,
+                position: 'relative',
+              }}
             >
-              <option value="" disabled>Select episode (optional)</option>
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-            </select>
-            <ChevronDown size={16} color="#94A3B8" style={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
-          </div>
-          <div style={{ flex: 1 }}>
-            <input type="text" placeholder="Episode title" style={inputStyle} />
-          </div>
-        </div>
+              {/* Content rating Dropdown */}
+              <div style={{ width: '48%', position: 'relative' }}>
+                <div
+                  onClick={() => setRatingDropdownOpen(!ratingDropdownOpen)}
+                  style={{
+                    ...commonInputStyle,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                    color: contentRating ? '#0F172A' : '#94A3B8',
+                  }}
+                >
+                  <span>{contentRating || 'Content rating'}</span>
+                  <ChevronDown size={15} color="#94A3B8" />
+                </div>
 
-        {/* Episode Description */}
-        <textarea placeholder="Episode description" style={{ ...inputStyle, minHeight: 120, resize: 'vertical' }} />
+                {ratingDropdownOpen && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      bottom: '100%',
+                      left: 0,
+                      marginBottom: 4,
+                      width: '100%',
+                      background: '#FFFFFF',
+                      border: '1px solid #E2E8F0',
+                      borderRadius: 8,
+                      boxShadow: '0 10px 25px rgba(0,0,0,0.08)',
+                      zIndex: 20,
+                      overflow: 'hidden',
+                      display: 'flex',
+                    }}
+                  >
+                    <div style={{ flex: 1, padding: '4px 0' }}>
+                      {['Suitable for everyone', 'Contain adult content'].map((item) => (
+                        <div
+                          key={item}
+                          onClick={() => {
+                            setContentRating(item);
+                            setRatingDropdownOpen(false);
+                          }}
+                          style={{
+                            padding: '9px 16px',
+                            fontSize: 12.5,
+                            fontWeight: 600,
+                            color: '#0F172A',
+                            cursor: 'pointer',
+                          }}
+                          onMouseOver={(e) => (e.currentTarget.style.background = '#F8FAFC')}
+                          onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
+                        >
+                          {item}
+                        </div>
+                      ))}
+                    </div>
+                    {/* Gold indicator bar */}
+                    <div style={{ width: 4, background: '#F8FAFC', position: 'relative' }}>
+                      <div
+                        style={{
+                          width: 3,
+                          height: 16,
+                          background: '#CCA336',
+                          borderRadius: 2,
+                          position: 'absolute',
+                          top: 8,
+                          right: 1,
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
 
-        {/* Upload Audio */}
-        <div>
-          <label style={{ display: 'block', fontSize: 14, fontWeight: 700, color: '#0F172A', marginBottom: 12 }}>Upload episode</label>
-          <div style={{ border: '1.5px dashed #D4AF37', borderRadius: 12, padding: '32px', textAlign: 'center', background: '#FFFDF5', cursor: 'pointer' }}>
-            <div style={{ width: 40, height: 40, borderRadius: '50%', background: '#D4AF37', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
-              <UploadCloud size={20} color="#FFFFFF" />
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <button
+                  type="button"
+                  onClick={() => router.push(`/podcast/${params.id}`)}
+                  style={{
+                    padding: '10px 24px',
+                    borderRadius: 8,
+                    border: '1px solid #E2E8F0',
+                    background: '#FFFFFF',
+                    fontSize: 12.5,
+                    fontWeight: 700,
+                    color: '#0F172A',
+                    cursor: 'pointer',
+                    fontFamily: F,
+                  }}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handlePost}
+                  style={{
+                    padding: '10px 32px',
+                    borderRadius: 8,
+                    border: 'none',
+                    background: '#CCA336',
+                    fontSize: 12.5,
+                    fontWeight: 700,
+                    color: '#FFFFFF',
+                    cursor: 'pointer',
+                    fontFamily: F,
+                    boxShadow: '0 2px 6px rgba(204,163,54,0.3)',
+                  }}
+                >
+                  Post
+                </button>
+              </div>
             </div>
-            <p style={{ fontSize: 13, fontWeight: 700, color: '#0F172A', margin: '0 0 4px' }}>Drag & Drop or choose file to upload</p>
-            <p style={{ fontSize: 11, color: '#94A3B8', margin: 0 }}>Supported formats .mp3</p>
           </div>
+
+          {/* ─── RIGHT COLUMN (Promos) ─── */}
+          <PodcastRightPanel variant="promos" />
         </div>
-
-        {/* Schedule & Timer */}
-        <div style={{ display: 'flex', gap: 24 }}>
-          <div style={{ flex: 1, position: 'relative' }}>
-            <input type="text" placeholder="Schedule podcast post (optional)" style={inputStyle} onFocus={(e) => e.target.type = 'date'} onBlur={(e) => { if (!e.target.value) e.target.type = 'text'; }} />
-            <Calendar size={16} color="#64748B" style={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
-          </div>
-          <div style={{ flex: 1, position: 'relative' }}>
-            <input type="text" placeholder="Set timer (optional)" style={inputStyle} onFocus={(e) => e.target.type = 'time'} onBlur={(e) => { if (!e.target.value) e.target.type = 'text'; }} />
-            <Clock size={16} color="#64748B" style={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
-          </div>
-        </div>
-
-        {/* Content Rating */}
-        <div style={{ position: 'relative', width: '50%' }}>
-          <select 
-            style={{ ...inputStyle, appearance: 'none', paddingRight: 40 }}
-            value={contentRating}
-            onChange={(e) => setContentRating(e.target.value)}
-          >
-            <option value="Suitable for everyone">Suitable for everyone</option>
-            <option value="Contain adult content">Contain adult content</option>
-          </select>
-          <ChevronDown size={16} color="#94A3B8" style={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
-        </div>
-
-        {/* Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 16, marginTop: 16 }}>
-          <button style={{ background: 'none', border: 'none', color: '#64748B', fontSize: 14, fontWeight: 600, cursor: 'pointer', padding: '12px 24px' }}>
-            Cancel
-          </button>
-          <button 
-            onClick={() => setShowSuccessModal(true)}
-            style={{ background: '#D4AF37', border: 'none', color: '#FFFFFF', fontSize: 14, fontWeight: 700, borderRadius: 8, padding: '12px 32px', cursor: 'pointer' }}
-          >
-            Post
-          </button>
-        </div>
-
-      </div>
-
-      {/* ─── RIGHT COLUMN (Promo Cards) ─── */}
-      <div style={{ width: 340, display: 'flex', flexDirection: 'column', gap: 24, flexShrink: 0 }}>
-        
-        {/* Ad Billboard Promo */}
-        <div style={{ background: 'linear-gradient(135deg, #715C13 0%, #4D3F0C 100%)', borderRadius: 16, padding: '24px', position: 'relative', overflow: 'hidden' }}>
-          <div style={{ position: 'relative', zIndex: 2, width: '60%' }}>
-            <h3 style={{ fontSize: 16, fontWeight: 700, color: '#FFFFFF', margin: '0 0 12px', lineHeight: 1.4 }}>
-              Place your Ad on our bill board for wider reach
-            </h3>
-            <p style={{ fontSize: 10, color: '#E2E8F0', margin: '0 0 20px', lineHeight: 1.5, opacity: 0.8 }}>
-              Discover how the Top 1% of businesses get customers from our active community.
-            </p>
-            <button style={{ background: '#F4F860', border: 'none', color: '#0F172A', fontSize: 11, fontWeight: 800, borderRadius: 6, padding: '8px 16px', cursor: 'pointer', boxShadow: '0 0 12px rgba(244,248,96,0.3)' }}>
-              BOOK AD SPACE
-            </button>
-          </div>
-          {/* Decorative graphic placeholder */}
-          <div style={{ position: 'absolute', right: -20, bottom: -10, width: 120, height: 140, background: '#FFFFFF', borderRadius: 12, transform: 'rotate(-10deg)', opacity: 0.9, boxShadow: '0 10px 15px -3px rgba(0,0,0,0.3)', padding: 6 }}>
-             <img src="/billboard.jpg" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8 }} alt="Ad Billboard" />
-          </div>
-        </div>
-
-        {/* Podcast Session Promo */}
-        <div style={{ background: '#1E1E1E', borderRadius: 16, padding: '24px' }}>
-          <h3 style={{ fontSize: 16, fontWeight: 700, color: '#FFFFFF', margin: '0 0 12px', lineHeight: 1.4 }}>
-            Podcasting with Studio Arella get easier
-          </h3>
-          <p style={{ fontSize: 10, color: '#94A3B8', margin: '0 0 24px', lineHeight: 1.5 }}>
-            Book a podcast studio session right inside the application. No external messages needed.
-          </p>
-          <button style={{ background: '#F4F860', border: 'none', color: '#0F172A', fontSize: 11, fontWeight: 800, borderRadius: 6, padding: '8px 16px', cursor: 'pointer', boxShadow: '0 0 12px rgba(244,248,96,0.3)' }}>
-            BOOK PODCAST SESSION
-          </button>
-        </div>
-
-      </div>
-    </div>
-
-    {/* Success Modal Overlay (Screenshot 5) */}
-    {showSuccessModal && (
-      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255, 255, 255, 0.5)', backdropFilter: 'blur(8px)' }}>
-        <div style={{ background: '#FFFFFF', borderRadius: 20, padding: '44px 36px', width: 340, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', boxShadow: '0 20px 40px -10px rgba(0,0,0,0.08)' }}>
-          
-          {/* Aura Halo + Circle Badge */}
-          <div style={{ position: 'relative', width: 88, height: 88, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
-            <div style={{ position: 'absolute', width: 88, height: 88, borderRadius: '50%', background: 'radial-gradient(circle, rgba(198,154,44,0.38) 0%, rgba(198,154,44,0.12) 50%, transparent 75%)', filter: 'blur(8px)' }} />
-            <div style={{ position: 'relative', zIndex: 2, width: 54, height: 54, borderRadius: '50%', background: '#9E7B21', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 10px rgba(158,123,33,0.3)' }}>
-              <Check size={26} color="#FFFFFF" strokeWidth={3} />
-            </div>
-          </div>
-          
-          <h3 style={{ fontSize: 16, fontWeight: 700, color: '#0F172A', margin: '0 0 24px', fontFamily: F }}>
-            Episode {episodeOption || '1'} posted successfully
-          </h3>
-          
-          <button 
-            onClick={() => {
-              setShowSuccessModal(false);
-              router.push('/podcast');
-            }}
-            style={{ background: '#C69A2C', border: 'none', color: '#FFFFFF', fontSize: 13, fontWeight: 700, borderRadius: 6, padding: '10px 48px', cursor: 'pointer', fontFamily: F, transition: 'background 0.2s' }}
-            onMouseOver={e => (e.currentTarget.style.background = '#B58B24')}
-            onMouseOut={e => (e.currentTarget.style.background = '#C69A2C')}
-          >
-            Finish
-          </button>
-        </div>
-      </div>
-    )}
+      </PageTransition>
     </DashboardLayout>
   );
 }
