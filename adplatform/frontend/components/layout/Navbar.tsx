@@ -38,6 +38,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
     if (pathname.includes('/settings')) return 'Pages / User Profile';
     if (pathname.includes('/analytics')) return 'Pages / Analytics';
     if (pathname.includes('/creative')) return 'Pages / Creative Studio';
+    if (pathname.includes('/ads')) return 'Pages / Ads';
     return 'Dashboards / ' + (pathname.split('/')[1] || 'Overview').replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
