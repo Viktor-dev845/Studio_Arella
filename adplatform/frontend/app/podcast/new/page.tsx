@@ -13,7 +13,7 @@ export default function BookPodcastSessionPage() {
   const [time, setTime] = useState('');
   
   const [sessionTypeOpen, setSessionTypeOpen] = useState(false);
-  const [sessionType, setSessionType] = useState('One time booking');
+  const [sessionType, setSessionType] = useState('');
 
   // Billing Modal State
   const [billingModalOpen, setBillingModalOpen] = useState(false);
@@ -182,12 +182,12 @@ export default function BookPodcastSessionPage() {
 
               {/* Actions */}
               <div className="flex items-center justify-end gap-3 mt-4">
-                <button 
-                  type="button"
+                <Link 
+                  href="/bookings"
                   className="px-6 py-2.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-[13px] font-semibold rounded-[12px] transition-colors"
                 >
                   Cancel
-                </button>
+                </Link>
                 <button 
                   type="button"
                   onClick={() => {

@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { FaArrowRightFromBracket } from 'react-icons/fa6';
 import NotificationBell from '@/components/ui/NotificationBell';
-import { Menu, Search, Settings, RotateCcw, Star, Sun, Clock, PanelLeft } from 'lucide-react';
+import { Menu, Search, Settings, RotateCcw, Star, Sun, Clock, PanelLeft, Globe } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const F = "'Quicksand', sans-serif";
@@ -57,6 +57,22 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
         <div style={{ fontSize: 13, fontWeight: 500, color: '#64748B', display: 'flex', alignItems: 'center', gap: 6 }}>
           <span>{getBreadcrumb()}</span>
         </div>
+      </div>
+
+      {/* Center: Chat with Arella (Screenshot 4) */}
+      <div className="hidden md:flex items-center">
+        <button 
+          type="button"
+          onClick={() => router.push('/support')}
+          className="flex items-center gap-2 text-[13px] font-bold text-gray-800 hover:text-gray-900 transition-colors px-3 py-1.5 rounded-full hover:bg-gray-50"
+        >
+          <span>Chat with Arella</span>
+          <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-400 p-[1px] flex items-center justify-center shadow-sm">
+            <div className="w-full h-full bg-white rounded-full flex items-center justify-center">
+              <Globe size={12} className="text-indigo-600" />
+            </div>
+          </div>
+        </button>
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>

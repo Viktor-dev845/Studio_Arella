@@ -21,15 +21,15 @@ const mockBookings = [
 
 const mockPodcastBookings = [
   { id: 101, info: 'Pop podcast studio session', date: '16-08-2026 12PM', reschedule: false, billing: '200,000', duration: '1 hour', status: 'Active', action: 'Extend' },
-  { id: 102, info: 'Pop podcast studio session', date: '18-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 hour', status: 'Pending', action: 'Cancel' },
+  { id: 102, info: 'Pop podcast studio session', date: '16-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 hour', status: 'Pending', action: 'Cancel' },
   { id: 103, info: 'Pop podcast studio session', date: '16-08-2026 12PM', reschedule: false, billing: '200,000', duration: '2 hours', status: 'Ended', action: 'Send a review' },
   { id: 104, info: 'Pop podcast studio session', date: '16-08-2026 12PM', reschedule: false, billing: '200,000', duration: '1 hour', status: 'Cancelled', action: 'Book a slot' },
-  { id: 105, info: 'Pop podcast studio session', date: '18-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 hour', status: 'Pending', action: 'Extend' },
+  { id: 105, info: 'Pop podcast studio session', date: '16-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 hour', status: 'Pending', action: 'Extend' },
   { id: 106, info: 'Pop podcast studio session', date: '16-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 hour', status: 'Pending', action: 'Extend' },
   { id: 107, info: 'Pop podcast studio session', date: '16-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 hour', status: 'Pending', action: 'Extend' },
   { id: 108, info: 'Pop podcast studio session', date: '16-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 hour', status: 'Pending', action: 'Extend' },
   { id: 109, info: 'Pop podcast studio session', date: '16-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 hour', status: 'Pending', action: 'Extend' },
-  { id: 110, info: 'Pop podcast studio session', date: '18-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 hour', status: 'Pending', action: 'Extend' },
+  { id: 110, info: 'Pop podcast studio session', date: '16-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 hour', status: 'Pending', action: 'Extend' },
 ];
 
 // ─── Calendar constants & mock data ───────────────────────────────────────────
@@ -155,9 +155,17 @@ export default function BookingsPage() {
     <DashboardLayout>
       <PageTransition>
         <div className="font-body max-w-7xl mx-auto">
-          {/* Header */}
+          {/* Page Title & Date Filter */}
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-[16px] font-bold text-gray-900">My bookings</h1>
+            <button className="flex items-center gap-1.5 text-xs font-semibold text-gray-700 hover:text-gray-900 transition-colors">
+              <span>Today</span>
+              <ChevronDown size={14} className="text-gray-500" />
+            </button>
+          </div>
+
+          {/* Header & Tabs */}
           <div className="mb-8">
-            {/* Tabs & Filter */}
             <div className="flex items-center justify-between border-b border-gray-200 mb-8">
               <div className="flex items-center gap-8">
                 <button
@@ -200,14 +208,16 @@ export default function BookingsPage() {
                 </button>
               </div>
 
-              {/* Global Filter Button aligned to the right of tabs */}
-              <button
-                onClick={() => setFilterModalOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-600 hover:bg-gray-50 transition-colors mb-3"
-              >
-                <Filter size={14} />
-                Filter
-              </button>
+              {/* Filter Button for Calendar tab */}
+              {activeTab === 'calendar' && (
+                <button
+                  onClick={() => setFilterModalOpen(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-600 hover:bg-gray-50 transition-colors mb-3"
+                >
+                  <Filter size={14} />
+                  Filter
+                </button>
+              )}
             </div>
           </div>
 
@@ -356,6 +366,15 @@ export default function BookingsPage() {
                     />
                   </div>
 
+                  {/* Filter */}
+                  <button 
+                    onClick={() => setFilterModalOpen(true)}
+                    className="flex items-center gap-1.5 px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm"
+                  >
+                    <Filter size={14} className="text-gray-600" />
+                    Filter
+                  </button>
+
                   {/* Export */}
                   <button className="px-5 py-2.5 bg-white border border-[#C69A2C] rounded-lg text-xs font-bold text-[#C69A2C] hover:bg-[#C69A2C]/5 transition-colors">
                     Export
@@ -423,7 +442,7 @@ export default function BookingsPage() {
                               className={`text-xs font-bold transition-colors ${
                                 b.action === 'Extend'        ? 'text-[#C69A2C] hover:text-[#b58b24]' :
                                 b.action === 'Cancel'        ? 'text-red-500 hover:text-red-600'    :
-                                b.action === 'Send a review' ? 'text-blue-500 hover:text-blue-600'  :
+                                b.action === 'Send a review' ? 'text-[#7C5DFA] hover:text-[#6a4de0]' :
                                 b.action === 'Book a slot'   ? 'text-green-600 hover:text-green-700': 'text-gray-600'
                               }`}
                             >
@@ -434,6 +453,45 @@ export default function BookingsPage() {
                       ))}
                     </tbody>
                   </table>
+                </div>
+              </div>
+
+              {/* Table Pagination Bar (Screenshot 4) */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 text-xs text-gray-500 font-semibold">
+                {/* Left: Showing 10 */}
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-500">Showing</span>
+                  <button className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-800 hover:bg-gray-50 transition-colors shadow-sm">
+                    <span>10</span>
+                    <ChevronDown size={14} className="text-gray-500" />
+                  </button>
+                </div>
+
+                {/* Center: Record counts */}
+                <div className="text-gray-500 text-xs font-medium">
+                  Showing 1 to 10 out of 60 records
+                </div>
+
+                {/* Right: Pages */}
+                <div className="flex items-center gap-1">
+                  <button className="p-1.5 text-gray-400 hover:text-gray-700 transition-colors">
+                    <ChevronLeft size={16} />
+                  </button>
+                  <button className="w-7 h-7 rounded border border-[#C69A2C] bg-white text-[#C69A2C] font-bold flex items-center justify-center text-xs shadow-sm">
+                    1
+                  </button>
+                  <button className="w-7 h-7 rounded text-gray-600 hover:bg-gray-100 font-semibold flex items-center justify-center text-xs transition-colors">
+                    2
+                  </button>
+                  <button className="w-7 h-7 rounded text-gray-600 hover:bg-gray-100 font-semibold flex items-center justify-center text-xs transition-colors">
+                    3
+                  </button>
+                  <button className="w-7 h-7 rounded text-gray-600 hover:bg-gray-100 font-semibold flex items-center justify-center text-xs transition-colors">
+                    4
+                  </button>
+                  <button className="p-1.5 text-gray-400 hover:text-gray-700 transition-colors">
+                    <ChevronRight size={16} />
+                  </button>
                 </div>
               </div>
             </>
@@ -550,12 +608,14 @@ export default function BookingsPage() {
           </div>
         )}
 
-        {/* Cancel Modal (Screenshot 1 Left) */}
+        {/* Cancel Modal (Screenshot 3 for podcast, Screen Ads for ad) */}
         {cancelModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px]">
             <div className="bg-white rounded-[24px] pt-10 pb-8 px-8 max-w-[360px] w-full mx-4 shadow-2xl flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-150">
               <h3 className="text-[15px] font-bold text-gray-900 mb-8 leading-snug">
-                Are you sure you want to cancel this Ad?
+                {activeTab === 'podcast' 
+                  ? 'Are you sure you want to cancel this studio session?' 
+                  : 'Are you sure you want to cancel this Ad?'}
               </h3>
               <div className="flex items-center justify-center gap-3 w-full">
                 <button 
@@ -580,9 +640,10 @@ export default function BookingsPage() {
           </div>
         )}
 
-        {/* Cancel Success Modal (Screenshot 5) */}
+        {/* Cancel Success Modal (Screenshot 2 for podcast, Screenshot 5 for screen ads) */}
         {cancelSuccessOpen && (() => {
-          const selectedBooking = (activeTab === 'podcast' ? mockPodcastBookings : mockBookings).find(b => b.id === selectedAdId);
+          const isPodcast = activeTab === 'podcast';
+          const selectedBooking = (isPodcast ? mockPodcastBookings : mockBookings).find(b => b.id === selectedAdId);
           const cancelledName = selectedBooking ? selectedBooking.info.split(' ')[0] : 'Monnify';
           return (
             <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px]">
@@ -590,11 +651,15 @@ export default function BookingsPage() {
                 <div className="relative flex items-center justify-center w-36 h-36 mb-3">
                   <div className="absolute inset-0 bg-[#C69A2C]/25 blur-2xl rounded-full"></div>
                   <div className="relative w-[64px] h-[64px] bg-[#9E7B21] rounded-full flex items-center justify-center shadow-[0_4px_20px_rgba(158,123,33,0.35)]">
-                    <Check size={28} className="text-white" strokeWidth={3} />
+                    {isPodcast ? (
+                      <X size={28} className="text-white" strokeWidth={3} />
+                    ) : (
+                      <Check size={28} className="text-white" strokeWidth={3} />
+                    )}
                   </div>
                 </div>
                 <h3 className="text-[16px] font-bold text-gray-900 mb-8">
-                  {cancelledName} Ad cancelled
+                  {isPodcast ? 'Studio session cancelled' : `${cancelledName} Ad cancelled`}
                 </h3>
                 <button 
                   type="button"
