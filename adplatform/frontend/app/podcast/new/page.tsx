@@ -238,20 +238,22 @@ export default function BookPodcastSessionPage() {
         {/* ─── MODAL OVERLAY ─── */}
         {billingModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px] p-4">
-            <div className="bg-white rounded-[28px] w-full max-w-[480px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.2)] relative animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
+            <div className="bg-white rounded-[24px] w-full max-w-[420px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.2)] relative animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
               
               {/* Header */}
-              <div className="flex items-center justify-between px-7 pt-6 pb-2">
+              <div className="flex items-center justify-between px-6 pt-6 pb-2">
                 <button 
                   type="button"
                   onClick={() => {
                     if (modalStep === 'pay_from_wallet' || modalStep === 'pay_with_card') {
                       setModalStep('billing');
+                    } else if (modalStep === 'success') {
+                      setModalStep('pay_from_wallet');
                     } else {
                       resetModals();
                     }
                   }} 
-                  className="p-1 hover:bg-gray-100 rounded-full transition-colors text-gray-700"
+                  className="p-1 hover:bg-gray-100 rounded-full transition-colors text-gray-800"
                 >
                   <ArrowLeft size={18} />
                 </button>
@@ -263,26 +265,26 @@ export default function BookPodcastSessionPage() {
                 <button 
                   type="button"
                   onClick={resetModals} 
-                  className="p-1 hover:bg-gray-100 rounded-full transition-colors text-gray-700"
+                  className="p-1 hover:bg-gray-100 rounded-full transition-colors text-gray-800"
                 >
                   <X size={18} />
                 </button>
               </div>
 
-              {/* ─── STEP 1: BILLING (Frame 2121459606) ─── */}
+              {/* ─── STEP 1: BILLING (Frame 2121459606 - Screenshot 4) ─── */}
               {modalStep === 'billing' && (
-                <div className="px-7 sm:px-8 pb-8 pt-4">
+                <div className="px-6 pb-8 pt-4">
                   {/* Session Title & Amount */}
                   <div className="text-center my-6">
                     <h3 className="text-[14px] font-bold text-gray-900 mb-1">3 hours studio session at</h3>
-                    <p className="text-[15px] font-black text-gray-900">#300,000</p>
+                    <p className="text-[15px] font-black text-gray-900">₦300,000</p>
                   </div>
 
                   <div className="space-y-4">
                     {/* Pay with card */}
                     <div 
                       onClick={() => setPaymentMethod('card')}
-                      className={`flex items-center gap-3.5 px-5 py-4 rounded-[16px] cursor-pointer border transition-all ${
+                      className={`flex items-center gap-3.5 px-5 py-4 rounded-[14px] cursor-pointer border transition-all ${
                         paymentMethod === 'card' 
                           ? 'border-[#C69A2C] bg-white' 
                           : 'border-gray-200 hover:border-gray-300 bg-white'
@@ -296,10 +298,10 @@ export default function BookPodcastSessionPage() {
                       <span className="text-[13px] font-bold text-gray-900">Pay with card</span>
                     </div>
 
-                    {/* Pay from wallet (Selected as in Figma) */}
+                    {/* Pay from wallet (Selected as in Screenshot 4) */}
                     <div 
                       onClick={() => setPaymentMethod('wallet')}
-                      className={`flex flex-col gap-2 px-5 py-4 rounded-[16px] cursor-pointer border-[1.5px] transition-all ${
+                      className={`flex flex-col gap-2 px-5 py-4 rounded-[14px] cursor-pointer border transition-all ${
                         paymentMethod === 'wallet' 
                           ? 'border-[#C69A2C] bg-white' 
                           : 'border-gray-200 hover:border-gray-300 bg-white'
@@ -308,14 +310,14 @@ export default function BookPodcastSessionPage() {
                       {/* Top Row: Radio + Title + Fund wallet */}
                       <div className="flex items-center justify-between w-full">
                         <div className="flex items-center gap-3.5">
-                          <div className={`w-4 h-4 rounded-full border-[1.5px] flex items-center justify-center ${
+                          <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
                             paymentMethod === 'wallet' ? 'border-[#C69A2C]' : 'border-gray-300'
                           }`}>
                             {paymentMethod === 'wallet' && <div className="w-2 h-2 rounded-full bg-[#C69A2C]" />}
                           </div>
                           <span className="text-[13px] font-bold text-gray-900">Pay from wallet</span>
                         </div>
-                        <span className="text-[12px] font-bold text-[#C69A2C] hover:underline">
+                        <span className="text-[12px] font-semibold text-[#C69A2C] hover:underline">
                           Fund wallet
                         </span>
                       </div>
@@ -349,7 +351,7 @@ export default function BookPodcastSessionPage() {
                           setModalStep('pay_with_card');
                         }
                       }}
-                      className="w-full py-3.5 bg-[#C69A2C] hover:bg-[#b58b24] text-white text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
+                      className="w-full py-3 bg-[#C69A2C] hover:bg-[#b58b24] text-white text-[13px] font-bold rounded-[12px] transition-colors shadow-sm"
                     >
                       Continue
                     </button>
@@ -357,12 +359,12 @@ export default function BookPodcastSessionPage() {
                 </div>
               )}
 
-              {/* ─── STEP 2: PAY FROM WALLET (Frames 2121459610 & 2121459611) ─── */}
+              {/* ─── STEP 2: PAY FROM WALLET (Frames 2121459610 & 2121459611 - Screenshots 1 & 3) ─── */}
               {modalStep === 'pay_from_wallet' && (
-                <div className="px-7 sm:px-8 pb-8 pt-6">
+                <div className="px-6 pb-8 pt-6">
                   {/* Amount Card with Golden Border */}
-                  <div className="flex items-center justify-between px-6 py-6 rounded-[18px] border-[1.5px] border-[#C69A2C] bg-white mb-6">
-                    <span className="text-[13px] font-medium text-gray-800">Total amount</span>
+                  <div className="flex items-center justify-between px-6 py-5 rounded-[14px] border border-[#C69A2C] bg-white mb-6">
+                    <span className="text-[13px] font-medium text-gray-900">Total amount</span>
                     <span className="text-[13px] font-bold text-gray-900">NGN 300,000.25</span>
                   </div>
 
@@ -370,7 +372,7 @@ export default function BookPodcastSessionPage() {
                   <button 
                     type="button"
                     onClick={() => setModalStep('success')}
-                    className="w-full py-3.5 bg-[#C69A2C] hover:bg-[#b58b24] text-white text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
+                    className="w-full py-3 bg-[#C69A2C] hover:bg-[#b58b24] text-white text-[13px] font-bold rounded-[12px] transition-colors shadow-sm"
                   >
                     Pay
                   </button>
@@ -441,25 +443,25 @@ export default function BookPodcastSessionPage() {
                 </div>
               )}
 
-              {/* ─── STEP 3: PAYMENT SUCCESSFUL (Frame 2121459612) ─── */}
+              {/* ─── STEP 3: PAYMENT SUCCESSFUL (Frame 2121459612 - Screenshot 2) ─── */}
               {modalStep === 'success' && (
-                <div className="px-7 sm:px-8 pb-8 pt-8 flex flex-col items-center">
+                <div className="px-6 pb-8 pt-8 flex flex-col items-center">
                   {/* Golden Glow Aura & Checkmark Badge */}
-                  <div className="relative flex items-center justify-center w-36 h-36 mb-4">
+                  <div className="relative flex items-center justify-center w-32 h-32 mb-4">
                     <div className="absolute inset-0 bg-[#C69A2C]/25 blur-2xl rounded-full"></div>
-                    <div className="relative w-[64px] h-[64px] bg-[#9E7B21] rounded-full flex items-center justify-center shadow-[0_4px_20px_rgba(158,123,33,0.35)]">
-                      <Check size={30} className="text-white" strokeWidth={3} />
+                    <div className="relative w-[60px] h-[60px] bg-[#9E7B21] rounded-full flex items-center justify-center shadow-[0_4px_20px_rgba(158,123,33,0.35)]">
+                      <Check size={26} className="text-white" strokeWidth={3} />
                     </div>
                   </div>
 
                   {/* Title */}
-                  <h3 className="text-[17px] font-bold text-gray-900 mb-8">Payment successful</h3>
+                  <h3 className="text-[16px] font-bold text-gray-900 mb-6">Payment successful</h3>
 
                   {/* Finish Button */}
                   <button 
                     type="button"
                     onClick={resetModals}
-                    className="w-full py-3.5 bg-[#C69A2C] hover:bg-[#b58b24] text-white text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
+                    className="w-full py-3 bg-[#C69A2C] hover:bg-[#b58b24] text-white text-[13px] font-bold rounded-[12px] transition-colors shadow-sm"
                   >
                     Finish
                   </button>
