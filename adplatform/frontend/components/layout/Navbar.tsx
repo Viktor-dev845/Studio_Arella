@@ -35,6 +35,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
     if (pathname.includes('/campaigns')) return 'Pages / Campaigns';
     if (pathname.includes('/finances')) return 'Pages / Wallet';
     if (pathname.includes('/cart')) return 'Dashboards / Cart';
+    if (pathname.includes('/settings')) return 'Pages / User Profile';
     return 'Dashboards / ' + (pathname.split('/')[1] || 'Overview').replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
