@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { FaArrowRightFromBracket } from 'react-icons/fa6';
 import NotificationBell from '@/components/ui/NotificationBell';
-import { Menu, Search, Settings, RotateCcw } from 'lucide-react';
+import { Menu, Search, Settings, RotateCcw, Star, Sun, Clock, PanelLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const F = "'Quicksand', sans-serif";
@@ -26,8 +26,9 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const handleLogout = () => { logout(); router.push('/auth/login'); };
 
   const getBreadcrumb = () => {
-    if (!mounted) return 'Dashboards / Overview';
-    if (pathname.includes('/bookings')) return 'Dashboards / My Bookings';
+    if (!mounted) return 'My bookings / Screen Ads';
+    if (pathname.includes('/podcast/new')) return 'My bookings / Screen Ads';
+    if (pathname.includes('/bookings')) return 'My bookings / Screen Ads';
     if (pathname.includes('/dashboard')) return 'Dashboards / Overview';
     if (pathname.includes('/campaigns')) return 'Pages / Campaigns';
     return 'Dashboards / ' + (pathname.split('/')[1] || 'Overview').replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
@@ -35,55 +36,69 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
 
   return (
     <header style={{ height: 64, background: '#fff', borderBottom: '1px solid #E2E8F0', padding: '0 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0, fontFamily: F }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
         
+        {/* Star Icon */}
+        <Star size={15} className="text-gray-400 hover:text-gray-600 cursor-pointer transition-colors" />
+
         {/* Creator / Audience Toggle */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 13, fontWeight: isCreator ? 800 : 600, color: isCreator ? '#1E293B' : '#94A3B8' }}>Creator</span>
+          <span style={{ fontSize: 13, fontWeight: isCreator ? 700 : 500, color: isCreator ? '#0F172A' : '#94A3B8' }}>Creator</span>
           <button 
             onClick={() => setIsCreator(!isCreator)}
-            style={{ width: 36, height: 20, borderRadius: 20, background: '#E2E8F0', position: 'relative', border: 'none', cursor: 'pointer' }}
+            style={{ width: 34, height: 18, borderRadius: 20, background: '#1E293B', position: 'relative', border: 'none', cursor: 'pointer', padding: 0 }}
           >
-            <div style={{ width: 14, height: 14, borderRadius: '50%', background: '#fff', position: 'absolute', top: 3, left: isCreator ? 3 : 19, transition: 'all 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }} />
+            <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#fff', position: 'absolute', top: 3, left: isCreator ? 3 : 19, transition: 'all 0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.2)' }} />
           </button>
-          <span style={{ fontSize: 13, fontWeight: !isCreator ? 800 : 600, color: !isCreator ? '#1E293B' : '#94A3B8' }}>Audience</span>
+          <span style={{ fontSize: 13, fontWeight: !isCreator ? 700 : 500, color: !isCreator ? '#0F172A' : '#94A3B8' }}>Audience</span>
         </div>
 
         {/* Breadcrumb */}
-        <div style={{ fontSize: 13, fontWeight: 700, color: '#64748B' }}>
-          {getBreadcrumb()}
+        <div style={{ fontSize: 13, fontWeight: 500, color: '#64748B', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span>{getBreadcrumb()}</span>
         </div>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
         
         {/* Search */}
-        <div style={{ position: 'relative', width: 200 }} className="hidden sm:block">
-          <Search size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
+        <div style={{ position: 'relative', width: 180 }} className="hidden sm:block">
+          <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
           <input 
             type="text" 
-            placeholder="Search /" 
-            style={{ width: '100%', padding: '8px 12px 8px 36px', background: '#F8FAFC', border: '1px solid #F1F5F9', borderRadius: 8, fontSize: 12, fontWeight: 700, color: '#1E293B', outline: 'none' }}
+            placeholder="Search" 
+            style={{ width: '100%', padding: '6px 28px 6px 30px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 8, fontSize: 12, fontWeight: 500, color: '#1E293B', outline: 'none' }}
           />
+          <span style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', fontSize: 11, color: '#94A3B8', fontWeight: 600 }}>/</span>
         </div>
 
-        <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', display: 'flex' }}>
-          <Settings size={18} />
+        {/* Sun / Theme */}
+        <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', display: 'flex', padding: 4 }} title="Theme">
+          <Sun size={17} />
         </button>
 
-        <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', display: 'flex' }}>
-          <RotateCcw size={18} />
+        {/* Clock / History */}
+        <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', display: 'flex', padding: 4 }} title="History">
+          <Clock size={17} />
         </button>
 
+        {/* Notification Bell */}
         <NotificationBell />
 
+        {/* Sidebar Toggle Icon */}
+        <button onClick={onMenuClick} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', display: 'flex', padding: 4 }} title="Toggle Sidebar">
+          <PanelLeft size={17} />
+        </button>
+
+        {/* User Avatar */}
         <div style={{ position: 'relative' }}>
           <button onClick={() => setDropOpen(o => !o)}
             style={{ display: 'flex', alignItems: 'center', gap: 9, background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: F }}>
-            <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#F59E0B', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 900, color: '#fff' }}>
-              {user?.name?.[0]?.toUpperCase() || 'K'}
+            <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#fff' }}>
+              {user?.name?.[0]?.toUpperCase() || 'A'}
             </div>
           </button>
+
           <AnimatePresence>
             {dropOpen && (
               <>
