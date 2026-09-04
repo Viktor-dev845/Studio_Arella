@@ -31,7 +31,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
     if (pathname.includes('/podcast/new')) return 'My bookings / Podcast studio';
     if (pathname.includes('/podcast')) return 'Pages / Podcasts';
     if (pathname.includes('/bookings')) return 'My bookings / Screen Ads';
-    if (pathname.includes('/dashboard')) return 'Dashboards / Overview';
+    if (pathname.includes('/dashboard')) return 'Dashboards / Default';
     if (pathname.includes('/campaigns')) return 'Pages / Campaigns';
     if (pathname.includes('/finances')) return 'Pages / Wallet';
     if (pathname.includes('/cart')) return 'Dashboards / Cart';
@@ -65,22 +65,6 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
         <div style={{ fontSize: 13, fontWeight: 500, color: '#64748B', display: 'flex', alignItems: 'center', gap: 6 }}>
           <span>{getBreadcrumb()}</span>
         </div>
-      </div>
-
-      {/* Center: Chat with Arella (Screenshot 4) */}
-      <div className="hidden md:flex items-center">
-        <button 
-          type="button"
-          onClick={() => router.push('/chat')}
-          className="flex items-center gap-2 text-[13px] font-bold text-gray-800 hover:text-gray-900 transition-colors px-3 py-1.5 rounded-full hover:bg-gray-50"
-        >
-          <span>Chat with Arella</span>
-          <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-400 p-[1px] flex items-center justify-center shadow-sm">
-            <div className="w-full h-full bg-white rounded-full flex items-center justify-center">
-              <Globe size={12} className="text-indigo-600" />
-            </div>
-          </div>
-        </button>
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
