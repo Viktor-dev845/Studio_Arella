@@ -126,7 +126,7 @@ export default function BookScreenAdPage() {
                     
                     {durationOpen && (
                       <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-100 shadow-[0_10px_30px_-5px_rgba(0,0,0,0.08)] rounded-[14px] py-2 z-20 animate-in fade-in zoom-in-95 duration-100">
-                        {['1 month', '2 months', '3 months', '6 months', '1 year'].map((option) => (
+                        {['Hourly', 'Weekly', 'Monthly'].map((option) => (
                           <button
                             key={option}
                             type="button"
@@ -135,7 +135,7 @@ export default function BookScreenAdPage() {
                           >
                             <span>{option}</span>
                             {duration === option && (
-                              <div className="h-3.5 w-[3px] bg-[#C69A2C] rounded-full"></div>
+                              <div className="h-4 w-[2.5px] bg-[#C69A2C] rounded-full"></div>
                             )}
                           </button>
                         ))}
@@ -167,7 +167,7 @@ export default function BookScreenAdPage() {
                           >
                             <span>{option}</span>
                             {campaignType === option && (
-                              <div className="h-3.5 w-[3px] bg-[#C69A2C] rounded-full"></div>
+                              <div className="h-4 w-[2.5px] bg-[#C69A2C] rounded-full"></div>
                             )}
                           </button>
                         ))}
@@ -176,16 +176,18 @@ export default function BookScreenAdPage() {
                   </div>
                 </div>
 
-                {/* Enter number of months input */}
-                <div>
-                  <input
-                    type="text"
-                    placeholder="Enter number of months"
-                    value={numberOfMonths}
-                    onChange={(e) => setNumberOfMonths(e.target.value)}
-                    className="w-full px-5 py-4 bg-white border border-gray-200 rounded-[14px] text-[13px] font-medium text-gray-900 placeholder:text-[#94A3B8] focus:border-[#C69A2C] transition-colors"
-                  />
-                </div>
+                {/* Enter number of months input (Screenshot 2) */}
+                {(duration === 'Monthly' || duration === '') && (
+                  <div>
+                    <input
+                      type="text"
+                      placeholder="Enter number of months"
+                      value={numberOfMonths}
+                      onChange={(e) => setNumberOfMonths(e.target.value)}
+                      className="w-full px-5 py-4 bg-white border border-gray-200 rounded-[14px] text-[13px] font-medium text-gray-900 placeholder:text-[#94A3B8] focus:border-[#C69A2C] transition-colors"
+                    />
+                  </div>
+                )}
 
                 {/* Upload Materials Section */}
                 <div>
@@ -202,16 +204,44 @@ export default function BookScreenAdPage() {
                     <p className="text-[11px] font-medium text-gray-400">Supported formats : jpeg, png, gif</p>
                   </div>
 
-                  {/* Creative Request link */}
-                  <div className="mt-2.5 text-[12px] font-medium text-gray-600">
-                    <span>Don't have Ad materials yet? </span>
-                    <button 
-                      type="button"
-                      onClick={() => setShowCreativeModal(true)} 
-                      className="text-[#C69A2C] font-semibold hover:underline"
-                    >
-                      Request creative services
-                    </button>
+                  {/* Creative Request link / state (Screenshots 2-5) */}
+                  <div className="mt-2.5 text-[12px] font-medium">
+                    {!hasRequestedCreative ? (
+                      <div className="text-gray-600 flex items-center gap-1.5">
+                        <span>Don't have Ad materials yet?</span>
+                        <button 
+                          type="button"
+                          onClick={() => {
+                            setSelectedService('banner');
+                            setHasRequestedCreative(true);
+                          }} 
+                          className="text-[#C69A2C] font-semibold hover:underline"
+                        >
+                          Request Ad creative services
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2.5 text-gray-800">
+                        <span>Ad banner design on request?</span>
+                        <button 
+                          type="button"
+                          onClick={() => setShowCreativeModal(true)} 
+                          className="text-[#C69A2C] font-semibold hover:underline"
+                        >
+                          Change
+                        </button>
+                        <button 
+                          type="button"
+                          onClick={() => {
+                            setHasRequestedCreative(false);
+                            setSelectedService('');
+                          }} 
+                          className="text-[#E05252] font-semibold hover:underline"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -253,7 +283,7 @@ export default function BookScreenAdPage() {
               <div className="flex items-center justify-end gap-3 mt-4">
                 <button 
                   type="button"
-                  className="px-6 py-2.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-[13px] font-semibold rounded-[12px] transition-colors"
+                  className="px-6 py-2.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-[13px] font-semibold rounded-[10px] transition-colors"
                 >
                   Cancel
                 </button>
@@ -263,7 +293,7 @@ export default function BookScreenAdPage() {
                     setModalStep('billing');
                     setBillingModalOpen(true);
                   }}
-                  className="px-6 py-2.5 bg-[#C69A2C] hover:bg-[#b58b24] text-white text-[13px] font-bold rounded-[12px] transition-all shadow-sm"
+                  className="px-6 py-2.5 bg-[#C69A2C] hover:bg-[#b58b24] text-white text-[13px] font-bold rounded-[10px] transition-all shadow-sm"
                 >
                   Book Slot
                 </button>
@@ -271,15 +301,15 @@ export default function BookScreenAdPage() {
               
             </div>
 
-            {/* Right Column (Promo Banner) */}
+            {/* Right Column (Promo Banner - Screenshots 2-5) */}
             <div className="w-full lg:w-[320px] flex-shrink-0">
-              <div className="bg-[#18181B] rounded-[24px] p-7 shadow-xl flex flex-col justify-between min-h-[160px]">
-                <p className="text-[14px] font-semibold text-white/90 leading-[1.6] mb-6">
+              <div className="bg-[#1C1C1E] rounded-[24px] p-7 shadow-xl flex flex-col justify-between min-h-[160px]">
+                <p className="text-[13.5px] font-semibold text-white/90 leading-[1.6] mb-6">
                   we are running Ad space promo, get a discount for more than 3months booking
                 </p>
                 <button 
                   type="button"
-                  className="bg-[#F4F860] hover:bg-[#e4ec30] text-[#0F172A] text-[11px] font-black tracking-wider uppercase rounded-lg py-2.5 px-5 transition-colors w-fit shadow-sm"
+                  className="bg-[#EDF257] hover:bg-[#dfe44b] text-[#0F172A] text-[10px] font-black tracking-wider uppercase rounded-md py-2 px-4 transition-colors w-fit shadow-sm"
                 >
                   BOOK PODCAST SESSION
                 </button>
@@ -288,19 +318,21 @@ export default function BookScreenAdPage() {
 
           </div>
 
-          {/* Floating Widget: Chat with Arella */}
+          {/* Floating Widget: Chat with Arella (Screenshots 2-5) */}
           <div className="fixed bottom-8 right-8 z-30">
-            <button
-              type="button"
-              onClick={() => {
-                setModalStep('billing');
-                setBillingModalOpen(true);
-              }}
-              className="bg-white hover:bg-gray-50 text-[#0F172A] border border-gray-200 shadow-[0_4px_24px_rgba(0,0,0,0.08)] px-4 py-2.5 rounded-full text-[13px] font-bold flex items-center gap-2 transition-all hover:shadow-lg"
+            <Link
+              href="/chat"
+              className="bg-white hover:bg-gray-50 text-[#0F172A] border border-gray-200/90 shadow-[0_4px_24px_rgba(0,0,0,0.08)] px-5 py-3 rounded-full text-[13px] font-bold flex items-center gap-2.5 transition-all hover:shadow-lg relative group"
             >
               <span>Chat with Arella</span>
-              <span className="text-[15px]">🌐</span>
-            </button>
+              <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-400 p-[1px] flex items-center justify-center shadow-sm">
+                <div className="w-full h-full bg-white rounded-full flex items-center justify-center">
+                  <Globe size={12} className="text-indigo-600" />
+                </div>
+              </div>
+              {/* Speech bubble tail */}
+              <div className="absolute -bottom-1.5 right-8 w-3 h-3 bg-white border-r border-b border-gray-200/90 rotate-45"></div>
+            </Link>
           </div>
         </div>
 
