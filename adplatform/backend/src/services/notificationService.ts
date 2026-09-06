@@ -6,6 +6,7 @@ export type NotificationType =
   | 'booking_confirmed'
   | 'booking_reminder'
   | 'booking_cancelled'
+  | 'booking_extended'
   | 'payment_received'
   | 'new_creative_review'   // admin only
   | 'new_booking'           // admin only

@@ -8,7 +8,7 @@ if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 const storage = multer.memoryStorage();
 
 const fileFilter = (_req: any, file: any, cb: any) => {
-  const allowed = ['image/jpeg','image/jpg','image/png','image/gif','video/mp4','video/quicktime'];
+  const allowed = ['image/jpeg','image/jpg','image/png','image/gif','video/mp4','video/quicktime','audio/mpeg','audio/mp3'];
   if (allowed.includes(file.mimetype)) {
     cb(null, true);
   } else {

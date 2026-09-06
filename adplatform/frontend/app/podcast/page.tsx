@@ -384,9 +384,14 @@ export default function PodcastsPage() {
                   marginBottom: 18,
                 }}
               >
-                <h2 style={{ fontSize: 14, fontWeight: 700, color: '#0F172A', margin: 0 }}>
-                  All podcasts (10)
-                </h2>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <h2 style={{ fontSize: 14, fontWeight: 700, color: '#0F172A', margin: 0 }}>
+                    All podcasts (10)
+                  </h2>
+                  <span style={{ fontSize: 9, fontWeight: 800, color: '#94A3B8', background: '#F1F5F9', padding: '2px 7px', borderRadius: 100, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                    Example
+                  </span>
+                </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <button

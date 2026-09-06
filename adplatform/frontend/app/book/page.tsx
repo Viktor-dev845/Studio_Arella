@@ -2,14 +2,16 @@
 
 import { useState, useEffect, useRef, useMemo, Suspense } from "react";
 import { createPortal } from "react-dom";
-import { ChevronLeft, ChevronRight, Clock, Info, X, Check, Ticket, AlertTriangle, Trash2, Repeat as RepeatIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronDown, Clock, Info, X, Check, Ticket, AlertTriangle, Trash2, Repeat as RepeatIcon } from "lucide-react";
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useToast } from '@/components/ui/ToastProvider';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCartStore } from '@/store/cartStore';
+import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/api';
 import { FaImage, FaFilm, FaWallet, FaCreditCard } from 'react-icons/fa6';
 import { AnimatedButton, PageTransition } from '@/components/ui/Animations';
+import RequestCreativeServiceModal from '@/components/ui/RequestCreativeServiceModal';
 import { theme } from '@/lib/theme';
 
 const SCREEN_ID = '00000000-0000-0000-0000-000000000001';
@@ -105,7 +107,10 @@ export default function BookPage() {
 function DoohScheduler() {
   const { toast } = useToast();
   const router = useRouter();
-  
+  const { user } = useAuthStore();
+
+  const [showCreativeServiceModal, setShowCreativeServiceModal] = useState(false);
+
   const today = useMemo(() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; }, []);
   const [viewDate, setViewDate] = useState(today);
   const [calCursor, setCalCursor] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
@@ -595,6 +600,22 @@ function DoohScheduler() {
             </div>
           </div>
 
+          {/* Promo banner */}
+          <div style={{ background: theme.color.charcoal900, borderRadius: 16, padding: '18px 24px', marginBottom: 24, position: 'relative', overflow: 'hidden', border: `1px solid ${theme.color.border}` }}>
+            <div style={{ position: 'absolute', bottom: -24, right: -24, width: 100, height: 100, background: 'rgba(224,165,38,0.12)', borderRadius: '50%', pointerEvents: 'none' }} />
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', position: 'relative', zIndex: 1 }}>
+              <p style={{ margin: 0, fontSize: 13.5, fontWeight: 600, color: theme.color.surface, lineHeight: 1.5, maxWidth: 480 }}>
+                We're running an Ad space promo — get a discount for bookings longer than 3 months.
+              </p>
+              <AnimatedButton
+                onClick={() => router.push('/podcast/book')}
+                style={{ background: theme.color.gold, color: theme.color.charcoal900, border: 'none', borderRadius: 8, padding: '9px 18px', fontSize: 11.5, fontWeight: 800, letterSpacing: '0.04em', textTransform: 'uppercase', cursor: 'pointer', whiteSpace: 'nowrap' }}
+              >
+                Book Podcast Session
+              </AnimatedButton>
+            </div>
+          </div>
+
           {/* STEP 1: CHOOSE AD */}
           {currentStep === 1 && (
             <div style={{ background: theme.color.surface, borderRadius: 24, padding: "clamp(24px, 5vw, 40px) clamp(20px, 5vw, 36px)", border: `1px solid ${theme.color.border2}`, boxShadow: theme.shadow.md, transition: "all 0.3s ease" }}>
@@ -605,9 +626,14 @@ function DoohScheduler() {
                 <div style={{ textAlign: 'center', padding: '60px 0', background: theme.color.surface2, borderRadius: 12, border: `1px dashed ${theme.color.border}` }}>
                   <FaFilm size={32} color={theme.color.text4} style={{ margin: '0 auto 16px', display: 'block' }} />
                   <p style={{ fontSize: 15, color: theme.color.text3 }}>You have no approved ads yet.</p>
-                  <AnimatedButton onClick={() => router.push('/creative')} style={{ marginTop: 16, background: theme.color.charcoal900, color: theme.color.surface, border: "none", padding: "10px 20px", borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
-                    Create or Upload Ad
-                  </AnimatedButton>
+                  <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginTop: 16 }}>
+                    <AnimatedButton onClick={() => router.push('/ads')} style={{ background: theme.color.charcoal900, color: theme.color.surface, border: "none", padding: "10px 20px", borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+                      Create or Upload Ad
+                    </AnimatedButton>
+                    <AnimatedButton onClick={() => setShowCreativeServiceModal(true)} style={{ background: 'transparent', color: theme.color.text1, border: `1px solid ${theme.color.border}`, padding: "10px 20px", borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+                      Request creative services
+                    </AnimatedButton>
+                  </div>
                 </div>
               ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: 20 }}>
@@ -1328,7 +1354,7 @@ function DoohScheduler() {
             )}
           </Portal>
 
-
+          <RequestCreativeServiceModal open={showCreativeServiceModal} onClose={() => setShowCreativeServiceModal(false)} />
 
         </div>
       </PageTransition>

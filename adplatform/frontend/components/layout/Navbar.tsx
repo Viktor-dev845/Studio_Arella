@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { FaArrowRightFromBracket } from 'react-icons/fa6';
 import NotificationBell from '@/components/ui/NotificationBell';
 import { Menu, Search, Settings, RotateCcw, Star, Sun, Clock, PanelLeft, Globe } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import api from '@/lib/api';
 
 const F = "'Quicksand', sans-serif";
 
@@ -15,24 +16,71 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const { user, logout } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [dropOpen, setDropOpen] = useState(false);
   const [isCreator, setIsCreator] = useState(true);
   const [mounted, setMounted] = useState(false);
+  const [showTitle, setShowTitle] = useState<string | null>(null);
+  const [adTitle, setAdTitle] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  // Resolve the real podcast title for /podcast/:id and /podcast/:id/episode/new
+  // breadcrumbs — this used to be hardcoded to a fixed placeholder name.
+  useEffect(() => {
+    const id = pathname.match(/^\/podcast\/([^/]+)/)?.[1];
+    if (id && id !== 'new' && id !== 'book') {
+      api.get(`/shows/${id}`)
+        .then((res) => setShowTitle(res.data.podcast?.title || null))
+        .catch(() => setShowTitle(null));
+    } else {
+      setShowTitle(null);
+    }
+  }, [pathname]);
+
+  // Same for /my-ads/:id — resolve the real ad's creative title.
+  useEffect(() => {
+    const id = pathname.match(/^\/my-ads\/([^/]+)/)?.[1];
+    if (id) {
+      api.get('/bookings?limit=100')
+        .then((res) => {
+          const match = (res.data.bookings || []).find((b: any) => b.id === id);
+          setAdTitle(match?.creative_title || null);
+        })
+        .catch(() => setAdTitle(null));
+    } else {
+      setAdTitle(null);
+    }
+  }, [pathname]);
+
   const handleLogout = () => { logout(); router.push('/auth/login'); };
 
   const getBreadcrumb = () => {
     if (!mounted) return 'My bookings / Screen Ads';
+    if (pathname.startsWith('/admin')) {
+      const ADMIN_LABELS: Record<string, string> = {
+        '/admin': 'Admin / Overview',
+        '/admin/bookings': 'Admin / All Bookings',
+        '/admin/podcasts': 'Admin / Podcast Bookings',
+        '/admin/campaigns': 'Admin / Campaigns',
+        '/admin/finances': 'Admin / Finances',
+        '/admin/users': 'Admin / Users',
+        '/admin/screens': 'Admin / Screens',
+        '/admin/review': 'Admin / Ad Review Queue',
+        '/admin/requests': 'Admin / Creative Requests',
+      };
+      return ADMIN_LABELS[pathname] || 'Admin / Overview';
+    }
     if (pathname.includes('/chat')) return 'Dashboards / Default';
-    if (pathname.includes('/episode/new')) return 'Podcasts / Undressed / Add new episode';
-    if (pathname === '/podcast/new') return 'Podcasts / Undressed / Add podcast';
-    if (pathname.startsWith('/podcast/') && pathname !== '/podcast') return 'Podcasts / Undressed';
+    if (pathname.includes('/episode/new')) return `Podcasts / ${showTitle || '…'} / Add new episode`;
+    if (pathname === '/podcast/new') return 'Podcasts / Add podcast';
+    if (pathname.startsWith('/podcast/') && pathname !== '/podcast') return `Podcasts / ${showTitle || '…'}`;
     if (pathname === '/podcast') return 'Podcasts / Default';
-    if (pathname.includes('/bookings')) return 'My bookings / Screen Ads';
+    if (pathname.includes('/bookings')) return `My bookings / ${searchParams.get('tab') === 'podcast' ? 'Podcast Studio' : 'Screen Ads'}`;
+    if (pathname === '/my-ads') return 'Ads / Default';
+    if (pathname.startsWith('/my-ads/')) return `Ads / ${adTitle || '…'}`;
     if (pathname.includes('/dashboard')) return 'Dashboards / Default';
     if (pathname.includes('/campaigns')) return 'Pages / Campaigns';
     if (pathname.includes('/finances')) return 'Pages / Wallet';

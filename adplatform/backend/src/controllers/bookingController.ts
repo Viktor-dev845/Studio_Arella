@@ -270,11 +270,12 @@ export const createBooking: RequestHandler = async (req, res) => {
 // ── Cancel booking ────────────────────────────────────────────────────────────
 export const cancelBooking: RequestHandler = async (req, res) => {
   const authReq = req as AuthRequest;
+  const client = await pool.connect();
   try {
     const isAdmin = authReq.user?.role === 'admin';
     const { reason, force_refund } = req.body;
 
-    const bookingRes = await pool.query(
+    const bookingRes = await client.query(
       `SELECT b.*, u.email as user_email, u.name as user_name
        FROM bookings b LEFT JOIN users u ON b.user_id = u.id
        WHERE b.id = $1 ${!isAdmin ? 'AND b.user_id = $2' : ''}`,
@@ -293,16 +294,29 @@ export const cancelBooking: RequestHandler = async (req, res) => {
     const eligibleForRefund = isAdmin ? (force_refund !== false) : hoursUntilSlot >= cancellationHours;
     const refundAmount = eligibleForRefund ? Number(booking.total_cost) : 0;
 
-    await pool.query(
+    await client.query('BEGIN');
+
+    await client.query(
       `UPDATE bookings SET status = 'cancelled', cancelled_at = NOW(),
        cancellation_reason = $1, refund_amount = $2
        WHERE id = $3`,
       [reason || 'Cancelled by user', refundAmount, booking.id]
     );
 
+    // Refunds are always issued as wallet credit, regardless of the original
+    // payment method — there's no gateway refund integration.
+    if (refundAmount > 0) {
+      await client.query('UPDATE users SET credits = credits + $1 WHERE id = $2', [refundAmount, booking.user_id]);
+      await client.query(
+        `INSERT INTO transactions (user_id, type, source, amount, description, reference)
+         VALUES ($1, 'refund', 'booking_cancellation', $2, $3, $4)`,
+        [booking.user_id, refundAmount, `Refund for cancelled booking ${booking.booking_number}`, booking.id]
+      );
+    }
+
     // Audit log for admin cancellations
     if (isAdmin) {
-      await pool.query(
+      await client.query(
         `INSERT INTO audit_logs (admin_id, admin_name, action_type, entity_type, entity_id, before_state, after_state)
          VALUES ($1, $2, 'BOOKING_CANCELLED', 'booking', $3, $4, $5)`,
         [authReq.user?.id, 'Admin', booking.id,
@@ -311,13 +325,15 @@ export const cancelBooking: RequestHandler = async (req, res) => {
       );
     }
 
+    await client.query('COMMIT');
+
     // In-app notification to advertiser
     createNotification({
       user_id: booking.user_id,
       type: 'booking_cancelled',
       title: 'Booking cancelled',
       body: eligibleForRefund
-        ? `Your booking ${booking.booking_number} was cancelled. A refund of ₦${refundAmount.toLocaleString()} will be processed.`
+        ? `Your booking ${booking.booking_number} was cancelled. ₦${refundAmount.toLocaleString()} has been credited to your wallet.`
         : `Your booking ${booking.booking_number} was cancelled. No refund applicable (within 48-hour window).`,
       link: '/bookings',
     });
@@ -329,11 +345,102 @@ export const cancelBooking: RequestHandler = async (req, res) => {
 
     res.json({
       message: eligibleForRefund
-        ? `Booking cancelled. Refund of ₦${refundAmount.toLocaleString()} will be processed.`
+        ? `Booking cancelled. ₦${refundAmount.toLocaleString()} has been credited to your wallet.`
         : 'Booking cancelled. No refund applicable (within 48-hour window).',
       refund_amount: refundAmount,
     });
   } catch (err) {
+    await client.query('ROLLBACK').catch(() => {});
     res.status(500).json({ message: 'Cancellation failed' });
+  } finally {
+    client.release();
+  }
+};
+
+// ── Extend booking (wallet payment only — adds a block of time immediately
+// ── after the booking's current end, checked for conflicts and charged for
+// ── real, same as a fresh reservation would be) ────────────────────────────────
+export const extendBooking: RequestHandler = async (req, res) => {
+  const authReq = req as AuthRequest;
+  const client = await pool.connect();
+  try {
+    const additionalMinutes = Number(req.body.additional_minutes);
+    if (!additionalMinutes || additionalMinutes <= 0 || additionalMinutes > 60 * 24 * 30) {
+      res.status(400).json({ message: 'Please provide a valid number of additional minutes (up to 30 days).' });
+      return;
+    }
+
+    await client.query('BEGIN');
+
+    const bookingRes = await client.query(
+      `SELECT * FROM bookings WHERE id = $1 AND user_id = $2 AND status = 'active' FOR UPDATE`,
+      [req.params.id, authReq.user?.id]
+    );
+    if (!bookingRes.rows[0]) {
+      await client.query('ROLLBACK');
+      res.status(404).json({ message: 'Active booking not found' });
+      return;
+    }
+    const booking = bookingRes.rows[0];
+
+    const newStart = new Date(booking.end_time);
+    const newEnd = new Date(newStart.getTime() + additionalMinutes * 60000);
+
+    const conflict = await client.query(
+      `SELECT bs.id FROM booking_slots bs
+       WHERE bs.screen_id = $1
+         AND (bs.status = 'active' OR (bs.status = 'locked' AND bs.locked_until > NOW()))
+         AND tstzrange(bs.start_time, bs.end_time) && tstzrange($2::timestamptz, $3::timestamptz)`,
+      [booking.screen_id, newStart.toISOString(), newEnd.toISOString()]
+    );
+    if (conflict.rows.length > 0) {
+      await client.query('ROLLBACK');
+      res.status(409).json({ message: 'That time is already booked — someone else has the slot right after yours.' });
+      return;
+    }
+
+    const additionalCost = Math.round(additionalMinutes * Number(booking.cost_per_sec) * 60);
+
+    const userRes = await client.query('SELECT credits FROM users WHERE id = $1 FOR UPDATE', [authReq.user?.id]);
+    const credits = parseFloat(userRes.rows[0].credits);
+    if (credits < additionalCost) {
+      await client.query('ROLLBACK');
+      res.status(400).json({ message: `Insufficient wallet balance. Extending by ${additionalMinutes} minutes costs ₦${additionalCost.toLocaleString()}.` });
+      return;
+    }
+
+    await client.query('UPDATE users SET credits = credits - $1 WHERE id = $2', [additionalCost, authReq.user?.id]);
+    await client.query(
+      `INSERT INTO transactions (user_id, type, source, amount, description, reference)
+       VALUES ($1, 'debit', 'booking_extension', $2, $3, $4)`,
+      [authReq.user?.id, additionalCost, `Extended booking ${booking.booking_number} by ${additionalMinutes} min`, booking.booking_number]
+    );
+    await client.query(
+      `INSERT INTO booking_slots (booking_id, screen_id, start_time, end_time, status)
+       VALUES ($1, $2, $3, $4, 'active')`,
+      [booking.id, booking.screen_id, newStart.toISOString(), newEnd.toISOString()]
+    );
+    const updated = await client.query(
+      `UPDATE bookings SET end_time = $1, total_cost = total_cost + $2 WHERE id = $3 RETURNING *`,
+      [newEnd.toISOString(), additionalCost, booking.id]
+    );
+
+    await client.query('COMMIT');
+
+    createNotification({
+      user_id: booking.user_id,
+      type: 'booking_extended',
+      title: 'Booking extended',
+      body: `Your booking ${booking.booking_number} was extended by ${additionalMinutes} minutes for ₦${additionalCost.toLocaleString()}.`,
+      link: '/bookings',
+    });
+
+    res.json({ booking: updated.rows[0], additional_cost: additionalCost });
+  } catch (err: any) {
+    await client.query('ROLLBACK');
+    console.error('Extend booking error:', err);
+    res.status(500).json({ message: 'Could not extend this booking. Please try again.' });
+  } finally {
+    client.release();
   }
 };

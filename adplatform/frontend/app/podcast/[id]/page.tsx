@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import {
   AreaChart,
   Area,
@@ -17,8 +18,34 @@ import { theme } from '@/lib/theme';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { PageTransition } from '@/components/ui/Animations';
 import PodcastRightPanel from '@/components/podcast/PodcastRightPanel';
+import api from '@/lib/api';
 
 const F = theme.font.body;
+
+interface Episode {
+  id: string;
+  title: string;
+  cover_url: string | null;
+  duration_seconds: number | null;
+  status: string;
+  created_at: string;
+}
+interface Show {
+  id: string;
+  title: string;
+  cover_url: string | null;
+}
+
+function formatEpisodeDuration(sec: number | null) {
+  if (!sec) return null;
+  const m = Math.floor(sec / 60), s = sec % 60;
+  return `${m} min ${s.toString().padStart(2, '0')} sec`;
+}
+
+const EXAMPLE_BADGE: React.CSSProperties = {
+  fontSize: 9, fontWeight: 800, color: '#94A3B8', background: '#FFFFFF',
+  padding: '2px 7px', borderRadius: 100, letterSpacing: '0.04em', textTransform: 'uppercase',
+};
 
 const ANALYTICS_DATA = [
   { month: 'Jan', plays: 18, listeners: 10 },
@@ -35,8 +62,24 @@ const ANALYTICS_DATA = [
   { month: 'Dec', plays: 40, listeners: 48 },
 ];
 
-export default function PodcastDetailPage({ params }: { params: { id: string } }) {
+export default function PodcastDetailPage() {
+  const params = useParams<{ id: string }>();
   const [selectedTimeframe, setSelectedTimeframe] = useState('Year');
+  const [show, setShow] = useState<Show | null>(null);
+  const [episodes, setEpisodes] = useState<Episode[]>([]);
+  const [loadingShow, setLoadingShow] = useState(true);
+
+  useEffect(() => {
+    if (!params.id) return;
+    setLoadingShow(true);
+    api.get(`/shows/${params.id}`)
+      .then(res => {
+        setShow(res.data.podcast);
+        setEpisodes(res.data.episodes || []);
+      })
+      .catch(() => { setShow(null); setEpisodes([]); })
+      .finally(() => setLoadingShow(false));
+  }, [params.id]);
 
   return (
     <DashboardLayout>
@@ -74,7 +117,7 @@ export default function PodcastDetailPage({ params }: { params: { id: string } }
                 </Link>
 
                 <h1 style={{ fontSize: 14, fontWeight: 700, color: '#0F172A', margin: 0 }}>
-                  Undressed podcast
+                  {loadingShow ? 'Loading…' : show ? `${show.title} podcast` : 'Podcast not found'}
                 </h1>
               </div>
 
@@ -84,7 +127,10 @@ export default function PodcastDetailPage({ params }: { params: { id: string } }
               </div>
             </div>
 
-            {/* 4 Stat Cards */}
+            {/* 4 Stat Cards — example data until follower/listener tracking exists */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <span style={EXAMPLE_BADGE}>Example data</span>
+            </div>
             <div
               style={{
                 display: 'grid',
@@ -108,7 +154,7 @@ export default function PodcastDetailPage({ params }: { params: { id: string } }
                 </p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <span style={{ fontSize: 22, fontWeight: 700, color: '#0F172A', letterSpacing: '-0.02em' }}>
-                    3,01 5
+                    3,015
                   </span>
                   <div
                     style={{
@@ -226,9 +272,12 @@ export default function PodcastDetailPage({ params }: { params: { id: string } }
                   marginBottom: 12,
                 }}
               >
-                <h3 style={{ fontSize: 13, fontWeight: 700, color: '#0F172A', margin: 0 }}>
-                  Recent analytics
-                </h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <h3 style={{ fontSize: 13, fontWeight: 700, color: '#0F172A', margin: 0 }}>
+                    Recent analytics
+                  </h3>
+                  <span style={EXAMPLE_BADGE}>Example data</span>
+                </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
                   <span style={{ fontSize: 12, fontWeight: 600, color: '#64748B' }}>Year</span>
@@ -348,7 +397,7 @@ export default function PodcastDetailPage({ params }: { params: { id: string } }
                 }}
               >
                 <h3 style={{ fontSize: 13, fontWeight: 700, color: '#0F172A', margin: 0 }}>
-                  All episodes (2)
+                  All episodes ({episodes.length})
                 </h3>
 
                 <Link
@@ -370,34 +419,44 @@ export default function PodcastDetailPage({ params }: { params: { id: string } }
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                {[1, 2].map((num) => (
-                  <div key={num} style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                    <div
-                      style={{
-                        width: 44,
-                        height: 44,
-                        borderRadius: 8,
-                        overflow: 'hidden',
-                        background: '#F1F5F9',
-                        flexShrink: 0,
-                      }}
-                    >
-                      <img
-                        src="https://images.unsplash.com/photo-1509967419530-da38b4704bc6?w=400&auto=format&fit=crop&q=80"
-                        alt="Undressed cover"
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      />
+                {loadingShow ? (
+                  <p style={{ fontSize: 12, color: '#94A3B8' }}>Loading episodes…</p>
+                ) : episodes.length === 0 ? (
+                  <p style={{ fontSize: 12, color: '#94A3B8' }}>No episodes published yet.</p>
+                ) : episodes.map((ep) => {
+                  const duration = formatEpisodeDuration(ep.duration_seconds);
+                  const uploaded = new Date(ep.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+                  return (
+                    <div key={ep.id} style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                      <div
+                        style={{
+                          width: 44,
+                          height: 44,
+                          borderRadius: 8,
+                          overflow: 'hidden',
+                          background: '#F1F5F9',
+                          flexShrink: 0,
+                        }}
+                      >
+                        {ep.cover_url && (
+                          <img
+                            src={ep.cover_url}
+                            alt={`${ep.title} cover`}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          />
+                        )}
+                      </div>
+                      <div>
+                        <p style={{ fontSize: 13, fontWeight: 700, color: '#0F172A', margin: '0 0 2px' }}>
+                          {ep.title}
+                        </p>
+                        <p style={{ fontSize: 11.5, color: '#94A3B8', fontWeight: 500, margin: 0 }}>
+                          {ep.status === 'scheduled' ? 'Scheduled' : 'Uploaded'} {uploaded}{duration ? ` • ${duration}` : ''}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p style={{ fontSize: 13, fontWeight: 700, color: '#0F172A', margin: '0 0 2px' }}>
-                        Undressed
-                      </p>
-                      <p style={{ fontSize: 11.5, color: '#94A3B8', fontWeight: 500, margin: 0 }}>
-                        Uploaded August 17, 2026 • 2 min 22 sec • 2K Likes
-                      </p>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>

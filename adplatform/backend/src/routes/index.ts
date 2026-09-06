@@ -14,6 +14,7 @@ import {
   getBookingSlots,
   createBooking,
   cancelBooking,
+  extendBooking,
   reserveSlots
 } from '../controllers/bookingController';
 import { getAds, createAd, updateAd, deleteAd, getAdminReviewQueue, reviewAd } from '../controllers/adController';
@@ -25,16 +26,34 @@ import { getPlans, getBaseRate } from '../controllers/pricingController';
 import { initializePayment, initializeCreditPayment, verifyPayment, monnifyWebhook, devBypassPayment, payFromWallet, initializePaystackPayment, verifyPaystackPayment, paystackWebhook, initializePaystackCreditPayment, createReservedAccount } from '../controllers/paymentController';
 import { getNotifications, markRead, markAllRead, deleteNotification, getUnreadCount } from '../controllers/notificationController';
 import { submitCreativeRequest, getMyCreativeRequests, getAllCreativeRequests, updateCreativeRequestStatus } from '../controllers/creativeController';
-import { getAvailability, reserveSlot, getMyBookings } from '../controllers/podcastController';
+import { getAvailability, reserveSlot, reserveSeries, paySeriesFromWallet, getMyBookings, extendPodcastBooking, cancelPodcastBooking } from '../controllers/podcastController';
+import { createShow, getShow, createEpisode } from '../controllers/podcastShowController';
+import { sendChatMessage } from '../controllers/chatController';
+import { createReview } from '../controllers/reviewController';
 
 import pool from '../db/pool';
 
 const router = Router();
 
-// ── Podcasts ──────────────────────────────────────────────────────────────────
+// ── Podcast studio bookings (renting the physical studio) ─────────────────────
 router.get('/podcasts/availability', getAvailability);
 router.post('/podcasts/reserve', authenticate, reserveSlot);
+router.post('/podcasts/reserve-series', authenticate, reserveSeries);
+router.put('/podcasts/series/:seriesId/pay', authenticate, paySeriesFromWallet);
 router.get('/podcasts/my-bookings', authenticate, getMyBookings);
+router.put('/podcasts/:id/extend', authenticate, extendPodcastBooking);
+router.put('/podcasts/:id/cancel', authenticate, cancelPodcastBooking);
+
+// ── Reviews ───────────────────────────────────────────────────────────────────
+router.post('/reviews', authenticate, createReview);
+
+// ── Podcast content (shows a creator publishes + their episodes) ──────────────
+router.post('/shows', authenticate, upload.fields([{ name: 'cover', maxCount: 1 }]), createShow);
+router.get('/shows/:id', getShow);
+router.post('/shows/:id/episodes', authenticate, upload.fields([{ name: 'cover', maxCount: 1 }, { name: 'audio', maxCount: 1 }]), createEpisode);
+
+// ── Arella AI chat ──────────────────────────────────────────────────────────
+router.post('/chat', authenticate, sendChatMessage);
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 router.post('/auth/register', register);
@@ -74,6 +93,7 @@ router.post('/bookings/reserve', authenticate, reserveSlots);
 router.get('/bookings', authenticate, getBookings);
 router.post('/bookings', authenticate, createBooking);
 router.put('/bookings/:id/cancel', authenticate, cancelBooking);
+router.put('/bookings/:id/extend', authenticate, extendBooking);
 
 // ── Ads / Creatives ───────────────────────────────────────────────────────────
 router.get('/ads', authenticate, getAds);

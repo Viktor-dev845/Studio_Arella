@@ -633,7 +633,7 @@ export default function OnboardingPage() {
                 {/* Direct Action Links */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24, textAlign: 'left' }}>
                   <Link
-                    href="/bookings/screen-ad"
+                    href="/book"
                     style={{
                       background: '#FFFFFF',
                       border: '1px solid #E2E8F0',

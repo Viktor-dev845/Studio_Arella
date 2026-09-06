@@ -384,8 +384,8 @@ CREATE TABLE IF NOT EXISTS podcast_bookings (
   booking_number VARCHAR(50) UNIQUE NOT NULL,
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   package_type VARCHAR(50) NOT NULL,
-  start_time TIMESTAMP NOT NULL,
-  end_time TIMESTAMP NOT NULL,
+  start_time TIMESTAMPTZ NOT NULL,
+  end_time TIMESTAMPTZ NOT NULL,
   duration_minutes INTEGER NOT NULL,
   addons JSONB DEFAULT '[]'::jsonb,
   base_cost DECIMAL(10,2) DEFAULT 0.00,
@@ -400,3 +400,63 @@ CREATE TABLE IF NOT EXISTS podcast_bookings (
 CREATE INDEX IF NOT EXISTS podcast_bookings_user_idx ON podcast_bookings(user_id);
 CREATE INDEX IF NOT EXISTS podcast_bookings_status_idx ON podcast_bookings(status);
 CREATE INDEX IF NOT EXISTS podcast_bookings_date_idx ON podcast_bookings(start_time, end_time);
+
+-- ─── Podcast shows & episodes (content publishing — distinct from podcast_bookings,
+-- ─── which is studio *rental* time, not published content) ───────────────────
+CREATE TABLE IF NOT EXISTS podcasts (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  title VARCHAR(255) NOT NULL,
+  description TEXT,
+  cover_url TEXT,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS podcast_episodes (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  podcast_id UUID REFERENCES podcasts(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  episode_number INTEGER,
+  title VARCHAR(255) NOT NULL,
+  description TEXT,
+  cover_url TEXT,
+  audio_url TEXT NOT NULL,
+  duration_seconds INTEGER,
+  content_rating VARCHAR(20) DEFAULT 'everyone', -- 'everyone' | 'adult'
+  scheduled_at TIMESTAMPTZ,
+  status VARCHAR(20) DEFAULT 'published', -- 'scheduled' | 'published'
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_podcasts_user_id ON podcasts(user_id);
+CREATE INDEX IF NOT EXISTS idx_podcast_episodes_podcast_id ON podcast_episodes(podcast_id);
+
+-- ─── Booking reviews (polymorphic: covers both ad bookings and podcast studio
+-- ─── bookings, distinguished by booking_type — no FK since it can point at
+-- ─── either bookings or podcast_bookings) ─────────────────────────────────────
+CREATE TABLE IF NOT EXISTS booking_reviews (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  booking_type VARCHAR(20) NOT NULL, -- 'ad' | 'podcast'
+  booking_id UUID NOT NULL,
+  title VARCHAR(255),
+  body TEXT NOT NULL,
+  rating INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- One review per booking; this index also serves as the lookup index.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_booking_reviews_one_per_booking ON booking_reviews(booking_type, booking_id);
+
+-- ─── Optional session notes + cancellation tracking on podcast studio bookings ─
+ALTER TABLE podcast_bookings ADD COLUMN IF NOT EXISTS notes TEXT;
+ALTER TABLE podcast_bookings ADD COLUMN IF NOT EXISTS cancelled_at TIMESTAMPTZ;
+ALTER TABLE podcast_bookings ADD COLUMN IF NOT EXISTS cancellation_reason TEXT;
+ALTER TABLE podcast_bookings ADD COLUMN IF NOT EXISTS refund_amount DECIMAL(10,2);
+
+-- Links multiple podcast_bookings rows together as one recurring series,
+-- paid for once as a combined total rather than session-by-session.
+ALTER TABLE podcast_bookings ADD COLUMN IF NOT EXISTS series_id UUID;
+CREATE INDEX IF NOT EXISTS idx_podcast_bookings_series_id ON podcast_bookings(series_id);

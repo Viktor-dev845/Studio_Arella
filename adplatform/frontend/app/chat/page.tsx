@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { ChevronLeft, Pencil, RotateCcw, Globe, User } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { PageTransition } from '@/components/ui/Animations';
+import { useToast } from '@/components/ui/ToastProvider';
+import api from '@/lib/api';
 import { theme } from '@/lib/theme';
 
 const F = theme.font.body;
@@ -16,64 +18,62 @@ interface Message {
   timestamp: string;
 }
 
+// The API is stateless — we resend the whole conversation as {role, content}
+// pairs on every turn, same shape the Anthropic Messages API expects.
+function toApiHistory(msgs: Message[]) {
+  return msgs.map((m) => ({ role: m.sender === 'user' ? 'user' : 'assistant', content: m.text }));
+}
+
 export default function ChatPage() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      sender: 'user',
-      text: 'Nice!',
-      timestamp: 'Just now',
-    },
-    {
-      id: '2',
-      sender: 'arella',
-      text: `Artificial Intelligence (AI) offers numerous advantages and has the potential to revolutionize various aspects of our lives. Here are some key advantages of AI:
-
-1. Automation: AI can automate repetitive and mundane tasks, saving time and effort for humans. It can handle large volumes of data, perform complex calculations, and execute tasks with precision and consistency. This automation leads to increased productivity and efficiency in various industries.
-
-2. Decision-making: AI systems can analyze vast amounts of data, identify patterns, and make informed decisions based on that analysis. This ability is particularly useful in complex scenarios where humans may struggle to process large datasets or where quick and accurate decisions are crucial.
-
-3. Improved accuracy: AI algorithms can achieve high levels of accuracy and precision in tasks such as image recognition, natural language processing, and data analysis. They can eliminate human errors caused by fatigue, distractions, or bias, leading to more reliable and consistent results.
-
-4. Continuous operation: AI systems can work tirelessly without the need for breaks, resulting in uninterrupted 24/7 operations. This capability is especially beneficial in applications like customer support chatbots, manufacturing processes, and surveillance systems.`,
-      timestamp: 'Just now',
-    },
-  ]);
+  const { toast } = useToast();
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
 
+  const requestReply = async (history: Message[]) => {
+    setIsTyping(true);
+    try {
+      const res = await api.post('/chat', { messages: toApiHistory(history) });
+      const reply: Message = {
+        id: `${Date.now()}-a`,
+        sender: 'arella',
+        text: res.data.reply || "I didn't quite catch that — could you try again?",
+        timestamp: 'Just now',
+      };
+      setMessages((prev) => [...prev, reply]);
+    } catch (err: any) {
+      toast(err?.response?.data?.message || 'Arella AI could not respond right now.', 'error');
+    } finally {
+      setIsTyping(false);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputText.trim()) return;
+    if (!inputText.trim() || isTyping) return;
 
     const userMsg: Message = {
-      id: Date.now().toString(),
+      id: `${Date.now()}-u`,
       sender: 'user',
       text: inputText.trim(),
       timestamp: 'Just now',
     };
 
-    setMessages((prev) => [...prev, userMsg]);
+    const nextHistory = [...messages, userMsg];
+    setMessages(nextHistory);
     setInputText('');
-    setIsTyping(true);
-
-    setTimeout(() => {
-      const arellaReply: Message = {
-        id: (Date.now() + 1).toString(),
-        sender: 'arella',
-        text: `Thanks for your inquiry! Studio Arella AI is designed to help you optimize your podcast reach, plan ad slots, and grow your audience seamlessly. Feel free to ask about bookings, audience analytics, or campaign recommendations!`,
-        timestamp: 'Just now',
-      };
-      setMessages((prev) => [...prev, arellaReply]);
-      setIsTyping(false);
-    }, 800);
+    requestReply(nextHistory);
   };
 
   const handleRegenerate = () => {
-    setIsTyping(true);
-    setTimeout(() => {
-      setIsTyping(false);
-    }, 600);
+    if (isTyping) return;
+    // Drop the last Arella reply and re-ask with the same history up to that point.
+    const lastArellaIdx = [...messages].reverse().findIndex((m) => m.sender === 'arella');
+    if (lastArellaIdx === -1) return;
+    const cutIndex = messages.length - 1 - lastArellaIdx;
+    const trimmed = messages.slice(0, cutIndex);
+    setMessages(trimmed);
+    requestReply(trimmed);
   };
 
   return (

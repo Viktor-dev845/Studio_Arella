@@ -296,6 +296,11 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                         </Link>
                       </li>
                       <li>
+                        <Link href="/my-ads" style={{ fontSize: 13, color: pathname.startsWith('/my-ads') ? '#0F172A' : '#475569', textDecoration: 'none', fontWeight: pathname.startsWith('/my-ads') ? 700 : 500, padding: '4px 8px', display: 'block', borderRadius: 6 }} className="sidebar-item">
+                          My Ads
+                        </Link>
+                      </li>
+                      <li>
                         <Link href="/analytics" style={{ fontSize: 13, color: pathname === '/analytics' ? '#0F172A' : '#475569', textDecoration: 'none', fontWeight: pathname === '/analytics' ? 700 : 500, padding: '4px 8px', display: 'block', borderRadius: 6 }} className="sidebar-item">
                           Followers
                         </Link>

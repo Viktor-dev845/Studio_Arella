@@ -75,91 +75,6 @@ interface Ad {
 const ALLOWED_TYPES = ['video/mp4', 'video/quicktime', 'image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
 const MAX_SIZE_MB = 500;
 
-const SAMPLE_ADS: Ad[] = [
-  {
-    id: 'AD-9481',
-    title: 'Summer Flash Sale — 4K Billboard Spot',
-    status: 'approved',
-    file_type: 'video',
-    file_url: 'https://assets.mixkit.co/videos/preview/mixkit-fashion-model-in-neon-light-39875-large.mp4',
-    duration_seconds: 15,
-    campaign_name: 'Summer Mega Launch 2026',
-    created_at: new Date(Date.now() - 86400000 * 3).toISOString(),
-    play_count: 3420,
-    file_size_mb: 28.4,
-    resolution: '1920 × 1080 (FHD)',
-    recent_logs: [
-      { screen_name: 'Bems Junction Screen', city: 'Port Harcourt', booking_ref: 'BK-7740', played_at: '2 mins ago', duration: 15 },
-      { screen_name: 'VI Tower LED Display', city: 'Lagos', booking_ref: 'BK-7740', played_at: '14 mins ago', duration: 15 },
-      { screen_name: 'Aba Road Mega Board', city: 'Port Harcourt', booking_ref: 'BK-8902', played_at: '32 mins ago', duration: 15 },
-      { screen_name: 'Bems Junction Screen', city: 'Port Harcourt', booking_ref: 'BK-7740', played_at: '1 hour ago', duration: 15 },
-    ],
-  },
-  {
-    id: 'AD-8302',
-    title: 'Acoustic Studio Sessions VIP Access',
-    status: 'approved',
-    file_type: 'video',
-    file_url: 'https://assets.mixkit.co/videos/preview/mixkit-recording-studio-with-microphones-and-equipment-41487-large.mp4',
-    duration_seconds: 10,
-    campaign_name: 'Podcast Network Growth',
-    created_at: new Date(Date.now() - 86400000 * 5).toISOString(),
-    play_count: 1890,
-    file_size_mb: 16.2,
-    resolution: '1080 × 1920 (Vertical)',
-    recent_logs: [
-      { screen_name: 'VI Tower LED Display', city: 'Lagos', booking_ref: 'BK-6621', played_at: '8 mins ago', duration: 10 },
-      { screen_name: 'Ikeja Prime Terminal', city: 'Lagos', booking_ref: 'BK-6621', played_at: '25 mins ago', duration: 10 },
-    ],
-  },
-  {
-    id: 'AD-7195',
-    title: 'Apex Luxe Collection — Gold Stills',
-    status: 'approved',
-    file_type: 'image',
-    file_url: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=1200&auto=format&fit=crop',
-    duration_seconds: 10,
-    campaign_name: 'Sneaker Drop Spring',
-    created_at: new Date(Date.now() - 86400000 * 8).toISOString(),
-    play_count: 5120,
-    file_size_mb: 4.8,
-    resolution: '1920 × 1080 (High DPI)',
-    recent_logs: [
-      { screen_name: 'Bems Junction Screen', city: 'Port Harcourt', booking_ref: 'BK-5412', played_at: '12 mins ago', duration: 10 },
-      { screen_name: 'Aba Road Mega Board', city: 'Port Harcourt', booking_ref: 'BK-5412', played_at: '45 mins ago', duration: 10 },
-    ],
-  },
-  {
-    id: 'AD-6031',
-    title: 'Weekend Nightclub Rave Promo Spot',
-    status: 'pending',
-    file_type: 'video',
-    file_url: 'https://assets.mixkit.co/videos/preview/mixkit-dj-mixing-music-at-a-club-party-41364-large.mp4',
-    duration_seconds: 15,
-    campaign_name: 'Nightlife Port Harcourt',
-    created_at: new Date(Date.now() - 86400000 * 1).toISOString(),
-    play_count: 0,
-    file_size_mb: 22.1,
-    resolution: '1920 × 1080 (FHD)',
-    recent_logs: [],
-  },
-  {
-    id: 'AD-5120',
-    title: 'Automotive Expo Flyer — Draft Revision',
-    status: 'rejected',
-    file_type: 'image',
-    file_url: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1200&auto=format&fit=crop',
-    duration_seconds: 10,
-    campaign_name: 'Auto Expo 2026',
-    rejection_reason: 'Text contrast is below minimum threshold for daylight sunlight visibility. Please brighten background contrast.',
-    created_at: new Date(Date.now() - 86400000 * 4).toISOString(),
-    play_count: 0,
-    file_size_mb: 3.2,
-    resolution: '1920 × 1080 (Landscape)',
-    recent_logs: [],
-  },
-];
-
 function FileDropZone({ onFile }: { onFile: (f: File) => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
@@ -294,30 +209,16 @@ export default function AdsManagementPage() {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
-  // Fetch ads from API with fallback
+  // Fetch ads from API — real data only, no fabricated metrics or fallback library.
   const fetchAds = async () => {
     setLoading(true);
     try {
       const res = await api.get('/ads');
       const data = res.data?.ads;
-      if (Array.isArray(data) && data.length > 0) {
-        // Merge with sample metrics for presentation completeness
-        const merged: Ad[] = data.map((a: any, idx: number) => ({
-          ...a,
-          play_count: a.play_count || (a.status === 'approved' ? 1240 + idx * 350 : 0),
-          file_size_mb: a.file_size_mb || (a.file_type === 'video' ? 18.5 : 3.2),
-          resolution: a.resolution || '1920 × 1080 (FHD)',
-          recent_logs: a.recent_logs || (a.status === 'approved' ? [
-            { screen_name: 'Bems Junction Screen', city: 'Port Harcourt', booking_ref: 'BK-7740', played_at: '5 mins ago', duration: 15 },
-            { screen_name: 'VI Tower LED Display', city: 'Lagos', booking_ref: 'BK-7740', played_at: '28 mins ago', duration: 15 },
-          ] : []),
-        }));
-        setAds(merged);
-      } else {
-        setAds(SAMPLE_ADS);
-      }
+      setAds(Array.isArray(data) ? data : []);
     } catch (err) {
-      setAds(SAMPLE_ADS);
+      setAds([]);
+      toast('Could not load your creative library. Please try again.', 'error');
     } finally {
       setLoading(false);
     }
@@ -384,28 +285,7 @@ export default function AdsManagementPage() {
       setUploadProgress(0);
       fetchAds();
     } catch (err: any) {
-      // Local fallback simulation for smooth pairing testing
-      const newAd: Ad = {
-        id: `AD-${Math.floor(1000 + Math.random() * 9000)}`,
-        title: title.trim(),
-        status: 'pending',
-        file_type: selectedFile.type.startsWith('video/') ? 'video' : 'image',
-        file_url: URL.createObjectURL(selectedFile),
-        duration_seconds: videoDuration > 0 ? Math.ceil(videoDuration) : 10,
-        campaign_name: 'General Broadcast',
-        created_at: new Date().toISOString(),
-        play_count: 0,
-        file_size_mb: parseFloat((selectedFile.size / (1024 * 1024)).toFixed(1)),
-        resolution: '1920 × 1080 (HD)',
-        recent_logs: [],
-      };
-      setAds((prev) => [newAd, ...prev]);
-      toast('Creative uploaded successfully! Under review queue.', 'success');
-      setShowUploadModal(false);
-      setSelectedFile(null);
-      setTitle('');
-      setCampaignId(null);
-      setUploadProgress(0);
+      toast(err?.message || 'Upload failed. Please try again.', 'error');
     } finally {
       setUploading(false);
     }
@@ -420,9 +300,7 @@ export default function AdsManagementPage() {
       if (selectedCreative?.id === id) setSelectedCreative(null);
       toast('Creative deleted from library', 'info');
     } catch {
-      setAds((prev) => prev.filter((a) => a.id !== id));
-      if (selectedCreative?.id === id) setSelectedCreative(null);
-      toast('Creative removed', 'info');
+      toast('Could not delete this creative. Please try again.', 'error');
     }
   };
 
@@ -1142,7 +1020,7 @@ export default function AdsManagementPage() {
                       
                       {selectedCreative.status === 'approved' && (
                         <Link
-                          href="/bookings/screen-ad"
+                          href="/book"
                           style={{
                             display: 'inline-flex',
                             alignItems: 'center',

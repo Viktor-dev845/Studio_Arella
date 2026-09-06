@@ -283,7 +283,6 @@ export async function sendBookingReminderEmail(to: string, name: string, booking
 export async function sendCancellationEmail(to: string, name: string, booking: {
   booking_number: string;
   refund_amount: number;
-  refund_reference?: string;
 }) {
   const hasRefund = booking.refund_amount > 0;
   await sendEmail({
@@ -293,9 +292,9 @@ export async function sendCancellationEmail(to: string, name: string, booking: {
       ${h1('Booking cancelled')}
       ${p(`Hi ${name}, your booking <strong>${booking.booking_number}</strong> has been cancelled.`)}
       ${hasRefund
-        ? `${table(row('Refund Amount', `₦${Number(booking.refund_amount).toLocaleString()}`) + row('Refund Reference', booking.refund_reference || 'Processing'))}
+        ? `${table(row('Refund Amount', `₦${Number(booking.refund_amount).toLocaleString()}`))}
            <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:14px 18px;margin:16px 0">
-             <p style="font-size:13px;color:#15803D;font-weight:700;margin:0">A refund of ₦${Number(booking.refund_amount).toLocaleString()} has been initiated to your original payment method. Allow 3–5 business days.</p>
+             <p style="font-size:13px;color:#15803D;font-weight:700;margin:0">₦${Number(booking.refund_amount).toLocaleString()} has been credited to your Studio Arella wallet.</p>
            </div>`
         : `<div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:10px;padding:14px 18px;margin:16px 0">
              <p style="font-size:13px;color:#C2410C;font-weight:700;margin:0">This cancellation was within 48 hours of the scheduled slot. No refund is applicable per our cancellation policy.</p>

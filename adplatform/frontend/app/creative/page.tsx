@@ -1212,7 +1212,7 @@ export default function CreativeStudioPage() {
                             </Link>
 
                             <Link
-                              href="/bookings/screen-ad"
+                              href="/book"
                               style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#0F172A', color: '#fff', padding: '7px 14px', borderRadius: 8, fontSize: 12, fontWeight: 700, textDecoration: 'none', fontFamily: F }}
                             >
                               Book Screen Slot <ArrowRight size={12} />
@@ -1317,7 +1317,7 @@ export default function CreativeStudioPage() {
                       View in Pipeline
                     </button>
                     <Link
-                      href="/bookings/screen-ad"
+                      href="/book"
                       style={{
                         background: 'linear-gradient(135deg, #C69A2C 0%, #DFB755 100%)',
                         color: '#0B0E14',

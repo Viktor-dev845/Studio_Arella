@@ -171,79 +171,76 @@ export default function CartPage() {
     toast('Sample slot added to cart!', 'success');
   };
 
-  // Initiate Checkout
+  // Initiate Checkout — always reserves real slots first, regardless of payment method.
+  // No step here may silently treat a failure as success: a customer who sees
+  // "Payment successful" must have an actual paid or wallet-debited booking behind it.
   const handleProceedCheckout = async () => {
     if (cart.length === 0) {
       toast('Your cart is empty', 'error');
       return;
     }
+    if (paymentMethod === 'wallet' && !hasSufficientBalance) {
+      toast('Insufficient wallet balance. Please fund your wallet or pay via Card.', 'error');
+      return;
+    }
 
-    if (paymentMethod === 'wallet') {
-      if (!hasSufficientBalance) {
-        toast('Insufficient wallet balance. Please fund your wallet or pay via Card.', 'error');
-        return;
-      }
-      // Open "Pay from wallet" Modal (Frame 2121459611)
-      setShowWalletModal(true);
-    } else {
-      // Direct Card / Monnify Checkout
-      setReserving(true);
-      try {
-        const selectedCreative = cart[0]?.creative || { id: 'default-ad' };
-        const slots = cart.map(c => {
-          const d = new Date(c.date);
-          const startHour = Math.floor(c.startMin / 60);
-          const startMins = c.startMin % 60;
-          const startDt = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), startHour - 1, startMins));
-          const endDt = new Date(startDt.getTime() + (c.durationSec || 60) * 1000);
-          return { start: startDt.toISOString(), end: endDt.toISOString(), mins: (c.durationSec || 60) / 60 };
-        });
+    setReserving(true);
+    try {
+      const selectedCreative = cart[0]?.creative || { id: 'default-ad' };
+      const slots = cart.map(c => {
+        const d = new Date(c.date);
+        const startHour = Math.floor(c.startMin / 60);
+        const startMins = c.startMin % 60;
+        const startDt = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), startHour - 1, startMins));
+        const endDt = new Date(startDt.getTime() + (c.durationSec || 60) * 1000);
+        return { start: startDt.toISOString(), end: endDt.toISOString(), mins: (c.durationSec || 60) / 60 };
+      });
 
-        const res = await api.post('/bookings/reserve', {
-          screen_id: SCREEN_ID,
-          ad_id: selectedCreative.id,
-          slots: slots,
-          campaign_id: campaignId || undefined,
-        });
+      const res = await api.post('/bookings/reserve', {
+        screen_id: SCREEN_ID,
+        ad_id: selectedCreative.id,
+        slots: slots,
+        campaign_id: campaignId || undefined,
+      });
 
-        const bId = res.data.booking_id;
-        setBookingId(bId);
+      const bId = res.data.booking_id;
+      setBookingId(bId);
 
+      if (paymentMethod === 'wallet') {
+        // Slots are now reserved (5-minute lock) — open the wallet confirm modal.
+        setShowWalletModal(true);
+      } else {
         const payRes = await api.post('/payments/initialize', { booking_id: bId });
-        if (payRes.data?.checkout_url || payRes.data?.authorization_url) {
-          window.location.href = payRes.data.checkout_url || payRes.data.authorization_url;
+        const checkoutUrl = payRes.data?.checkout_url || payRes.data?.authorization_url;
+        if (checkoutUrl) {
+          window.location.href = checkoutUrl;
         } else {
-          // Simulation fallback
-          clearCart();
-          setShowSuccessModal(true);
+          toast('Could not start payment. Please try again.', 'error');
         }
-      } catch {
-        // Fallback for demonstration
-        clearCart();
-        setShowSuccessModal(true);
-      } finally {
-        setReserving(false);
       }
+    } catch (err: any) {
+      toast(err?.response?.data?.message || 'Could not reserve your slots. Please try again.', 'error');
+    } finally {
+      setReserving(false);
     }
   };
 
   // Confirm Wallet Payment (Triggered from Frame 2121459611)
   const handleConfirmWalletPayment = async () => {
+    if (!bookingId) {
+      toast('Your reservation expired — please try checking out again.', 'error');
+      setShowWalletModal(false);
+      return;
+    }
     setPaying(true);
     try {
-      if (bookingId) {
-        await api.post('/payments/wallet', { booking_id: bookingId });
-      }
+      await api.post('/payments/wallet', { booking_id: bookingId });
       setWalletBalance(prev => Math.max(0, prev - finalTotal));
       clearCart();
       setShowWalletModal(false);
       setShowSuccessModal(true);
-    } catch {
-      // If endpoint not reachable, simulate immediate success
-      setWalletBalance(prev => Math.max(0, prev - finalTotal));
-      clearCart();
-      setShowWalletModal(false);
-      setShowSuccessModal(true);
+    } catch (err: any) {
+      toast(err?.response?.data?.message || 'Payment failed. Please try again.', 'error');
     } finally {
       setPaying(false);
     }
@@ -258,7 +255,7 @@ export default function CartPage() {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 14 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <button 
-                onClick={() => router.push('/bookings/screen-ad')}
+                onClick={() => router.push('/book')}
                 style={{ 
                   background: '#FFFFFF', 
                   border: '1px solid #E2E8F0', 
@@ -307,7 +304,7 @@ export default function CartPage() {
               </p>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
                 <button
-                  onClick={() => router.push('/bookings/screen-ad')}
+                  onClick={() => router.push('/book')}
                   style={{
                     background: '#C69A2C',
                     color: '#FFFFFF',

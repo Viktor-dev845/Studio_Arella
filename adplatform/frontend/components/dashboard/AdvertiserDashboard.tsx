@@ -16,7 +16,7 @@ import {
 } from 'recharts';
 import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/api';
-import { ChevronDown, CreditCard, Globe, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronDown, CreditCard, Globe } from 'lucide-react';
 import { FaArrowTrendUp, FaArrowTrendDown } from 'react-icons/fa6';
 import { theme } from '@/lib/theme';
 
@@ -68,21 +68,18 @@ const TRAFFIC_BY_PODCAST = [
   { name: 'Family life', filled: 60 },
 ];
 
-// 12-month Podcast Bookings data with distinct alternating colors matching screenshot
-const PODCAST_BOOKINGS_BARS = [
-  { name: 'Jan', val: 18, color: '#FDE68A' }, // warm gold
-  { name: 'Feb', val: 30, color: '#FEF3C7' }, // soft cream
-  { name: 'Mar', val: 22, color: '#0F172A' }, // solid black
-  { name: 'Apr', val: 32, color: '#ECFCCB' }, // soft lime
-  { name: 'May', val: 14, color: '#FCD34D' }, // amber gold
-  { name: 'Jun', val: 26, color: '#FEF3C7' }, // soft cream
-  { name: 'Jul', val: 18, color: '#ECFCCB' }, // soft lime
-  { name: 'Aug', val: 30, color: '#FEF3C7' }, // soft cream
-  { name: 'Sep', val: 22, color: '#0F172A' }, // solid black
-  { name: 'Oct', val: 36, color: '#FDE68A' }, // warm gold
-  { name: 'Nov', val: 14, color: '#FEF3C7' }, // soft cream
-  { name: 'Dec', val: 26, color: '#ECFCCB' }, // soft lime
-];
+const BAR_COLORS = ['#FDE68A', '#FEF3C7', '#0F172A', '#ECFCCB', '#FCD34D', '#FEF3C7', '#ECFCCB', '#FEF3C7', '#0F172A', '#FDE68A', '#FEF3C7', '#ECFCCB'];
+const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+function podcastBookingsByMonth(bookings: any[]) {
+  const year = new Date().getFullYear();
+  const counts = new Array(12).fill(0);
+  bookings.forEach((b) => {
+    const d = new Date(b.start_time);
+    if (d.getFullYear() === year) counts[d.getMonth()] += 1;
+  });
+  return MONTH_NAMES.map((name, i) => ({ name, val: counts[i], color: BAR_COLORS[i] }));
+}
 
 // Activities matching screenshot exactly
 const ACTIVITIES = [
@@ -113,23 +110,64 @@ const ACTIVITIES = [
   },
 ];
 
+const EXAMPLE_BADGE: React.CSSProperties = {
+  fontSize: 9, fontWeight: 800, color: '#94A3B8', background: '#F1F5F9',
+  padding: '2px 7px', borderRadius: 100, letterSpacing: '0.04em', textTransform: 'uppercase',
+};
+
+function formatEventTime(iso: string) {
+  return new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+}
+
+function isSameDay(a: Date, b: Date) {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+
+function formatEventDay(iso: string) {
+  const d = new Date(iso);
+  const now = new Date();
+  if (isSameDay(d, now)) return 'Today';
+  const tomorrow = new Date(now); tomorrow.setDate(now.getDate() + 1);
+  if (isSameDay(d, tomorrow)) return 'Tomorrow';
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+}
+
 export default function AdvertiserDashboard() {
   const { user } = useAuthStore();
   const [balance, setBalance] = useState<any>(null);
+  const [podcastBookings, setPodcastBookings] = useState<any[]>([]);
+  const [adBookings, setAdBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
-    api
-      .get('/finances/balance')
-      .then((res) => {
-        if (isMounted) setBalance(res.data);
-      })
-      .catch(() => {});
+    api.get('/finances/balance').then((res) => { if (isMounted) setBalance(res.data); }).catch(() => {});
+    api.get('/podcasts/my-bookings').then((res) => { if (isMounted) setPodcastBookings(res.data.bookings || []); }).catch(() => {});
+    api.get('/bookings?limit=50').then((res) => { if (isMounted) setAdBookings(res.data.bookings || []); }).catch(() => {});
     return () => {
       isMounted = false;
     };
   }, []);
+
+  const bookedPodcastSlots = podcastBookings.filter((b) => b.status !== 'cancelled').length;
+
+  const upcomingEvents = [
+    ...podcastBookings
+      .filter((b) => b.status !== 'cancelled' && new Date(b.start_time).getTime() >= Date.now())
+      .map((b) => ({ title: 'Podcast session', time: b.start_time, border: '#22C55E' })),
+    ...adBookings
+      .filter((b) => !['cancelled', 'failed'].includes(b.status) && new Date(b.start_time).getTime() >= Date.now())
+      .map((b) => ({ title: 'Ad screen booking', time: b.start_time, border: '#F59E0B' })),
+  ]
+    .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())
+    .slice(0, 3)
+    .map((ev) => ({ ...ev, isToday: isSameDay(new Date(ev.time), new Date()) }));
+
+  const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', weekday: 'short' });
+
+  const podcastBookingsMonthly = podcastBookingsByMonth(podcastBookings);
+  const monthlyMax = Math.max(4, ...podcastBookingsMonthly.map((m) => m.val));
+  const yAxisTicks = [0, Math.round(monthlyMax / 2), monthlyMax];
 
   return (
     <div
@@ -179,7 +217,10 @@ export default function AdvertiserDashboard() {
               border: '1px solid rgba(212,175,55,0.06)',
             }}
           >
-            <p style={{ fontSize: 13, color: '#0F172A', margin: '0 0 16px', fontWeight: 700 }}>Total Podcast</p>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 16px' }}>
+              <p style={{ fontSize: 13, color: '#0F172A', margin: 0, fontWeight: 700 }}>Total Podcast</p>
+              <span style={EXAMPLE_BADGE}>Example</span>
+            </div>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
               <span style={{ fontSize: 28, fontWeight: 800, color: '#0F172A', lineHeight: 1 }}>7</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#10B981', fontSize: 11, fontWeight: 800 }}>
@@ -197,7 +238,10 @@ export default function AdvertiserDashboard() {
               border: '1px solid rgba(212,175,55,0.06)',
             }}
           >
-            <p style={{ fontSize: 13, color: '#0F172A', margin: '0 0 16px', fontWeight: 700 }}>Total Active Listeners</p>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 16px' }}>
+              <p style={{ fontSize: 13, color: '#0F172A', margin: 0, fontWeight: 700 }}>Total Active Listeners</p>
+              <span style={EXAMPLE_BADGE}>Example</span>
+            </div>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
               <span style={{ fontSize: 28, fontWeight: 800, color: '#0F172A', lineHeight: 1 }}>3,671</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#64748B', fontSize: 11, fontWeight: 800 }}>
@@ -215,7 +259,10 @@ export default function AdvertiserDashboard() {
               border: '1px solid rgba(212,175,55,0.06)',
             }}
           >
-            <p style={{ fontSize: 13, color: '#0F172A', margin: '0 0 16px', fontWeight: 700 }}>Followers</p>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 16px' }}>
+              <p style={{ fontSize: 13, color: '#0F172A', margin: 0, fontWeight: 700 }}>Followers</p>
+              <span style={EXAMPLE_BADGE}>Example</span>
+            </div>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
               <span style={{ fontSize: 28, fontWeight: 800, color: '#0F172A', lineHeight: 1 }}>3,671</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#10B981', fontSize: 11, fontWeight: 800 }}>
@@ -235,7 +282,7 @@ export default function AdvertiserDashboard() {
           >
             <p style={{ fontSize: 13, color: '#0F172A', margin: '0 0 16px', fontWeight: 700 }}>Booked Podcast Slots</p>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 28, fontWeight: 800, color: '#0F172A', lineHeight: 1 }}>2</span>
+              <span style={{ fontSize: 28, fontWeight: 800, color: '#0F172A', lineHeight: 1 }}>{bookedPodcastSlots}</span>
             </div>
           </div>
         </div>
@@ -248,6 +295,7 @@ export default function AdvertiserDashboard() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                 <span style={{ fontSize: 14, fontWeight: 800, color: '#0F172A' }}>Total Podcast Views</span>
                 <span style={{ fontSize: 13, fontWeight: 500, color: '#94A3B8', cursor: 'pointer' }}>Total Followers</span>
+                <span style={EXAMPLE_BADGE}>Example</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#475569', fontWeight: 600 }}>
@@ -282,7 +330,10 @@ export default function AdvertiserDashboard() {
 
           {/* Right Card: Traffic by Podcast */}
           <div style={{ background: '#FFFFFF', borderRadius: 20, padding: '22px 24px', border: '1px solid #F1F5F9' }}>
-            <p style={{ fontSize: 14, fontWeight: 800, color: '#0F172A', margin: '0 0 20px' }}>Traffic by Podcast</p>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 20px' }}>
+              <p style={{ fontSize: 14, fontWeight: 800, color: '#0F172A', margin: 0 }}>Traffic by Podcast</p>
+              <span style={EXAMPLE_BADGE}>Example</span>
+            </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               {TRAFFIC_BY_PODCAST.map((t, idx) => (
                 <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14 }}>
@@ -301,16 +352,16 @@ export default function AdvertiserDashboard() {
 
         {/* Row 3: Podcast Bookings (12 Months Bar Chart) */}
         <div style={{ background: '#FFFFFF', borderRadius: 20, padding: '22px 24px', border: '1px solid #F1F5F9' }}>
-          <p style={{ fontSize: 14, fontWeight: 800, color: '#0F172A', margin: '0 0 16px' }}>Podcast Bookings</p>
+          <p style={{ fontSize: 14, fontWeight: 800, color: '#0F172A', margin: '0 0 16px' }}>Podcast Bookings ({new Date().getFullYear()})</p>
           <div style={{ height: 190, width: '100%' }}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={PODCAST_BOOKINGS_BARS} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
+              <BarChart data={podcastBookingsMonthly} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
                 <CartesianGrid vertical={false} stroke="#F8FAFC" />
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94A3B8' }} dy={8} />
-                <YAxis domain={[0, 35]} ticks={[0, 10, 20, 30]} axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94A3B8' }} />
+                <YAxis domain={[0, monthlyMax]} ticks={yAxisTicks} allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94A3B8' }} />
                 <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }} />
                 <Bar dataKey="val" name="Bookings" radius={[10, 10, 10, 10]} barSize={18}>
-                  {PODCAST_BOOKINGS_BARS.map((entry, index) => (
+                  {podcastBookingsMonthly.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Bar>
@@ -399,7 +450,7 @@ export default function AdvertiserDashboard() {
               <div>
                 <p style={{ fontSize: 12, fontWeight: 700, margin: '0 0 6px', color: '#FFFFFF' }}>Wallet Bal</p>
                 <p style={{ fontSize: 16, fontWeight: 800, margin: 0, color: '#FFFFFF', letterSpacing: '-0.2px' }}>
-                  $ {(balance?.credits ? balance.credits.toLocaleString() : '10,000')}
+                  {balance ? `₦${Number(balance.credits || 0).toLocaleString()}` : '—'}
                 </p>
               </div>
               <div style={{ position: 'relative', zIndex: 1 }}>
@@ -410,7 +461,7 @@ export default function AdvertiserDashboard() {
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             <Link
-              href="/bookings/screen-ad"
+              href="/book"
               style={{
                 padding: '9px 12px',
                 background: '#F1F5F9',
@@ -445,7 +496,10 @@ export default function AdvertiserDashboard() {
 
         {/* Activities Section */}
         <div>
-          <p style={{ fontSize: 14, fontWeight: 800, color: '#0F172A', margin: '0 0 14px' }}>Activities</p>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 14px' }}>
+            <p style={{ fontSize: 14, fontWeight: 800, color: '#0F172A', margin: 0 }}>Activities</p>
+            <span style={EXAMPLE_BADGE}>Example</span>
+          </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {ACTIVITIES.map((act, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -474,57 +528,14 @@ export default function AdvertiserDashboard() {
         <div>
           <p style={{ fontSize: 14, fontWeight: 800, color: '#0F172A', margin: '0 0 14px' }}>Recent Booking Calendar</p>
           
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 12, color: '#475569', fontWeight: 600 }}>Aug 15, Sat</span>
-              <span style={{ fontSize: 9, background: '#0F172A', color: '#FFFFFF', padding: '2px 7px', borderRadius: 100, fontWeight: 800 }}>
-                TODAY
-              </span>
-            </div>
-            <div style={{ display: 'flex', gap: 3 }}>
-              <button
-                style={{
-                  width: 20,
-                  height: 20,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  background: '#FFFFFF',
-                  border: '1px solid #E2E8F0',
-                  borderRadius: 4,
-                  color: '#475569',
-                  cursor: 'pointer',
-                  padding: 0,
-                }}
-              >
-                <ChevronLeft size={12} />
-              </button>
-              <button
-                style={{
-                  width: 20,
-                  height: 20,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  background: '#FFFFFF',
-                  border: '1px solid #E2E8F0',
-                  borderRadius: 4,
-                  color: '#475569',
-                  cursor: 'pointer',
-                  padding: 0,
-                }}
-              >
-                <ChevronRight size={12} />
-              </button>
-            </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+            <span style={{ fontSize: 12, color: '#475569', fontWeight: 600 }}>{today}</span>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 }}>
-            {[
-              { title: 'Podcast session', time: '16:00', border: '#22C55E' },
-              { title: 'Ad screen booking', time: '14:00', border: '#F59E0B' },
-              { title: 'Ad screen booking', time: '13:00', border: '#3B82F6' },
-            ].map((ev, i) => (
+            {upcomingEvents.length === 0 ? (
+              <p style={{ fontSize: 12, color: '#94A3B8', fontWeight: 600 }}>No upcoming bookings.</p>
+            ) : upcomingEvents.map((ev, i) => (
               <div
                 key={i}
                 style={{
@@ -535,15 +546,22 @@ export default function AdvertiserDashboard() {
                   padding: '10px 14px',
                 }}
               >
-                <p style={{ fontSize: 12, color: '#0F172A', fontWeight: 700, margin: '0 0 2px' }}>{ev.title}</p>
-                <p style={{ fontSize: 11, color: '#64748B', margin: 0, fontWeight: 600 }}>{ev.time}</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                  <p style={{ fontSize: 12, color: '#0F172A', fontWeight: 700, margin: 0 }}>{ev.title}</p>
+                  {ev.isToday && (
+                    <span style={{ fontSize: 8.5, background: '#0F172A', color: '#FFFFFF', padding: '1px 6px', borderRadius: 10, fontWeight: 800, letterSpacing: '0.04em' }}>
+                      TODAY
+                    </span>
+                  )}
+                </div>
+                <p style={{ fontSize: 11, color: '#64748B', margin: 0, fontWeight: 600 }}>{formatEventDay(ev.time)} · {formatEventTime(ev.time)}</p>
               </div>
             ))}
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
             <Link
-              href="/bookings/screen-ad"
+              href="/book"
               style={{
                 padding: '8px 12px',
                 background: '#F1F5F9',
@@ -558,7 +576,7 @@ export default function AdvertiserDashboard() {
               Book Ad slot
             </Link>
             <Link
-              href="/podcast/new"
+              href="/podcast/book"
               style={{
                 padding: '8px 12px',
                 background: '#FFFFFF',

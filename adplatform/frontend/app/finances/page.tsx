@@ -464,7 +464,7 @@ export default function FinancesPage() {
                   </div>
 
                   <Link 
-                    href="/bookings/screen-ad"
+                    href="/book"
                     style={{ 
                       display: 'inline-flex', 
                       alignItems: 'center', 

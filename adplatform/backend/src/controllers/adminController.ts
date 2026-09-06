@@ -16,21 +16,23 @@ export const getPlatformStats : RequestHandler = async (req, res) => {
     const authReq = req as AuthRequest;
   if (!adminOnly(req, res)) return;
   try {
-    const [users, campaigns, bookings, screens, revenue, recentUsers] = await Promise.all([
+    const [users, campaigns, bookings, podcastBookings, screens, revenue, podcastRevenue, recentUsers] = await Promise.all([
       pool.query('SELECT COUNT(*) FROM users'),
       pool.query('SELECT COUNT(*) FROM campaigns'),
       pool.query('SELECT COUNT(*) FROM bookings'),
+      pool.query('SELECT COUNT(*) FROM podcast_bookings'),
       pool.query('SELECT COUNT(*) FROM screens'),
       pool.query(`SELECT COALESCE(SUM(total_cost),0) as total FROM bookings WHERE status != 'cancelled'`),
+      pool.query(`SELECT COALESCE(SUM(total_cost),0) as total FROM podcast_bookings WHERE status != 'cancelled'`),
       pool.query(`SELECT id, name, email, role, COALESCE(credits, 0) as credits, created_at FROM users ORDER BY created_at DESC LIMIT 10`),
     ]);
 
     res.json({
       users: parseInt(users.rows[0].count),
       campaigns: parseInt(campaigns.rows[0].count),
-      bookings: parseInt(bookings.rows[0].count),
+      bookings: parseInt(bookings.rows[0].count) + parseInt(podcastBookings.rows[0].count),
       screens: parseInt(screens.rows[0].count),
-      revenue: parseFloat(revenue.rows[0].total),
+      revenue: parseFloat(revenue.rows[0].total) + parseFloat(podcastRevenue.rows[0].total),
       recent_users: recentUsers.rows,
     });
   } catch (err) {
@@ -57,6 +59,9 @@ export const getAllUsers : RequestHandler = async (req, res) => {
   }
 };
 
+// Combines screen-ad bookings and podcast studio bookings into one list —
+// this page presents itself as "all bookings on the platform", so it needs
+// to actually include both booking types, not just screen ads.
 export const getAllBookings : RequestHandler = async (req, res) => {
     const authReq = req as AuthRequest;
   if (!adminOnly(req, res)) return;
@@ -64,17 +69,28 @@ export const getAllBookings : RequestHandler = async (req, res) => {
     const { page = 1, limit = 20 } = req.query;
     const offset = (Number(page) - 1) * Number(limit);
     const result = await pool.query(
-      `SELECT b.*, u.name as user_name, u.email as user_email,
-       s.name as screen_name, c.name as campaign_name
-       FROM bookings b
-       LEFT JOIN users u ON b.user_id = u.id
-       LEFT JOIN screens s ON b.screen_id = s.id
-       LEFT JOIN campaigns c ON b.campaign_id = c.id
-       ORDER BY b.created_at DESC LIMIT $1 OFFSET $2`,
+      `SELECT * FROM (
+         SELECT b.id, b.booking_number, 'ad' as booking_type, b.total_cost, b.status,
+                b.start_time, b.created_at, u.name as user_name, u.email as user_email,
+                s.name as screen_name, c.name as campaign_name
+         FROM bookings b
+         LEFT JOIN users u ON b.user_id = u.id
+         LEFT JOIN screens s ON b.screen_id = s.id
+         LEFT JOIN campaigns c ON b.campaign_id = c.id
+         UNION ALL
+         SELECT pb.id, pb.booking_number, 'podcast' as booking_type, pb.total_cost, pb.status,
+                pb.start_time, pb.created_at, u.name as user_name, u.email as user_email,
+                NULL as screen_name, pb.package_type as campaign_name
+         FROM podcast_bookings pb
+         LEFT JOIN users u ON pb.user_id = u.id
+       ) combined
+       ORDER BY created_at DESC LIMIT $1 OFFSET $2`,
       [Number(limit), offset]
     );
-    const count = await pool.query('SELECT COUNT(*) FROM bookings');
-    res.json({ bookings: result.rows, total: parseInt(count.rows[0].count) });
+    const count = await pool.query(
+      `SELECT (SELECT COUNT(*) FROM bookings) + (SELECT COUNT(*) FROM podcast_bookings) as total`
+    );
+    res.json({ bookings: result.rows, total: parseInt(count.rows[0].total) });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }

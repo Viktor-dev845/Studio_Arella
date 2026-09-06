@@ -31,6 +31,7 @@ export const getScreens : RequestHandler = async (req, res) => {
 
 export const createScreen : RequestHandler = async (req, res) => {
     const authReq = req as AuthRequest;
+  if (authReq.user?.role !== 'admin') { res.status(403).json({ message: 'Admin only' }); return; }
   try {
     const { name, location, type, size, price_per_sec, impressions_per_day } = req.body;
     const result = await pool.query(

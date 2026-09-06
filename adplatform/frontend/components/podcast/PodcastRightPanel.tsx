@@ -1,13 +1,27 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ChevronRight, Globe } from 'lucide-react';
 import { theme } from '@/lib/theme';
+import api from '@/lib/api';
 
 const F = theme.font.body;
 
+const EXAMPLE_BADGE: React.CSSProperties = {
+  fontSize: 9, fontWeight: 800, color: '#94A3B8', background: '#F1F5F9',
+  padding: '2px 7px', borderRadius: 100, letterSpacing: '0.04em', textTransform: 'uppercase',
+};
+
 interface PodcastRightPanelProps {
   variant?: 'calendar' | 'promos';
+}
+
+interface UpcomingBooking {
+  title: string;
+  time: string;
+  border: string;
+  isToday: boolean;
 }
 
 const TOP_PERFORMING_TOPICS = [
@@ -43,13 +57,47 @@ const TOP_PERFORMING_TOPICS = [
   },
 ];
 
-const RECENT_BOOKINGS = [
-  { title: 'Podcast session', time: '16:00', border: '#10B981' },
-  { title: 'Podcast booking', time: '14:00', border: '#F59E0B' },
-  { title: 'Podcast booking', time: '13:00', border: '#38BDF8' },
-];
+function formatBookingTime(iso: string) {
+  return new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+}
+
+function isSameDay(a: Date, b: Date) {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+
+function formatBookingDay(iso: string) {
+  const d = new Date(iso);
+  const now = new Date();
+  if (isSameDay(d, now)) return 'Today';
+  const tomorrow = new Date(now); tomorrow.setDate(now.getDate() + 1);
+  if (isSameDay(d, tomorrow)) return 'Tomorrow';
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+}
 
 export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRightPanelProps) {
+  const [upcoming, setUpcoming] = useState<UpcomingBooking[]>([]);
+
+  useEffect(() => {
+    if (variant !== 'calendar') return;
+    api.get('/podcasts/my-bookings')
+      .then((res) => {
+        const bookings = (res.data.bookings || [])
+          .filter((b: any) => b.status !== 'cancelled' && new Date(b.start_time).getTime() >= Date.now())
+          .sort((a: any, b: any) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
+          .slice(0, 3)
+          .map((b: any) => ({
+            title: 'Podcast session',
+            time: b.start_time,
+            border: '#10B981',
+            isToday: isSameDay(new Date(b.start_time), new Date()),
+          }));
+        setUpcoming(bookings);
+      })
+      .catch(() => setUpcoming([]));
+  }, [variant]);
+
+  const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', weekday: 'short' });
+
   if (variant === 'promos') {
     return (
       <div style={{ width: 280, display: 'flex', flexDirection: 'column', gap: 20, flexShrink: 0, fontFamily: F }}>
@@ -78,7 +126,7 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
             <Link
-              href="/bookings/screen-ad"
+              href="/podcast/book"
               style={{
                 background: '#FBF5E8',
                 color: '#1E293B',
@@ -137,7 +185,7 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
 
           <div>
             <Link
-              href="/bookings/screen-ad"
+              href="/podcast/book"
               style={{
                 background: '#E2F163',
                 color: '#0F172A',
@@ -225,9 +273,12 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
 
       {/* Your top performing topics */}
       <div>
-        <h3 style={{ fontSize: 12.5, fontWeight: 700, color: '#0F172A', margin: '0 0 14px' }}>
-          Your top performing topics
-        </h3>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 14px' }}>
+          <h3 style={{ fontSize: 12.5, fontWeight: 700, color: '#0F172A', margin: 0 }}>
+            Your top performing topics
+          </h3>
+          <span style={EXAMPLE_BADGE}>Example</span>
+        </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {TOP_PERFORMING_TOPICS.map((topic, i) => (
@@ -277,70 +328,16 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
           Recent Podcast Booking Calendar
         </h3>
 
-        {/* Date line with TODAY and arrows */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: '#0F172A' }}>Aug 15, Sat</span>
-            <span
-              style={{
-                fontSize: 9,
-                fontWeight: 800,
-                color: '#FFFFFF',
-                background: '#1E293B',
-                padding: '2px 7px',
-                borderRadius: 12,
-                letterSpacing: '0.04em',
-              }}
-            >
-              TODAY
-            </span>
-          </div>
-
-          <div style={{ display: 'flex', gap: 4 }}>
-            <button
-              type="button"
-              style={{
-                width: 20,
-                height: 20,
-                borderRadius: 4,
-                border: '1px solid #E2E8F0',
-                background: '#FFFFFF',
-                color: '#64748B',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 11,
-                cursor: 'pointer',
-                padding: 0,
-              }}
-            >
-              &lt;
-            </button>
-            <button
-              type="button"
-              style={{
-                width: 20,
-                height: 20,
-                borderRadius: 4,
-                border: '1px solid #E2E8F0',
-                background: '#FFFFFF',
-                color: '#64748B',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 11,
-                cursor: 'pointer',
-                padding: 0,
-              }}
-            >
-              &gt;
-            </button>
-          </div>
+        {/* Today's date */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: '#0F172A' }}>{today}</span>
         </div>
 
         {/* Bookings cards */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 }}>
-          {RECENT_BOOKINGS.map((b, i) => (
+          {upcoming.length === 0 ? (
+            <p style={{ fontSize: 11.5, color: '#94A3B8', fontWeight: 600, margin: 0 }}>No upcoming sessions.</p>
+          ) : upcoming.map((b, i) => (
             <div
               key={i}
               style={{
@@ -351,11 +348,18 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
                 padding: '9px 12px',
               }}
             >
-              <p style={{ fontSize: 12, fontWeight: 700, color: '#0F172A', margin: '0 0 2px' }}>
-                {b.title}
-              </p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                <p style={{ fontSize: 12, fontWeight: 700, color: '#0F172A', margin: 0 }}>
+                  {b.title}
+                </p>
+                {b.isToday && (
+                  <span style={{ fontSize: 8.5, fontWeight: 800, color: '#FFFFFF', background: '#1E293B', padding: '1px 6px', borderRadius: 10, letterSpacing: '0.04em' }}>
+                    TODAY
+                  </span>
+                )}
+              </div>
               <p style={{ fontSize: 10.5, color: '#94A3B8', margin: 0, fontWeight: 500 }}>
-                {b.time}
+                {formatBookingDay(b.time)} · {formatBookingTime(b.time)}
               </p>
             </div>
           ))}
@@ -363,7 +367,7 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
 
         {/* Book podcast slot button */}
         <Link
-          href="/bookings/screen-ad"
+          href="/podcast/book"
           style={{
             width: '100%',
             padding: '10px 14px',

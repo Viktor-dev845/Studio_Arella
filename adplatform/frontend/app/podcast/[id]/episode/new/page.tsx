@@ -2,27 +2,34 @@
 
 import { useState, useRef } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import {
   ChevronLeft,
   ChevronDown,
   Camera,
-  Upload,
+  UploadCloud,
   Calendar,
   Clock,
+  Check,
+  Loader2,
 } from 'lucide-react';
 import { theme } from '@/lib/theme';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { PageTransition } from '@/components/ui/Animations';
+import { useToast } from '@/components/ui/ToastProvider';
+import api from '@/lib/api';
 import PodcastRightPanel from '@/components/podcast/PodcastRightPanel';
 
 const F = theme.font.body;
 
-export default function AddNewEpisodePage({ params }: { params: { id: string } }) {
+export default function AddNewEpisodePage() {
+  const params = useParams<{ id: string }>();
   const router = useRouter();
+  const { toast } = useToast();
 
   const [coverPhoto, setCoverPhoto] = useState<string | null>(null);
-  
+  const [coverPhotoFile, setCoverPhotoFile] = useState<File | null>(null);
+
   const [selectedEpisode, setSelectedEpisode] = useState('');
   const [episodeDropdownOpen, setEpisodeDropdownOpen] = useState(false);
   const [episodeTitle, setEpisodeTitle] = useState('');
@@ -35,12 +42,16 @@ export default function AddNewEpisodePage({ params }: { params: { id: string } }
   const [contentRating, setContentRating] = useState('');
   const [ratingDropdownOpen, setRatingDropdownOpen] = useState(false);
 
+  const [posting, setPosting] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
 
   const handleCoverPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      setCoverPhotoFile(file);
       setCoverPhoto(URL.createObjectURL(file));
     }
   };
@@ -51,8 +62,34 @@ export default function AddNewEpisodePage({ params }: { params: { id: string } }
     }
   };
 
-  const handlePost = () => {
-    router.push(`/podcast/${params.id}`);
+  const handlePost = async () => {
+    if (!episodeTitle.trim()) { toast('Please give this episode a title', 'error'); return; }
+    if (!audioFile) { toast('Please upload an audio file', 'error'); return; }
+
+    setPosting(true);
+    try {
+      let scheduledAt: string | null = null;
+      if (scheduleDate) {
+        const dt = new Date(`${scheduleDate}T${timerTime || '00:00'}`);
+        if (!isNaN(dt.getTime())) scheduledAt = dt.toISOString();
+      }
+
+      const form = new FormData();
+      form.append('title', episodeTitle.trim());
+      if (episodeDescription.trim()) form.append('description', episodeDescription.trim());
+      if (selectedEpisode) form.append('episode_number', selectedEpisode);
+      form.append('content_rating', contentRating === 'Contain adult content' ? 'adult' : 'everyone');
+      if (scheduledAt) form.append('scheduled_at', scheduledAt);
+      form.append('audio', audioFile);
+      if (coverPhotoFile) form.append('cover', coverPhotoFile);
+
+      await api.post(`/shows/${params.id}/episodes`, form, { headers: { 'Content-Type': undefined } });
+      setShowSuccess(true);
+    } catch (err: any) {
+      toast(err?.response?.data?.message || 'Could not publish this episode. Please try again.', 'error');
+    } finally {
+      setPosting(false);
+    }
   };
 
   const commonInputStyle: React.CSSProperties = {
@@ -299,7 +336,7 @@ export default function AddNewEpisodePage({ params }: { params: { id: string } }
                     marginBottom: 10,
                   }}
                 >
-                  <Upload size={16} color="#FFFFFF" strokeWidth={2.5} />
+                  <UploadCloud size={16} color="#FFFFFF" strokeWidth={2.5} />
                 </div>
 
                 <p style={{ fontSize: 13, fontWeight: 700, color: '#0F172A', margin: '0 0 4px' }}>
@@ -454,6 +491,7 @@ export default function AddNewEpisodePage({ params }: { params: { id: string } }
                 <button
                   type="button"
                   onClick={handlePost}
+                  disabled={posting}
                   style={{
                     padding: '10px 32px',
                     borderRadius: 8,
@@ -462,12 +500,15 @@ export default function AddNewEpisodePage({ params }: { params: { id: string } }
                     fontSize: 12.5,
                     fontWeight: 700,
                     color: '#FFFFFF',
-                    cursor: 'pointer',
+                    cursor: posting ? 'not-allowed' : 'pointer',
+                    opacity: posting ? 0.7 : 1,
                     fontFamily: F,
                     boxShadow: '0 2px 6px rgba(204,163,54,0.3)',
+                    display: 'flex', alignItems: 'center', gap: 8,
                   }}
                 >
-                  Post
+                  {posting && <Loader2 size={14} className="animate-spin" />}
+                  {posting ? 'Posting…' : 'Post'}
                 </button>
               </div>
             </div>
@@ -476,6 +517,53 @@ export default function AddNewEpisodePage({ params }: { params: { id: string } }
           {/* ─── RIGHT COLUMN (Promos) ─── */}
           <PodcastRightPanel variant="promos" />
         </div>
+
+        {/* Posted successfully modal */}
+        {showSuccess && (
+          <div
+            style={{
+              position: 'fixed', inset: 0, zIndex: 200, display: 'flex',
+              alignItems: 'center', justifyContent: 'center',
+              background: 'rgba(15,23,42,0.45)', backdropFilter: 'blur(2px)',
+            }}
+          >
+            <div
+              style={{
+                background: '#FFFFFF', borderRadius: 24, padding: '40px 32px 32px',
+                textAlign: 'center', maxWidth: 340, width: '100%', margin: 16,
+                boxShadow: '0 20px 60px rgba(0,0,0,0.18)',
+              }}
+            >
+              <div style={{ position: 'relative', width: 88, height: 88, margin: '0 auto 24px' }}>
+                <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: '#CCA336', opacity: 0.25, filter: 'blur(18px)' }} />
+                <div
+                  style={{
+                    position: 'relative', width: 64, height: 64, margin: '12px auto 0',
+                    borderRadius: '50%', background: '#9E7B21',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    boxShadow: '0 4px 20px rgba(158,123,33,0.35)',
+                  }}
+                >
+                  <Check size={28} color="#FFFFFF" strokeWidth={3} />
+                </div>
+              </div>
+              <h3 style={{ fontSize: 16, fontWeight: 800, color: '#0F172A', margin: '0 0 24px' }}>
+                {selectedEpisode ? `Episode ${selectedEpisode} posted successfully` : 'Episode posted successfully'}
+              </h3>
+              <button
+                type="button"
+                onClick={() => router.push(`/podcast/${params.id}`)}
+                style={{
+                  width: '100%', padding: '12px', borderRadius: 12, border: 'none',
+                  background: '#CCA336', color: '#FFFFFF', fontSize: 13, fontWeight: 800,
+                  cursor: 'pointer', fontFamily: F, boxShadow: '0 2px 6px rgba(204,163,54,0.3)',
+                }}
+              >
+                Finish
+              </button>
+            </div>
+          </div>
+        )}
       </PageTransition>
     </DashboardLayout>
   );
