@@ -42,6 +42,12 @@ export const reserveSlot = async (req: Request, res: Response) => {
     if (!start_time || !end_time || !duration_minutes) {
       return res.status(400).json({ message: 'Missing required time fields' });
     }
+    if (new Date(end_time) <= new Date(start_time)) {
+      return res.status(400).json({ message: 'End time must be after start time' });
+    }
+    if (new Date(start_time).getTime() < Date.now()) {
+      return res.status(400).json({ message: 'Cannot book a session in the past' });
+    }
 
     const ratePerHour = PACKAGE_RATE_PER_HOUR[package_type];
     if (!ratePerHour) {
@@ -104,6 +110,9 @@ export const reserveSeries = async (req: Request, res: Response) => {
     for (const s of sessions) {
       if (!s.start_time || !s.end_time || new Date(s.end_time) <= new Date(s.start_time)) {
         return res.status(400).json({ message: 'Every session needs a valid start and end time' });
+      }
+      if (new Date(s.start_time).getTime() < Date.now()) {
+        return res.status(400).json({ message: 'Cannot book a session in the past' });
       }
     }
 

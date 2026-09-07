@@ -50,6 +50,12 @@ export const createAd: RequestHandler = async (req, res) => {
     let file_url = req.body.media_url || null;
     let file_type = media_type || 'image';
     let file_size = null;
+    // Whether this creative can skip the human review queue — only true when
+    // a file was actually uploaded AND (for video) the AI moderator explicitly
+    // approved it. Images always need a human to look at them; an ambiguous
+    // or missing verdict from video moderation also falls to manual review
+    // rather than defaulting to live.
+    let autoApproved = false;
 
     if ((req as any).file) {
       const file = (req as any).file;
@@ -96,13 +102,13 @@ export const createAd: RequestHandler = async (req, res) => {
           }
 
           const uploadedUrl = n8nResult.cloudinary_url || n8nResult.url || n8nResult.media_url || n8nResult.file_url;
-          if ((n8nResult.status === 'approved' || n8nResult.status === 'success' || !n8nResult.status) && uploadedUrl) {
-             file_url = uploadedUrl;
-             file_type = 'video';
-             file_size = file.size; 
-          } else {
+          if (!uploadedUrl) {
              throw new Error('n8n response missing Cloudinary URL');
           }
+          file_url = uploadedUrl;
+          file_type = 'video';
+          file_size = file.size;
+          autoApproved = n8nResult.status === 'approved' || n8nResult.status === 'success';
         } else {
           // Images bypass n8n and go directly to Cloudinary
           const folder = `bems-screens/${authReq.user?.id}`;
@@ -133,9 +139,8 @@ export const createAd: RequestHandler = async (req, res) => {
       }
     }
 
-    const isVideoFile = file_type === 'video';
-    const initialStatus = 'approved'; // Instantly approved since n8n acts as gatekeeper
-    const reviewedAt = new Date();
+    const initialStatus = autoApproved ? 'approved' : 'pending';
+    const reviewedAt = autoApproved ? new Date() : null;
 
     const result = await pool.query(
       `INSERT INTO ads (user_id, campaign_id, title, media_url, file_url, file_type, file_size,
@@ -159,11 +164,23 @@ export const createAd: RequestHandler = async (req, res) => {
 
     const createdAd = result.rows[0];
 
-    // No need to trigger async webhook since n8n processed it synchronously.
+    if (!autoApproved) {
+      notifyAdmins({
+        type: 'new_creative_review',
+        title: 'New creative awaiting review',
+        body: `"${title}" was uploaded by ${authReq.user?.name || 'an advertiser'} and needs approval before it can be booked.`,
+        link: '/admin/review',
+      });
+      pool.query("SELECT email FROM users WHERE role = 'admin'").then(({ rows }) => {
+        rows.forEach(({ email }) => sendAdminNewCreativeAlert(email, authReq.user?.name || 'An advertiser', title).catch(console.error));
+      }).catch(console.error);
+    }
 
     res.status(201).json({
       ad: createdAd,
-      message: 'Your creative has been uploaded successfully! It is now approved and ready to be used in your bookings.',
+      message: autoApproved
+        ? 'Your creative has been uploaded successfully! It is now approved and ready to be used in your bookings.'
+        : 'Your creative has been uploaded and is now in the review queue. You\'ll be notified once it\'s approved.',
     });
   } catch (err) {
     console.error('Upload error:', err);
@@ -218,7 +235,8 @@ export const getAdminReviewQueue: RequestHandler = async (req, res) => {
       `SELECT a.*, u.name as advertiser_name, u.email as advertiser_email
        FROM ads a
        LEFT JOIN users u ON a.user_id = u.id
-       ORDER BY CASE WHEN a.status = 'pending' THEN 0 ELSE 1 END, a.created_at DESC`
+       WHERE a.status = 'pending'
+       ORDER BY a.created_at ASC`
     );
     res.json({ queue: result.rows, count: result.rows.length });
   } catch (err) {

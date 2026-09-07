@@ -39,27 +39,13 @@ import { useAuthStore } from '@/store/authStore';
 
 const F = theme.font.body;
 
-// Rich default sample transactions to provide a complete interactive experience
-const SEED_TRANSACTIONS = [
-  { id: 'tx-1', type: 'credit', source: 'Monnify Card Top-up', amount: 150000, reference: 'MNF_9281729481', status: 'successful', created_at: '2026-08-16T12:00:00Z', channel: 'Mastercard •••• 4242' },
-  { id: 'tx-2', type: 'debit', source: 'Screen Ad Airtime', amount: 45000, reference: 'BK_SCR_8371940', status: 'successful', created_at: '2026-08-16T10:30:00Z', channel: 'Wallet Airtime' },
-  { id: 'tx-3', type: 'debit', source: 'Podcast Studio Session', amount: 200000, reference: 'BK_POD_2947103', status: 'successful', created_at: '2026-08-15T15:45:00Z', channel: 'Studio Booking' },
-  { id: 'tx-4', type: 'credit', source: 'Bank Transfer (Wema)', amount: 350000, reference: 'TRF_WEM_1928471', status: 'successful', created_at: '2026-08-14T09:15:00Z', channel: 'Wema Dedicated Account' },
-  { id: 'tx-5', type: 'debit', source: 'Ad Slot Extension (2h)', amount: 15000, reference: 'BK_SCR_9182374', status: 'successful', created_at: '2026-08-13T16:20:00Z', channel: 'Wallet Airtime' },
-  { id: 'tx-6', type: 'credit', source: 'Arella Welcome Bonus', amount: 50000, reference: 'PRM_ARELLA_0928', status: 'successful', created_at: '2026-08-12T11:00:00Z', channel: 'Promo Credit' },
-  { id: 'tx-7', type: 'debit', source: 'Ad Creative Post-Production', amount: 35000, reference: 'SRV_CRV_7492018', status: 'successful', created_at: '2026-08-11T14:10:00Z', channel: 'Creative Services' },
-  { id: 'tx-8', type: 'credit', source: 'Monnify Card Top-up', amount: 500000, reference: 'MNF_3829104719', status: 'successful', created_at: '2026-08-10T18:30:00Z', channel: 'Visa •••• 8891' },
-  { id: 'tx-9', type: 'debit', source: 'Screen Ad Prime Slot', amount: 120000, reference: 'BK_SCR_4829103', status: 'successful', created_at: '2026-08-09T13:00:00Z', channel: 'Wallet Airtime' },
-  { id: 'tx-10', type: 'debit', source: 'Podcast Sound Engineer', amount: 60000, reference: 'SRV_AUD_9283710', status: 'successful', created_at: '2026-08-08T17:40:00Z', channel: 'Studio Services' },
-  { id: 'tx-11', type: 'credit', source: 'Bank Transfer (Sterling)', amount: 180000, reference: 'TRF_STL_8392019', status: 'successful', created_at: '2026-08-07T08:50:00Z', channel: 'Direct Bank Transfer' },
-  { id: 'tx-12', type: 'debit', source: 'Screen Ad Booking', amount: 30000, reference: 'BK_SCR_1029384', status: 'successful', created_at: '2026-08-06T12:15:00Z', channel: 'Wallet Airtime' },
-];
-
 export default function FinancesPage() {
   const { user } = useAuthStore();
   const [balance, setBalance] = useState<any>(null);
-  const [transactions, setTransactions] = useState<any[]>(SEED_TRANSACTIONS);
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [adBookings, setAdBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   
   // Modals
   const [showFundModal, setShowFundModal] = useState(false);
@@ -90,43 +76,30 @@ export default function FinancesPage() {
   const { toast } = useToast();
 
   const fetchData = async () => {
+    setLoadError(false);
     try {
-      const [b, t, r] = await Promise.all([
-        api.get('/finances/balance').catch(() => ({ data: { credits: 5215005, reserved_account_number: '0129384756', reserved_account_bank: 'Wema Bank' } })),
-        api.get('/finances/transactions?limit=50').catch(() => ({ data: { transactions: [] } })),
-        api.get('/finances/revenue').catch(() => ({ data: { total_revenue: 2180500 } })),
+      const [b, t, r, ab] = await Promise.all([
+        api.get('/finances/balance'),
+        api.get('/finances/transactions?limit=50'),
+        api.get('/finances/revenue'),
+        api.get('/bookings?limit=100'),
       ]);
-      
-      const credits = b.data?.credits ?? 5215005;
-      const total_revenue = r.data?.total_revenue ?? 2180500;
-      setBalance({ 
-        ...b.data, 
-        credits, 
-        total_revenue,
-        reserved_account_number: b.data?.reserved_account_number || '0129384756',
-        reserved_account_bank: b.data?.reserved_account_bank || 'Wema Bank',
-        reserved_account_name: b.data?.reserved_account_name || `Studio Arella / ${user?.name || 'Creator'}`
+
+      setBalance({
+        ...b.data,
+        credits: b.data?.credits ?? 0,
+        total_revenue: r.data?.total_revenue ?? 0,
+        reserved_account_name: b.data?.reserved_account_number ? `Studio Arella / ${user?.name || 'Creator'}` : null,
       });
-      
-      const serverTxs = t.data?.transactions || [];
-      if (serverTxs.length > 0) {
-        // Merge server transactions with unique seed ones
-        const merged = [...serverTxs, ...SEED_TRANSACTIONS.filter(st => !serverTxs.some((tx: any) => tx.reference === st.reference))];
-        setTransactions(merged);
-      } else {
-        setTransactions(SEED_TRANSACTIONS);
-      }
+      setTransactions(t.data?.transactions || []);
+      setAdBookings(ab.data?.bookings || []);
     } catch {
-      setBalance({ 
-        credits: 5215005, 
-        total_revenue: 2180500, 
-        reserved_account_number: '0129384756', 
-        reserved_account_bank: 'Wema Bank',
-        reserved_account_name: `Studio Arella / ${user?.name || 'Creator'}`
-      });
-      setTransactions(SEED_TRANSACTIONS);
-    } finally { 
-      setLoading(false); 
+      setBalance(null);
+      setTransactions([]);
+      setAdBookings([]);
+      setLoadError(true);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -162,46 +135,12 @@ export default function FinancesPage() {
       if (data?.checkout_url) {
         window.location.href = data.checkout_url;
       } else {
-        // Simulated local fallback success for seamless testing
-        const newTx = {
-          id: `tx-${Date.now()}`,
-          type: 'credit',
-          source: 'Monnify Top-up',
-          amount: val,
-          reference: `MNF_${Date.now().toString().slice(-8)}`,
-          status: 'successful',
-          created_at: new Date().toISOString(),
-          channel: 'Direct Checkout'
-        };
-        setTransactions(prev => [newTx, ...prev]);
-        setBalance((prev: any) => ({
-          ...prev,
-          credits: (prev?.credits || 0) + val
-        }));
-        toast(`₦${val.toLocaleString()} added to your wallet successfully!`, 'success');
-        setShowFundModal(false);
+        toast('Could not start checkout — please try again.', 'error');
       }
-    } catch { 
-      // If endpoint not configured on backend, simulate instant wallet credit
-      const newTx = {
-        id: `tx-${Date.now()}`,
-        type: 'credit',
-        source: 'Monnify Top-up',
-        amount: val,
-        reference: `MNF_${Date.now().toString().slice(-8)}`,
-        status: 'successful',
-        created_at: new Date().toISOString(),
-        channel: 'Direct Checkout'
-      };
-      setTransactions(prev => [newTx, ...prev]);
-      setBalance((prev: any) => ({
-        ...prev,
-        credits: (prev?.credits || 0) + val
-      }));
-      toast(`₦${val.toLocaleString()} added to your wallet successfully!`, 'success');
-      setShowFundModal(false);
-    } finally { 
-      setAdding(false); 
+    } catch (err: any) {
+      toast(err?.response?.data?.message || 'Could not start checkout — please try again.', 'error');
+    } finally {
+      setAdding(false);
     }
   };
 
@@ -215,24 +154,17 @@ export default function FinancesPage() {
     try {
       const { data } = await api.post('/payments/reserved-account', { idType, idNumber });
       toast('Dedicated account generated successfully!', 'success');
-      setBalance((prev: any) => ({ 
-        ...prev, 
-        reserved_account_number: data.account_number || '0129384756', 
-        reserved_account_bank: data.bank_name || 'Wema Bank',
+      setBalance((prev: any) => ({
+        ...prev,
+        reserved_account_number: data.account_number,
+        reserved_account_bank: data.bank_name,
         reserved_account_name: data.account_name || `Studio Arella / ${user?.name || 'Creator'}`
       }));
       setShowReservedModal(false);
-    } catch {
-      toast('Dedicated permanent account created successfully!', 'success');
-      setBalance((prev: any) => ({ 
-        ...prev, 
-        reserved_account_number: '0129384756', 
-        reserved_account_bank: 'Wema Bank',
-        reserved_account_name: `Studio Arella / ${user?.name || 'Creator'}`
-      }));
-      setShowReservedModal(false);
-    } finally { 
-      setCreatingReserved(false); 
+    } catch (err: any) {
+      toast(err?.response?.data?.message || 'Could not generate a dedicated account. Please try again.', 'error');
+    } finally {
+      setCreatingReserved(false);
     }
   };
 
@@ -240,11 +172,12 @@ export default function FinancesPage() {
   const filteredTransactions = useMemo(() => {
     return transactions.filter(t => {
       // Tab filter
-      if (activeTab === 'credit' && t.type !== 'credit') return false;
+      if (activeTab === 'credit' && !(t.type === 'credit' || t.type === 'refund')) return false;
       if (activeTab === 'debit' && t.type !== 'debit') return false;
       
       // Status filter
-      if (filterStatus !== 'all' && (t.status || 'successful') !== filterStatus) return false;
+      const txStatus = t.type === 'pending' ? 'pending' : 'successful';
+      if (filterStatus !== 'all' && txStatus !== filterStatus) return false;
       
       // Search
       if (searchQuery.trim()) {
@@ -279,7 +212,7 @@ export default function FinancesPage() {
       `"${t.source}"`,
       `"${t.channel || 'Direct'}"`,
       t.amount,
-      `"${t.status || 'successful'}"`
+      `"${t.type === 'pending' ? 'pending' : 'successful'}"`
     ]);
     const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
     const encodedUri = encodeURI(csvContent);
@@ -292,16 +225,23 @@ export default function FinancesPage() {
     toast('Transaction history downloaded as CSV', 'success');
   };
 
-  const walletCredits = balance?.credits ?? 5215005;
-  const totalSpending = balance?.total_revenue ?? 2180500;
-  const walletId = '23cvo_23759ryi';
-  const dedicatedBank = balance?.reserved_account_bank || 'Wema Bank';
-  const dedicatedAcct = balance?.reserved_account_number || '0129384756';
+  const walletCredits = balance?.credits ?? 0;
+  const totalSpending = balance?.total_revenue ?? 0;
+  const walletId = user?.id ? user.id.slice(0, 13) : '—';
+  const hasReservedAccount = Boolean(balance?.reserved_account_number);
+  const dedicatedBank = balance?.reserved_account_bank || null;
+  const dedicatedAcct = balance?.reserved_account_number || null;
 
   return (
     <DashboardLayout>
       <PageTransition>
         <div style={{ fontFamily: F, display: 'flex', flexDirection: 'column', gap: 24, paddingBottom: 60 }}>
+
+          {loadError && (
+            <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 12, padding: '12px 16px', fontSize: 13, fontWeight: 600, color: '#B91C1C' }}>
+              Could not load your wallet data. Please refresh the page.
+            </div>
+          )}
 
           {/* ─── PAGE HEADER ─── */}
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
@@ -367,45 +307,37 @@ export default function FinancesPage() {
           {/* ─── TOP 4 METRIC CARDS ─── */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: 16 }}>
             {[
-              { 
-                label: 'Available Balance', 
-                value: `₦${walletCredits.toLocaleString()}`, 
+              {
+                label: 'Available Balance',
+                value: `₦${walletCredits.toLocaleString()}`,
                 subValue: `$${(walletCredits / 1500).toFixed(0).toLocaleString()} USD`,
-                trend: '+14.2%', 
-                up: true, 
                 icon: CreditCard,
                 color: '#C69A2C',
-                bg: '#FFFDF5' 
+                bg: '#FFFDF5'
               },
-              { 
-                label: 'Total Spent', 
-                value: `₦${totalSpending.toLocaleString()}`, 
+              {
+                label: 'Total Spent',
+                value: `₦${totalSpending.toLocaleString()}`,
                 subValue: 'Screen Ads & Studio',
-                trend: '-2.4%', 
-                up: false, 
                 icon: TrendingDown,
                 color: '#EF4444',
-                bg: '#FEF2F2' 
+                bg: '#FEF2F2'
               },
-              { 
-                label: 'Total Transactions', 
-                value: transactions.length.toString(), 
-                subValue: `${transactions.filter(t => t.type === 'credit').length} In · ${transactions.filter(t => t.type === 'debit').length} Out`,
-                trend: '+8.1%', 
-                up: true, 
+              {
+                label: 'Total Transactions',
+                value: transactions.length.toString(),
+                subValue: `${transactions.filter(t => t.type === 'credit' || t.type === 'refund').length} In · ${transactions.filter(t => t.type === 'debit').length} Out`,
                 icon: DollarSign,
                 color: '#10B981',
-                bg: '#F0FDF4' 
+                bg: '#F0FDF4'
               },
-              { 
-                label: 'Active Ad Slots', 
-                value: '4 Active', 
-                subValue: 'Est. 128 airtime mins',
-                trend: '+2 new', 
-                up: true, 
+              {
+                label: 'Active Ad Slots',
+                value: `${adBookings.filter(b => b.status === 'active').length} Active`,
+                subValue: `of ${adBookings.length} total ad bookings`,
                 icon: Sparkles,
                 color: '#6366F1',
-                bg: '#EEF2FF' 
+                bg: '#EEF2FF'
               },
             ].map((stat, i) => (
               <FadeCard key={stat.label} delay={i * 0.05} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 16, padding: '20px 22px', position: 'relative', overflow: 'hidden' }}>
@@ -415,14 +347,9 @@ export default function FinancesPage() {
                     <stat.icon size={16} color={stat.color} />
                   </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 4 }}>
-                  <p style={{ fontSize: 22, fontWeight: 800, color: '#0F172A', margin: 0, letterSpacing: '-0.5px' }}>
-                    {stat.value}
-                  </p>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 800, color: stat.up ? '#10B981' : '#EF4444' }}>
-                    {stat.trend}
-                  </div>
-                </div>
+                <p style={{ fontSize: 22, fontWeight: 800, color: '#0F172A', margin: '0 0 4px', letterSpacing: '-0.5px' }}>
+                  {stat.value}
+                </p>
                 <p style={{ fontSize: 11, color: '#94A3B8', margin: 0, fontWeight: 600 }}>{stat.subValue}</p>
               </FadeCard>
             ))}
@@ -551,25 +478,25 @@ export default function FinancesPage() {
                 >
                   <Plus size={13} /> Fund Wallet
                 </button>
-                <button 
-                  onClick={() => handleCopyBankAcct(dedicatedAcct)}
-                  style={{ 
-                    flex: 1, 
-                    padding: '8px 14px', 
-                    background: 'rgba(255,255,255,0.25)', 
-                    border: '1px solid rgba(255,255,255,0.3)', 
-                    color: '#FFFFFF', 
-                    borderRadius: 8, 
-                    fontSize: 12, 
-                    fontWeight: 700, 
+                <button
+                  onClick={() => hasReservedAccount ? handleCopyBankAcct(dedicatedAcct!) : setShowReservedModal(true)}
+                  style={{
+                    flex: 1,
+                    padding: '8px 14px',
+                    background: 'rgba(255,255,255,0.25)',
+                    border: '1px solid rgba(255,255,255,0.3)',
+                    color: '#FFFFFF',
+                    borderRadius: 8,
+                    fontSize: 12,
+                    fontWeight: 700,
                     cursor: 'pointer',
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center', 
-                    gap: 6 
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 6
                   }}
                 >
-                  <Building2 size={13} /> {copiedBankAcct ? 'Copied Acct' : 'Bank Acct'}
+                  <Building2 size={13} /> {hasReservedAccount ? (copiedBankAcct ? 'Copied Acct' : 'Bank Acct') : 'Create Acct'}
                 </button>
               </div>
             </FadeCard>
@@ -587,36 +514,50 @@ export default function FinancesPage() {
                   <p style={{ fontSize: 14, fontWeight: 800, color: '#0F172A', margin: 0 }}>
                     Dedicated Virtual Bank Account
                   </p>
-                  <span style={{ fontSize: 10, background: '#ECFDF5', color: '#059669', padding: '2px 8px', borderRadius: 12, fontWeight: 700 }}>
-                    Zero Transfer Fees
-                  </span>
+                  {hasReservedAccount && (
+                    <span style={{ fontSize: 10, background: '#ECFDF5', color: '#059669', padding: '2px 8px', borderRadius: 12, fontWeight: 700 }}>
+                      Zero Transfer Fees
+                    </span>
+                  )}
                 </div>
                 <p style={{ fontSize: 12, color: '#64748B', margin: '3px 0 0', fontWeight: 500 }}>
-                  Bank: <strong style={{ color: '#0F172A' }}>{dedicatedBank}</strong> · Account Name: <strong style={{ color: '#0F172A' }}>{balance?.reserved_account_name || 'Studio Arella'}</strong>
+                  {hasReservedAccount
+                    ? <>Bank: <strong style={{ color: '#0F172A' }}>{dedicatedBank}</strong> · Account Name: <strong style={{ color: '#0F172A' }}>{balance?.reserved_account_name || 'Studio Arella'}</strong></>
+                    : "You haven't generated a dedicated account yet — create one to top up by bank transfer."}
                 </p>
               </div>
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 10, padding: '8px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
-                <span style={{ fontSize: 16, fontWeight: 800, color: '#0F172A', letterSpacing: '1px', fontFamily: 'monospace' }}>
-                  {dedicatedAcct}
-                </span>
-                <button 
-                  onClick={() => handleCopyBankAcct(dedicatedAcct)}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: copiedBankAcct ? '#10B981' : '#C69A2C', display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 700 }}
+              {hasReservedAccount ? (
+                <>
+                  <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 10, padding: '8px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <span style={{ fontSize: 16, fontWeight: 800, color: '#0F172A', letterSpacing: '1px', fontFamily: 'monospace' }}>
+                      {dedicatedAcct}
+                    </span>
+                    <button
+                      onClick={() => handleCopyBankAcct(dedicatedAcct!)}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: copiedBankAcct ? '#10B981' : '#C69A2C', display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 700 }}
+                    >
+                      {copiedBankAcct ? <Check size={14} /> : <Copy size={14} />}
+                      <span>{copiedBankAcct ? 'Copied' : 'Copy'}</span>
+                    </button>
+                  </div>
+                  <button
+                    onClick={() => setShowReservedModal(true)}
+                    style={{ background: 'none', border: 'none', color: '#64748B', fontSize: 12, fontWeight: 600, cursor: 'pointer', textDecoration: 'underline' }}
+                  >
+                    Change details
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => setShowReservedModal(true)}
+                  style={{ background: '#C69A2C', border: 'none', color: '#FFFFFF', borderRadius: 10, padding: '10px 18px', fontSize: 12, fontWeight: 800, cursor: 'pointer' }}
                 >
-                  {copiedBankAcct ? <Check size={14} /> : <Copy size={14} />}
-                  <span>{copiedBankAcct ? 'Copied' : 'Copy'}</span>
+                  Generate Account
                 </button>
-              </div>
-
-              <button
-                onClick={() => setShowReservedModal(true)}
-                style={{ background: 'none', border: 'none', color: '#64748B', fontSize: 12, fontWeight: 600, cursor: 'pointer', textDecoration: 'underline' }}
-              >
-                Change details
-              </button>
+              )}
             </div>
           </FadeCard>
 
@@ -819,7 +760,8 @@ export default function FinancesPage() {
                     </tr>
                   ) : (
                     currentRecords.map(t => {
-                      const isCredit = t.type === 'credit';
+                      const isCredit = t.type === 'credit' || t.type === 'refund';
+                      const isPending = t.type === 'pending';
                       return (
                         <tr 
                           key={t.id}
@@ -830,17 +772,17 @@ export default function FinancesPage() {
                           {/* Transaction Info */}
                           <td style={{ padding: '16px 20px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                              <div style={{ 
-                                width: 34, 
-                                height: 34, 
-                                borderRadius: 10, 
-                                background: isCredit ? '#ECFDF5' : '#FEF2F2', 
-                                border: `1px solid ${isCredit ? '#A7F3D0' : '#FECACA'}`,
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                justifyContent: 'center' 
+                              <div style={{
+                                width: 34,
+                                height: 34,
+                                borderRadius: 10,
+                                background: isPending ? '#FFFBEB' : isCredit ? '#ECFDF5' : '#FEF2F2',
+                                border: `1px solid ${isPending ? '#FDE68A' : isCredit ? '#A7F3D0' : '#FECACA'}`,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
                               }}>
-                                {isCredit ? <ArrowDownLeft size={16} color="#059669" /> : <ArrowUpRight size={16} color="#DC2626" />}
+                                {isPending ? <Clock size={16} color="#D97706" /> : isCredit ? <ArrowDownLeft size={16} color="#059669" /> : <ArrowUpRight size={16} color="#DC2626" />}
                               </div>
                               <div>
                                 <p style={{ fontSize: 13, fontWeight: 700, color: '#0F172A', margin: '0 0 2px' }}>
@@ -855,20 +797,20 @@ export default function FinancesPage() {
 
                           {/* Type */}
                           <td style={{ padding: '16px 20px' }}>
-                            <span style={{ 
-                              display: 'inline-flex', 
-                              alignItems: 'center', 
-                              gap: 4, 
-                              fontSize: 11, 
-                              fontWeight: 700, 
-                              padding: '3px 8px', 
+                            <span style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 4,
+                              fontSize: 11,
+                              fontWeight: 700,
+                              padding: '3px 8px',
                               borderRadius: 12,
-                              background: isCredit ? '#ECFDF5' : '#F8FAFC',
-                              color: isCredit ? '#059669' : '#64748B',
-                              border: `1px solid ${isCredit ? '#A7F3D0' : '#E2E8F0'}`
+                              background: isPending ? '#FFFBEB' : isCredit ? '#ECFDF5' : '#F8FAFC',
+                              color: isPending ? '#D97706' : isCredit ? '#059669' : '#64748B',
+                              border: `1px solid ${isPending ? '#FDE68A' : isCredit ? '#A7F3D0' : '#E2E8F0'}`
                             }}>
-                              {isCredit ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
-                              {isCredit ? 'Credit' : 'Debit'}
+                              {isPending ? <Clock size={11} /> : isCredit ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
+                              {isPending ? 'Pending' : t.type === 'refund' ? 'Refund' : isCredit ? 'Credit' : 'Debit'}
                             </span>
                           </td>
 
@@ -898,31 +840,31 @@ export default function FinancesPage() {
 
                           {/* Amount */}
                           <td style={{ padding: '16px 20px', textAlign: 'right' }}>
-                            <span style={{ 
-                              fontSize: 14, 
-                              fontWeight: 800, 
-                              color: isCredit ? '#059669' : '#0F172A',
+                            <span style={{
+                              fontSize: 14,
+                              fontWeight: 800,
+                              color: isPending ? '#D97706' : isCredit ? '#059669' : '#0F172A',
                               letterSpacing: '-0.3px'
                             }}>
-                              {isCredit ? '+' : '-'}₦{Number(t.amount).toLocaleString()}
+                              {isPending ? '' : isCredit ? '+' : '-'}₦{Number(t.amount).toLocaleString()}
                             </span>
                           </td>
 
                           {/* Status */}
                           <td style={{ padding: '16px 20px' }}>
-                            <span style={{ 
-                              fontSize: 11, 
-                              fontWeight: 700, 
-                              padding: '4px 10px', 
-                              borderRadius: 20, 
-                              background: t.status === 'failed' ? '#FEF2F2' : t.status === 'pending' ? '#FFFBEB' : '#F0FDF4',
-                              color: t.status === 'failed' ? '#DC2626' : t.status === 'pending' ? '#D97706' : '#16A34A',
+                            <span style={{
+                              fontSize: 11,
+                              fontWeight: 700,
+                              padding: '4px 10px',
+                              borderRadius: 20,
+                              background: isPending ? '#FFFBEB' : '#F0FDF4',
+                              color: isPending ? '#D97706' : '#16A34A',
                               display: 'inline-flex',
                               alignItems: 'center',
                               gap: 4
                             }}>
-                              <span style={{ width: 5, height: 5, borderRadius: '50%', background: t.status === 'failed' ? '#DC2626' : t.status === 'pending' ? '#D97706' : '#16A34A' }} />
-                              {t.status === 'failed' ? 'Failed' : t.status === 'pending' ? 'Pending' : 'Successful'}
+                              <span style={{ width: 5, height: 5, borderRadius: '50%', background: isPending ? '#D97706' : '#16A34A' }} />
+                              {isPending ? 'Pending' : 'Successful'}
                             </span>
                           </td>
 
@@ -1340,7 +1282,7 @@ export default function FinancesPage() {
                         ₦{Number(selectedReceipt.amount).toLocaleString()}
                       </p>
                       <span style={{ fontSize: 11, background: '#ECFDF5', color: '#059669', padding: '3px 10px', borderRadius: 20, fontWeight: 700, textTransform: 'uppercase' }}>
-                        {selectedReceipt.status || 'Successful'}
+                        {selectedReceipt.type === 'pending' ? 'Pending' : 'Successful'}
                       </span>
                     </div>
 
