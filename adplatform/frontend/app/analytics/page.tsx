@@ -687,18 +687,18 @@ export default function AnalyticsPage() {
         </div>
 
         {/* ─── FLOATING "CHAT WITH ARELLA 🌐" WIDGET ─── */}
-        <div style={{ position: 'fixed', bottom: 32, right: 32, zIndex: 90 }}>
+        <div className="chat-fab-widget" style={{ position: 'fixed', bottom: 32, right: 32, zIndex: 90 }}>
           <div style={{ position: 'relative' }}>
-            <Link 
+            <Link
               href="/chat"
-              style={{ 
-                display: 'inline-flex', 
-                alignItems: 'center', 
-                gap: 10, 
-                padding: '12px 24px', 
-                background: '#FFFFFF', 
-                border: '1px solid #E2E8F0', 
-                borderRadius: 24, 
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 10,
+                padding: '12px 24px',
+                background: '#FFFFFF',
+                border: '1px solid #E2E8F0',
+                borderRadius: 24,
                 boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
                 textDecoration: 'none',
                 color: '#1E293B',
@@ -708,7 +708,7 @@ export default function AnalyticsPage() {
                 fontFamily: F
               }}
             >
-              <span>Chat with Arella</span>
+              <span className="chat-fab-label">Chat with Arella</span>
               <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'linear-gradient(135deg, #6366F1, #A855F7, #EC4899)', padding: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <div style={{ width: '100%', height: '100%', background: '#fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Globe size={13} color="#4F46E5" />

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import {
@@ -47,6 +47,16 @@ export default function AddNewEpisodePage() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
+
+  // Verify the parent podcast actually exists before letting someone fill out
+  // (and potentially upload audio for) an episode that has nowhere to go.
+  const [showExists, setShowExists] = useState<boolean | null>(null);
+  useEffect(() => {
+    if (!params.id) return;
+    api.get(`/shows/${params.id}`)
+      .then(() => setShowExists(true))
+      .catch(() => setShowExists(false));
+  }, [params.id]);
 
   const handleCoverPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -152,6 +162,22 @@ export default function AddNewEpisodePage() {
               </div>
             </div>
 
+            {showExists === null && (
+              <div style={{ padding: '60px 20px', textAlign: 'center', color: '#94A3B8', fontSize: 13, fontWeight: 600 }}>
+                Checking podcast…
+              </div>
+            )}
+
+            {showExists === false && (
+              <div style={{ padding: '60px 20px', textAlign: 'center', background: '#F8FAFC', borderRadius: 16 }}>
+                <p style={{ fontSize: 15, fontWeight: 700, color: '#0F172A', margin: '0 0 6px' }}>This podcast doesn&apos;t exist.</p>
+                <p style={{ fontSize: 13, color: '#64748B', margin: '0 0 16px' }}>It may have been deleted, or the link is incorrect — you can&apos;t add an episode to it.</p>
+                <Link href="/podcast" style={{ fontSize: 13, fontWeight: 700, color: '#C69A2C', textDecoration: 'none' }}>← Back to Podcasts</Link>
+              </div>
+            )}
+
+            {showExists && (
+              <>
             {/* Cover photo section */}
             <div>
               <input
@@ -512,6 +538,8 @@ export default function AddNewEpisodePage() {
                 </button>
               </div>
             </div>
+              </>
+            )}
           </div>
 
           {/* ─── RIGHT COLUMN (Promos) ─── */}

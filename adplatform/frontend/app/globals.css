@@ -209,6 +209,19 @@ a {
   }
 }
 
+@media (max-width: 480px) {
+  /* Shrink the floating "Chat with Arella" widget to an icon-only bubble so
+     it stops overlapping page content on narrow viewports. */
+  .chat-fab-widget {
+    padding: 12px !important;
+    bottom: 16px !important;
+    right: 16px !important;
+  }
+  .chat-fab-label {
+    display: none !important;
+  }
+}
+
 @media (max-width: 550px) {
   .stats-grid {
     grid-template-columns: 1fr;

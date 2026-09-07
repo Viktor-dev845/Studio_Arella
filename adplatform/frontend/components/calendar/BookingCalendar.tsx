@@ -158,6 +158,11 @@ export default function BookingCalendar({ screenId }: { screenId?: string }) {
 
   return (
     <div className={styles.calendar} style={{ fontFamily: F }}>
+      <style>{`
+        @media (max-width: 900px) {
+          .calendar-scroll-hint { display: block !important; }
+        }
+      `}</style>
       {/* Legend */}
       <div style={{ display: 'flex', gap: 14, marginBottom: 16, flexWrap: 'wrap' }}>
         {Object.entries(statusColors).map(([s, c]) => (
@@ -184,6 +189,12 @@ export default function BookingCalendar({ screenId }: { screenId?: string }) {
           <div style={{ width: 28, height: 28, border: `2.5px solid ${theme.color.goldMid}`, borderTopColor: theme.color.gold, borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
         </div>
       ) : (
+      <>
+        <p className="calendar-scroll-hint" style={{ display: 'none', fontSize: 11, color: theme.color.text3, textAlign: 'center', margin: '0 0 8px', fontWeight: 600 }}>
+          ← Scroll to see the full week →
+        </p>
+        <div className="calendar-scroll-wrapper" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+        <div style={{ minWidth: 700 }}>
         <Calendar
           localizer={localizer} events={visibleEvents}
           startAccessor="start" endAccessor="end"
@@ -229,6 +240,9 @@ export default function BookingCalendar({ screenId }: { screenId?: string }) {
           onSelectEvent={e => setSelected(e as CalEvent)}
           popup
         />
+        </div>
+        </div>
+      </>
       )}
 
       {/* Event detail (bottom panel) */}

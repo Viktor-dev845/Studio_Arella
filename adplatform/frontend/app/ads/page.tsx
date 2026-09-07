@@ -1220,6 +1220,7 @@ export default function AdsManagementPage() {
           {/* Floating Chat with Arella Widget */}
           <Link
             href="/chat"
+            className="chat-fab-widget"
             style={{
               position: 'fixed',
               bottom: 24,
@@ -1239,7 +1240,7 @@ export default function AdsManagementPage() {
             }}
           >
             <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#22C55E' }} />
-            <span style={{ fontSize: 13, fontWeight: 700, fontFamily: F }}>Chat with Arella 🌐</span>
+            <span className="chat-fab-label" style={{ fontSize: 13, fontWeight: 700, fontFamily: F }}>Chat with Arella 🌐</span>
           </Link>
 
         </div>

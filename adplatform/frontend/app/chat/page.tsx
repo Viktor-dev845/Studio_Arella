@@ -24,6 +24,18 @@ function toApiHistory(msgs: Message[]) {
   return msgs.map((m) => ({ role: m.sender === 'user' ? 'user' : 'assistant', content: m.text }));
 }
 
+// Minimal inline markdown: renders **bold** segments as real <strong> text
+// instead of showing the literal asterisks the model outputs.
+function renderInlineMarkdown(text: string) {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={i} style={{ fontWeight: 700, color: '#0F172A' }}>{part.slice(2, -2)}</strong>;
+    }
+    return part;
+  });
+}
+
 export default function ChatPage() {
   const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -229,14 +241,14 @@ export default function ChatPage() {
                           if (match) {
                             return (
                               <p key={idx} style={{ margin: '0 0 16px', lineHeight: 1.7 }}>
-                                <strong style={{ fontWeight: 700, color: '#0F172A' }}>{match[1]}</strong>
-                                {match[2]}
+                                <strong style={{ fontWeight: 700, color: '#0F172A' }}>{renderInlineMarkdown(match[1])}</strong>
+                                {renderInlineMarkdown(match[2])}
                               </p>
                             );
                           }
                           return (
                             <p key={idx} style={{ margin: '0 0 16px', lineHeight: 1.7 }}>
-                              {paragraph}
+                              {renderInlineMarkdown(paragraph)}
                             </p>
                           );
                         })}
@@ -271,7 +283,8 @@ export default function ChatPage() {
                 )}
               </div>
 
-              {/* Regenerate response button */}
+              {/* Regenerate response button — only once there's an actual reply to regenerate */}
+              {messages.some((m) => m.sender === 'arella') && (
               <div style={{ display: 'flex', justifyContent: 'center', marginTop: 24 }}>
                 <button
                   type="button"
@@ -299,6 +312,7 @@ export default function ChatPage() {
                   <span>Regenerate response</span>
                 </button>
               </div>
+              )}
 
             </div>
 

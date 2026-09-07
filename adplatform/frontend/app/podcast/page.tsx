@@ -246,8 +246,27 @@ export default function PodcastsPage() {
           .podcast-card-hover:hover {
             transform: translateY(-2px);
           }
+          @media (max-width: 960px) {
+            .podcast-page-layout {
+              flex-direction: column !important;
+            }
+            .podcast-page-layout > * {
+              width: 100% !important;
+            }
+          }
+          @media (max-width: 640px) {
+            .podcast-grid-5 {
+              grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+            }
+          }
+          @media (max-width: 420px) {
+            .podcast-grid-5 {
+              grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            }
+          }
         `}</style>
         <div
+          className="podcast-page-layout"
           style={{
             fontFamily: F,
             padding: '24px 32px 48px',
@@ -270,9 +289,14 @@ export default function PodcastsPage() {
                   marginBottom: 18,
                 }}
               >
-                <h2 style={{ fontSize: 14, fontWeight: 700, color: '#0F172A', margin: 0 }}>
-                  Your trending topics (2)
-                </h2>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <h2 style={{ fontSize: 14, fontWeight: 700, color: '#0F172A', margin: 0 }}>
+                    Your trending topics ({PODCAST_ITEMS.length})
+                  </h2>
+                  <span style={{ fontSize: 9, fontWeight: 800, color: '#94A3B8', background: '#F1F5F9', padding: '2px 7px', borderRadius: 100, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                    Example
+                  </span>
+                </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <button
@@ -321,6 +345,7 @@ export default function PodcastsPage() {
 
               {trendingView === 'board' ? (
                 <div
+                  className="podcast-grid-5"
                   style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',

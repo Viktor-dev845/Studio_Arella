@@ -94,15 +94,15 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
 
   return (
     <header style={{ height: 64, background: '#fff', borderBottom: '1px solid #E2E8F0', padding: '0 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0, fontFamily: F }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-        
+      <div style={{ display: 'flex', alignItems: 'center', gap: 20, minWidth: 0 }}>
+
         {/* Star Icon */}
-        <Star size={15} className="text-gray-400 hover:text-gray-600 cursor-pointer transition-colors" />
+        <Star size={15} className="hide-on-mobile text-gray-400 hover:text-gray-600 cursor-pointer transition-colors" style={{ flexShrink: 0 }} />
 
         {/* Creator / Audience Toggle */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div className="hide-on-mobile" style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
           <span style={{ fontSize: 13, fontWeight: isCreator ? 700 : 500, color: isCreator ? '#0F172A' : '#94A3B8' }}>Creator</span>
-          <button 
+          <button
             onClick={() => setIsCreator(!isCreator)}
             style={{ width: 34, height: 18, borderRadius: 20, background: '#1E293B', position: 'relative', border: 'none', cursor: 'pointer', padding: 0 }}
           >
@@ -112,31 +112,31 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
         </div>
 
         {/* Breadcrumb */}
-        <div style={{ fontSize: 13, fontWeight: 500, color: '#64748B', display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span>{getBreadcrumb()}</span>
+        <div style={{ fontSize: 13, fontWeight: 500, color: '#64748B', display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, overflow: 'hidden' }}>
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{getBreadcrumb()}</span>
         </div>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-        
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexShrink: 0 }}>
+
         {/* Search */}
         <div style={{ position: 'relative', width: 180 }} className="hidden sm:block">
           <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
-          <input 
-            type="text" 
-            placeholder="Search" 
+          <input
+            type="text"
+            placeholder="Search"
             style={{ width: '100%', padding: '6px 28px 6px 30px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 8, fontSize: 12, fontWeight: 500, color: '#1E293B', outline: 'none' }}
           />
           <span style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', fontSize: 11, color: '#94A3B8', fontWeight: 600 }}>/</span>
         </div>
 
         {/* Sun / Theme */}
-        <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', display: 'flex', padding: 4 }} title="Theme">
+        <button className="hide-on-mobile" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', display: 'flex', padding: 4 }} title="Theme">
           <Sun size={17} />
         </button>
 
         {/* Clock / History */}
-        <button style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', display: 'flex', padding: 4 }} title="History">
+        <button className="hide-on-mobile" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', display: 'flex', padding: 4 }} title="History">
           <Clock size={17} />
         </button>
 

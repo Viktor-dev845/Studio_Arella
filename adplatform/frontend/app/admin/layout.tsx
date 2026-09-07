@@ -43,7 +43,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: theme.color.bg }}>
       <Sidebar mobileOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, marginLeft: 240, overflow: 'hidden' }}>
+      <div className="main-wrapper" style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, marginLeft: 240, overflow: 'hidden' }}>
         <Navbar onMenuClick={() => setSidebarOpen(true)} />
         <main style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
           {/* Admin banner */}

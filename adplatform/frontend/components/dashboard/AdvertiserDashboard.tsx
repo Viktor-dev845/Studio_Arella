@@ -171,6 +171,7 @@ export default function AdvertiserDashboard() {
 
   return (
     <div
+      className="advertiser-dashboard-layout"
       style={{
         fontFamily: F,
         display: 'flex',
@@ -181,6 +182,30 @@ export default function AdvertiserDashboard() {
         background: '#FAFAFA',
       }}
     >
+      <style>{`
+        @media (max-width: 960px) {
+          .advertiser-dashboard-layout {
+            flex-direction: column !important;
+          }
+          .advertiser-dashboard-layout > * {
+            width: 100% !important;
+          }
+          .dash-chart-split {
+            grid-template-columns: 1fr !important;
+          }
+          .dash-stat-cards {
+            grid-template-columns: repeat(2, 1fr) !important;
+          }
+        }
+        @media (max-width: 480px) {
+          .dash-stat-cards {
+            grid-template-columns: 1fr !important;
+          }
+          .dash-2col {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
       {/* ─── LEFT COLUMN (Main Content) ─── */}
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 20 }}>
         {/* Header: Overview and Today dropdown */}
@@ -207,7 +232,7 @@ export default function AdvertiserDashboard() {
         </div>
 
         {/* 4 Stat Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
+        <div className="dash-stat-cards" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
           {/* Card 1: Total Podcast */}
           <div
             style={{
@@ -288,7 +313,7 @@ export default function AdvertiserDashboard() {
         </div>
 
         {/* Row 2: Line Chart & Traffic by Podcast */}
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1.15fr', gap: 16 }}>
+        <div className="dash-chart-split" style={{ display: 'grid', gridTemplateColumns: '2fr 1.15fr', gap: 16 }}>
           {/* Left Chart Card */}
           <div style={{ background: '#FFFFFF', borderRadius: 20, padding: '22px 24px', border: '1px solid #F1F5F9' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
@@ -376,7 +401,7 @@ export default function AdvertiserDashboard() {
         {/* My Balance Section */}
         <div>
           <p style={{ fontSize: 14, fontWeight: 800, color: '#0F172A', margin: '0 0 14px' }}>My Balance</p>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
+          <div className="dash-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
             {/* Ad Slot Card */}
             <div
               style={{
@@ -459,7 +484,7 @@ export default function AdvertiserDashboard() {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+          <div className="dash-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             <Link
               href="/book"
               style={{
@@ -559,7 +584,7 @@ export default function AdvertiserDashboard() {
             ))}
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
+          <div className="dash-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
             <Link
               href="/book"
               style={{

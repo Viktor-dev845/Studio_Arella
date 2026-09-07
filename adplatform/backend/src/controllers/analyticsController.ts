@@ -62,23 +62,23 @@ export const getAdvertiserProofOfPlay: RequestHandler = async (req, res) => {
   const authReq = req as AuthRequest;
   try {
     const result = await pool.query(
-      `SELECT 
+      `SELECT
          c.title AS creative_title,
          b.booking_number,
          COUNT(p.id) AS play_count,
-         MAX(p.end_timestamp) AS last_played
-       FROM proof_of_play_logs p
+         MAX(p.actual_end) AS last_played
+       FROM playback_logs p
        JOIN ads c ON p.creative_id = c.id
        JOIN bookings b ON p.booking_id = b.id
        WHERE c.user_id = $1
        GROUP BY c.id, b.id, c.title, b.booking_number
-       ORDER BY MAX(p.end_timestamp) DESC`,
+       ORDER BY MAX(p.actual_end) DESC`,
       [authReq.user?.id]
     );
 
     const totalsRes = await pool.query(
       `SELECT COUNT(p.id) AS total_plays
-       FROM proof_of_play_logs p
+       FROM playback_logs p
        JOIN ads c ON p.creative_id = c.id
        WHERE c.user_id = $1`,
       [authReq.user?.id]

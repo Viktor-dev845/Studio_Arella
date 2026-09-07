@@ -73,21 +73,27 @@ export default function AdminFinancesPage() {
                 </tr>
               )) : txns.length === 0 ? (
                 <tr><td colSpan={5} style={{ padding: '40px', textAlign: 'center', color: theme.color.text3 }}>No transactions yet</td></tr>
-              ) : txns.map(t => (
-                <TableRow key={t.id}>
-                  <TableCell><span style={{ fontSize: 12 }}>{new Date(t.created_at).toLocaleDateString()}</span></TableCell>
-                  <TableCell>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: t.type === 'credit' ? theme.color.success : theme.color.error, background: t.type === 'credit' ? theme.color.successLight : theme.color.errorLight, padding: '2px 8px', borderRadius: 100 }}>{t.type}</span>
-                  </TableCell>
-                  <TableCell><span style={{ textTransform: 'capitalize' }}>{t.source}</span></TableCell>
-                  <TableCell>
-                    <span style={{ fontWeight: 700, color: t.type === 'credit' ? theme.color.success : theme.color.error }}>
-                      {t.type === 'credit' ? '+' : '-'}₦{Number(t.amount).toLocaleString()}
-                    </span>
-                  </TableCell>
-                  <TableCell><span style={{ fontSize: 11, fontFamily: 'monospace', color: theme.color.text3 }}>{t.reference || '—'}</span></TableCell>
-                </TableRow>
-              ))}
+              ) : txns.map(t => {
+                const isPending = t.type === 'pending';
+                const isCredit = t.type === 'credit' || t.type === 'refund';
+                const color = isPending ? '#D97706' : isCredit ? theme.color.success : theme.color.error;
+                const bg = isPending ? '#FFFBEB' : isCredit ? theme.color.successLight : theme.color.errorLight;
+                return (
+                  <TableRow key={t.id}>
+                    <TableCell><span style={{ fontSize: 12 }}>{new Date(t.created_at).toLocaleDateString()}</span></TableCell>
+                    <TableCell>
+                      <span style={{ fontSize: 11, fontWeight: 700, color, background: bg, padding: '2px 8px', borderRadius: 100 }}>{t.type}</span>
+                    </TableCell>
+                    <TableCell><span style={{ textTransform: 'capitalize' }}>{t.source}</span></TableCell>
+                    <TableCell>
+                      <span style={{ fontWeight: 700, color }}>
+                        {isPending ? '' : isCredit ? '+' : '-'}₦{Number(t.amount).toLocaleString()}
+                      </span>
+                    </TableCell>
+                    <TableCell><span style={{ fontSize: 11, fontFamily: 'monospace', color: theme.color.text3 }}>{t.reference || '—'}</span></TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </div>

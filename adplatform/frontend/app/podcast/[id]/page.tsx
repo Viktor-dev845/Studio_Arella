@@ -127,6 +127,16 @@ export default function PodcastDetailPage() {
               </div>
             </div>
 
+            {!show && !loadingShow && (
+              <div style={{ padding: '60px 20px', textAlign: 'center', background: '#F8FAFC', borderRadius: 16 }}>
+                <p style={{ fontSize: 15, fontWeight: 700, color: '#0F172A', margin: '0 0 6px' }}>This podcast doesn&apos;t exist.</p>
+                <p style={{ fontSize: 13, color: '#64748B', margin: '0 0 16px' }}>It may have been deleted, or the link is incorrect.</p>
+                <Link href="/podcast" style={{ fontSize: 13, fontWeight: 700, color: '#C69A2C', textDecoration: 'none' }}>← Back to Podcasts</Link>
+              </div>
+            )}
+
+            {show && (
+              <>
             {/* 4 Stat Cards — example data until follower/listener tracking exists */}
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
               <span style={EXAMPLE_BADGE}>Example data</span>
@@ -459,6 +469,8 @@ export default function PodcastDetailPage() {
                 })}
               </div>
             </div>
+              </>
+            )}
           </div>
 
           {/* ─── RIGHT COLUMN ─── */}

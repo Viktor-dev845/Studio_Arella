@@ -152,25 +152,6 @@ export default function CartPage() {
     }
   };
 
-  // Add sample item for interactive demonstration
-  const handleAddSampleSlot = () => {
-    const sampleItem: CartItem = {
-      id: `slot-${Date.now()}`,
-      creative: {
-        id: 'ad-summer-prime',
-        title: 'Bemsoft Bulletin Highway — Prime Slot',
-        media_url: '/ad-placeholder.jpg'
-      },
-      date: new Date().toISOString(),
-      startMin: 720, // 12:00 PM
-      loops: 1,
-      durationSec: 120, // 2 mins
-      priceInfo: { cost: 200000 }
-    };
-    addToCart(sampleItem);
-    toast('Sample slot added to cart!', 'success');
-  };
-
   // Initiate Checkout — always reserves real slots first, regardless of payment method.
   // No step here may silently treat a failure as success: a customer who sees
   // "Payment successful" must have an actual paid or wallet-debited booking behind it.
@@ -319,25 +300,6 @@ export default function CartPage() {
                   }}
                 >
                   Go Schedule Slots
-                </button>
-                <button
-                  onClick={handleAddSampleSlot}
-                  style={{
-                    background: '#FFFFFF',
-                    color: '#334155',
-                    border: '1px solid #E2E8F0',
-                    borderRadius: 10,
-                    padding: '12px 20px',
-                    fontSize: 14,
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 6,
-                    fontFamily: F
-                  }}
-                >
-                  <Plus size={15} color="#C69A2C" /> Add Sample Slot
                 </button>
               </div>
             </FadeCard>
@@ -994,18 +956,18 @@ export default function CartPage() {
         )}
 
         {/* ─── FLOATING "CHAT WITH ARELLA 🌐" WIDGET ─── */}
-        <div style={{ position: 'fixed', bottom: 32, right: 32, zIndex: 90 }}>
+        <div className="chat-fab-widget" style={{ position: 'fixed', bottom: 32, right: 32, zIndex: 90 }}>
           <div style={{ position: 'relative' }}>
-            <Link 
+            <Link
               href="/chat"
-              style={{ 
-                display: 'inline-flex', 
-                alignItems: 'center', 
-                gap: 10, 
-                padding: '12px 24px', 
-                background: '#FFFFFF', 
-                border: '1px solid #E2E8F0', 
-                borderRadius: 24, 
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 10,
+                padding: '12px 24px',
+                background: '#FFFFFF',
+                border: '1px solid #E2E8F0',
+                borderRadius: 24,
                 boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
                 textDecoration: 'none',
                 color: '#1E293B',
@@ -1015,7 +977,7 @@ export default function CartPage() {
                 fontFamily: F
               }}
             >
-              <span>Chat with Arella</span>
+              <span className="chat-fab-label">Chat with Arella</span>
               <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'linear-gradient(135deg, #6366F1, #A855F7, #EC4899)', padding: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <div style={{ width: '100%', height: '100%', background: '#fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Globe size={13} color="#4F46E5" />
