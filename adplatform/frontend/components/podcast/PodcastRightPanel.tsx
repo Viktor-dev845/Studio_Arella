@@ -9,7 +9,7 @@ import api from '@/lib/api';
 const F = theme.font.body;
 
 const EXAMPLE_BADGE: React.CSSProperties = {
-  fontSize: 9, fontWeight: 800, color: '#94A3B8', background: '#F1F5F9',
+  fontSize: 9, fontWeight: 800, color: theme.color.text4, background: theme.color.surface2,
   padding: '2px 7px', borderRadius: 100, letterSpacing: '0.04em', textTransform: 'uppercase',
 };
 
@@ -178,7 +178,7 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
             <h3 style={{ fontSize: 13, fontWeight: 700, color: '#FFFFFF', margin: '0 0 6px', lineHeight: 1.35 }}>
               Podcasting with Studio Arella got easier
             </h3>
-            <p style={{ fontSize: 10.5, color: '#94A3B8', margin: 0, lineHeight: 1.45, fontWeight: 500 }}>
+            <p style={{ fontSize: 10.5, color: theme.color.text4, margin: 0, lineHeight: 1.45, fontWeight: 500 }}>
               Think of a quality studio session that amplifies your voice, think of Studio Arella
             </p>
           </div>
@@ -209,8 +209,8 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
           <Link
             href="/chat"
             style={{
-              background: '#FFFFFF',
-              border: '1px solid #E2E8F0',
+              background: theme.color.surface,
+              border: `1px solid ${theme.color.border}`,
               borderRadius: 24,
               padding: '10px 18px',
               display: 'inline-flex',
@@ -221,7 +221,7 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
               position: 'relative',
             }}
           >
-            <span style={{ fontSize: 12.5, fontWeight: 700, color: '#0F172A' }}>Chat with Arella</span>
+            <span style={{ fontSize: 12.5, fontWeight: 700, color: theme.color.text1 }}>Chat with Arella</span>
             <span style={{ fontSize: 15 }}>🌐</span>
             <div
               style={{
@@ -230,9 +230,9 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
                 right: 28,
                 width: 10,
                 height: 10,
-                background: '#FFFFFF',
-                borderRight: '1px solid #E2E8F0',
-                borderBottom: '1px solid #E2E8F0',
+                background: theme.color.surface,
+                borderRight: `1px solid ${theme.color.border}`,
+                borderBottom: `1px solid ${theme.color.border}`,
                 transform: 'rotate(45deg)',
               }}
             />
@@ -274,7 +274,7 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
       {/* Your top performing topics */}
       <div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 14px' }}>
-          <h3 style={{ fontSize: 12.5, fontWeight: 700, color: '#0F172A', margin: 0 }}>
+          <h3 style={{ fontSize: 12.5, fontWeight: 700, color: theme.color.text1, margin: 0 }}>
             Your top performing topics
           </h3>
           <span style={EXAMPLE_BADGE}>Example</span>
@@ -304,7 +304,7 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
                   style={{
                     fontSize: 12,
                     fontWeight: 700,
-                    color: '#0F172A',
+                    color: theme.color.text1,
                     margin: '0 0 2px',
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
@@ -313,7 +313,7 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
                 >
                   {topic.title}
                 </p>
-                <p style={{ fontSize: 10.5, color: '#94A3B8', margin: 0, fontWeight: 500 }}>
+                <p style={{ fontSize: 10.5, color: theme.color.text4, margin: 0, fontWeight: 500 }}>
                   {topic.listeners}
                 </p>
               </div>
@@ -324,32 +324,32 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
 
       {/* Recent Podcast Booking Calendar */}
       <div>
-        <h3 style={{ fontSize: 12.5, fontWeight: 700, color: '#0F172A', margin: '0 0 12px' }}>
+        <h3 style={{ fontSize: 12.5, fontWeight: 700, color: theme.color.text1, margin: '0 0 12px' }}>
           Recent Podcast Booking Calendar
         </h3>
 
         {/* Today's date */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-          <span style={{ fontSize: 12, fontWeight: 700, color: '#0F172A' }}>{today}</span>
+          <span style={{ fontSize: 12, fontWeight: 700, color: theme.color.text1 }}>{today}</span>
         </div>
 
         {/* Bookings cards */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 }}>
           {upcoming.length === 0 ? (
-            <p style={{ fontSize: 11.5, color: '#94A3B8', fontWeight: 600, margin: 0 }}>No upcoming sessions.</p>
+            <p style={{ fontSize: 11.5, color: theme.color.text4, fontWeight: 600, margin: 0 }}>No upcoming sessions.</p>
           ) : upcoming.map((b, i) => (
             <div
               key={i}
               style={{
-                background: '#FFFFFF',
-                border: '1px solid #E2E8F0',
+                background: theme.color.surface,
+                border: `1px solid ${theme.color.border}`,
                 borderLeft: `3px solid ${b.border}`,
                 borderRadius: 8,
                 padding: '9px 12px',
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                <p style={{ fontSize: 12, fontWeight: 700, color: '#0F172A', margin: 0 }}>
+                <p style={{ fontSize: 12, fontWeight: 700, color: theme.color.text1, margin: 0 }}>
                   {b.title}
                 </p>
                 {b.isToday && (
@@ -358,7 +358,7 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
                   </span>
                 )}
               </div>
-              <p style={{ fontSize: 10.5, color: '#94A3B8', margin: 0, fontWeight: 500 }}>
+              <p style={{ fontSize: 10.5, color: theme.color.text4, margin: 0, fontWeight: 500 }}>
                 {formatBookingDay(b.time)} · {formatBookingTime(b.time)}
               </p>
             </div>
@@ -407,8 +407,8 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
         <Link
           href="/chat"
           style={{
-            background: '#FFFFFF',
-            border: '1px solid #E2E8F0',
+            background: theme.color.surface,
+            border: `1px solid ${theme.color.border}`,
             borderRadius: 24,
             padding: '10px 18px',
             display: 'inline-flex',
@@ -419,7 +419,7 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
             position: 'relative',
           }}
         >
-          <span style={{ fontSize: 12.5, fontWeight: 700, color: '#0F172A' }}>Chat with Arella</span>
+          <span style={{ fontSize: 12.5, fontWeight: 700, color: theme.color.text1 }}>Chat with Arella</span>
           <span style={{ fontSize: 15 }}>🌐</span>
           <div
             style={{
@@ -428,9 +428,9 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
               right: 28,
               width: 10,
               height: 10,
-              background: '#FFFFFF',
-              borderRight: '1px solid #E2E8F0',
-              borderBottom: '1px solid #E2E8F0',
+              background: theme.color.surface,
+              borderRight: `1px solid ${theme.color.border}`,
+              borderBottom: `1px solid ${theme.color.border}`,
               transform: 'rotate(45deg)',
             }}
           />

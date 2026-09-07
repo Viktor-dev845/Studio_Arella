@@ -238,9 +238,9 @@ export default function CartPage() {
               <button 
                 onClick={() => router.push('/book')}
                 style={{ 
-                  background: '#FFFFFF', 
-                  border: '1px solid #E2E8F0', 
-                  color: '#334155', 
+                  background: theme.color.surface, 
+                  border: `1px solid ${theme.color.border}`, 
+                  color: theme.color.text2, 
                   padding: '8px 16px', 
                   borderRadius: 10, 
                   cursor: 'pointer', 
@@ -255,7 +255,7 @@ export default function CartPage() {
               >
                 <ChevronLeft size={16} /> Keep Browsing Slots
               </button>
-              <h1 style={{ fontFamily: theme.font.display, fontSize: 24, fontWeight: 700, color: '#0F172A', margin: 0, letterSpacing: '-0.3px' }}>
+              <h1 style={{ fontFamily: theme.font.display, fontSize: 24, fontWeight: 700, color: theme.color.text1, margin: 0, letterSpacing: '-0.3px' }}>
                 Cart & Checkout
               </h1>
             </div>
@@ -273,14 +273,14 @@ export default function CartPage() {
           {/* ─── MAIN CART CONTENT ─── */}
           {cart.length === 0 ? (
             /* Empty State */
-            <FadeCard delay={0.1} style={{ background: '#FFFFFF', borderRadius: 24, border: '1px dashed #CBD5E1', padding: '80px 24px', textAlign: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
+            <FadeCard delay={0.1} style={{ background: theme.color.surface, borderRadius: 24, border: `1px dashed ${theme.color.border2}`, padding: '80px 24px', textAlign: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
               <div style={{ width: 72, height: 72, borderRadius: 24, background: '#FFFDF5', border: '1px solid #FDE68A', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 18 }}>
                 <Wallet size={32} color="#C69A2C" />
               </div>
-              <h2 style={{ fontSize: 20, fontWeight: 800, color: '#0F172A', margin: '0 0 8px', letterSpacing: '-0.3px' }}>
+              <h2 style={{ fontSize: 20, fontWeight: 800, color: theme.color.text1, margin: '0 0 8px', letterSpacing: '-0.3px' }}>
                 Your cart is currently empty
               </h2>
-              <p style={{ fontSize: 14, color: '#64748B', margin: '0 0 24px', maxWidth: 420, marginInline: 'auto', lineHeight: 1.5 }}>
+              <p style={{ fontSize: 14, color: theme.color.text3, margin: '0 0 24px', maxWidth: 420, marginInline: 'auto', lineHeight: 1.5 }}>
                 Browse high-traffic digital billboards or podcast studio slots to schedule your campaign.
               </p>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
@@ -328,9 +328,9 @@ export default function CartPage() {
                     <div 
                       key={creativeId} 
                       style={{ 
-                        background: '#FFFFFF', 
+                        background: theme.color.surface, 
                         borderRadius: 20, 
-                        border: isExpanded ? '1.5px solid #C69A2C' : '1px solid #E2E8F0', 
+                        border: isExpanded ? '1.5px solid #C69A2C' : `1px solid ${theme.color.border}`, 
                         overflow: 'hidden', 
                         boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
                         transition: 'all 0.2s'
@@ -351,10 +351,10 @@ export default function CartPage() {
                         }}
                       >
                         <div>
-                          <div style={{ fontWeight: 800, fontSize: 16, color: '#0F172A', marginBottom: 4 }}>
+                          <div style={{ fontWeight: 800, fontSize: 16, color: theme.color.text1, marginBottom: 4 }}>
                             {group.creative?.title || 'Screen Ad Campaign'}
                           </div>
-                          <div style={{ color: '#64748B', fontSize: 12, fontWeight: 600, display: 'flex', gap: 8, alignItems: 'center' }}>
+                          <div style={{ color: theme.color.text3, fontSize: 12, fontWeight: 600, display: 'flex', gap: 8, alignItems: 'center' }}>
                             <span>{group.dates.size} Scheduled Date(s)</span>
                             <span>•</span>
                             <span>{group.items.length} Airtime Block(s)</span>
@@ -366,12 +366,12 @@ export default function CartPage() {
                             {naira(group.totalCost)}
                           </span>
                           <div style={{ 
-                            background: isExpanded ? '#C69A2C' : '#F8FAFC', 
-                            border: isExpanded ? 'none' : '1px solid #E2E8F0', 
+                            background: isExpanded ? '#C69A2C' : theme.color.bg, 
+                            border: isExpanded ? 'none' : `1px solid ${theme.color.border}`, 
                             borderRadius: '50%', 
                             padding: 6, 
                             display: 'flex', 
-                            color: isExpanded ? '#FFFFFF' : '#64748B' 
+                            color: isExpanded ? '#FFFFFF' : theme.color.text3 
                           }}>
                             {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                           </div>
@@ -380,7 +380,7 @@ export default function CartPage() {
 
                       {/* Expanded Items */}
                       {isExpanded && (
-                        <div style={{ padding: '16px 24px 24px', background: '#FFFFFF' }}>
+                        <div style={{ padding: '16px 24px 24px', background: theme.color.surface }}>
                           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 14 }}>
                             <button 
                               onClick={(e) => { e.stopPropagation(); removeCampaign(creativeId); }} 
@@ -415,42 +415,42 @@ export default function CartPage() {
                                     <div 
                                       key={item.id} 
                                       style={{ 
-                                        background: '#F8FAFC', 
+                                        background: theme.color.bg, 
                                         borderRadius: 12, 
                                         padding: '12px 16px', 
                                         display: 'flex', 
                                         justifyContent: 'space-between', 
                                         alignItems: 'center', 
-                                        border: '1px solid #E2E8F0' 
+                                        border: `1px solid ${theme.color.border}` 
                                       }}
                                     >
                                       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                        <Clock size={15} color="#94A3B8" />
+                                        <Clock size={15} color={theme.color.text4} />
                                         <div>
-                                          <p style={{ fontSize: 13, fontWeight: 700, color: '#0F172A', margin: 0 }}>
+                                          <p style={{ fontSize: 13, fontWeight: 700, color: theme.color.text1, margin: 0 }}>
                                             {formatMin(item.startMin)} – {formatMin(item.startMin + Math.max(1, Math.ceil((item.durationSec || 60) / 60)))}
                                           </p>
-                                          <span style={{ fontSize: 11, color: '#64748B', fontWeight: 600 }}>
+                                          <span style={{ fontSize: 11, color: theme.color.text3, fontWeight: 600 }}>
                                             {Math.ceil((item.durationSec || 60) / 60)} min slot ({item.durationSec || 60}s duration)
                                           </span>
                                         </div>
                                       </div>
 
                                       <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                                        <span style={{ color: '#0F172A', fontWeight: 800, fontSize: 14 }}>
+                                        <span style={{ color: theme.color.text1, fontWeight: 800, fontSize: 14 }}>
                                           {naira(item.priceInfo?.cost || 0)}
                                         </span>
                                         <div style={{ display: 'flex', gap: 6 }}>
                                           <button 
                                             onClick={() => { setEditingItem(item); setInitialTab('time'); }} 
-                                            style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', cursor: 'pointer', padding: 6, borderRadius: 6, color: '#475569' }} 
+                                            style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, cursor: 'pointer', padding: 6, borderRadius: 6, color: '#475569' }} 
                                             title="Edit Slot"
                                           >
                                             <Edit2 size={13} />
                                           </button>
                                           <button 
                                             onClick={() => { removeFromCart(item.id); toast('Slot removed', 'success'); }} 
-                                            style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', cursor: 'pointer', padding: 6, borderRadius: 6, color: '#EF4444' }} 
+                                            style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, cursor: 'pointer', padding: 6, borderRadius: 6, color: '#EF4444' }} 
                                             title="Remove Slot"
                                           >
                                             <Trash2 size={13} />
@@ -532,10 +532,10 @@ export default function CartPage() {
                 </div>
 
                 {/* Campaign Picker Attachment */}
-                <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 18, padding: 20 }}>
+                <div style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 18, padding: 20 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                     <Layers size={16} color="#C69A2C" />
-                    <span style={{ fontSize: 13, fontWeight: 800, color: '#0F172A' }}>
+                    <span style={{ fontSize: 13, fontWeight: 800, color: theme.color.text1 }}>
                       Attach to Campaign (Optional)
                     </span>
                   </div>
@@ -548,23 +548,23 @@ export default function CartPage() {
               <div style={{ position: 'sticky', top: 24, display: 'flex', flexDirection: 'column', gap: 20 }}>
                 
                 {/* Order Summary Card */}
-                <div style={{ background: '#FFFFFF', borderRadius: 24, border: '1px solid #E2E8F0', padding: '24px 26px', boxShadow: '0 4px 24px rgba(0,0,0,0.03)' }}>
-                  <h2 style={{ fontSize: 18, fontWeight: 800, color: '#0F172A', margin: '0 0 16px', letterSpacing: '-0.3px' }}>
+                <div style={{ background: theme.color.surface, borderRadius: 24, border: `1px solid ${theme.color.border}`, padding: '24px 26px', boxShadow: '0 4px 24px rgba(0,0,0,0.03)' }}>
+                  <h2 style={{ fontSize: 18, fontWeight: 800, color: theme.color.text1, margin: '0 0 16px', letterSpacing: '-0.3px' }}>
                     Order Summary
                   </h2>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 20 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#64748B' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: theme.color.text3 }}>
                       <span>Airtime Slots</span>
-                      <strong style={{ color: '#0F172A' }}>{cart.length} block(s)</strong>
+                      <strong style={{ color: theme.color.text1 }}>{cart.length} block(s)</strong>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#64748B' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: theme.color.text3 }}>
                       <span>Total Broadcast Time</span>
-                      <strong style={{ color: '#0F172A' }}>~{totalMinutes} minutes</strong>
+                      <strong style={{ color: theme.color.text1 }}>~{totalMinutes} minutes</strong>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#64748B' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: theme.color.text3 }}>
                       <span>Subtotal</span>
-                      <strong style={{ color: '#0F172A' }}>{naira(rawTotal)}</strong>
+                      <strong style={{ color: theme.color.text1 }}>{naira(rawTotal)}</strong>
                     </div>
                     {discountApplied && (
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#10B981' }}>
@@ -572,17 +572,17 @@ export default function CartPage() {
                         <strong>-{naira(discountAmount)}</strong>
                       </div>
                     )}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#64748B' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: theme.color.text3 }}>
                       <span>Screen Billboard</span>
-                      <strong style={{ color: '#0F172A', textAlign: 'right' }}>Bems Junction, Umuahia</strong>
+                      <strong style={{ color: theme.color.text1, textAlign: 'right' }}>Bems Junction, Umuahia</strong>
                     </div>
                   </div>
 
-                  <div style={{ borderTop: '1px dashed #E2E8F0', margin: '16px 0', width: '100%' }} />
+                  <div style={{ borderTop: `1px dashed ${theme.color.border}`, margin: '16px 0', width: '100%' }} />
 
                   {/* Total Due */}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 24 }}>
-                    <span style={{ fontSize: 14, fontWeight: 800, color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    <span style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                       Total Due
                     </span>
                     <span style={{ fontSize: 24, fontWeight: 900, color: '#C69A2C', letterSpacing: '-0.5px' }}>
@@ -591,7 +591,7 @@ export default function CartPage() {
                   </div>
 
                   {/* Payment Method Selector */}
-                  <p style={{ fontSize: 12, fontWeight: 800, color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 10px' }}>
+                  <p style={{ fontSize: 12, fontWeight: 800, color: theme.color.text1, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 10px' }}>
                     Select Payment Method
                   </p>
 
@@ -600,7 +600,7 @@ export default function CartPage() {
                     <div 
                       onClick={() => setPaymentMethod('wallet')}
                       style={{ 
-                        border: paymentMethod === 'wallet' ? '1.5px solid #C69A2C' : '1px solid #E2E8F0',
+                        border: paymentMethod === 'wallet' ? '1.5px solid #C69A2C' : `1px solid ${theme.color.border}`,
                         background: paymentMethod === 'wallet' ? '#FFFDF5' : '#FFFFFF',
                         borderRadius: 14,
                         padding: '14px 16px',
@@ -616,10 +616,10 @@ export default function CartPage() {
                           <Wallet size={16} color="#EA580C" />
                         </div>
                         <div>
-                          <p style={{ fontSize: 13, fontWeight: 800, color: '#0F172A', margin: 0 }}>
+                          <p style={{ fontSize: 13, fontWeight: 800, color: theme.color.text1, margin: 0 }}>
                             Pay from Wallet
                           </p>
-                          <p style={{ fontSize: 11, color: '#64748B', margin: '2px 0 0', fontWeight: 600 }}>
+                          <p style={{ fontSize: 11, color: theme.color.text3, margin: '2px 0 0', fontWeight: 600 }}>
                             Bal: ₦{walletBalance.toLocaleString('en-NG', { maximumFractionDigits: 0 })} · Instant
                           </p>
                         </div>
@@ -628,8 +628,8 @@ export default function CartPage() {
                         width: 18, 
                         height: 18, 
                         borderRadius: '50%', 
-                        border: paymentMethod === 'wallet' ? '5px solid #C69A2C' : '2px solid #CBD5E1', 
-                        background: '#FFFFFF' 
+                        border: paymentMethod === 'wallet' ? '5px solid #C69A2C' : `2px solid ${theme.color.border2}`, 
+                        background: theme.color.surface 
                       }} />
                     </div>
 
@@ -637,7 +637,7 @@ export default function CartPage() {
                     <div 
                       onClick={() => setPaymentMethod('monnify')}
                       style={{ 
-                        border: paymentMethod === 'monnify' ? '1.5px solid #C69A2C' : '1px solid #E2E8F0',
+                        border: paymentMethod === 'monnify' ? '1.5px solid #C69A2C' : `1px solid ${theme.color.border}`,
                         background: paymentMethod === 'monnify' ? '#FFFDF5' : '#FFFFFF',
                         borderRadius: 14,
                         padding: '14px 16px',
@@ -653,10 +653,10 @@ export default function CartPage() {
                           <CreditCard size={16} color="#2563EB" />
                         </div>
                         <div>
-                          <p style={{ fontSize: 13, fontWeight: 800, color: '#0F172A', margin: 0 }}>
+                          <p style={{ fontSize: 13, fontWeight: 800, color: theme.color.text1, margin: 0 }}>
                             Card / Bank Transfer
                           </p>
-                          <p style={{ fontSize: 11, color: '#64748B', margin: '2px 0 0', fontWeight: 600 }}>
+                          <p style={{ fontSize: 11, color: theme.color.text3, margin: '2px 0 0', fontWeight: 600 }}>
                             Direct checkout via Monnify
                           </p>
                         </div>
@@ -665,8 +665,8 @@ export default function CartPage() {
                         width: 18, 
                         height: 18, 
                         borderRadius: '50%', 
-                        border: paymentMethod === 'monnify' ? '5px solid #C69A2C' : '2px solid #CBD5E1', 
-                        background: '#FFFFFF' 
+                        border: paymentMethod === 'monnify' ? '5px solid #C69A2C' : `2px solid ${theme.color.border2}`, 
+                        background: theme.color.surface 
                       }} />
                     </div>
                   </div>
@@ -713,7 +713,7 @@ export default function CartPage() {
                     style={{
                       width: '100%',
                       padding: '14px 20px',
-                      background: (paymentMethod === 'wallet' && !hasSufficientBalance) ? '#CBD5E1' : '#C69A2C',
+                      background: (paymentMethod === 'wallet' && !hasSufficientBalance) ? theme.color.border2 : '#C69A2C',
                       color: '#FFFFFF',
                       border: 'none',
                       borderRadius: 12,
@@ -742,7 +742,7 @@ export default function CartPage() {
                     )}
                   </button>
 
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 16, color: '#94A3B8', fontSize: 11, fontWeight: 600 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 16, color: theme.color.text4, fontSize: 11, fontWeight: 600 }}>
                     <ShieldCheck size={14} color="#10B981" />
                     <span>256-Bit SSL Encrypted Checkout</span>
                   </div>
@@ -776,22 +776,22 @@ export default function CartPage() {
                   transition={{ duration: 0.2 }}
                   style={{ width: '100%', maxWidth: 440, pointerEvents: 'auto' }}
                 >
-                  <div style={{ background: '#FFFFFF', borderRadius: 24, padding: '32px 28px', boxShadow: '0 20px 40px rgba(0,0,0,0.15)', fontFamily: F }}>
+                  <div style={{ background: theme.color.surface, borderRadius: 24, padding: '32px 28px', boxShadow: '0 20px 40px rgba(0,0,0,0.15)', fontFamily: F }}>
                     
                     {/* Header: Back Arrow, Title, Close Icon */}
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
                       <button 
                         onClick={() => setShowWalletModal(false)}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#0F172A', padding: 4 }}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text1, padding: 4 }}
                       >
                         <ChevronLeft size={20} />
                       </button>
-                      <h2 style={{ fontSize: 18, fontWeight: 800, color: '#0F172A', margin: 0 }}>
+                      <h2 style={{ fontSize: 18, fontWeight: 800, color: theme.color.text1, margin: 0 }}>
                         Pay from wallet
                       </h2>
                       <button 
                         onClick={() => setShowWalletModal(false)}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#0F172A', padding: 4 }}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text1, padding: 4 }}
                       >
                         <X size={18} />
                       </button>
@@ -806,12 +806,12 @@ export default function CartPage() {
                       alignItems: 'center', 
                       justifyContent: 'space-between',
                       marginBottom: 28,
-                      background: '#FFFFFF'
+                      background: theme.color.surface
                     }}>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: '#334155' }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: theme.color.text2 }}>
                         Total amount
                       </span>
-                      <span style={{ fontSize: 15, fontWeight: 900, color: '#0F172A', letterSpacing: '-0.2px' }}>
+                      <span style={{ fontSize: 15, fontWeight: 900, color: theme.color.text1, letterSpacing: '-0.2px' }}>
                         NGN {Number(finalTotal).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </span>
                     </div>
@@ -876,22 +876,22 @@ export default function CartPage() {
                   transition={{ duration: 0.2 }}
                   style={{ width: '100%', maxWidth: 440, pointerEvents: 'auto' }}
                 >
-                  <div style={{ background: '#FFFFFF', borderRadius: 24, padding: '36px 28px', textAlign: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.15)', fontFamily: F }}>
+                  <div style={{ background: theme.color.surface, borderRadius: 24, padding: '36px 28px', textAlign: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.15)', fontFamily: F }}>
                     
                     {/* Header: Back Arrow, Title, Close Icon */}
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
                       <button 
                         onClick={() => { setShowSuccessModal(false); router.push('/bookings'); }}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#0F172A', padding: 4 }}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text1, padding: 4 }}
                       >
                         <ChevronLeft size={20} />
                       </button>
-                      <h2 style={{ fontSize: 18, fontWeight: 800, color: '#0F172A', margin: 0 }}>
+                      <h2 style={{ fontSize: 18, fontWeight: 800, color: theme.color.text1, margin: 0 }}>
                         Pay from wallet
                       </h2>
                       <button 
                         onClick={() => { setShowSuccessModal(false); router.push('/bookings'); }}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#0F172A', padding: 4 }}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text1, padding: 4 }}
                       >
                         <X size={18} />
                       </button>
@@ -912,7 +912,7 @@ export default function CartPage() {
                       <Check size={32} color="#FFFFFF" strokeWidth={3} />
                     </div>
 
-                    <h3 style={{ fontSize: 20, fontWeight: 800, color: '#0F172A', margin: '0 0 28px', letterSpacing: '-0.3px' }}>
+                    <h3 style={{ fontSize: 20, fontWeight: 800, color: theme.color.text1, margin: '0 0 28px', letterSpacing: '-0.3px' }}>
                       Payment successful
                     </h3>
 
@@ -965,8 +965,8 @@ export default function CartPage() {
                 alignItems: 'center',
                 gap: 10,
                 padding: '12px 24px',
-                background: '#FFFFFF',
-                border: '1px solid #E2E8F0',
+                background: theme.color.surface,
+                border: `1px solid ${theme.color.border}`,
                 borderRadius: 24,
                 boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
                 textDecoration: 'none',
@@ -979,7 +979,7 @@ export default function CartPage() {
             >
               <span className="chat-fab-label">Chat with Arella</span>
               <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'linear-gradient(135deg, #6366F1, #A855F7, #EC4899)', padding: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ width: '100%', height: '100%', background: '#fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: '100%', height: '100%', background: theme.color.surface, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Globe size={13} color="#4F46E5" />
                 </div>
               </div>

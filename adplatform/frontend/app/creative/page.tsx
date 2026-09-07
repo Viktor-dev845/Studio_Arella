@@ -351,7 +351,7 @@ export default function CreativeStudioPage() {
                   <h1 style={{ fontFamily: theme.font.display, fontSize: 32, fontWeight: 700, margin: '0 0 10px', color: '#fff', letterSpacing: '-0.03em' }}>
                     Commercial Creative & Audio Production
                   </h1>
-                  <p style={{ fontSize: 14, color: '#94A3B8', margin: 0, lineHeight: 1.6 }}>
+                  <p style={{ fontSize: 14, color: theme.color.text4, margin: 0, lineHeight: 1.6 }}>
                     Bespoke motion graphics, high-impact billboard animations, commercial scriptwriting, and studio-grade voiceover mastering engineered specifically for high-glare LED displays and podcast audiences.
                   </p>
                 </div>
@@ -406,16 +406,16 @@ export default function CreativeStudioPage() {
           </div>
 
           {/* Navigation Tabs */}
-          <div style={{ display: 'flex', gap: 12, borderBottom: '1px solid #E2E8F0', paddingBottom: 12, marginBottom: 32, overflowX: 'auto' }}>
+          <div style={{ display: 'flex', gap: 12, borderBottom: `1px solid ${theme.color.border}`, paddingBottom: 12, marginBottom: 32, overflowX: 'auto' }}>
             <button
               onClick={() => setActiveTab('catalog')}
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: 8,
-                background: activeTab === 'catalog' ? '#0F172A' : '#F8FAFC',
+                background: activeTab === 'catalog' ? theme.color.charcoal900 : theme.color.bg,
                 color: activeTab === 'catalog' ? '#fff' : '#475569',
-                border: `1px solid ${activeTab === 'catalog' ? '#0F172A' : '#E2E8F0'}`,
+                border: `1px solid ${activeTab === 'catalog' ? theme.color.text1 : theme.color.border}`,
                 padding: '10px 20px',
                 borderRadius: 12,
                 fontSize: 14,
@@ -425,7 +425,7 @@ export default function CreativeStudioPage() {
                 transition: 'all 0.2s',
               }}
             >
-              <Sparkles size={15} color={activeTab === 'catalog' ? '#C69A2C' : '#64748B'} />
+              <Sparkles size={15} color={activeTab === 'catalog' ? '#C69A2C' : theme.color.text3} />
               Studio Services & Catalog
             </button>
 
@@ -435,9 +435,9 @@ export default function CreativeStudioPage() {
                 display: 'flex',
                 alignItems: 'center',
                 gap: 8,
-                background: activeTab === 'new_request' ? '#0F172A' : '#F8FAFC',
+                background: activeTab === 'new_request' ? theme.color.charcoal900 : theme.color.bg,
                 color: activeTab === 'new_request' ? '#fff' : '#475569',
-                border: `1px solid ${activeTab === 'new_request' ? '#0F172A' : '#E2E8F0'}`,
+                border: `1px solid ${activeTab === 'new_request' ? theme.color.text1 : theme.color.border}`,
                 padding: '10px 20px',
                 borderRadius: 12,
                 fontSize: 14,
@@ -447,7 +447,7 @@ export default function CreativeStudioPage() {
                 transition: 'all 0.2s',
               }}
             >
-              <FileText size={15} color={activeTab === 'new_request' ? '#C69A2C' : '#64748B'} />
+              <FileText size={15} color={activeTab === 'new_request' ? '#C69A2C' : theme.color.text3} />
               Interactive Brief Wizard
             </button>
 
@@ -457,9 +457,9 @@ export default function CreativeStudioPage() {
                 display: 'flex',
                 alignItems: 'center',
                 gap: 8,
-                background: activeTab === 'my_orders' ? '#0F172A' : '#F8FAFC',
+                background: activeTab === 'my_orders' ? theme.color.charcoal900 : theme.color.bg,
                 color: activeTab === 'my_orders' ? '#fff' : '#475569',
-                border: `1px solid ${activeTab === 'my_orders' ? '#0F172A' : '#E2E8F0'}`,
+                border: `1px solid ${activeTab === 'my_orders' ? theme.color.text1 : theme.color.border}`,
                 padding: '10px 20px',
                 borderRadius: 12,
                 fontSize: 14,
@@ -469,7 +469,7 @@ export default function CreativeStudioPage() {
                 transition: 'all 0.2s',
               }}
             >
-              <Layers size={15} color={activeTab === 'my_orders' ? '#C69A2C' : '#64748B'} />
+              <Layers size={15} color={activeTab === 'my_orders' ? '#C69A2C' : theme.color.text3} />
               My Orders & Production Pipeline
               {myRequests.length > 0 && (
                 <span style={{ background: '#C69A2C', color: '#0B0E14', fontSize: 11, fontWeight: 800, padding: '2px 8px', borderRadius: 10 }}>
@@ -484,22 +484,22 @@ export default function CreativeStudioPage() {
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
               
               {/* Production Stepper Bar */}
-              <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 20, padding: '28px 24px', marginBottom: 36, boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
+              <div style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 20, padding: '28px 24px', marginBottom: 36, boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
                 <div style={{ marginBottom: 20 }}>
                   <span style={{ fontSize: 11, fontWeight: 800, color: '#C69A2C', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Streamlined Workflow</span>
-                  <h3 style={{ fontFamily: theme.font.display, fontSize: 18, fontWeight: 700, color: '#0F172A', margin: '4px 0 0' }}>The Studio Arella Production Pipeline</h3>
+                  <h3 style={{ fontFamily: theme.font.display, fontSize: 18, fontWeight: 700, color: theme.color.text1, margin: '4px 0 0' }}>The Studio Arella Production Pipeline</h3>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16, position: 'relative' }}>
                   {PIPELINE_STAGES.map((s, idx) => (
                     <div key={s.step} style={{ display: 'flex', flexDirection: 'column', gap: 6, position: 'relative' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <div style={{ width: 28, height: 28, borderRadius: '50%', background: idx === 0 ? '#C69A2C' : '#0F172A', color: idx === 0 ? '#0B0E14' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800 }}>
+                        <div style={{ width: 28, height: 28, borderRadius: '50%', background: idx === 0 ? '#C69A2C' : theme.color.charcoal900, color: idx === 0 ? '#0B0E14' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800 }}>
                           {s.step}
                         </div>
-                        <span style={{ fontSize: 13, fontWeight: 700, color: '#0F172A' }}>{s.label}</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: theme.color.text1 }}>{s.label}</span>
                       </div>
-                      <p style={{ fontSize: 11, color: '#64748B', margin: 0, lineHeight: 1.4, paddingLeft: 38 }}>
+                      <p style={{ fontSize: 11, color: theme.color.text3, margin: 0, lineHeight: 1.4, paddingLeft: 38 }}>
                         {s.desc}
                       </p>
                     </div>
@@ -515,8 +515,8 @@ export default function CreativeStudioPage() {
                     <div
                       key={svc.id}
                       style={{
-                        background: '#fff',
-                        border: svc.popular ? '2px solid #C69A2C' : '1px solid #E2E8F0',
+                        background: theme.color.surface,
+                        border: svc.popular ? '2px solid #C69A2C' : `1px solid ${theme.color.border}`,
                         borderRadius: 20,
                         padding: '28px',
                         display: 'flex',
@@ -539,9 +539,9 @@ export default function CreativeStudioPage() {
                             <Icon size={24} color="#C69A2C" />
                           </div>
                           <div>
-                            <h3 style={{ fontFamily: theme.font.display, fontSize: 18, fontWeight: 700, color: '#0F172A', margin: 0 }}>{svc.title}</h3>
-                            <span style={{ fontSize: 12, color: '#64748B', display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
-                              <Clock size={12} color="#C69A2C" /> Turnaround: <strong style={{ color: '#0F172A' }}>{svc.turnaround}</strong>
+                            <h3 style={{ fontFamily: theme.font.display, fontSize: 18, fontWeight: 700, color: theme.color.text1, margin: 0 }}>{svc.title}</h3>
+                            <span style={{ fontSize: 12, color: theme.color.text3, display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
+                              <Clock size={12} color="#C69A2C" /> Turnaround: <strong style={{ color: theme.color.text1 }}>{svc.turnaround}</strong>
                             </span>
                           </div>
                         </div>
@@ -550,8 +550,8 @@ export default function CreativeStudioPage() {
                           {svc.subtitle}
                         </p>
 
-                        <div style={{ background: '#F8FAFC', borderRadius: 12, padding: '12px 14px', marginBottom: 20, border: '1px solid #E2E8F0' }}>
-                          <span style={{ fontSize: 11, fontWeight: 700, color: '#64748B', display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Deliverable Specs</span>
+                        <div style={{ background: theme.color.bg, borderRadius: 12, padding: '12px 14px', marginBottom: 20, border: `1px solid ${theme.color.border}` }}>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: theme.color.text3, display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Deliverable Specs</span>
                           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
                             {svc.specs.map((sp, idx) => (
                               <li key={idx} style={{ fontSize: 12, color: '#1E293B', display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -562,10 +562,10 @@ export default function CreativeStudioPage() {
                         </div>
                       </div>
 
-                      <div style={{ borderTop: '1px solid #F1F5F9', paddingTop: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ borderTop: `1px solid ${theme.color.surface2}`, paddingTop: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <div>
-                          <span style={{ fontSize: 11, color: '#64748B', display: 'block' }}>Starting from</span>
-                          <span style={{ fontSize: 18, fontWeight: 800, color: '#0F172A' }}>{svc.basePrice}</span>
+                          <span style={{ fontSize: 11, color: theme.color.text3, display: 'block' }}>Starting from</span>
+                          <span style={{ fontSize: 18, fontWeight: 800, color: theme.color.text1 }}>{svc.basePrice}</span>
                         </div>
                         <button
                           onClick={() => handleStartRequestWithDiscipline(svc.id)}
@@ -573,7 +573,7 @@ export default function CreativeStudioPage() {
                             display: 'inline-flex',
                             alignItems: 'center',
                             gap: 6,
-                            background: '#0F172A',
+                            background: theme.color.charcoal900,
                             color: '#fff',
                             border: 'none',
                             borderRadius: 10,
@@ -594,44 +594,44 @@ export default function CreativeStudioPage() {
               </div>
 
               {/* Billboard Technical Specifications Guide */}
-              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 20, padding: '32px', marginBottom: 24 }}>
+              <div style={{ background: theme.color.bg, border: `1px solid ${theme.color.border}`, borderRadius: 20, padding: '32px', marginBottom: 24 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
                   <div style={{ padding: 10, borderRadius: 12, background: 'rgba(198,154,44,0.12)' }}>
                     <Monitor size={22} color="#C69A2C" />
                   </div>
                   <div>
-                    <h3 style={{ fontFamily: theme.font.display, fontSize: 18, fontWeight: 700, color: '#0F172A', margin: 0 }}>
+                    <h3 style={{ fontFamily: theme.font.display, fontSize: 18, fontWeight: 700, color: theme.color.text1, margin: 0 }}>
                       Studio Arella LED Billboard Standards
                     </h3>
-                    <p style={{ fontSize: 13, color: '#64748B', margin: 0 }}>
+                    <p style={{ fontSize: 13, color: theme.color.text3, margin: 0 }}>
                       Hardware calibrated rendering standards for Bems Junction, VI Tower, and Aba Road screens.
                     </p>
                   </div>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
-                  <div style={{ background: '#fff', padding: '16px', borderRadius: 12, border: '1px solid #E2E8F0' }}>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase' }}>Resolution</span>
-                    <p style={{ fontSize: 15, fontWeight: 700, color: '#0F172A', margin: '4px 0 2px' }}>1920 × 1080 (16:9)</p>
-                    <span style={{ fontSize: 11, color: '#64748B' }}>Full HD Landscape & Portrait setups</span>
+                  <div style={{ background: theme.color.surface, padding: '16px', borderRadius: 12, border: `1px solid ${theme.color.border}` }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: theme.color.text4, textTransform: 'uppercase' }}>Resolution</span>
+                    <p style={{ fontSize: 15, fontWeight: 700, color: theme.color.text1, margin: '4px 0 2px' }}>1920 × 1080 (16:9)</p>
+                    <span style={{ fontSize: 11, color: theme.color.text3 }}>Full HD Landscape & Portrait setups</span>
                   </div>
 
-                  <div style={{ background: '#fff', padding: '16px', borderRadius: 12, border: '1px solid #E2E8F0' }}>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase' }}>Frame Rate & Format</span>
-                    <p style={{ fontSize: 15, fontWeight: 700, color: '#0F172A', margin: '4px 0 2px' }}>30 or 60 FPS (MP4 / ProRes)</p>
-                    <span style={{ fontSize: 11, color: '#64748B' }}>Optimized for high-speed motion render</span>
+                  <div style={{ background: theme.color.surface, padding: '16px', borderRadius: 12, border: `1px solid ${theme.color.border}` }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: theme.color.text4, textTransform: 'uppercase' }}>Frame Rate & Format</span>
+                    <p style={{ fontSize: 15, fontWeight: 700, color: theme.color.text1, margin: '4px 0 2px' }}>30 or 60 FPS (MP4 / ProRes)</p>
+                    <span style={{ fontSize: 11, color: theme.color.text3 }}>Optimized for high-speed motion render</span>
                   </div>
 
-                  <div style={{ background: '#fff', padding: '16px', borderRadius: 12, border: '1px solid #E2E8F0' }}>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase' }}>Color & Contrast</span>
-                    <p style={{ fontSize: 15, fontWeight: 700, color: '#0F172A', margin: '4px 0 2px' }}>sRGB High Contrast Profile</p>
-                    <span style={{ fontSize: 11, color: '#64748B' }}>Vivid daylight outdoor sunlight readability</span>
+                  <div style={{ background: theme.color.surface, padding: '16px', borderRadius: 12, border: `1px solid ${theme.color.border}` }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: theme.color.text4, textTransform: 'uppercase' }}>Color & Contrast</span>
+                    <p style={{ fontSize: 15, fontWeight: 700, color: theme.color.text1, margin: '4px 0 2px' }}>sRGB High Contrast Profile</p>
+                    <span style={{ fontSize: 11, color: theme.color.text3 }}>Vivid daylight outdoor sunlight readability</span>
                   </div>
 
-                  <div style={{ background: '#fff', padding: '16px', borderRadius: 12, border: '1px solid #E2E8F0' }}>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase' }}>Typical Slot Length</span>
-                    <p style={{ fontSize: 15, fontWeight: 700, color: '#0F172A', margin: '4px 0 2px' }}>10s, 15s or 30s Loops</p>
-                    <span style={{ fontSize: 11, color: '#64748B' }}>Paced for vehicular & pedestrian views</span>
+                  <div style={{ background: theme.color.surface, padding: '16px', borderRadius: 12, border: `1px solid ${theme.color.border}` }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: theme.color.text4, textTransform: 'uppercase' }}>Typical Slot Length</span>
+                    <p style={{ fontSize: 15, fontWeight: 700, color: theme.color.text1, margin: '4px 0 2px' }}>10s, 15s or 30s Loops</p>
+                    <span style={{ fontSize: 11, color: theme.color.text3 }}>Paced for vehicular & pedestrian views</span>
                   </div>
                 </div>
               </div>
@@ -666,8 +666,8 @@ export default function CreativeStudioPage() {
                           width: 32,
                           height: 32,
                           borderRadius: '50%',
-                          background: wizardStep >= s.step ? '#C69A2C' : '#E2E8F0',
-                          color: wizardStep >= s.step ? '#0B0E14' : '#64748B',
+                          background: wizardStep >= s.step ? '#C69A2C' : theme.color.border,
+                          color: wizardStep >= s.step ? '#0B0E14' : theme.color.text3,
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
@@ -678,7 +678,7 @@ export default function CreativeStudioPage() {
                       >
                         {wizardStep > s.step ? <Check size={16} /> : s.step}
                       </div>
-                      <span style={{ fontSize: 13, fontWeight: wizardStep === s.step ? 800 : 600, color: wizardStep === s.step ? '#0F172A' : '#64748B' }}>
+                      <span style={{ fontSize: 13, fontWeight: wizardStep === s.step ? 800 : 600, color: wizardStep === s.step ? theme.color.text1 : theme.color.text3 }}>
                         {s.title}
                       </span>
                     </div>
@@ -686,15 +686,15 @@ export default function CreativeStudioPage() {
                 </div>
 
                 {/* Wizard Card Container */}
-                <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 24, padding: '36px', boxShadow: '0 8px 30px rgba(0,0,0,0.03)' }}>
+                <div style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 24, padding: '36px', boxShadow: '0 8px 30px rgba(0,0,0,0.03)' }}>
                   
                   {/* STEP 1: SERVICE SELECTION */}
                   {wizardStep === 1 && (
                     <div>
-                      <h2 style={{ fontFamily: theme.font.display, fontSize: 22, fontWeight: 700, color: '#0F172A', margin: '0 0 6px' }}>
+                      <h2 style={{ fontFamily: theme.font.display, fontSize: 22, fontWeight: 700, color: theme.color.text1, margin: '0 0 6px' }}>
                         Choose Creative Production Discipline
                       </h2>
-                      <p style={{ fontSize: 13, color: '#64748B', margin: '0 0 24px' }}>
+                      <p style={{ fontSize: 13, color: theme.color.text3, margin: '0 0 24px' }}>
                         Select the primary output needed for your advertising or podcast broadcast campaign.
                       </p>
 
@@ -709,7 +709,7 @@ export default function CreativeStudioPage() {
                               style={{
                                 padding: '20px',
                                 borderRadius: 16,
-                                border: selected ? '2px solid #C69A2C' : '1px solid #E2E8F0',
+                                border: selected ? '2px solid #C69A2C' : `1px solid ${theme.color.border}`,
                                 background: selected ? 'rgba(198,154,44,0.06)' : '#fff',
                                 cursor: 'pointer',
                                 transition: 'all 0.2s ease',
@@ -721,11 +721,11 @@ export default function CreativeStudioPage() {
                                   <Check size={12} color="#0B0E14" />
                                 </div>
                               )}
-                              <div style={{ width: 40, height: 40, borderRadius: 10, background: selected ? '#C69A2C' : '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+                              <div style={{ width: 40, height: 40, borderRadius: 10, background: selected ? '#C69A2C' : theme.color.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
                                 <Icon size={20} color={selected ? '#0B0E14' : '#475569'} />
                               </div>
-                              <h4 style={{ fontSize: 15, fontWeight: 700, color: '#0F172A', margin: '0 0 4px' }}>{svc.title}</h4>
-                              <p style={{ fontSize: 12, color: '#64748B', margin: '0 0 10px', lineHeight: 1.4 }}>{svc.subtitle}</p>
+                              <h4 style={{ fontSize: 15, fontWeight: 700, color: theme.color.text1, margin: '0 0 4px' }}>{svc.title}</h4>
+                              <p style={{ fontSize: 12, color: theme.color.text3, margin: '0 0 10px', lineHeight: 1.4 }}>{svc.subtitle}</p>
                               <span style={{ fontSize: 11, fontWeight: 700, color: '#C69A2C' }}>From {svc.basePrice}</span>
                             </div>
                           );
@@ -739,7 +739,7 @@ export default function CreativeStudioPage() {
                             display: 'inline-flex',
                             alignItems: 'center',
                             gap: 8,
-                            background: '#0F172A',
+                            background: theme.color.charcoal900,
                             color: '#fff',
                             border: 'none',
                             borderRadius: 12,
@@ -759,10 +759,10 @@ export default function CreativeStudioPage() {
                   {/* STEP 2: BUSINESS INFO */}
                   {wizardStep === 2 && (
                     <div>
-                      <h2 style={{ fontFamily: theme.font.display, fontSize: 22, fontWeight: 700, color: '#0F172A', margin: '0 0 6px' }}>
+                      <h2 style={{ fontFamily: theme.font.display, fontSize: 22, fontWeight: 700, color: theme.color.text1, margin: '0 0 6px' }}>
                         Business & Contact Details
                       </h2>
-                      <p style={{ fontSize: 13, color: '#64748B', margin: '0 0 24px' }}>
+                      <p style={{ fontSize: 13, color: theme.color.text3, margin: '0 0 24px' }}>
                         Who are we building this creative for? Our Creative Director will reach out to this contact.
                       </p>
 
@@ -804,8 +804,8 @@ export default function CreativeStudioPage() {
                               style={{
                                 padding: '8px 16px',
                                 borderRadius: 10,
-                                border: formData.ad_tone === tone ? '1.5px solid #C69A2C' : '1px solid #E2E8F0',
-                                background: formData.ad_tone === tone ? 'rgba(198,154,44,0.1)' : '#F8FAFC',
+                                border: formData.ad_tone === tone ? '1.5px solid #C69A2C' : `1px solid ${theme.color.border}`,
+                                background: formData.ad_tone === tone ? 'rgba(198,154,44,0.1)' : theme.color.bg,
                                 color: formData.ad_tone === tone ? '#9A741E' : '#475569',
                                 fontSize: 13,
                                 fontWeight: 700,
@@ -822,13 +822,13 @@ export default function CreativeStudioPage() {
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <button
                           onClick={() => setWizardStep(1)}
-                          style={{ background: '#F1F5F9', color: '#475569', border: 'none', borderRadius: 12, padding: '12px 24px', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: F }}
+                          style={{ background: theme.color.surface2, color: '#475569', border: 'none', borderRadius: 12, padding: '12px 24px', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: F }}
                         >
                           Back
                         </button>
                         <button
                           onClick={handleNextStep}
-                          style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#0F172A', color: '#fff', border: 'none', borderRadius: 12, padding: '12px 28px', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: F }}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: theme.color.charcoal900, color: '#fff', border: 'none', borderRadius: 12, padding: '12px 28px', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: F }}
                         >
                           Next: Creative Brief <ArrowRight size={15} />
                         </button>
@@ -839,10 +839,10 @@ export default function CreativeStudioPage() {
                   {/* STEP 3: CREATIVE BRIEF */}
                   {wizardStep === 3 && (
                     <div>
-                      <h2 style={{ fontFamily: theme.font.display, fontSize: 22, fontWeight: 700, color: '#0F172A', margin: '0 0 6px' }}>
+                      <h2 style={{ fontFamily: theme.font.display, fontSize: 22, fontWeight: 700, color: theme.color.text1, margin: '0 0 6px' }}>
                         Ad Concept & Guidelines
                       </h2>
-                      <p style={{ fontSize: 13, color: '#64748B', margin: '0 0 24px' }}>
+                      <p style={{ fontSize: 13, color: theme.color.text3, margin: '0 0 24px' }}>
                         Describe what you want to achieve. Include key promotions, discounts, calls-to-action, and brand details.
                       </p>
 
@@ -860,7 +860,7 @@ export default function CreativeStudioPage() {
                               width: '100%',
                               padding: '14px 16px',
                               borderRadius: 12,
-                              border: '1px solid #CBD5E1',
+                              border: `1px solid ${theme.color.border2}`,
                               fontSize: 14,
                               fontFamily: F,
                               outline: 'none',
@@ -908,13 +908,13 @@ export default function CreativeStudioPage() {
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <button
                           onClick={() => setWizardStep(2)}
-                          style={{ background: '#F1F5F9', color: '#475569', border: 'none', borderRadius: 12, padding: '12px 24px', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: F }}
+                          style={{ background: theme.color.surface2, color: '#475569', border: 'none', borderRadius: 12, padding: '12px 24px', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: F }}
                         >
                           Back
                         </button>
                         <button
                           onClick={handleNextStep}
-                          style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#0F172A', color: '#fff', border: 'none', borderRadius: 12, padding: '12px 28px', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: F }}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: theme.color.charcoal900, color: '#fff', border: 'none', borderRadius: 12, padding: '12px 28px', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: F }}
                         >
                           Next: Budget & Delivery <ArrowRight size={15} />
                         </button>
@@ -925,10 +925,10 @@ export default function CreativeStudioPage() {
                   {/* STEP 4: TIMELINE & BUDGET REVIEW */}
                   {wizardStep === 4 && (
                     <div>
-                      <h2 style={{ fontFamily: theme.font.display, fontSize: 22, fontWeight: 700, color: '#0F172A', margin: '0 0 6px' }}>
+                      <h2 style={{ fontFamily: theme.font.display, fontSize: 22, fontWeight: 700, color: theme.color.text1, margin: '0 0 6px' }}>
                         Budget, Timeline & Confirmation
                       </h2>
-                      <p style={{ fontSize: 13, color: '#64748B', margin: '0 0 24px' }}>
+                      <p style={{ fontSize: 13, color: theme.color.text3, margin: '0 0 24px' }}>
                         Finalize your production scope. Our creative director will review this brief and contact you within 24 hours.
                       </p>
 
@@ -945,8 +945,8 @@ export default function CreativeStudioPage() {
                                 width: '100%',
                                 padding: '12px 16px',
                                 borderRadius: 12,
-                                border: '1px solid #CBD5E1',
-                                background: '#fff',
+                                border: `1px solid ${theme.color.border2}`,
+                                background: theme.color.surface,
                                 fontSize: 13,
                                 fontFamily: F,
                                 outline: 'none',
@@ -974,29 +974,29 @@ export default function CreativeStudioPage() {
                       </div>
 
                       {/* Brief Summary Box */}
-                      <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 16, padding: '20px', marginBottom: 28 }}>
-                        <h4 style={{ fontSize: 13, fontWeight: 800, color: '#0F172A', margin: '0 0 12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      <div style={{ background: theme.color.bg, border: `1px solid ${theme.color.border}`, borderRadius: 16, padding: '20px', marginBottom: 28 }}>
+                        <h4 style={{ fontSize: 13, fontWeight: 800, color: theme.color.text1, margin: '0 0 12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                           Brief Summary Recap
                         </h4>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, fontSize: 13 }}>
                           <div>
-                            <span style={{ color: '#64748B' }}>Service:</span>{' '}
-                            <strong style={{ color: '#0F172A' }}>{SERVICE_DISCIPLINES.find((d) => d.id === selectedDiscipline)?.title}</strong>
+                            <span style={{ color: theme.color.text3 }}>Service:</span>{' '}
+                            <strong style={{ color: theme.color.text1 }}>{SERVICE_DISCIPLINES.find((d) => d.id === selectedDiscipline)?.title}</strong>
                           </div>
                           <div>
-                            <span style={{ color: '#64748B' }}>Business:</span>{' '}
-                            <strong style={{ color: '#0F172A' }}>{formData.business_name || '—'}</strong>
+                            <span style={{ color: theme.color.text3 }}>Business:</span>{' '}
+                            <strong style={{ color: theme.color.text1 }}>{formData.business_name || '—'}</strong>
                           </div>
                           <div>
-                            <span style={{ color: '#64748B' }}>Contact Phone:</span>{' '}
-                            <strong style={{ color: '#0F172A' }}>{formData.contact_phone || '—'}</strong>
+                            <span style={{ color: theme.color.text3 }}>Contact Phone:</span>{' '}
+                            <strong style={{ color: theme.color.text1 }}>{formData.contact_phone || '—'}</strong>
                           </div>
                           <div>
-                            <span style={{ color: '#64748B' }}>Brand Tone:</span>{' '}
+                            <span style={{ color: theme.color.text3 }}>Brand Tone:</span>{' '}
                             <strong style={{ color: '#C69A2C' }}>{formData.ad_tone}</strong>
                           </div>
                           <div style={{ gridColumn: 'span 2' }}>
-                            <span style={{ color: '#64748B' }}>Concept:</span>{' '}
+                            <span style={{ color: theme.color.text3 }}>Concept:</span>{' '}
                             <span style={{ color: '#1E293B' }}>{formData.description || '—'}</span>
                           </div>
                         </div>
@@ -1005,7 +1005,7 @@ export default function CreativeStudioPage() {
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <button
                           onClick={() => setWizardStep(3)}
-                          style={{ background: '#F1F5F9', color: '#475569', border: 'none', borderRadius: 12, padding: '12px 24px', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: F }}
+                          style={{ background: theme.color.surface2, color: '#475569', border: 'none', borderRadius: 12, padding: '12px 24px', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: F }}
                         >
                           Back
                         </button>
@@ -1053,9 +1053,9 @@ export default function CreativeStudioPage() {
                       style={{
                         padding: '8px 16px',
                         borderRadius: 10,
-                        border: orderFilter === flt ? '1.5px solid #0F172A' : '1px solid #E2E8F0',
-                        background: orderFilter === flt ? '#0F172A' : '#fff',
-                        color: orderFilter === flt ? '#fff' : '#64748B',
+                        border: orderFilter === flt ? '1.5px solid #0F172A' : `1px solid ${theme.color.border}`,
+                        background: orderFilter === flt ? theme.color.charcoal900 : '#fff',
+                        color: orderFilter === flt ? '#fff' : theme.color.text3,
                         fontSize: 13,
                         fontWeight: 700,
                         cursor: 'pointer',
@@ -1071,7 +1071,7 @@ export default function CreativeStudioPage() {
                 <div style={{ display: 'flex', gap: 10 }}>
                   <button
                     onClick={fetchMyOrders}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '8px 16px', borderRadius: 10, fontSize: 13, fontWeight: 600, color: '#475569', cursor: 'pointer', fontFamily: F }}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: theme.color.bg, border: `1px solid ${theme.color.border}`, padding: '8px 16px', borderRadius: 10, fontSize: 13, fontWeight: 600, color: '#475569', cursor: 'pointer', fontFamily: F }}
                   >
                     <RefreshCw size={13} /> Refresh Orders
                   </button>
@@ -1086,22 +1086,22 @@ export default function CreativeStudioPage() {
 
               {/* Order Cards List */}
               {loadingOrders ? (
-                <div style={{ textAlign: 'center', padding: '60px 0', color: '#64748B' }}>
+                <div style={{ textAlign: 'center', padding: '60px 0', color: theme.color.text3 }}>
                   <RefreshCw size={24} className="animate-spin" style={{ margin: '0 auto 12px', color: '#C69A2C' }} />
                   <p style={{ fontSize: 14 }}>Loading active creative orders...</p>
                 </div>
               ) : filteredOrders.length === 0 ? (
-                <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 20, padding: '60px 24px', textAlign: 'center' }}>
+                <div style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 20, padding: '60px 24px', textAlign: 'center' }}>
                   <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(198,154,44,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
                     <Sparkles size={28} color="#C69A2C" />
                   </div>
-                  <h3 style={{ fontFamily: theme.font.display, fontSize: 20, fontWeight: 700, color: '#0F172A', margin: '0 0 6px' }}>No Creative Requests Found</h3>
-                  <p style={{ fontSize: 14, color: '#64748B', maxWidth: 440, margin: '0 auto 20px', lineHeight: 1.5 }}>
+                  <h3 style={{ fontFamily: theme.font.display, fontSize: 20, fontWeight: 700, color: theme.color.text1, margin: '0 0 6px' }}>No Creative Requests Found</h3>
+                  <p style={{ fontSize: 14, color: theme.color.text3, maxWidth: 440, margin: '0 auto 20px', lineHeight: 1.5 }}>
                     You haven&apos;t submitted any creative production briefs matching this filter yet. Ready to craft your high-impact billboard ad?
                   </p>
                   <button
                     onClick={() => { setActiveTab('new_request'); setWizardStep(1); }}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#0F172A', color: '#fff', border: 'none', borderRadius: 12, padding: '12px 24px', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: F }}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: theme.color.charcoal900, color: '#fff', border: 'none', borderRadius: 12, padding: '12px 24px', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: F }}
                   >
                     Submit a Creative Brief <ArrowRight size={14} />
                   </button>
@@ -1114,8 +1114,8 @@ export default function CreativeStudioPage() {
                       <div
                         key={req.id}
                         style={{
-                          background: '#fff',
-                          border: '1px solid #E2E8F0',
+                          background: theme.color.surface,
+                          border: `1px solid ${theme.color.border}`,
                           borderRadius: 20,
                           padding: '28px',
                           boxShadow: '0 4px 24px rgba(0,0,0,0.02)',
@@ -1125,16 +1125,16 @@ export default function CreativeStudioPage() {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16, marginBottom: 20 }}>
                           <div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-                              <span style={{ fontSize: 18, fontWeight: 800, color: '#0F172A' }}>{req.business_name}</span>
+                              <span style={{ fontSize: 18, fontWeight: 800, color: theme.color.text1 }}>{req.business_name}</span>
                               <span
                                 onClick={() => handleCopy(String(req.id), String(req.id))}
-                                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#F1F5F9', padding: '2px 8px', borderRadius: 6, fontSize: 11, color: '#475569', cursor: 'pointer', fontFamily: 'monospace' }}
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: theme.color.surface2, padding: '2px 8px', borderRadius: 6, fontSize: 11, color: '#475569', cursor: 'pointer', fontFamily: 'monospace' }}
                                 title="Click to copy Order ID"
                               >
                                 #{req.id} <Copy size={10} />
                               </span>
                             </div>
-                            <span style={{ fontSize: 12, color: '#64748B' }}>
+                            <span style={{ fontSize: 12, color: theme.color.text3 }}>
                               Submitted on {new Date(req.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                             </span>
                           </div>
@@ -1145,12 +1145,12 @@ export default function CreativeStudioPage() {
                         </div>
 
                         {/* Concept & Specs description */}
-                        <div style={{ background: '#F8FAFC', borderRadius: 14, padding: '16px 20px', marginBottom: 24, border: '1px solid #E2E8F0' }}>
+                        <div style={{ background: theme.color.bg, borderRadius: 14, padding: '16px 20px', marginBottom: 24, border: `1px solid ${theme.color.border}` }}>
                           <p style={{ fontSize: 13, color: '#1E293B', lineHeight: 1.6, margin: 0 }}>
                             {req.description}
                           </p>
                           {req.target_audience && (
-                            <div style={{ marginTop: 8, fontSize: 12, color: '#64748B' }}>
+                            <div style={{ marginTop: 8, fontSize: 12, color: theme.color.text3 }}>
                               <strong>Target Audience:</strong> {req.target_audience}
                             </div>
                           )}
@@ -1163,7 +1163,7 @@ export default function CreativeStudioPage() {
 
                         {/* Visual Pipeline Stage Stepper */}
                         <div>
-                          <span style={{ fontSize: 11, fontWeight: 800, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: 12 }}>
+                          <span style={{ fontSize: 11, fontWeight: 800, color: theme.color.text3, textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: 12 }}>
                             Production Pipeline Progress
                           </span>
 
@@ -1177,7 +1177,7 @@ export default function CreativeStudioPage() {
                                     style={{
                                       height: 6,
                                       borderRadius: 3,
-                                      background: isCompleted ? '#C69A2C' : '#E2E8F0',
+                                      background: isCompleted ? '#C69A2C' : theme.color.border,
                                       transition: 'all 0.3s',
                                     }}
                                   />
@@ -1185,9 +1185,9 @@ export default function CreativeStudioPage() {
                                     {isCompleted ? (
                                       <CheckCircle2 size={12} color="#C69A2C" />
                                     ) : (
-                                      <div style={{ width: 12, height: 12, borderRadius: '50%', border: '1.5px solid #CBD5E1' }} />
+                                      <div style={{ width: 12, height: 12, borderRadius: '50%', border: `1.5px solid ${theme.color.border2}` }} />
                                     )}
-                                    <span style={{ fontSize: 11, fontWeight: isCurrent ? 800 : 600, color: isCurrent ? '#0F172A' : '#64748B' }}>
+                                    <span style={{ fontSize: 11, fontWeight: isCurrent ? 800 : 600, color: isCurrent ? theme.color.text1 : theme.color.text3 }}>
                                       {st.label}
                                     </span>
                                   </div>
@@ -1198,22 +1198,22 @@ export default function CreativeStudioPage() {
                         </div>
 
                         {/* Card Footer Actions */}
-                        <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid #F1F5F9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-                          <span style={{ fontSize: 12, color: '#64748B' }}>
-                            Budget Scope: <strong style={{ color: '#0F172A' }}>{req.budget_range || 'Standard'}</strong>
+                        <div style={{ marginTop: 20, paddingTop: 16, borderTop: `1px solid ${theme.color.surface2}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+                          <span style={{ fontSize: 12, color: theme.color.text3 }}>
+                            Budget Scope: <strong style={{ color: theme.color.text1 }}>{req.budget_range || 'Standard'}</strong>
                           </span>
 
                           <div style={{ display: 'flex', gap: 8 }}>
                             <Link
                               href="/chat"
-                              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#F1F5F9', color: '#1E293B', padding: '7px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600, textDecoration: 'none', fontFamily: F }}
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: theme.color.surface2, color: '#1E293B', padding: '7px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600, textDecoration: 'none', fontFamily: F }}
                             >
                               <MessageSquare size={12} color="#C69A2C" /> Discuss with Team
                             </Link>
 
                             <Link
                               href="/book"
-                              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#0F172A', color: '#fff', padding: '7px 14px', borderRadius: 8, fontSize: 12, fontWeight: 700, textDecoration: 'none', fontFamily: F }}
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: theme.color.charcoal900, color: '#fff', padding: '7px 14px', borderRadius: 8, fontSize: 12, fontWeight: 700, textDecoration: 'none', fontFamily: F }}
                             >
                               Book Screen Slot <ArrowRight size={12} />
                             </Link>
@@ -1249,7 +1249,7 @@ export default function CreativeStudioPage() {
                   animate={{ scale: 1, opacity: 1 }}
                   exit={{ scale: 0.9, opacity: 0 }}
                   style={{
-                    background: '#fff',
+                    background: theme.color.surface,
                     borderRadius: 28,
                     padding: '40px 32px',
                     maxWidth: 500,
@@ -1278,21 +1278,21 @@ export default function CreativeStudioPage() {
                     <Check size={36} color="#C69A2C" strokeWidth={3} />
                   </div>
 
-                  <h2 style={{ fontFamily: theme.font.display, fontSize: 24, fontWeight: 700, color: '#0F172A', margin: '0 0 8px' }}>
+                  <h2 style={{ fontFamily: theme.font.display, fontSize: 24, fontWeight: 700, color: theme.color.text1, margin: '0 0 8px' }}>
                     Creative Brief Received!
                   </h2>
-                  <p style={{ fontSize: 14, color: '#64748B', lineHeight: 1.6, margin: '0 0 24px' }}>
-                    Your production brief for <strong style={{ color: '#0F172A' }}>{formData.business_name}</strong> has been logged in our studio queue. Our Creative Director will contact <strong style={{ color: '#0F172A' }}>{formData.contact_phone}</strong> within 24 hours.
+                  <p style={{ fontSize: 14, color: theme.color.text3, lineHeight: 1.6, margin: '0 0 24px' }}>
+                    Your production brief for <strong style={{ color: theme.color.text1 }}>{formData.business_name}</strong> has been logged in our studio queue. Our Creative Director will contact <strong style={{ color: theme.color.text1 }}>{formData.contact_phone}</strong> within 24 hours.
                   </p>
 
-                  <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 14, padding: '14px 18px', marginBottom: 28, textAlign: 'left', fontSize: 13 }}>
+                  <div style={{ background: theme.color.bg, border: `1px solid ${theme.color.border}`, borderRadius: 14, padding: '14px 18px', marginBottom: 28, textAlign: 'left', fontSize: 13 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                      <span style={{ color: '#64748B' }}>Order Reference:</span>
+                      <span style={{ color: theme.color.text3 }}>Order Reference:</span>
                       <strong style={{ color: '#C69A2C', fontFamily: 'monospace' }}>#{lastSubmittedId}</strong>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: '#64748B' }}>Turnaround Estimate:</span>
-                      <strong style={{ color: '#0F172A' }}>24 – 48 Hours</strong>
+                      <span style={{ color: theme.color.text3 }}>Turnaround Estimate:</span>
+                      <strong style={{ color: theme.color.text1 }}>24 – 48 Hours</strong>
                     </div>
                   </div>
 
@@ -1303,7 +1303,7 @@ export default function CreativeStudioPage() {
                         setActiveTab('my_orders');
                       }}
                       style={{
-                        background: '#0F172A',
+                        background: theme.color.charcoal900,
                         color: '#fff',
                         border: 'none',
                         borderRadius: 12,
@@ -1347,7 +1347,7 @@ export default function CreativeStudioPage() {
               position: 'fixed',
               bottom: 24,
               right: 24,
-              background: '#0F172A',
+              background: theme.color.charcoal900,
               color: '#fff',
               borderRadius: 30,
               padding: '12px 20px',

@@ -204,13 +204,13 @@ export default function MyAdDetailPage() {
         {/* Cancel confirm */}
         {showCancel && (
           <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(3px)' }}>
-            <div style={{ background: '#fff', borderRadius: 24, padding: '32px 28px', maxWidth: 340, width: '100%', margin: 16, textAlign: 'center' }}>
+            <div style={{ background: theme.color.surface, borderRadius: 24, padding: '32px 28px', maxWidth: 340, width: '100%', margin: 16, textAlign: 'center' }}>
               <h3 style={{ fontSize: 15, fontWeight: 700, color: theme.color.text1, margin: '0 0 8px' }}>Are you sure you want to cancel this Ad?</h3>
               <p style={{ fontSize: 12, color: theme.color.text3, margin: '0 0 20px' }}>
                 Refund eligibility depends on how far out your slot is — full refund if 48+ hours away, none if sooner.
               </p>
               <div style={{ display: 'flex', gap: 10 }}>
-                <button onClick={() => setShowCancel(false)} disabled={cancelling} style={{ flex: 1, padding: '11px', borderRadius: 10, border: `1px solid ${theme.color.border}`, background: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>No</button>
+                <button onClick={() => setShowCancel(false)} disabled={cancelling} style={{ flex: 1, padding: '11px', borderRadius: 10, border: `1px solid ${theme.color.border}`, background: theme.color.surface, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>No</button>
                 <button onClick={handleCancel} disabled={cancelling} style={{ flex: 1, padding: '11px', borderRadius: 10, border: 'none', background: theme.color.gold, color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                   {cancelling && <Loader2 size={13} className="animate-spin" />} Yes
                 </button>
@@ -222,7 +222,7 @@ export default function MyAdDetailPage() {
         {/* Cancel success */}
         {cancelSuccess && (
           <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(3px)' }}>
-            <div style={{ background: '#fff', borderRadius: 24, padding: '32px 28px', maxWidth: 340, width: '100%', margin: 16, textAlign: 'center' }}>
+            <div style={{ background: theme.color.surface, borderRadius: 24, padding: '32px 28px', maxWidth: 340, width: '100%', margin: 16, textAlign: 'center' }}>
               <div style={{ position: 'relative', width: 80, height: 80, margin: '0 auto 16px' }}>
                 <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: theme.color.gold, opacity: 0.25, filter: 'blur(16px)' }} />
                 <div style={{ position: 'relative', width: 56, height: 56, margin: '10px auto 0', borderRadius: '50%', background: '#9E7B21', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -238,7 +238,7 @@ export default function MyAdDetailPage() {
         {/* Extend modal */}
         {showExtend && (
           <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(2px)', padding: 16 }}>
-            <div style={{ background: '#fff', borderRadius: 24, maxWidth: 400, width: '100%' }}>
+            <div style={{ background: theme.color.surface, borderRadius: 24, maxWidth: 400, width: '100%' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px 4px' }}>
                 <button onClick={() => setShowExtend(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><ArrowLeft size={18} /></button>
                 <h2 style={{ fontSize: 15, fontWeight: 800, color: theme.color.text1, margin: 0 }}>Extend slot</h2>
@@ -267,7 +267,7 @@ export default function MyAdDetailPage() {
         {/* Extend success */}
         {extendSuccess !== null && (
           <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(3px)' }}>
-            <div style={{ background: '#fff', borderRadius: 24, padding: '32px 28px', maxWidth: 340, width: '100%', margin: 16, textAlign: 'center' }}>
+            <div style={{ background: theme.color.surface, borderRadius: 24, padding: '32px 28px', maxWidth: 340, width: '100%', margin: 16, textAlign: 'center' }}>
               <div style={{ position: 'relative', width: 80, height: 80, margin: '0 auto 16px' }}>
                 <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: theme.color.gold, opacity: 0.25, filter: 'blur(16px)' }} />
                 <div style={{ position: 'relative', width: 56, height: 56, margin: '10px auto 0', borderRadius: '50%', background: '#9E7B21', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

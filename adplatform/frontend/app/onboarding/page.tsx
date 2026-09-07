@@ -40,7 +40,7 @@ function StepProgress({ step, total }: { step: number; total: number }) {
           style={{ 
             height: 4, 
             borderRadius: 2, 
-            background: i < step ? '#C69A2C' : '#E2E8F0', 
+            background: i < step ? '#C69A2C' : theme.color.border, 
             transition: 'background 0.3s' 
           }} 
         />
@@ -132,7 +132,7 @@ export default function OnboardingPage() {
   const BUDGETS = ['Under ₦50,000', '₦50k – ₦200k', '₦200k – ₦500k', '₦500,000+'];
 
   return (
-    <div style={{ fontFamily: F, minHeight: '100vh', background: '#F8FAFC', display: 'flex', position: 'relative' }}>
+    <div style={{ fontFamily: F, minHeight: '100vh', background: theme.color.bg, display: 'flex', position: 'relative' }}>
       
       {/* ─── LEFT HERO BRAND PANEL (DESKTOP) ─── */}
       <div 
@@ -143,7 +143,7 @@ export default function OnboardingPage() {
           padding: '56px 48px', 
           position: 'relative', 
           overflow: 'hidden', 
-          background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
+          background: `linear-gradient(135deg, ${theme.color.charcoal900} 0%, #1E293B 100%)`,
           color: '#FFFFFF'
         }}
       >
@@ -226,10 +226,10 @@ export default function OnboardingPage() {
                 <span style={{ fontSize: 11, fontWeight: 800, color: '#C69A2C', letterSpacing: '0.08em', textTransform: 'uppercase', display: 'block', marginBottom: 6 }}>
                   Step 1 of 4 · Welcome
                 </span>
-                <h2 style={{ fontFamily: theme.font.display, fontSize: 24, fontWeight: 800, color: '#0F172A', margin: '0 0 6px', letterSpacing: '-0.3px' }}>
+                <h2 style={{ fontFamily: theme.font.display, fontSize: 24, fontWeight: 800, color: theme.color.text1, margin: '0 0 6px', letterSpacing: '-0.3px' }}>
                   What brings you to Studio Arella{user?.name ? `, ${user.name.split(' ')[0]}` : ''}?
                 </h2>
-                <p style={{ fontSize: 13, color: '#64748B', margin: '0 0 24px', lineHeight: 1.5 }}>
+                <p style={{ fontSize: 13, color: theme.color.text3, margin: '0 0 24px', lineHeight: 1.5 }}>
                   Select the solutions you plan to use. You can access all tools freely anytime.
                 </p>
 
@@ -244,7 +244,7 @@ export default function OnboardingPage() {
                         onClick={() => toggleGoal(goal.id)}
                         style={{
                           background: isSelected ? '#FFFDF5' : '#FFFFFF',
-                          border: isSelected ? '1.5px solid #C69A2C' : '1px solid #E2E8F0',
+                          border: isSelected ? '1.5px solid #C69A2C' : `1px solid ${theme.color.border}`,
                           borderRadius: 16,
                           padding: '16px 18px',
                           cursor: 'pointer',
@@ -259,26 +259,26 @@ export default function OnboardingPage() {
                           width: 40,
                           height: 40,
                           borderRadius: 12,
-                          background: isSelected ? '#FFFDF5' : '#F8FAFC',
-                          border: `1px solid ${isSelected ? '#FDE68A' : '#E2E8F0'}`,
+                          background: isSelected ? '#FFFDF5' : theme.color.bg,
+                          border: `1px solid ${isSelected ? '#FDE68A' : theme.color.border}`,
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                           flexShrink: 0
                         }}>
-                          <Icon size={18} color={isSelected ? '#C69A2C' : '#64748B'} />
+                          <Icon size={18} color={isSelected ? '#C69A2C' : theme.color.text3} />
                         </div>
 
                         <div style={{ flex: 1 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
-                            <h4 style={{ fontSize: 14, fontWeight: 800, color: '#0F172A', margin: 0 }}>
+                            <h4 style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1, margin: 0 }}>
                               {goal.title}
                             </h4>
-                            <span style={{ fontSize: 10, fontWeight: 700, color: goal.color, background: '#F8FAFC', padding: '2px 8px', borderRadius: 10 }}>
+                            <span style={{ fontSize: 10, fontWeight: 700, color: goal.color, background: theme.color.bg, padding: '2px 8px', borderRadius: 10 }}>
                               {goal.badge}
                             </span>
                           </div>
-                          <p style={{ fontSize: 12, color: '#64748B', margin: 0, lineHeight: 1.4 }}>
+                          <p style={{ fontSize: 12, color: theme.color.text3, margin: 0, lineHeight: 1.4 }}>
                             {goal.desc}
                           </p>
                         </div>
@@ -287,7 +287,7 @@ export default function OnboardingPage() {
                           width: 20,
                           height: 20,
                           borderRadius: '50%',
-                          border: isSelected ? 'none' : '2px solid #CBD5E1',
+                          border: isSelected ? 'none' : `2px solid ${theme.color.border2}`,
                           background: isSelected ? '#C69A2C' : 'transparent',
                           display: 'flex',
                           alignItems: 'center',
@@ -328,7 +328,7 @@ export default function OnboardingPage() {
 
                   <Link 
                     href="/dashboard"
-                    style={{ textAlign: 'center', fontSize: 13, color: '#94A3B8', textDecoration: 'none', fontWeight: 600 }}
+                    style={{ textAlign: 'center', fontSize: 13, color: theme.color.text4, textDecoration: 'none', fontWeight: 600 }}
                   >
                     Skip to dashboard
                   </Link>
@@ -348,16 +348,16 @@ export default function OnboardingPage() {
                 <span style={{ fontSize: 11, fontWeight: 800, color: '#C69A2C', letterSpacing: '0.08em', textTransform: 'uppercase', display: 'block', marginBottom: 6 }}>
                   Step 2 of 4 · Campaign Setup
                 </span>
-                <h2 style={{ fontFamily: theme.font.display, fontSize: 24, fontWeight: 800, color: '#0F172A', margin: '0 0 6px', letterSpacing: '-0.3px' }}>
+                <h2 style={{ fontFamily: theme.font.display, fontSize: 24, fontWeight: 800, color: theme.color.text1, margin: '0 0 6px', letterSpacing: '-0.3px' }}>
                   Set up your first campaign
                 </h2>
-                <p style={{ fontSize: 13, color: '#64748B', margin: '0 0 24px', lineHeight: 1.5 }}>
+                <p style={{ fontSize: 13, color: theme.color.text3, margin: '0 0 24px', lineHeight: 1.5 }}>
                   Define your advertising objectives and target budget tier. You can modify these anytime.
                 </p>
 
-                <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 20, padding: '22px', display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 24, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
+                <div style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 20, padding: '22px', display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 24, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
                   <div>
-                    <label style={{ fontSize: 12, fontWeight: 800, color: '#0F172A', display: 'block', marginBottom: 6 }}>
+                    <label style={{ fontSize: 12, fontWeight: 800, color: theme.color.text1, display: 'block', marginBottom: 6 }}>
                       Campaign / Project Name
                     </label>
                     <input 
@@ -368,11 +368,11 @@ export default function OnboardingPage() {
                       style={{
                         width: '100%',
                         padding: '12px 14px',
-                        background: '#F8FAFC',
-                        border: '1.5px solid #E2E8F0',
+                        background: theme.color.bg,
+                        border: `1.5px solid ${theme.color.border}`,
                         borderRadius: 10,
                         fontSize: 13,
-                        color: '#0F172A',
+                        color: theme.color.text1,
                         outline: 'none',
                         fontFamily: F
                       }}
@@ -380,7 +380,7 @@ export default function OnboardingPage() {
                   </div>
 
                   <div>
-                    <label style={{ fontSize: 12, fontWeight: 800, color: '#0F172A', display: 'block', marginBottom: 6 }}>
+                    <label style={{ fontSize: 12, fontWeight: 800, color: theme.color.text1, display: 'block', marginBottom: 6 }}>
                       Primary Objective
                     </label>
                     <select
@@ -389,11 +389,11 @@ export default function OnboardingPage() {
                       style={{
                         width: '100%',
                         padding: '12px 14px',
-                        background: '#F8FAFC',
-                        border: '1.5px solid #E2E8F0',
+                        background: theme.color.bg,
+                        border: `1.5px solid ${theme.color.border}`,
                         borderRadius: 10,
                         fontSize: 13,
-                        color: '#0F172A',
+                        color: theme.color.text1,
                         outline: 'none',
                         fontFamily: F,
                         cursor: 'pointer'
@@ -407,7 +407,7 @@ export default function OnboardingPage() {
                   </div>
 
                   <div>
-                    <label style={{ fontSize: 12, fontWeight: 800, color: '#0F172A', display: 'block', marginBottom: 8 }}>
+                    <label style={{ fontSize: 12, fontWeight: 800, color: theme.color.text1, display: 'block', marginBottom: 8 }}>
                       Estimated Monthly Budget
                     </label>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
@@ -419,7 +419,7 @@ export default function OnboardingPage() {
                           style={{
                             padding: '10px 8px',
                             borderRadius: 10,
-                            border: budget === b ? '1.5px solid #C69A2C' : '1px solid #E2E8F0',
+                            border: budget === b ? '1.5px solid #C69A2C' : `1px solid ${theme.color.border}`,
                             background: budget === b ? '#FFFDF5' : '#FFFFFF',
                             color: budget === b ? '#C69A2C' : '#475569',
                             fontSize: 12,
@@ -441,8 +441,8 @@ export default function OnboardingPage() {
                     onClick={() => setStep(1)}
                     style={{
                       padding: '14px 20px',
-                      background: '#FFFFFF',
-                      border: '1px solid #E2E8F0',
+                      background: theme.color.surface,
+                      border: `1px solid ${theme.color.border}`,
                       borderRadius: 12,
                       fontSize: 14,
                       fontWeight: 700,
@@ -493,23 +493,23 @@ export default function OnboardingPage() {
                 <span style={{ fontSize: 11, fontWeight: 800, color: '#C69A2C', letterSpacing: '0.08em', textTransform: 'uppercase', display: 'block', marginBottom: 6 }}>
                   Step 3 of 4 · Instant Wallet
                 </span>
-                <h2 style={{ fontFamily: theme.font.display, fontSize: 24, fontWeight: 800, color: '#0F172A', margin: '0 0 6px', letterSpacing: '-0.3px' }}>
+                <h2 style={{ fontFamily: theme.font.display, fontSize: 24, fontWeight: 800, color: theme.color.text1, margin: '0 0 6px', letterSpacing: '-0.3px' }}>
                   Your dedicated wallet account
                 </h2>
-                <p style={{ fontSize: 13, color: '#64748B', margin: '0 0 24px', lineHeight: 1.5 }}>
+                <p style={{ fontSize: 13, color: theme.color.text3, margin: '0 0 24px', lineHeight: 1.5 }}>
                   We've provisioned a permanent virtual bank account for your advertiser account. Direct transfers credit your airtime balance instantly.
                 </p>
 
                 {/* Virtual Account Panel */}
-                <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 20, padding: '24px', marginBottom: 24, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
+                <div style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 20, padding: '24px', marginBottom: 24, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                       <div style={{ width: 36, height: 36, borderRadius: 10, background: '#FFFDF5', border: '1px solid #FDE68A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <Building2 size={18} color="#C69A2C" />
                       </div>
                       <div>
-                        <p style={{ fontSize: 13, fontWeight: 800, color: '#0F172A', margin: 0 }}>Wema Bank</p>
-                        <span style={{ fontSize: 11, color: '#64748B' }}>Zero Transfer Fee</span>
+                        <p style={{ fontSize: 13, fontWeight: 800, color: theme.color.text1, margin: 0 }}>Wema Bank</p>
+                        <span style={{ fontSize: 11, color: theme.color.text3 }}>Zero Transfer Fee</span>
                       </div>
                     </div>
                     <span style={{ fontSize: 11, fontWeight: 800, color: '#059669', background: '#ECFDF5', padding: '3px 10px', borderRadius: 20 }}>
@@ -517,18 +517,18 @@ export default function OnboardingPage() {
                     </span>
                   </div>
 
-                  <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 12, padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                  <div style={{ background: theme.color.bg, border: `1px solid ${theme.color.border}`, borderRadius: 12, padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
                     <div>
-                      <span style={{ fontSize: 10, color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase' }}>Account Number</span>
-                      <p style={{ fontSize: 18, fontWeight: 900, color: '#0F172A', margin: '2px 0 0', letterSpacing: '1px', fontFamily: 'monospace' }}>
+                      <span style={{ fontSize: 10, color: theme.color.text4, fontWeight: 700, textTransform: 'uppercase' }}>Account Number</span>
+                      <p style={{ fontSize: 18, fontWeight: 900, color: theme.color.text1, margin: '2px 0 0', letterSpacing: '1px', fontFamily: 'monospace' }}>
                         0129384756
                       </p>
                     </div>
                     <button
                       onClick={() => handleCopyAccount('0129384756')}
                       style={{
-                        background: '#FFFFFF',
-                        border: '1px solid #E2E8F0',
+                        background: theme.color.surface,
+                        border: `1px solid ${theme.color.border}`,
                         borderRadius: 8,
                         padding: '6px 12px',
                         fontSize: 12,
@@ -545,9 +545,9 @@ export default function OnboardingPage() {
                     </button>
                   </div>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#64748B' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: theme.color.text3 }}>
                     <span>Beneficiary Name:</span>
-                    <strong style={{ color: '#0F172A' }}>Studio Arella / {user?.name || 'Creator'}</strong>
+                    <strong style={{ color: theme.color.text1 }}>Studio Arella / {user?.name || 'Creator'}</strong>
                   </div>
                 </div>
 
@@ -556,8 +556,8 @@ export default function OnboardingPage() {
                     onClick={() => setStep(2)}
                     style={{
                       padding: '14px 20px',
-                      background: '#FFFFFF',
-                      border: '1px solid #E2E8F0',
+                      background: theme.color.surface,
+                      border: `1px solid ${theme.color.border}`,
                       borderRadius: 12,
                       fontSize: 14,
                       fontWeight: 700,
@@ -623,10 +623,10 @@ export default function OnboardingPage() {
                   Setup Complete
                 </span>
 
-                <h2 style={{ fontFamily: theme.font.display, fontSize: 26, fontWeight: 800, color: '#0F172A', margin: '0 0 8px', letterSpacing: '-0.3px' }}>
+                <h2 style={{ fontFamily: theme.font.display, fontSize: 26, fontWeight: 800, color: theme.color.text1, margin: '0 0 8px', letterSpacing: '-0.3px' }}>
                   You're all set{user?.name ? `, ${user.name.split(' ')[0]}` : ''}!
                 </h2>
-                <p style={{ fontSize: 13, color: '#64748B', margin: '0 0 28px', lineHeight: 1.6, maxWidth: 380, marginInline: 'auto' }}>
+                <p style={{ fontSize: 13, color: theme.color.text3, margin: '0 0 28px', lineHeight: 1.6, maxWidth: 380, marginInline: 'auto' }}>
                   Your advertiser account is fully provisioned. Select your next action below to launch your first live broadcast.
                 </p>
 
@@ -635,8 +635,8 @@ export default function OnboardingPage() {
                   <Link
                     href="/book"
                     style={{
-                      background: '#FFFFFF',
-                      border: '1px solid #E2E8F0',
+                      background: theme.color.surface,
+                      border: `1px solid ${theme.color.border}`,
                       borderRadius: 14,
                       padding: '14px 18px',
                       display: 'flex',
@@ -651,8 +651,8 @@ export default function OnboardingPage() {
                         <Tv size={16} color="#C69A2C" />
                       </div>
                       <div>
-                        <p style={{ fontSize: 13, fontWeight: 800, color: '#0F172A', margin: 0 }}>Book First Screen Ad Slot</p>
-                        <p style={{ fontSize: 11, color: '#64748B', margin: 0 }}>Instant screen airtime from ₦1,000/min</p>
+                        <p style={{ fontSize: 13, fontWeight: 800, color: theme.color.text1, margin: 0 }}>Book First Screen Ad Slot</p>
+                        <p style={{ fontSize: 11, color: theme.color.text3, margin: 0 }}>Instant screen airtime from ₦1,000/min</p>
                       </div>
                     </div>
                     <ArrowRight size={14} color="#CBD5E1" />
@@ -661,8 +661,8 @@ export default function OnboardingPage() {
                   <Link
                     href="/podcast/new"
                     style={{
-                      background: '#FFFFFF',
-                      border: '1px solid #E2E8F0',
+                      background: theme.color.surface,
+                      border: `1px solid ${theme.color.border}`,
                       borderRadius: 14,
                       padding: '14px 18px',
                       display: 'flex',
@@ -677,8 +677,8 @@ export default function OnboardingPage() {
                         <Mic size={16} color="#8B5CF6" />
                       </div>
                       <div>
-                        <p style={{ fontSize: 13, fontWeight: 800, color: '#0F172A', margin: 0 }}>Reserve Podcast Studio Session</p>
-                        <p style={{ fontSize: 11, color: '#64748B', margin: 0 }}>4K multi-cam filming and acoustics</p>
+                        <p style={{ fontSize: 13, fontWeight: 800, color: theme.color.text1, margin: 0 }}>Reserve Podcast Studio Session</p>
+                        <p style={{ fontSize: 11, color: theme.color.text3, margin: 0 }}>4K multi-cam filming and acoustics</p>
                       </div>
                     </div>
                     <ArrowRight size={14} color="#CBD5E1" />
@@ -727,8 +727,8 @@ export default function OnboardingPage() {
               alignItems: 'center',
               gap: 10,
               padding: '12px 24px',
-              background: '#FFFFFF',
-              border: '1px solid #E2E8F0',
+              background: theme.color.surface,
+              border: `1px solid ${theme.color.border}`,
               borderRadius: 24,
               boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
               textDecoration: 'none',
@@ -741,7 +741,7 @@ export default function OnboardingPage() {
           >
             <span className="chat-fab-label">Chat with Arella</span>
             <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'linear-gradient(135deg, #6366F1, #A855F7, #EC4899)', padding: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <div style={{ width: '100%', height: '100%', background: '#fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ width: '100%', height: '100%', background: theme.color.surface, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Globe size={13} color="#4F46E5" />
               </div>
             </div>

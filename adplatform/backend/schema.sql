@@ -461,3 +461,13 @@ ALTER TABLE podcast_bookings ADD COLUMN IF NOT EXISTS refund_amount DECIMAL(10,2
 -- paid for once as a combined total rather than session-by-session.
 ALTER TABLE podcast_bookings ADD COLUMN IF NOT EXISTS series_id UUID;
 CREATE INDEX IF NOT EXISTS idx_podcast_bookings_series_id ON podcast_bookings(series_id);
+
+-- ─── Favorited pages (sidebar/navbar "Favorites") ─────────────────────────────
+CREATE TABLE IF NOT EXISTS page_favorites (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  path VARCHAR(255) NOT NULL,
+  label VARCHAR(255) NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_page_favorites_unique ON page_favorites(user_id, path);

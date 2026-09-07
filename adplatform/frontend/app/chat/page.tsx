@@ -30,7 +30,7 @@ function renderInlineMarkdown(text: string) {
   const parts = text.split(/(\*\*[^*]+\*\*)/g);
   return parts.map((part, i) => {
     if (part.startsWith('**') && part.endsWith('**')) {
-      return <strong key={i} style={{ fontWeight: 700, color: '#0F172A' }}>{part.slice(2, -2)}</strong>;
+      return <strong key={i} style={{ fontWeight: 700, color: theme.color.text1 }}>{part.slice(2, -2)}</strong>;
     }
     return part;
   });
@@ -110,7 +110,7 @@ export default function ChatPage() {
             >
               <ChevronLeft size={16} /> Back
             </Link>
-            <h1 style={{ fontFamily: theme.font.display, fontSize: 15, fontWeight: 700, color: '#0F172A', margin: 0 }}>
+            <h1 style={{ fontFamily: theme.font.display, fontSize: 15, fontWeight: 700, color: theme.color.text1, margin: 0 }}>
               Arella AI Chat
             </h1>
           </div>
@@ -120,7 +120,7 @@ export default function ChatPage() {
             style={{
               background: '#EAECEF',
               borderRadius: 24,
-              border: '1px solid #E2E8F0',
+              border: `1px solid ${theme.color.border}`,
               padding: '32px 36px 24px',
               minHeight: 'calc(100vh - 150px)',
               display: 'flex',
@@ -163,8 +163,8 @@ export default function ChatPage() {
                         <div
                           style={{
                             flex: 1,
-                            background: '#FFFFFF',
-                            border: '1px solid #CBD5E1',
+                            background: theme.color.surface,
+                            border: `1px solid ${theme.color.border2}`,
                             borderRadius: 14,
                             padding: '12px 18px',
                             display: 'flex',
@@ -179,7 +179,7 @@ export default function ChatPage() {
                           <span>{m.text}</span>
                           <button
                             type="button"
-                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', padding: 2, display: 'flex' }}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text3, padding: 2, display: 'flex' }}
                             title="Edit prompt"
                           >
                             <Pencil size={15} />
@@ -211,7 +211,7 @@ export default function ChatPage() {
                           style={{
                             width: '100%',
                             height: '100%',
-                            background: '#FFFFFF',
+                            background: theme.color.surface,
                             borderRadius: '50%',
                             display: 'flex',
                             alignItems: 'center',
@@ -226,13 +226,13 @@ export default function ChatPage() {
                       <div
                         style={{
                           flex: 1,
-                          background: '#FFFFFF',
+                          background: theme.color.surface,
                           borderRadius: 20,
                           padding: '28px 32px',
-                          border: '1px solid #F1F5F9',
+                          border: `1px solid ${theme.color.surface2}`,
                           boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
                           fontSize: 13,
-                          color: '#334155',
+                          color: theme.color.text2,
                           lineHeight: 1.7,
                         }}
                       >
@@ -241,7 +241,7 @@ export default function ChatPage() {
                           if (match) {
                             return (
                               <p key={idx} style={{ margin: '0 0 16px', lineHeight: 1.7 }}>
-                                <strong style={{ fontWeight: 700, color: '#0F172A' }}>{renderInlineMarkdown(match[1])}</strong>
+                                <strong style={{ fontWeight: 700, color: theme.color.text1 }}>{renderInlineMarkdown(match[1])}</strong>
                                 {renderInlineMarkdown(match[2])}
                               </p>
                             );
@@ -272,11 +272,11 @@ export default function ChatPage() {
                         flexShrink: 0,
                       }}
                     >
-                      <div style={{ width: '100%', height: '100%', background: '#fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ width: '100%', height: '100%', background: theme.color.surface, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <Globe size={16} color="#4F46E5" />
                       </div>
                     </div>
-                    <div style={{ background: '#FFFFFF', borderRadius: 16, padding: '12px 20px', fontSize: 12, color: '#64748B', fontWeight: 600, border: '1px solid #F1F5F9' }}>
+                    <div style={{ background: theme.color.surface, borderRadius: 16, padding: '12px 20px', fontSize: 12, color: theme.color.text3, fontWeight: 600, border: `1px solid ${theme.color.surface2}` }}>
                       Arella AI is thinking...
                     </div>
                   </div>
@@ -293,8 +293,8 @@ export default function ChatPage() {
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: 8,
-                    background: '#FFFFFF',
-                    border: '1px solid #CBD5E1',
+                    background: theme.color.surface,
+                    border: `1px solid ${theme.color.border2}`,
                     borderRadius: 24,
                     padding: '8px 22px',
                     fontSize: 12,
@@ -305,7 +305,7 @@ export default function ChatPage() {
                     boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
                     transition: 'all 0.2s',
                   }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = '#F8FAFC'; }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = theme.color.bg; }}
                   onMouseLeave={(e) => { e.currentTarget.style.background = '#FFFFFF'; }}
                 >
                   <RotateCcw size={13} color="#475569" />
@@ -327,18 +327,18 @@ export default function ChatPage() {
                   style={{
                     flex: 1,
                     padding: '12px 22px',
-                    background: '#FFFFFF',
-                    border: '1px solid #CBD5E1',
+                    background: theme.color.surface,
+                    border: `1px solid ${theme.color.border2}`,
                     borderRadius: 24,
                     fontSize: 13,
                     fontWeight: 500,
                     fontFamily: F,
-                    color: '#0F172A',
+                    color: theme.color.text1,
                     outline: 'none',
                     boxShadow: '0 1px 2px rgba(0,0,0,0.02)',
                   }}
                   onFocus={(e) => { e.currentTarget.style.borderColor = '#C69A2C'; }}
-                  onBlur={(e) => { e.currentTarget.style.borderColor = '#CBD5E1'; }}
+                  onBlur={(e) => { e.currentTarget.style.borderColor = theme.color.border2; }}
                 />
 
                 <button

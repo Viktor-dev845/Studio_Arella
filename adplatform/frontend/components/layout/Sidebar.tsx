@@ -1,7 +1,10 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import api from '@/lib/api';
+import { getRecentPages, RecentPage } from '@/lib/recentPages';
 import {
   PieChart,
   ShoppingCart,
@@ -47,6 +50,27 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
   const isActive = (href: string) =>
     pathname === href || (href !== '/dashboard' && href !== '/admin' && pathname.startsWith(href + '/'));
 
+  const [favTab, setFavTab] = useState<'favorites' | 'recently'>('favorites');
+  const [favorites, setFavorites] = useState<{ path: string; label: string }[]>([]);
+  const [recentPages, setRecentPages] = useState<RecentPage[]>([]);
+
+  const loadFavorites = () => {
+    if (!user?.id) return;
+    api.get('/favorites')
+      .then((res) => setFavorites(res.data.favorites || []))
+      .catch(() => setFavorites([]));
+  };
+
+  useEffect(() => {
+    loadFavorites();
+    window.addEventListener('favorites-changed', loadFavorites);
+    return () => window.removeEventListener('favorites-changed', loadFavorites);
+  }, [user?.id]);
+
+  useEffect(() => {
+    setRecentPages(getRecentPages(user?.id));
+  }, [pathname, user?.id]);
+
   return (
     <>
       <style>{`
@@ -54,7 +78,7 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
           transition: background-color 0.15s ease, color 0.15s ease;
         }
         .sidebar-item:hover {
-          background-color: #F1F5F9 !important;
+          background-color: ${theme.color.surface2} !important;
         }
       `}</style>
       {mobileOpen && (
@@ -67,9 +91,9 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
         className={`mobile-sidebar ${!mobileOpen ? 'closed' : ''}`}
         style={{
           width: 260,
-          background: '#FFFFFF',
+          background: theme.color.surface,
           height: '100%',
-          borderRight: '1px solid #E2E8F0',
+          borderRight: `1px solid ${theme.color.border}`,
           display: 'flex',
           flexDirection: 'column',
           fontFamily: F,
@@ -85,7 +109,7 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
             <img src="/logo.png" alt="Studio Arella Logo" style={{ height: 44, objectFit: 'contain' }} />
           </Link>
           {mobileOpen && (
-            <button onClick={onClose} style={{ background: '#F1F5F9', border: 'none', cursor: 'pointer', color: '#0F172A', padding: 6, borderRadius: '50%' }}>
+            <button onClick={onClose} style={{ background: theme.color.surface2, border: 'none', cursor: 'pointer', color: theme.color.text1, padding: 6, borderRadius: '50%' }}>
               <X size={16} />
             </button>
           )}
@@ -95,7 +119,7 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
         <nav style={{ flex: 1, padding: '0 16px 24px', overflowY: 'auto' }}>
           {isAdmin ? (
             <div style={{ marginBottom: 32 }}>
-              <p style={{ fontSize: 13, fontWeight: 700, color: '#64748B', padding: '0 14px', marginBottom: 12 }}>Admin Panel</p>
+              <p style={{ fontSize: 13, fontWeight: 700, color: theme.color.text3, padding: '0 14px', marginBottom: 12 }}>Admin Panel</p>
               <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {adminNav.map((item) => {
                   const active = isActive(item.href);
@@ -113,12 +137,12 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                           textDecoration: 'none',
                           fontSize: 14,
                           fontWeight: active ? 700 : 600,
-                          color: '#0F172A',
-                          background: active ? '#F1F5F9' : 'transparent',
+                          color: theme.color.text1,
+                          background: active ? theme.color.surface2 : 'transparent',
                         }}
                         className="sidebar-item"
                       >
-                        <item.icon size={17} strokeWidth={2} style={{ color: '#0F172A' }} />
+                        <item.icon size={17} strokeWidth={2} style={{ color: theme.color.text1 }} />
                         <span>{item.label}</span>
                       </Link>
                     </li>
@@ -130,27 +154,52 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
             <>
               {/* Favorites / Recently */}
               <div style={{ display: 'flex', gap: 16, padding: '0 14px', marginBottom: 12, marginTop: 8 }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: '#0F172A' }}>Favorites</span>
-                <span style={{ fontSize: 13, fontWeight: 600, color: '#94A3B8' }}>Recently</span>
+                <button
+                  onClick={() => setFavTab('favorites')}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: F, fontSize: 13, fontWeight: favTab === 'favorites' ? 700 : 600, color: favTab === 'favorites' ? theme.color.text1 : theme.color.text4 }}
+                >
+                  Favorites
+                </button>
+                <button
+                  onClick={() => setFavTab('recently')}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: F, fontSize: 13, fontWeight: favTab === 'recently' ? 700 : 600, color: favTab === 'recently' ? theme.color.text1 : theme.color.text4 }}
+                >
+                  Recently
+                </button>
               </div>
               <ul style={{ listStyle: 'none', margin: '0 0 24px', padding: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <li style={{ padding: '4px 14px', display: 'flex', alignItems: 'center', gap: 10, borderRadius: 8 }}>
-                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#64748B' }} />
-                  <Link href="/dashboard" style={{ fontSize: 14, color: '#0F172A', textDecoration: 'none', fontWeight: 600, flex: 1 }}>
-                    Overview
-                  </Link>
-                </li>
-                <li style={{ padding: '4px 14px', display: 'flex', alignItems: 'center', gap: 10, borderRadius: 8 }}>
-                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#64748B' }} />
-                  <Link href="/podcast" style={{ fontSize: 14, color: '#0F172A', textDecoration: 'none', fontWeight: 600, flex: 1 }}>
-                    Podcast
-                  </Link>
-                </li>
+                {favTab === 'favorites' ? (
+                  favorites.length === 0 ? (
+                    <li style={{ padding: '4px 14px', fontSize: 12.5, color: theme.color.text4 }}>
+                      No favorites yet — click the star next to any page to add it.
+                    </li>
+                  ) : favorites.map((f) => (
+                    <li key={f.path} style={{ padding: '4px 14px', display: 'flex', alignItems: 'center', gap: 10, borderRadius: 8 }}>
+                      <div style={{ width: 5, height: 5, borderRadius: '50%', background: theme.color.text3, flexShrink: 0 }} />
+                      <Link href={f.path} onClick={onClose} style={{ fontSize: 14, color: theme.color.text1, textDecoration: 'none', fontWeight: 600, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {f.label}
+                      </Link>
+                    </li>
+                  ))
+                ) : (
+                  recentPages.length === 0 ? (
+                    <li style={{ padding: '4px 14px', fontSize: 12.5, color: theme.color.text4 }}>
+                      No pages visited yet.
+                    </li>
+                  ) : recentPages.map((p) => (
+                    <li key={p.path} style={{ padding: '4px 14px', display: 'flex', alignItems: 'center', gap: 10, borderRadius: 8 }}>
+                      <div style={{ width: 5, height: 5, borderRadius: '50%', background: theme.color.text3, flexShrink: 0 }} />
+                      <Link href={p.path} onClick={onClose} style={{ fontSize: 14, color: theme.color.text1, textDecoration: 'none', fontWeight: 600, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {p.label}
+                      </Link>
+                    </li>
+                  ))
+                )}
               </ul>
 
               {/* Dashboards Category */}
               <div style={{ marginBottom: 24 }}>
-                <p style={{ fontSize: 12, fontWeight: 700, color: '#94A3B8', padding: '0 14px', marginBottom: 8, letterSpacing: '0.02em' }}>
+                <p style={{ fontSize: 12, fontWeight: 700, color: theme.color.text4, padding: '0 14px', marginBottom: 8, letterSpacing: '0.02em' }}>
                   Dashboards
                 </p>
                 <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -168,12 +217,12 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                         textDecoration: 'none',
                         fontSize: 14,
                         fontWeight: pathname === '/dashboard' ? 700 : 600,
-                        color: '#0F172A',
-                        background: pathname === '/dashboard' ? '#F1F5F9' : 'transparent',
+                        color: theme.color.text1,
+                        background: pathname === '/dashboard' ? theme.color.surface2 : 'transparent',
                       }}
                       className="sidebar-item"
                     >
-                      <PieChart size={17} strokeWidth={2.2} style={{ color: '#0F172A' }} />
+                      <PieChart size={17} strokeWidth={2.2} style={{ color: theme.color.text1 }} />
                       <span>Overview</span>
                     </Link>
                   </li>
@@ -192,13 +241,13 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                         textDecoration: 'none',
                         fontSize: 14,
                         fontWeight: pathname === '/cart' ? 700 : 500,
-                        color: '#0F172A',
-                        background: pathname === '/cart' ? '#F1F5F9' : 'transparent',
+                        color: theme.color.text1,
+                        background: pathname === '/cart' ? theme.color.surface2 : 'transparent',
                       }}
                       className="sidebar-item"
                     >
-                      <ChevronRight size={13} color="#94A3B8" />
-                      <ShoppingCart size={16} strokeWidth={2} style={{ color: '#0F172A' }} />
+                      <ChevronRight size={13} color={theme.color.text4} />
+                      <ShoppingCart size={16} strokeWidth={2} style={{ color: theme.color.text1 }} />
                       <span>Cart</span>
                     </Link>
                   </li>
@@ -217,13 +266,13 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                         textDecoration: 'none',
                         fontSize: 14,
                         fontWeight: pathname.startsWith('/bookings') ? 700 : 500,
-                        color: '#0F172A',
-                        background: pathname.startsWith('/bookings') ? '#F1F5F9' : 'transparent',
+                        color: theme.color.text1,
+                        background: pathname.startsWith('/bookings') ? theme.color.surface2 : 'transparent',
                       }}
                       className="sidebar-item"
                     >
-                      <ChevronRight size={13} color="#94A3B8" />
-                      <ClipboardList size={16} strokeWidth={2} style={{ color: '#0F172A' }} />
+                      <ChevronRight size={13} color={theme.color.text4} />
+                      <ClipboardList size={16} strokeWidth={2} style={{ color: theme.color.text1 }} />
                       <span>My Bookings</span>
                     </Link>
                   </li>
@@ -232,7 +281,7 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
 
               {/* Pages Category */}
               <div style={{ marginBottom: 24 }}>
-                <p style={{ fontSize: 12, fontWeight: 700, color: '#94A3B8', padding: '0 14px', marginBottom: 8, letterSpacing: '0.02em' }}>
+                <p style={{ fontSize: 12, fontWeight: 700, color: theme.color.text4, padding: '0 14px', marginBottom: 8, letterSpacing: '0.02em' }}>
                   Pages
                 </p>
                 <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -250,20 +299,20 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                         textDecoration: 'none',
                         fontSize: 14,
                         fontWeight: pathname === '/settings' ? 700 : 500,
-                        color: '#0F172A',
-                        background: pathname === '/settings' ? '#F1F5F9' : 'transparent',
+                        color: theme.color.text1,
+                        background: pathname === '/settings' ? theme.color.surface2 : 'transparent',
                       }}
                       className="sidebar-item"
                     >
-                      <ChevronRight size={13} color="#94A3B8" />
-                      <User size={16} strokeWidth={2} style={{ color: '#0F172A' }} />
+                      <ChevronRight size={13} color={theme.color.text4} />
+                      <User size={16} strokeWidth={2} style={{ color: theme.color.text1 }} />
                       <span>User Profile</span>
                     </Link>
 
                     {/* Submenu under User Profile matching screenshot */}
                     <ul style={{ listStyle: 'none', margin: '4px 0 6px 36px', padding: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
                       <li>
-                        <Link href="/dashboard" style={{ fontSize: 13, color: '#475569', textDecoration: 'none', fontWeight: 500, padding: '4px 8px', display: 'block', borderRadius: 6 }} className="sidebar-item">
+                        <Link href="/dashboard" style={{ fontSize: 13, color: theme.color.text2, textDecoration: 'none', fontWeight: 500, padding: '4px 8px', display: 'block', borderRadius: 6 }} className="sidebar-item">
                           Overview
                         </Link>
                       </li>
@@ -272,13 +321,13 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                           href="/podcast" 
                           style={{ 
                             fontSize: 13, 
-                            color: pathname.startsWith('/podcast') ? '#0F172A' : '#475569', 
+                            color: pathname.startsWith('/podcast') ? theme.color.text1 : theme.color.text2, 
                             textDecoration: 'none', 
                             fontWeight: pathname.startsWith('/podcast') ? 700 : 500, 
                             padding: '6px 10px', 
                             display: 'block', 
                             borderRadius: 8,
-                            background: pathname.startsWith('/podcast') ? '#F1F5F9' : 'transparent',
+                            background: pathname.startsWith('/podcast') ? theme.color.surface2 : 'transparent',
                           }} 
                           className="sidebar-item"
                         >
@@ -286,22 +335,22 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                         </Link>
                       </li>
                       <li>
-                        <Link href="/campaigns" style={{ fontSize: 13, color: pathname === '/campaigns' ? '#0F172A' : '#475569', textDecoration: 'none', fontWeight: pathname === '/campaigns' ? 700 : 500, padding: '4px 8px', display: 'block', borderRadius: 6 }} className="sidebar-item">
+                        <Link href="/campaigns" style={{ fontSize: 13, color: pathname === '/campaigns' ? theme.color.text1 : theme.color.text2, textDecoration: 'none', fontWeight: pathname === '/campaigns' ? 700 : 500, padding: '4px 8px', display: 'block', borderRadius: 6 }} className="sidebar-item">
                           Campaigns
                         </Link>
                       </li>
                       <li>
-                        <Link href="/ads" style={{ fontSize: 13, color: pathname === '/ads' ? '#0F172A' : '#475569', textDecoration: 'none', fontWeight: pathname === '/ads' ? 700 : 500, padding: '4px 8px', display: 'block', borderRadius: 6 }} className="sidebar-item">
+                        <Link href="/ads" style={{ fontSize: 13, color: pathname === '/ads' ? theme.color.text1 : theme.color.text2, textDecoration: 'none', fontWeight: pathname === '/ads' ? 700 : 500, padding: '4px 8px', display: 'block', borderRadius: 6 }} className="sidebar-item">
                           Ads
                         </Link>
                       </li>
                       <li>
-                        <Link href="/my-ads" style={{ fontSize: 13, color: pathname.startsWith('/my-ads') ? '#0F172A' : '#475569', textDecoration: 'none', fontWeight: pathname.startsWith('/my-ads') ? 700 : 500, padding: '4px 8px', display: 'block', borderRadius: 6 }} className="sidebar-item">
+                        <Link href="/my-ads" style={{ fontSize: 13, color: pathname.startsWith('/my-ads') ? theme.color.text1 : theme.color.text2, textDecoration: 'none', fontWeight: pathname.startsWith('/my-ads') ? 700 : 500, padding: '4px 8px', display: 'block', borderRadius: 6 }} className="sidebar-item">
                           My Ads
                         </Link>
                       </li>
                       <li>
-                        <Link href="/analytics" style={{ fontSize: 13, color: pathname === '/analytics' ? '#0F172A' : '#475569', textDecoration: 'none', fontWeight: pathname === '/analytics' ? 700 : 500, padding: '4px 8px', display: 'block', borderRadius: 6 }} className="sidebar-item">
+                        <Link href="/analytics" style={{ fontSize: 13, color: pathname === '/analytics' ? theme.color.text1 : theme.color.text2, textDecoration: 'none', fontWeight: pathname === '/analytics' ? 700 : 500, padding: '4px 8px', display: 'block', borderRadius: 6 }} className="sidebar-item">
                           Analytics
                         </Link>
                       </li>
@@ -322,13 +371,13 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                         textDecoration: 'none',
                         fontSize: 14,
                         fontWeight: pathname === '/finances' ? 700 : 500,
-                        color: '#0F172A',
-                        background: pathname === '/finances' ? '#F1F5F9' : 'transparent',
+                        color: theme.color.text1,
+                        background: pathname === '/finances' ? theme.color.surface2 : 'transparent',
                       }}
                       className="sidebar-item"
                     >
-                      <ChevronRight size={13} color="#94A3B8" />
-                      <Wallet size={16} strokeWidth={2} style={{ color: '#0F172A' }} />
+                      <ChevronRight size={13} color={theme.color.text4} />
+                      <Wallet size={16} strokeWidth={2} style={{ color: theme.color.text1 }} />
                       <span>Wallet</span>
                     </Link>
                   </li>
@@ -347,13 +396,13 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                         textDecoration: 'none',
                         fontSize: 14,
                         fontWeight: pathname === '/blog' ? 700 : 500,
-                        color: '#0F172A',
-                        background: pathname === '/blog' ? '#F1F5F9' : 'transparent',
+                        color: theme.color.text1,
+                        background: pathname === '/blog' ? theme.color.surface2 : 'transparent',
                       }}
                       className="sidebar-item"
                     >
-                      <ChevronRight size={13} color="#94A3B8" />
-                      <FileText size={16} strokeWidth={2} style={{ color: '#0F172A' }} />
+                      <ChevronRight size={13} color={theme.color.text4} />
+                      <FileText size={16} strokeWidth={2} style={{ color: theme.color.text1 }} />
                       <span>Blog</span>
                     </Link>
                   </li>
@@ -364,7 +413,7 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
         </nav>
 
         {/* User footer / Logout */}
-        <div style={{ padding: '20px 24px', borderTop: '1px solid #F1F5F9' }}>
+        <div style={{ padding: '20px 24px', borderTop: `1px solid ${theme.color.surface2}` }}>
           <button
             onClick={() => {
               logout();
@@ -377,7 +426,7 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
               background: 'none',
               border: 'none',
               cursor: 'pointer',
-              color: '#334155',
+              color: theme.color.text2,
               fontSize: 14,
               fontWeight: 600,
               fontFamily: F,

@@ -155,6 +155,19 @@ app.listen(PORT, async () => {
     await pool.query(`
       ALTER TABLE password_reset_tokens ADD COLUMN IF NOT EXISTS attempts INTEGER DEFAULT 0;
     `);
+
+    // HOTFIX: real "Favorites" (starred pages) — backs the navbar star icon
+    // and the sidebar's Favorites tab, previously both fake/static.
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS page_favorites (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        path VARCHAR(255) NOT NULL,
+        label VARCHAR(255) NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_page_favorites_unique ON page_favorites(user_id, path);
+    `);
   } catch (err) {
     console.error('❌ Failed to run database migrations:', err);
   }

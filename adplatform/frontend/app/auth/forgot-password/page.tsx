@@ -7,6 +7,7 @@ import { useToast } from '@/components/ui/ToastProvider';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnimatedButton } from '@/components/ui/Animations';
 import api from '@/lib/api';
+import { theme } from '@/lib/theme';
 
 const F = "'Quicksand', sans-serif";
 
@@ -27,9 +28,9 @@ export default function ForgotPasswordPage() {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const inputStyle: React.CSSProperties = {
-    width: '100%', padding: '13px 14px', background: '#FFFFFF',
-    border: '1px solid #CBD5E1', borderRadius: 4, fontSize: 13,
-    fontFamily: F, color: '#0F172A', outline: 'none', boxSizing: 'border-box',
+    width: '100%', padding: '13px 14px', background: theme.color.surface,
+    border: `1px solid ${theme.color.border2}`, borderRadius: 4, fontSize: 13,
+    fontFamily: F, color: theme.color.text1, outline: 'none', boxSizing: 'border-box',
     transition: 'border-color 0.2s, box-shadow 0.2s', fontWeight: 500
   };
   const onFocus = (e: any) => { 
@@ -37,12 +38,12 @@ export default function ForgotPasswordPage() {
     e.target.style.boxShadow = '0 0 0 2px rgba(212,175,55,0.1)'; 
   };
   const onBlur  = (e: any) => { 
-    e.target.style.borderColor = '#CBD5E1'; 
+    e.target.style.borderColor = theme.color.border2; 
     e.target.style.boxShadow = 'none'; 
   };
 
   const labelStyle: React.CSSProperties = {
-    fontSize: 12, fontWeight: 600, color: '#64748B', display: 'block',
+    fontSize: 12, fontWeight: 600, color: theme.color.text3, display: 'block',
     marginBottom: 6,
   };
 
@@ -133,7 +134,7 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="flex" style={{ fontFamily: F, minHeight: '100vh', background: '#FFFFFF' }}>
+    <div className="flex" style={{ fontFamily: F, minHeight: '100vh', background: theme.color.surface }}>
       
       {/* ── Left panel (Image + Overlay) ── */}
       <div className="hidden lg:flex flex-col justify-center" style={{ flex: '1 1 50%', maxWidth: '50%', position: 'relative', overflow: 'hidden' }}>
@@ -170,7 +171,7 @@ export default function ForgotPasswordPage() {
       <div className="flex items-center justify-center p-6 md:p-12 lg:p-16" style={{ flex: '1 1 50%', maxWidth: '100%', position: 'relative', overflow: 'hidden' }}>
         
         <div style={{ position: 'absolute', top: 40, right: 40, textAlign: 'right' }}>
-           <Link href="/auth/login" style={{ fontSize: 13, color: '#64748B', fontWeight: 700, textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+           <Link href="/auth/login" style={{ fontSize: 13, color: theme.color.text3, fontWeight: 700, textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
              <span style={{ fontSize: 11, color: '#CBD5E1', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Go to</span>
              Log in
            </Link>
@@ -181,8 +182,8 @@ export default function ForgotPasswordPage() {
           {/* STEP 1: Email Input */}
           {step === 1 && (
             <motion.div key="step1" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="w-full max-w-[420px]">
-              <h1 style={{ fontSize: 32, fontWeight: 800, color: '#0F172A', margin: '0 0 8px', letterSpacing: '-0.5px' }}>Forgot password</h1>
-              <p style={{ fontSize: 15, color: '#64748B', margin: '0 0 32px', fontWeight: 500 }}>
+              <h1 style={{ fontSize: 32, fontWeight: 800, color: theme.color.text1, margin: '0 0 8px', letterSpacing: '-0.5px' }}>Forgot password</h1>
+              <p style={{ fontSize: 15, color: theme.color.text3, margin: '0 0 32px', fontWeight: 500 }}>
                 Enter your email and a verification code will be sent to you
               </p>
 
@@ -209,8 +210,8 @@ export default function ForgotPasswordPage() {
           {/* STEP 2: OTP */}
           {step === 2 && (
             <motion.div key="step2" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="w-full max-w-[420px]">
-              <h1 style={{ fontSize: 32, fontWeight: 800, color: '#0F172A', margin: '0 0 8px', letterSpacing: '-0.5px' }}>Enter code</h1>
-              <p style={{ fontSize: 15, color: '#64748B', margin: '0 0 32px', fontWeight: 500 }}>
+              <h1 style={{ fontSize: 32, fontWeight: 800, color: theme.color.text1, margin: '0 0 8px', letterSpacing: '-0.5px' }}>Enter code</h1>
+              <p style={{ fontSize: 15, color: theme.color.text3, margin: '0 0 32px', fontWeight: 500 }}>
                 We sent a four digit code to your email.
               </p>
 
@@ -231,21 +232,21 @@ export default function ForgotPasswordPage() {
                     onKeyDown={(e) => handleOtpKeyDown(index, e)}
                     onPaste={handleOtpPaste}
                     style={{
-                      flex: 1, height: 56, background: '#FFFFFF',
-                      border: `1px solid ${digit || index === 0 ? '#D4AF37' : '#CBD5E1'}`,
-                      borderRadius: 8, fontSize: 20, fontWeight: 700, color: '#0F172A',
+                      flex: 1, height: 56, background: theme.color.surface,
+                      border: `1px solid ${digit || index === 0 ? '#D4AF37' : theme.color.border2}`,
+                      borderRadius: 8, fontSize: 20, fontWeight: 700, color: theme.color.text1,
                       textAlign: 'center', outline: 'none',
                       boxShadow: digit || index === 0 ? '0 0 0 2px rgba(212,175,55,0.1)' : 'none',
                       transition: 'all 0.2s',
                     }}
                     onFocus={(e) => { e.target.style.borderColor = '#D4AF37'; e.target.style.boxShadow = '0 0 0 2px rgba(212,175,55,0.1)'; }}
-                    onBlur={(e) => { if(!digit && index !== 0) { e.target.style.borderColor = '#CBD5E1'; e.target.style.boxShadow = 'none'; } }}
+                    onBlur={(e) => { if(!digit && index !== 0) { e.target.style.borderColor = theme.color.border2; e.target.style.boxShadow = 'none'; } }}
                   />
                 ))}
               </div>
 
               <div style={{ textAlign: 'right', marginBottom: 32 }}>
-                <span style={{ fontSize: 13, color: '#94A3B8', fontWeight: 500 }}>
+                <span style={{ fontSize: 13, color: theme.color.text4, fontWeight: 500 }}>
                   Didn't get code?{' '}
                   <button onClick={handleResend} disabled={resending} style={{ background: 'none', border: 'none', color: '#D4AF37', fontWeight: 600, cursor: resending ? 'wait' : 'pointer', padding: 0 }}>
                     {resending ? 'Sending...' : 'Resend'}
@@ -266,8 +267,8 @@ export default function ForgotPasswordPage() {
           {/* STEP 3: Change Password */}
           {step === 3 && (
             <motion.div key="step3" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="w-full max-w-[420px]">
-              <h1 style={{ fontSize: 32, fontWeight: 800, color: '#0F172A', margin: '0 0 8px', letterSpacing: '-0.5px' }}>Change password</h1>
-              <p style={{ fontSize: 15, color: '#64748B', margin: '0 0 32px', fontWeight: 500 }}>
+              <h1 style={{ fontSize: 32, fontWeight: 800, color: theme.color.text1, margin: '0 0 8px', letterSpacing: '-0.5px' }}>Change password</h1>
+              <p style={{ fontSize: 15, color: theme.color.text3, margin: '0 0 32px', fontWeight: 500 }}>
                 Enter a new password and proceed to Log in
               </p>
 
@@ -281,7 +282,7 @@ export default function ForgotPasswordPage() {
                       onChange={e => setPassword(e.target.value)}
                       required style={{ ...inputStyle, paddingRight: 60 }} onFocus={onFocus} onBlur={onBlur} />
                     <button type="button" onClick={() => setShowPw(p => !p)}
-                      style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#0F172A', fontWeight: 600, fontSize: 11 }}>
+                      style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text1, fontWeight: 600, fontSize: 11 }}>
                       {showPw ? 'Hide' : 'Show'}
                     </button>
                   </div>
@@ -295,7 +296,7 @@ export default function ForgotPasswordPage() {
                       onChange={e => setConfirmPassword(e.target.value)}
                       required style={{ ...inputStyle, paddingRight: 60 }} onFocus={onFocus} onBlur={onBlur} />
                     <button type="button" onClick={() => setShowConfirmPw(p => !p)}
-                      style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#0F172A', fontWeight: 600, fontSize: 11 }}>
+                      style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text1, fontWeight: 600, fontSize: 11 }}>
                       {showConfirmPw ? 'Hide' : 'Show'}
                     </button>
                   </div>

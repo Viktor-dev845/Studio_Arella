@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { AnimatedButton } from '@/components/ui/Animations';
 import { FaArrowRight, FaEye, FaEyeSlash, FaCircleCheck } from 'react-icons/fa6';
 import api from '@/lib/api';
+import { theme } from '@/lib/theme';
 
 const F = "'Quicksand', sans-serif";
 
@@ -32,7 +33,7 @@ function ResetPasswordContent() {
 
   const email = params.get('email') || '';
   
-  const inputStyle: React.CSSProperties = { width: '100%', padding: '12px 14px', background: '#fff', border: '1.5px solid #E5E7EB', borderRadius: 10, fontSize: 14, fontFamily: F, color: '#1A1A1A', outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.2s, box-shadow 0.2s' };
+  const inputStyle: React.CSSProperties = { width: '100%', padding: '12px 14px', background: theme.color.surface, border: '1.5px solid #E5E7EB', borderRadius: 10, fontSize: 14, fontFamily: F, color: '#1A1A1A', outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.2s, box-shadow 0.2s' };
 
   const handleCodeChange = (index: number, value: string) => {
     if (!/^[0-9]*$/.test(value)) return;
@@ -68,19 +69,19 @@ function ResetPasswordContent() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, fontFamily: F }}>
+    <div style={{ minHeight: '100vh', background: theme.color.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, fontFamily: F }}>
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}
         className="p-6 md:p-10"
-        style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 20, maxWidth: 420, width: '100%', boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
+        style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 20, maxWidth: 420, width: '100%', boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
         <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 9, textDecoration: 'none', marginBottom: 28 }}>
           <div style={{ width: 34, height: 34, background: '#D4AF37', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: 15, color: '#111111' }}>B</div>
-          <span style={{ fontSize: 15, fontWeight: 800, color: '#1A1A1A' }}>Bems<span style={{ fontWeight: 500, color: '#94A3B8' }}>Screens</span></span>
+          <span style={{ fontSize: 15, fontWeight: 800, color: '#1A1A1A' }}>Bems<span style={{ fontWeight: 500, color: theme.color.text4 }}>Screens</span></span>
         </Link>
 
         {!done ? (
           <>
             <h1 style={{ fontSize: 22, fontWeight: 900, color: '#1A1A1A', margin: '0 0 6px' }}>Set new password</h1>
-            <p style={{ fontSize: 14, color: '#64748B', margin: '0 0 24px' }}>
+            <p style={{ fontSize: 14, color: theme.color.text3, margin: '0 0 24px' }}>
               We've sent a 6-digit code to <strong style={{ color: '#1A1A1A' }}>{email}</strong>
             </p>
             {error && <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', color: '#B91C1C', fontSize: 13, padding: '10px 14px', borderRadius: 10, marginBottom: 16 }}>{error}</div>}
@@ -102,7 +103,7 @@ function ResetPasswordContent() {
                       style={{
                         width: '100%',
                         height: 48,
-                        background: '#fff',
+                        background: theme.color.surface,
                         border: `1.5px solid ${digit ? '#D4AF37' : '#E5E7EB'}`,
                         borderRadius: 10,
                         fontSize: 20,
@@ -124,7 +125,7 @@ function ResetPasswordContent() {
                   <input type={showPw ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} placeholder="At least 6 characters" required style={{ ...inputStyle, paddingRight: 44 }}
                     onFocus={e => { e.target.style.borderColor = '#D4AF37'; e.target.style.boxShadow = '0 0 0 3px rgba(212,175,55,0.12)'; }}
                     onBlur={e => { e.target.style.borderColor = '#E5E7EB'; e.target.style.boxShadow = 'none'; }} />
-                  <button type="button" onClick={() => setShowPw(p => !p)} style={{ position: 'absolute', right: 13, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8', display: 'flex' }}>
+                  <button type="button" onClick={() => setShowPw(p => !p)} style={{ position: 'absolute', right: 13, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text4, display: 'flex' }}>
                     {showPw ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
                   </button>
                 </div>
@@ -153,7 +154,7 @@ function ResetPasswordContent() {
               <FaCircleCheck size={26} color="#16A34A" />
             </div>
             <h2 style={{ fontSize: 20, fontWeight: 900, color: '#1A1A1A', margin: '0 0 8px' }}>Password reset!</h2>
-            <p style={{ fontSize: 14, color: '#64748B', margin: 0 }}>Redirecting you to sign in...</p>
+            <p style={{ fontSize: 14, color: theme.color.text3, margin: 0 }}>Redirecting you to sign in...</p>
           </div>
         )}
       </motion.div>

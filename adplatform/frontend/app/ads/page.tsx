@@ -98,8 +98,8 @@ function FileDropZone({ onFile }: { onFile: (f: File) => void }) {
       onDrop={(e) => { e.preventDefault(); setDragging(false); const f = e.dataTransfer.files[0]; if (f) handle(f); }}
       onClick={() => inputRef.current?.click()}
       style={{
-        border: `2px dashed ${dragging ? '#C69A2C' : '#CBD5E1'}`,
-        background: dragging ? 'rgba(198,154,44,0.08)' : '#F8FAFC',
+        border: `2px dashed ${dragging ? '#C69A2C' : theme.color.border2}`,
+        background: dragging ? 'rgba(198,154,44,0.08)' : theme.color.bg,
         borderRadius: 16,
         padding: '36px 20px',
         textAlign: 'center',
@@ -117,10 +117,10 @@ function FileDropZone({ onFile }: { onFile: (f: File) => void }) {
       <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'rgba(198,154,44,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
         <Upload size={24} color="#C69A2C" />
       </div>
-      <p style={{ fontSize: 14, fontWeight: 700, color: '#0F172A', margin: '0 0 4px' }}>
+      <p style={{ fontSize: 14, fontWeight: 700, color: theme.color.text1, margin: '0 0 4px' }}>
         {dragging ? 'Release to upload creative' : 'Click to upload or drag & drop creative'}
       </p>
-      <p style={{ fontSize: 12, color: '#64748B', margin: 0 }}>
+      <p style={{ fontSize: 12, color: theme.color.text3, margin: 0 }}>
         MP4, MOV (video) or JPG, PNG, GIF (image) · Up to 500MB
       </p>
     </div>
@@ -134,7 +134,7 @@ function UploadProgressBar({ progress }: { progress: number }) {
         <span style={{ fontSize: 12, color: '#475569', fontWeight: 700 }}>Uploading & Transcoding...</span>
         <span style={{ fontSize: 12, color: '#C69A2C', fontWeight: 800 }}>{progress}%</span>
       </div>
-      <div style={{ height: 8, background: '#E2E8F0', borderRadius: 4, overflow: 'hidden' }}>
+      <div style={{ height: 8, background: theme.color.border, borderRadius: 4, overflow: 'hidden' }}>
         <motion.div
           animate={{ width: `${progress}%` }}
           transition={{ duration: 0.3 }}
@@ -157,7 +157,7 @@ function FilePreviewCard({ file, onDurationChange }: { file: File; onDurationCha
   const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
 
   return (
-    <div style={{ background: '#0F172A', borderRadius: 14, overflow: 'hidden', border: '1px solid #1E293B' }}>
+    <div style={{ background: theme.color.charcoal900, borderRadius: 14, overflow: 'hidden', border: '1px solid #1E293B' }}>
       {isVideo ? (
         <video
           src={url || undefined}
@@ -180,7 +180,7 @@ function FilePreviewCard({ file, onDurationChange }: { file: File; onDurationCha
         <span style={{ fontSize: 12, color: '#F1F5F9', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '70%' }}>
           {file.name}
         </span>
-        <span style={{ fontSize: 12, color: '#94A3B8', flexShrink: 0 }}>{sizeMB} MB</span>
+        <span style={{ fontSize: 12, color: theme.color.text4, flexShrink: 0 }}>{sizeMB} MB</span>
       </div>
     </div>
   );
@@ -351,7 +351,7 @@ export default function AdsManagementPage() {
         );
       default:
         return (
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 20, background: '#F1F5F9', color: '#475569', fontSize: 11, fontWeight: 700 }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 20, background: theme.color.surface2, color: '#475569', fontSize: 11, fontWeight: 700 }}>
             Draft
           </span>
         );
@@ -390,7 +390,7 @@ export default function AdsManagementPage() {
                 <h1 style={{ fontFamily: theme.font.display, fontSize: 32, fontWeight: 700, margin: '0 0 8px', color: '#fff', letterSpacing: '-0.03em' }}>
                   Ad Creatives & Playback History
                 </h1>
-                <p style={{ fontSize: 14, color: '#94A3B8', margin: 0, maxWidth: 640, lineHeight: 1.6 }}>
+                <p style={{ fontSize: 14, color: theme.color.text4, margin: 0, maxWidth: 640, lineHeight: 1.6 }}>
                   Upload high-contrast video commercials, animated spots, and billboard posters. All media undergoes automated AI inspection and admin clearance before deployment to LED screen terminals.
                 </p>
               </div>
@@ -450,56 +450,56 @@ export default function AdsManagementPage() {
 
           {/* Top 4 Performance Metric Cards */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16, marginBottom: 32 }}>
-            <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 16, padding: '20px 24px', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+            <div style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                <span style={{ fontSize: 12, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Creatives</span>
-                <div style={{ width: 36, height: 36, borderRadius: 10, background: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Layers size={18} color="#0F172A" />
+                <span style={{ fontSize: 12, fontWeight: 700, color: theme.color.text3, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Creatives</span>
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: theme.color.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Layers size={18} color={theme.color.text1} />
                 </div>
               </div>
-              <div style={{ fontSize: 28, fontWeight: 800, color: '#0F172A', lineHeight: 1 }}>{totalCount}</div>
-              <span style={{ fontSize: 12, color: '#64748B', marginTop: 6, display: 'block' }}>Video & Image library assets</span>
+              <div style={{ fontSize: 28, fontWeight: 800, color: theme.color.text1, lineHeight: 1 }}>{totalCount}</div>
+              <span style={{ fontSize: 12, color: theme.color.text3, marginTop: 6, display: 'block' }}>Video & Image library assets</span>
             </div>
 
-            <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 16, padding: '20px 24px', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+            <div style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                <span style={{ fontSize: 12, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Approved & Live</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: theme.color.text3, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Approved & Live</span>
                 <div style={{ width: 36, height: 36, borderRadius: 10, background: '#DCFCE7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <CheckCircle2 size={18} color="#16A34A" />
                 </div>
               </div>
               <div style={{ fontSize: 28, fontWeight: 800, color: '#16A34A', lineHeight: 1 }}>{approvedCount}</div>
-              <span style={{ fontSize: 12, color: '#64748B', marginTop: 6, display: 'block' }}>Ready for screen deployment</span>
+              <span style={{ fontSize: 12, color: theme.color.text3, marginTop: 6, display: 'block' }}>Ready for screen deployment</span>
             </div>
 
-            <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 16, padding: '20px 24px', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+            <div style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                <span style={{ fontSize: 12, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>In Review Queue</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: theme.color.text3, textTransform: 'uppercase', letterSpacing: '0.05em' }}>In Review Queue</span>
                 <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(198,154,44,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Clock size={18} color="#C69A2C" />
                 </div>
               </div>
               <div style={{ fontSize: 28, fontWeight: 800, color: '#9A741E', lineHeight: 1 }}>{pendingCount}</div>
-              <span style={{ fontSize: 12, color: '#64748B', marginTop: 6, display: 'block' }}>Average clearance &lt; 2 hours</span>
+              <span style={{ fontSize: 12, color: theme.color.text3, marginTop: 6, display: 'block' }}>Average clearance &lt; 2 hours</span>
             </div>
 
-            <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 16, padding: '20px 24px', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+            <div style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 16, padding: '20px 24px', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                <span style={{ fontSize: 12, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Verified Screen Plays</span>
-                <div style={{ width: 36, height: 36, borderRadius: 10, background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: theme.color.text3, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Verified Screen Plays</span>
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: theme.color.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Radio size={18} color="#C69A2C" />
                 </div>
               </div>
               <div style={{ fontSize: 28, fontWeight: 800, color: '#C69A2C', lineHeight: 1 }}>{totalPlays.toLocaleString()}</div>
-              <span style={{ fontSize: 12, color: '#64748B', marginTop: 6, display: 'block' }}>IoT sensor verified broadcasts</span>
+              <span style={{ fontSize: 12, color: theme.color.text3, marginTop: 6, display: 'block' }}>IoT sensor verified broadcasts</span>
             </div>
           </div>
 
           {/* Controls Bar: Search, Status Tabs, Format Filter, View Toggle */}
-          <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 16, padding: '16px 20px', marginBottom: 28, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
+          <div style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 16, padding: '16px 20px', marginBottom: 28, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
             {/* Search Input */}
             <div style={{ position: 'relative', width: 280, maxWidth: '100%' }}>
-              <Search size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
+              <Search size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: theme.color.text4 }} />
               <input
                 type="text"
                 placeholder="Search creative or campaign..."
@@ -509,7 +509,7 @@ export default function AdsManagementPage() {
                   width: '100%',
                   padding: '9px 14px 9px 38px',
                   borderRadius: 10,
-                  border: '1px solid #E2E8F0',
+                  border: `1px solid ${theme.color.border}`,
                   fontSize: 13,
                   fontFamily: F,
                   outline: 'none',
@@ -533,7 +533,7 @@ export default function AdsManagementPage() {
                     padding: '8px 14px',
                     borderRadius: 8,
                     border: 'none',
-                    background: statusFilter === tab.id ? '#0F172A' : '#F1F5F9',
+                    background: statusFilter === tab.id ? theme.color.charcoal900 : theme.color.surface2,
                     color: statusFilter === tab.id ? '#fff' : '#475569',
                     fontSize: 12,
                     fontWeight: 700,
@@ -555,13 +555,13 @@ export default function AdsManagementPage() {
                 style={{
                   padding: '8px 12px',
                   borderRadius: 8,
-                  border: '1px solid #E2E8F0',
+                  border: `1px solid ${theme.color.border}`,
                   fontSize: 12,
                   fontFamily: F,
                   color: '#1E293B',
                   outline: 'none',
                   cursor: 'pointer',
-                  background: '#fff',
+                  background: theme.color.surface,
                 }}
               >
                 <option value="all">All Formats</option>
@@ -569,13 +569,13 @@ export default function AdsManagementPage() {
                 <option value="image">Images Only (PNG/JPG)</option>
               </select>
 
-              <div style={{ display: 'flex', border: '1px solid #E2E8F0', borderRadius: 8, overflow: 'hidden' }}>
+              <div style={{ display: 'flex', border: `1px solid ${theme.color.border}`, borderRadius: 8, overflow: 'hidden' }}>
                 <button
                   onClick={() => setViewMode('grid')}
                   style={{
                     padding: '7px 10px',
-                    background: viewMode === 'grid' ? '#0F172A' : '#fff',
-                    color: viewMode === 'grid' ? '#fff' : '#64748B',
+                    background: viewMode === 'grid' ? theme.color.charcoal900 : '#fff',
+                    color: viewMode === 'grid' ? '#fff' : theme.color.text3,
                     border: 'none',
                     cursor: 'pointer',
                     display: 'flex',
@@ -589,8 +589,8 @@ export default function AdsManagementPage() {
                   onClick={() => setViewMode('table')}
                   style={{
                     padding: '7px 10px',
-                    background: viewMode === 'table' ? '#0F172A' : '#fff',
-                    color: viewMode === 'table' ? '#fff' : '#64748B',
+                    background: viewMode === 'table' ? theme.color.charcoal900 : '#fff',
+                    color: viewMode === 'table' ? '#fff' : theme.color.text3,
                     border: 'none',
                     cursor: 'pointer',
                     display: 'flex',
@@ -608,7 +608,7 @@ export default function AdsManagementPage() {
           {loading ? (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} style={{ background: '#fff', borderRadius: 16, padding: 18, border: '1px solid #E2E8F0' }}>
+                <div key={i} style={{ background: theme.color.surface, borderRadius: 16, padding: 18, border: `1px solid ${theme.color.border}` }}>
                   <Skeleton height={160} radius={12} style={{ marginBottom: 12 }} />
                   <Skeleton height={16} style={{ marginBottom: 8 }} />
                   <Skeleton height={12} width="60%" />
@@ -616,19 +616,19 @@ export default function AdsManagementPage() {
               ))}
             </div>
           ) : filteredAds.length === 0 ? (
-            <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 20, padding: '60px 24px', textAlign: 'center' }}>
+            <div style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 20, padding: '60px 24px', textAlign: 'center' }}>
               <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(198,154,44,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
                 <Film size={28} color="#C69A2C" />
               </div>
-              <h3 style={{ fontFamily: theme.font.display, fontSize: 20, fontWeight: 700, color: '#0F172A', margin: '0 0 6px' }}>
+              <h3 style={{ fontFamily: theme.font.display, fontSize: 20, fontWeight: 700, color: theme.color.text1, margin: '0 0 6px' }}>
                 No Creatives Found
               </h3>
-              <p style={{ fontSize: 14, color: '#64748B', maxWidth: 420, margin: '0 auto 20px', lineHeight: 1.5 }}>
+              <p style={{ fontSize: 14, color: theme.color.text3, maxWidth: 420, margin: '0 auto 20px', lineHeight: 1.5 }}>
                 {searchQuery ? 'No creatives matched your search filters.' : 'Your creative library is empty. Upload your first video spot or billboard poster to start broadcasting.'}
               </p>
               <button
                 onClick={() => { setShowUploadModal(true); setSelectedFile(null); setTitle(''); }}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#0F172A', color: '#fff', border: 'none', borderRadius: 12, padding: '12px 24px', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: F }}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: theme.color.charcoal900, color: '#fff', border: 'none', borderRadius: 12, padding: '12px 24px', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: F }}
               >
                 <Plus size={15} /> Upload Creative Now
               </button>
@@ -645,8 +645,8 @@ export default function AdsManagementPage() {
                     key={ad.id}
                     onClick={() => setSelectedCreative(ad)}
                     style={{
-                      background: '#fff',
-                      border: '1px solid #E2E8F0',
+                      background: theme.color.surface,
+                      border: `1px solid ${theme.color.border}`,
                       borderRadius: 18,
                       overflow: 'hidden',
                       boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
@@ -723,12 +723,12 @@ export default function AdsManagementPage() {
                     <div style={{ padding: '18px 20px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                       <div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, marginBottom: 8 }}>
-                          <h3 style={{ fontSize: 15, fontWeight: 800, color: '#0F172A', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <h3 style={{ fontSize: 15, fontWeight: 800, color: theme.color.text1, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {ad.title}
                           </h3>
                         </div>
 
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#64748B', marginBottom: 12 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: theme.color.text3, marginBottom: 12 }}>
                           <span>{ad.campaign_name || 'No campaign linked'}</span>
                           <span>•</span>
                           <span>{ad.resolution || '1920x1080'}</span>
@@ -741,13 +741,13 @@ export default function AdsManagementPage() {
                         )}
                       </div>
 
-                      <div style={{ borderTop: '1px solid #F1F5F9', paddingTop: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ borderTop: `1px solid ${theme.color.surface2}`, paddingTop: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <div>{getStatusBadge(ad.status)}</div>
 
                         <div style={{ display: 'flex', gap: 8 }} onClick={(e) => e.stopPropagation()}>
                           <button
                             onClick={() => setSelectedCreative(ad)}
-                            style={{ background: '#F1F5F9', border: 'none', borderRadius: 6, padding: '6px 10px', fontSize: 11, fontWeight: 700, color: '#0F172A', cursor: 'pointer', fontFamily: F, display: 'flex', alignItems: 'center', gap: 4 }}
+                            style={{ background: theme.color.surface2, border: 'none', borderRadius: 6, padding: '6px 10px', fontSize: 11, fontWeight: 700, color: theme.color.text1, cursor: 'pointer', fontFamily: F, display: 'flex', alignItems: 'center', gap: 4 }}
                           >
                             <Eye size={12} /> Inspect
                           </button>
@@ -768,11 +768,11 @@ export default function AdsManagementPage() {
             </div>
           ) : (
             /* LIST TABLE VIEW */
-            <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 20, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
+            <div style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 20, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 13 }}>
                   <thead>
-                    <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', color: '#64748B', fontWeight: 700, textTransform: 'uppercase', fontSize: 11, letterSpacing: '0.05em' }}>
+                    <tr style={{ background: theme.color.bg, borderBottom: `1px solid ${theme.color.border}`, color: theme.color.text3, fontWeight: 700, textTransform: 'uppercase', fontSize: 11, letterSpacing: '0.05em' }}>
                       <th style={{ padding: '16px 20px' }}>Creative Asset</th>
                       <th style={{ padding: '16px 20px' }}>Linked Campaign</th>
                       <th style={{ padding: '16px 20px' }}>Format & Res</th>
@@ -789,33 +789,33 @@ export default function AdsManagementPage() {
                         <tr
                           key={ad.id}
                           onClick={() => setSelectedCreative(ad)}
-                          style={{ borderBottom: '1px solid #F1F5F9', cursor: 'pointer', transition: 'background 0.15s' }}
-                          onMouseEnter={(e) => { e.currentTarget.style.background = '#F8FAFC'; }}
+                          style={{ borderBottom: `1px solid ${theme.color.surface2}`, cursor: 'pointer', transition: 'background 0.15s' }}
+                          onMouseEnter={(e) => { e.currentTarget.style.background = theme.color.bg; }}
                           onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
                         >
                           <td style={{ padding: '16px 20px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                              <div style={{ width: 44, height: 44, borderRadius: 8, background: '#0F172A', overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
+                              <div style={{ width: 44, height: 44, borderRadius: 8, background: theme.color.charcoal900, overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
                                 {fileUrl && ad.file_type === 'video' ? (
                                   <video src={fileUrl} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                 ) : fileUrl ? (
                                   <img src={fileUrl} alt={ad.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                 ) : (
-                                  <Film size={20} color="#64748B" style={{ margin: 12 }} />
+                                  <Film size={20} color={theme.color.text3} style={{ margin: 12 }} />
                                 )}
                               </div>
                               <div>
-                                <span style={{ fontWeight: 800, color: '#0F172A', display: 'block' }}>{ad.title}</span>
-                                <span style={{ fontSize: 11, color: '#94A3B8' }}>Added {new Date(ad.created_at).toLocaleDateString()}</span>
+                                <span style={{ fontWeight: 800, color: theme.color.text1, display: 'block' }}>{ad.title}</span>
+                                <span style={{ fontSize: 11, color: theme.color.text4 }}>Added {new Date(ad.created_at).toLocaleDateString()}</span>
                               </div>
                             </div>
                           </td>
                           <td style={{ padding: '16px 20px', color: '#475569', fontWeight: 600 }}>
                             {ad.campaign_name || '—'}
                           </td>
-                          <td style={{ padding: '16px 20px', color: '#0F172A' }}>
+                          <td style={{ padding: '16px 20px', color: theme.color.text1 }}>
                             <span style={{ textTransform: 'uppercase', fontWeight: 700 }}>{ad.file_type}</span>{' '}
-                            <span style={{ fontSize: 11, color: '#64748B' }}>({ad.resolution || '1080p'})</span>
+                            <span style={{ fontSize: 11, color: theme.color.text3 }}>({ad.resolution || '1080p'})</span>
                           </td>
                           <td style={{ padding: '16px 20px', color: '#475569', fontWeight: 600 }}>
                             {ad.duration_seconds ? `${ad.duration_seconds}s` : '10s'}
@@ -830,7 +830,7 @@ export default function AdsManagementPage() {
                             <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
                               <button
                                 onClick={() => setSelectedCreative(ad)}
-                                style={{ background: '#0F172A', border: 'none', color: '#fff', padding: '6px 12px', borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: F }}
+                                style={{ background: theme.color.charcoal900, border: 'none', color: '#fff', padding: '6px 12px', borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: F }}
                               >
                                 View
                               </button>
@@ -872,7 +872,7 @@ export default function AdsManagementPage() {
                   animate={{ scale: 1, opacity: 1 }}
                   exit={{ scale: 0.94, opacity: 0 }}
                   style={{
-                    background: '#fff',
+                    background: theme.color.surface,
                     borderRadius: 24,
                     maxWidth: 780,
                     width: '100%',
@@ -884,24 +884,24 @@ export default function AdsManagementPage() {
                   }}
                 >
                   {/* Modal Header */}
-                  <div style={{ padding: '24px 28px', borderBottom: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ padding: '24px 28px', borderBottom: `1px solid ${theme.color.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <h2 style={{ fontFamily: theme.font.display, fontSize: 20, fontWeight: 700, color: '#0F172A', margin: 0 }}>
+                        <h2 style={{ fontFamily: theme.font.display, fontSize: 20, fontWeight: 700, color: theme.color.text1, margin: 0 }}>
                           {selectedCreative.title}
                         </h2>
                         {getStatusBadge(selectedCreative.status)}
                       </div>
-                      <span style={{ fontSize: 12, color: '#64748B', marginTop: 4, display: 'block' }}>
+                      <span style={{ fontSize: 12, color: theme.color.text3, marginTop: 4, display: 'block' }}>
                         ID: #{selectedCreative.id} • Added on {new Date(selectedCreative.created_at).toLocaleDateString()}
                       </span>
                     </div>
 
                     <button
                       onClick={() => setSelectedCreative(null)}
-                      style={{ background: '#F1F5F9', border: 'none', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                      style={{ background: theme.color.surface2, border: 'none', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
                     >
-                      <X size={16} color="#0F172A" />
+                      <X size={16} color={theme.color.text1} />
                     </button>
                   </div>
 
@@ -926,21 +926,21 @@ export default function AdsManagementPage() {
                     </div>
 
                     {/* Metadata Grid */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24, background: '#F8FAFC', padding: '16px', borderRadius: 14, border: '1px solid #E2E8F0' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24, background: theme.color.bg, padding: '16px', borderRadius: 14, border: `1px solid ${theme.color.border}` }}>
                       <div>
-                        <span style={{ fontSize: 11, color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase' }}>Format</span>
-                        <p style={{ fontSize: 13, fontWeight: 800, color: '#0F172A', margin: '2px 0 0', textTransform: 'uppercase' }}>{selectedCreative.file_type}</p>
+                        <span style={{ fontSize: 11, color: theme.color.text4, fontWeight: 700, textTransform: 'uppercase' }}>Format</span>
+                        <p style={{ fontSize: 13, fontWeight: 800, color: theme.color.text1, margin: '2px 0 0', textTransform: 'uppercase' }}>{selectedCreative.file_type}</p>
                       </div>
                       <div>
-                        <span style={{ fontSize: 11, color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase' }}>Resolution</span>
-                        <p style={{ fontSize: 13, fontWeight: 800, color: '#0F172A', margin: '2px 0 0' }}>{selectedCreative.resolution || '1920 × 1080'}</p>
+                        <span style={{ fontSize: 11, color: theme.color.text4, fontWeight: 700, textTransform: 'uppercase' }}>Resolution</span>
+                        <p style={{ fontSize: 13, fontWeight: 800, color: theme.color.text1, margin: '2px 0 0' }}>{selectedCreative.resolution || '1920 × 1080'}</p>
                       </div>
                       <div>
-                        <span style={{ fontSize: 11, color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase' }}>Duration</span>
-                        <p style={{ fontSize: 13, fontWeight: 800, color: '#0F172A', margin: '2px 0 0' }}>{selectedCreative.duration_seconds}s</p>
+                        <span style={{ fontSize: 11, color: theme.color.text4, fontWeight: 700, textTransform: 'uppercase' }}>Duration</span>
+                        <p style={{ fontSize: 13, fontWeight: 800, color: theme.color.text1, margin: '2px 0 0' }}>{selectedCreative.duration_seconds}s</p>
                       </div>
                       <div>
-                        <span style={{ fontSize: 11, color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase' }}>Total Screen Plays</span>
+                        <span style={{ fontSize: 11, color: theme.color.text4, fontWeight: 700, textTransform: 'uppercase' }}>Total Screen Plays</span>
                         <p style={{ fontSize: 13, fontWeight: 800, color: '#C69A2C', margin: '2px 0 0' }}>{(selectedCreative.play_count || 0).toLocaleString()}</p>
                       </div>
                     </div>
@@ -960,21 +960,21 @@ export default function AdsManagementPage() {
                     {/* Playback History Table */}
                     <div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                        <h4 style={{ fontSize: 14, fontWeight: 800, color: '#0F172A', margin: 0, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                        <h4 style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1, margin: 0, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                           Verified IoT Playback Logs
                         </h4>
-                        <span style={{ fontSize: 12, color: '#64748B' }}>Real-time sensor telemetry</span>
+                        <span style={{ fontSize: 12, color: theme.color.text3 }}>Real-time sensor telemetry</span>
                       </div>
 
                       {(!selectedCreative.recent_logs || selectedCreative.recent_logs.length === 0) ? (
-                        <div style={{ background: '#F8FAFC', borderRadius: 12, padding: '24px', textAlign: 'center', color: '#64748B', fontSize: 13, border: '1px solid #E2E8F0' }}>
+                        <div style={{ background: theme.color.bg, borderRadius: 12, padding: '24px', textAlign: 'center', color: theme.color.text3, fontSize: 13, border: `1px solid ${theme.color.border}` }}>
                           No broadcast playback events recorded yet. Attach this creative to a booking slot to begin live rotation.
                         </div>
                       ) : (
-                        <div style={{ border: '1px solid #E2E8F0', borderRadius: 12, overflow: 'hidden' }}>
+                        <div style={{ border: `1px solid ${theme.color.border}`, borderRadius: 12, overflow: 'hidden' }}>
                           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 12 }}>
                             <thead>
-                              <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', color: '#64748B', fontWeight: 700 }}>
+                              <tr style={{ background: theme.color.bg, borderBottom: `1px solid ${theme.color.border}`, color: theme.color.text3, fontWeight: 700 }}>
                                 <th style={{ padding: '10px 14px' }}>Billboard Terminal</th>
                                 <th style={{ padding: '10px 14px' }}>Location</th>
                                 <th style={{ padding: '10px 14px' }}>Booking Ref</th>
@@ -984,9 +984,9 @@ export default function AdsManagementPage() {
                             </thead>
                             <tbody>
                               {selectedCreative.recent_logs.map((log, i) => (
-                                <tr key={i} style={{ borderBottom: '1px solid #F1F5F9' }}>
-                                  <td style={{ padding: '10px 14px', fontWeight: 700, color: '#0F172A' }}>{log.screen_name}</td>
-                                  <td style={{ padding: '10px 14px', color: '#64748B' }}>{log.city}</td>
+                                <tr key={i} style={{ borderBottom: `1px solid ${theme.color.surface2}` }}>
+                                  <td style={{ padding: '10px 14px', fontWeight: 700, color: theme.color.text1 }}>{log.screen_name}</td>
+                                  <td style={{ padding: '10px 14px', color: theme.color.text3 }}>{log.city}</td>
                                   <td style={{ padding: '10px 14px', fontFamily: 'monospace', color: '#C69A2C', fontWeight: 700 }}>{log.booking_ref}</td>
                                   <td style={{ padding: '10px 14px', color: '#475569' }}>{log.played_at} ({log.duration}s)</td>
                                   <td style={{ padding: '10px 14px', textAlign: 'right' }}>
@@ -1002,7 +1002,7 @@ export default function AdsManagementPage() {
                   </div>
 
                   {/* Modal Footer */}
-                  <div style={{ padding: '20px 28px', borderTop: '1px solid #E2E8F0', background: '#F8FAFC', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ padding: '20px 28px', borderTop: `1px solid ${theme.color.border}`, background: theme.color.bg, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <button
                       onClick={(e) => handleDelete(selectedCreative.id, e)}
                       style={{ background: 'transparent', border: 'none', color: '#DC2626', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
@@ -1013,7 +1013,7 @@ export default function AdsManagementPage() {
                     <div style={{ display: 'flex', gap: 10 }}>
                       <button
                         onClick={() => setSelectedCreative(null)}
-                        style={{ padding: '10px 18px', background: '#fff', border: '1px solid #CBD5E1', borderRadius: 10, fontSize: 13, fontWeight: 600, color: '#475569', cursor: 'pointer' }}
+                        style={{ padding: '10px 18px', background: theme.color.surface, border: `1px solid ${theme.color.border2}`, borderRadius: 10, fontSize: 13, fontWeight: 600, color: '#475569', cursor: 'pointer' }}
                       >
                         Close
                       </button>
@@ -1049,7 +1049,7 @@ export default function AdsManagementPage() {
                             display: 'inline-flex',
                             alignItems: 'center',
                             gap: 6,
-                            background: '#0F172A',
+                            background: theme.color.charcoal900,
                             color: '#fff',
                             padding: '10px 20px',
                             borderRadius: 10,
@@ -1090,7 +1090,7 @@ export default function AdsManagementPage() {
                   animate={{ scale: 1, opacity: 1 }}
                   exit={{ scale: 0.94, opacity: 0 }}
                   style={{
-                    background: '#fff',
+                    background: theme.color.surface,
                     borderRadius: 24,
                     padding: 32,
                     maxWidth: 540,
@@ -1104,18 +1104,18 @@ export default function AdsManagementPage() {
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                     <div>
-                      <h2 style={{ fontFamily: theme.font.display, fontSize: 20, fontWeight: 700, color: '#0F172A', margin: 0 }}>
+                      <h2 style={{ fontFamily: theme.font.display, fontSize: 20, fontWeight: 700, color: theme.color.text1, margin: 0 }}>
                         Upload Broadcast Creative
                       </h2>
-                      <span style={{ fontSize: 12, color: '#64748B' }}>MP4, MOV video or JPG, PNG, GIF displays</span>
+                      <span style={{ fontSize: 12, color: theme.color.text3 }}>MP4, MOV video or JPG, PNG, GIF displays</span>
                     </div>
 
                     {!uploading && (
                       <button
                         onClick={() => setShowUploadModal(false)}
-                        style={{ background: '#F1F5F9', border: 'none', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                        style={{ background: theme.color.surface2, border: 'none', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
                       >
-                        <X size={16} color="#0F172A" />
+                        <X size={16} color={theme.color.text1} />
                       </button>
                     )}
                   </div>
@@ -1134,7 +1134,7 @@ export default function AdsManagementPage() {
                           width: '100%',
                           padding: '12px 14px',
                           borderRadius: 10,
-                          border: '1px solid #CBD5E1',
+                          border: `1px solid ${theme.color.border2}`,
                           fontSize: 13,
                           fontFamily: F,
                           outline: 'none',
@@ -1173,7 +1173,7 @@ export default function AdsManagementPage() {
                     </div>
 
                     {/* Campaign Picker */}
-                    <div style={{ borderTop: '1px solid #F1F5F9', paddingTop: 16 }}>
+                    <div style={{ borderTop: `1px solid ${theme.color.surface2}`, paddingTop: 16 }}>
                       <CampaignPicker value={campaignId} onChange={setCampaignId} />
                     </div>
                   </div>
@@ -1182,7 +1182,7 @@ export default function AdsManagementPage() {
                     <div style={{ display: 'flex', gap: 10, marginTop: 24 }}>
                       <button
                         onClick={() => setShowUploadModal(false)}
-                        style={{ flex: 1, padding: '12px', background: '#F1F5F9', color: '#475569', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: F }}
+                        style={{ flex: 1, padding: '12px', background: theme.color.surface2, color: '#475569', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: F }}
                       >
                         Cancel
                       </button>
@@ -1192,8 +1192,8 @@ export default function AdsManagementPage() {
                         style={{
                           flex: 1,
                           padding: '12px',
-                          background: selectedFile && title.trim() ? 'linear-gradient(135deg, #C69A2C 0%, #DFB755 100%)' : '#E2E8F0',
-                          color: selectedFile && title.trim() ? '#0B0E14' : '#94A3B8',
+                          background: selectedFile && title.trim() ? 'linear-gradient(135deg, #C69A2C 0%, #DFB755 100%)' : theme.color.border,
+                          color: selectedFile && title.trim() ? '#0B0E14' : theme.color.text4,
                           border: 'none',
                           borderRadius: 10,
                           fontSize: 13,
@@ -1225,7 +1225,7 @@ export default function AdsManagementPage() {
               position: 'fixed',
               bottom: 24,
               right: 24,
-              background: '#0F172A',
+              background: theme.color.charcoal900,
               color: '#fff',
               borderRadius: 30,
               padding: '12px 20px',

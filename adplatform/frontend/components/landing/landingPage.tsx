@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import { theme } from '@/lib/theme';
 import {
   FaLocationDot, FaDisplay, FaBolt, FaBullhorn, FaArrowRight,
   FaStar, FaChevronDown, FaXTwitter, FaLinkedinIn,
@@ -107,10 +108,10 @@ function FAQItem({ q, a }: { q: string; a: string }) {
   return (
     <div style={{ borderBottom: '1px solid rgba(0,0,0,0.08)' }}>
       <button onClick={() => setOpen(o => !o)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 0', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', gap: 16 }}>
-        <span style={{ fontSize: 16, fontWeight: 800, color: '#0f172a', lineHeight: 1.4, fontFamily: F }}>{q}</span>
+        <span style={{ fontSize: 16, fontWeight: 800, color: theme.color.text1, lineHeight: 1.4, fontFamily: F }}>{q}</span>
         <motion.div animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}
           style={{ width: 32, height: 32, borderRadius: 10, background: open ? 'rgba(212,175,55,0.2)' : 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <FaChevronDown size={12} color={open ? '#D4AF37' : '#94A3B8'} />
+          <FaChevronDown size={12} color={open ? '#D4AF37' : theme.color.text4} />
         </motion.div>
       </button>
       <AnimatePresence>
@@ -131,7 +132,7 @@ function StatCard({ value, suffix = '', label, start }: { value: number; suffix?
       <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 48, height: 48, borderRadius: 14, background: 'rgba(212,175,55,0.1)', marginBottom: 16 }}>
         <FaStar size={20} color="#D4AF37" />
       </div>
-      <p style={{ fontSize: 'clamp(32px,4vw,48px)', fontWeight: 900, color: '#0f172a', margin: '0 0 8px', letterSpacing: '-1px', lineHeight: 1, fontFamily: F }}>
+      <p style={{ fontSize: 'clamp(32px,4vw,48px)', fontWeight: 900, color: theme.color.text1, margin: '0 0 8px', letterSpacing: '-1px', lineHeight: 1, fontFamily: F }}>
         {count.toLocaleString()}{suffix}
       </p>
       <p style={{ fontSize: 14, color: '#475569', margin: 0, fontWeight: 600 }}>{label}</p>
@@ -203,7 +204,7 @@ function ImageCarousel() {
           style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0, pointerEvents: i === idx ? 'auto' : 'none' }}
         >
           <img src={item.src} alt={item.caption} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-          <div style={{ position: 'absolute', bottom: 10, left: 10, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', color: '#0f172a', fontSize: 11, fontWeight: 700, padding: '6px 12px', borderRadius: 8, letterSpacing: '0.04em' }}>
+          <div style={{ position: 'absolute', bottom: 10, left: 10, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', color: theme.color.text1, fontSize: 11, fontWeight: 700, padding: '6px 12px', borderRadius: 8, letterSpacing: '0.04em' }}>
             {item.caption}
           </div>
         </motion.div>
@@ -239,7 +240,7 @@ function PodcastCarousel() {
           style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0, pointerEvents: i === idx ? 'auto' : 'none' }}
         >
           <img src={item.src} alt={item.caption} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-          <div style={{ position: 'absolute', bottom: 20, left: 20, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', color: '#0f172a', fontSize: 13, fontWeight: 700, padding: '8px 16px', borderRadius: 8, letterSpacing: '0.04em' }}>
+          <div style={{ position: 'absolute', bottom: 20, left: 20, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', color: theme.color.text1, fontSize: 13, fontWeight: 700, padding: '8px 16px', borderRadius: 8, letterSpacing: '0.04em' }}>
             {item.caption}
           </div>
         </motion.div>
@@ -267,7 +268,7 @@ export default function LandingPage() {
   }, [scrollY]);
 
   return (
-    <div style={{ background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)', minHeight: '100vh', color: '#0f172a', fontFamily: F, overflowX: 'hidden' }}>
+    <div style={{ background: `linear-gradient(135deg, #ffffff 0%, ${theme.color.bg} 100%)`, minHeight: '100vh', color: theme.color.text1, fontFamily: F, overflowX: 'hidden' }}>
       <style>{`
         @keyframes tickerScroll{0%{transform:translateY(0)}100%{transform:translateY(-50%)}}
         .ticker-scroll{animation:tickerScroll 22s linear infinite}
@@ -307,7 +308,7 @@ export default function LandingPage() {
           <Link href="/auth/login" className="nav-link-item" style={{ padding: '8px 14px' }}>Sign in</Link>
           <Link href="/auth/register" className="cta-btn" style={{ fontSize: 14, fontWeight: 800, textDecoration: 'none', background: '#D4AF37', color: '#ffffff', padding: '10px 22px', borderRadius: 12, boxShadow: '0 4px 14px rgba(212,175,55,0.3)' }}>Get started now</Link>
         </div>
-        <button className="mobile-ctas" onClick={() => setMobileMenuOpen(o => !o)} style={{ display: 'none', background: 'rgba(0,0,0,0.1)', border: '1px solid rgba(0,0,0,0.1)', borderRadius: 8, cursor: 'pointer', color: '#0f172a', padding: '6px 12px', fontSize: 18, fontWeight: 700 }}>☰</button>
+        <button className="mobile-ctas" onClick={() => setMobileMenuOpen(o => !o)} style={{ display: 'none', background: 'rgba(0,0,0,0.1)', border: '1px solid rgba(0,0,0,0.1)', borderRadius: 8, cursor: 'pointer', color: theme.color.text1, padding: '6px 12px', fontSize: 18, fontWeight: 700 }}>☰</button>
       </motion.nav>
 
       <AnimatePresence>
@@ -319,9 +320,9 @@ export default function LandingPage() {
               style={{ position: 'fixed', top: 68, bottom: 0, left: 0, right: 0, zIndex: 98, background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(2px)' }}
             />
             <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
-              style={{ position: 'fixed', top: 68, left: 0, right: 0, zIndex: 99, background: '#ffffff', borderBottom: '1px solid rgba(0,0,0,0.08)', boxShadow: '0 10px 25px rgba(0,0,0,0.5)', padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+              style={{ position: 'fixed', top: 68, left: 0, right: 0, zIndex: 99, background: theme.color.surface, borderBottom: '1px solid rgba(0,0,0,0.08)', boxShadow: '0 10px 25px rgba(0,0,0,0.5)', padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
               {[['#services', 'Services'], ['#how', 'How it works'], ['#pricing', 'Pricing'], ['#faq', 'FAQ'], ['#podcast-studio', 'Podcast Studio']].map(([h, l]) => (
-                <a key={h} href={h} onClick={() => setMobileMenuOpen(false)} style={{ color: '#0f172a', textDecoration: 'none', fontSize: 16, fontWeight: 700, padding: '12px 0', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>{l}</a>
+                <a key={h} href={h} onClick={() => setMobileMenuOpen(false)} style={{ color: theme.color.text1, textDecoration: 'none', fontSize: 16, fontWeight: 700, padding: '12px 0', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>{l}</a>
               ))}
               <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
                 <Link href="/auth/login" onClick={() => setMobileMenuOpen(false)} style={{ flex: 1, textAlign: 'center', padding: '12px', border: '2px solid rgba(0,0,0,0.1)', borderRadius: 12, color: '#475569', textDecoration: 'none', fontSize: 14, fontWeight: 700 }}>Sign in</Link>
@@ -340,15 +341,15 @@ export default function LandingPage() {
             <motion.div initial={{ opacity: 0, y: 32 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 100, padding: '6px 16px', marginBottom: 28, boxShadow: '0 4px 12px rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)' }}>
                 <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#EAB308', boxShadow: '0 0 10px #EAB308' }} />
-                <span style={{ fontSize: 13, color: '#f8fafc', fontWeight: 800 }}>Umuahia's Premier Media Destination</span>
+                <span style={{ fontSize: 13, color: '#F8FAFC', fontWeight: 800 }}>Umuahia's Premier Media Destination</span>
               </div>
               <h1 style={{ fontSize: 'clamp(42px,6vw,80px)', fontWeight: 900, lineHeight: 1.05, letterSpacing: '-2.5px', color: '#ffffff', margin: '0 0 16px' }}>
                 Studio Arella<br /><span style={{ color: '#D4AF37', textShadow: '0 0 30px rgba(212,175,55,0.4)' }}>Media Hub</span>
               </h1>
-              <div style={{ fontSize: 'clamp(22px,3vw,34px)', fontWeight: 800, letterSpacing: '-1px', color: '#cbd5e1', margin: '0 0 28px', minHeight: '1.3em', lineHeight: 1.25 }}>
+              <div style={{ fontSize: 'clamp(22px,3vw,34px)', fontWeight: 800, letterSpacing: '-1px', color: '#CBD5E1', margin: '0 0 28px', minHeight: '1.3em', lineHeight: 1.25 }}>
                 Now anyone can <span style={{ color: '#06B6D4', textShadow: '0 0 20px rgba(6,182,212,0.4)' }}>{typed}</span><span className="cursor" style={{ color: '#06B6D4' }}>|</span>
               </div>
-              <p style={{ fontSize: 17, lineHeight: 1.7, color: '#e2e8f0', maxWidth: 540, margin: '0 0 40px', fontWeight: 500 }}>
+              <p style={{ fontSize: 17, lineHeight: 1.7, color: '#E2E8F0', maxWidth: 540, margin: '0 0 40px', fontWeight: 500 }}>
                 Advertise your business on Umuahia's premier digital screen, or record professional audio and video in our premium podcast studio.
               </p>
               <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 56 }}>
@@ -361,7 +362,7 @@ export default function LandingPage() {
               </div>
               <div style={{ display: 'flex', gap: 40, flexWrap: 'wrap' }}>
                 {[['10ft × 6ft', 'digital screen'], ['Studio', 'premium podcasting'], ['Instant', 'booking & delivery']].map(([v, l]) => (
-                  <div key={l}><p style={{ fontSize: 22, fontWeight: 900, color: '#ffffff', margin: 0, letterSpacing: '-0.5px' }}>{v}</p><p style={{ fontSize: 13, color: '#cbd5e1', margin: '2px 0 0', fontWeight: 600 }}>{l}</p></div>
+                  <div key={l}><p style={{ fontSize: 22, fontWeight: 900, color: '#ffffff', margin: 0, letterSpacing: '-0.5px' }}>{v}</p><p style={{ fontSize: 13, color: '#CBD5E1', margin: '2px 0 0', fontWeight: 600 }}>{l}</p></div>
                 ))}
               </div>
             </motion.div>
@@ -369,14 +370,14 @@ export default function LandingPage() {
             <motion.div className="hero-ticker" initial={{ opacity: 0, x: 32 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.2 }} style={{ perspective: 1000 }}>
               <div style={{ transform: 'rotateY(-10deg) rotateX(5deg)', transformStyle: 'preserve-3d' }}>
                 <div style={{ background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.1)', borderRadius: 24, boxShadow: '0 30px 60px rgba(0,0,0,0.6), 0 0 40px rgba(212,175,55,0.1)', overflow: 'hidden', height: 460, position: 'relative', padding: 8, backdropFilter: 'blur(20px)' }}>
-                  <div style={{ background: '#ffffff', borderRadius: 16, height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}>
+                  <div style={{ background: theme.color.surface, borderRadius: 16, height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}>
                     <ImageCarousel />
-                    <div style={{ padding: 20, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', background: 'linear-gradient(to bottom, rgba(255,255,255,0.5), #0f172a)' }}>
+                    <div style={{ padding: 20, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', background: `linear-gradient(to bottom, rgba(255,255,255,0.5), ${theme.color.charcoal900})` }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                         <FaBolt size={14} color="#D4AF37" />
                         <span style={{ fontSize: 12, fontWeight: 800, color: '#D4AF37', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Premium Facilities</span>
                       </div>
-                      <h3 style={{ fontSize: 18, fontWeight: 900, color: '#0f172a', margin: '0 0 8px', lineHeight: 1.3 }}>Screen & Studio Booking</h3>
+                      <h3 style={{ fontSize: 18, fontWeight: 900, color: theme.color.text1, margin: '0 0 8px', lineHeight: 1.3 }}>Screen & Studio Booking</h3>
                       <p style={{ fontSize: 13, color: '#475569', margin: 0, fontWeight: 500, lineHeight: 1.5 }}>Book your billboard ad slots or reserve your podcast studio time instantly.</p>
                     </div>
                   </div>
@@ -385,11 +386,11 @@ export default function LandingPage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 16, transform: 'rotateY(-10deg) rotateX(5deg) translateZ(30px)' }}>
                 <Link href="/auth/register" className="float-a" style={{ display: 'flex', alignItems: 'center', gap: 14, background: 'rgba(0,0,0,0.05)', border: '1px solid rgba(0,0,0,0.1)', borderRadius: 16, padding: '14px 16px', textDecoration: 'none', boxShadow: '0 8px 20px rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)' }}>
                   <div style={{ width: 40, height: 40, background: 'rgba(234,179,8,0.15)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><FaBullhorn size={18} color="#EAB308" /></div>
-                  <div><p style={{ fontSize: 14, fontWeight: 800, color: '#0f172a', margin: 0 }}>Start advertising</p><p style={{ fontSize: 11, color: '#475569', margin: '2px 0 0', fontWeight: 600 }}>From ₦1,000/minute →</p></div>
+                  <div><p style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1, margin: 0 }}>Start advertising</p><p style={{ fontSize: 11, color: '#475569', margin: '2px 0 0', fontWeight: 600 }}>From ₦1,000/minute →</p></div>
                 </Link>
                 <Link href="/creative" className="float-b" style={{ display: 'flex', alignItems: 'center', gap: 14, background: 'rgba(0,0,0,0.05)', border: '1px solid rgba(0,0,0,0.1)', borderRadius: 16, padding: '14px 16px', textDecoration: 'none', boxShadow: '0 8px 20px rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)' }}>
                   <div style={{ width: 40, height: 40, background: 'rgba(6,182,212,0.15)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><FaPaintbrush size={18} color="#06B6D4" /></div>
-                  <div><p style={{ fontSize: 14, fontWeight: 800, color: '#0f172a', margin: 0 }}>Need a creative team?</p><p style={{ fontSize: 11, color: '#475569', margin: '2px 0 0', fontWeight: 600 }}>We design & film for you →</p></div>
+                  <div><p style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1, margin: 0 }}>Need a creative team?</p><p style={{ fontSize: 11, color: '#475569', margin: '2px 0 0', fontWeight: 600 }}>We design & film for you →</p></div>
                 </Link>
               </div>
             </motion.div>
@@ -399,7 +400,7 @@ export default function LandingPage() {
       {/* STRIP */}
       <section style={{ background: 'rgba(0,0,0,0.02)', borderTop: '1px solid rgba(0,0,0,0.05)', borderBottom: '1px solid rgba(0,0,0,0.05)', padding: '32px 24px', position: 'relative', zIndex: 2, backdropFilter: 'blur(10px)' }}>
         <div style={{ maxWidth: 1000, margin: '0 auto', display: 'flex', gap: 48, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center' }}>
-          {[['WITHOUT US', 'Cold-call billboard companies. Rent mediocre podcast gear. Wait weeks. Opaque pricing. Middlemen.', '#94A3B8', 'rgba(0,0,0,0.05)'], ['WITH STUDIO ARELLA', 'Book screens or studios online in minutes. Pay securely. Ad goes live instantly. Premium gear ready.', '#D4AF37', 'rgba(212,175,55,0.1)']].map(([l, t, c, bg]) => (
+          {[['WITHOUT US', 'Cold-call billboard companies. Rent mediocre podcast gear. Wait weeks. Opaque pricing. Middlemen.', theme.color.text4, 'rgba(0,0,0,0.05)'], ['WITH STUDIO ARELLA', 'Book screens or studios online in minutes. Pay securely. Ad goes live instantly. Premium gear ready.', '#D4AF37', 'rgba(212,175,55,0.1)']].map(([l, t, c, bg]) => (
             <div key={l as string} className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-start max-w-[440px]">
               <span style={{ fontSize: 11, fontWeight: 900, letterSpacing: '0.1em', color: c as string, background: bg as string, padding: '6px 12px', borderRadius: 100, flexShrink: 0, marginTop: 2, textTransform: 'uppercase', whiteSpace: 'nowrap', border: `1px solid ${bg === 'rgba(212,175,55,0.1)' ? 'rgba(212,175,55,0.2)' : 'rgba(0,0,0,0.1)'}` }}>{l as string}</span>
               <p style={{ fontSize: 15, color: '#475569', lineHeight: 1.7, margin: 0, fontWeight: 600 }}>{t as string}</p>
@@ -413,7 +414,7 @@ export default function LandingPage() {
         <div style={{ maxWidth: 1200, margin: '0 auto' }} ref={servicesReveal.ref}>
           <motion.div initial={{ opacity: 0, y: 24 }} animate={servicesReveal.visible ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.5 }} style={{ textAlign: 'center', marginBottom: 64 }}>
             <p style={{ fontSize: 13, fontWeight: 800, color: '#D4AF37', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 12, textShadow: '0 0 20px rgba(212,175,55,0.5)' }}>What we offer</p>
-            <h2 style={{ fontSize: 'clamp(32px,4vw,52px)', fontWeight: 900, letterSpacing: '-1.5px', color: '#0f172a', margin: '0 0 16px', lineHeight: 1.1 }}>Everything your brand needs<br />to get seen in Umuahia</h2>
+            <h2 style={{ fontSize: 'clamp(32px,4vw,52px)', fontWeight: 900, letterSpacing: '-1.5px', color: theme.color.text1, margin: '0 0 16px', lineHeight: 1.1 }}>Everything your brand needs<br />to get seen in Umuahia</h2>
             <p style={{ fontSize: 18, color: '#475569', maxWidth: 600, margin: '0 auto', lineHeight: 1.7, fontWeight: 500 }}>From digital screen bookings to professional creative production — we handle every part of your advertising journey.</p>
           </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -423,7 +424,7 @@ export default function LandingPage() {
                 <div style={{ width: 64, height: 64, borderRadius: 18, background: s.bg, border: `1px solid ${s.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
                   <s.Icon size={28} color={s.color} />
                 </div>
-                <h3 style={{ fontSize: 22, fontWeight: 900, color: '#0f172a', margin: '0 0 12px', letterSpacing: '-0.5px' }}>{s.title}</h3>
+                <h3 style={{ fontSize: 22, fontWeight: 900, color: theme.color.text1, margin: '0 0 12px', letterSpacing: '-0.5px' }}>{s.title}</h3>
                 <p style={{ fontSize: 15, color: '#475569', lineHeight: 1.7, margin: '0 0 24px', fontWeight: 500 }}>{s.desc}</p>
                 <Link href="/auth/register" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 15, fontWeight: 800, color: s.color, textDecoration: 'none' }}>Get started <FaArrowRight size={12} /></Link>
               </motion.div>
@@ -437,17 +438,17 @@ export default function LandingPage() {
         <div style={{ maxWidth: 1200, margin: '0 auto' }} ref={howReveal.ref}>
           <motion.div initial={{ opacity: 0, y: 24 }} animate={howReveal.visible ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.5 }} style={{ textAlign: 'center', marginBottom: 80 }}>
             <p style={{ fontSize: 13, fontWeight: 800, color: '#06B6D4', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 12, textShadow: '0 0 20px rgba(6,182,212,0.5)' }}>The process</p>
-            <h2 style={{ fontSize: 'clamp(32px,4vw,52px)', fontWeight: 900, letterSpacing: '-1.5px', color: '#0f172a', margin: 0, lineHeight: 1.1 }}>From sign-up to screen<br />in four simple steps</h2>
+            <h2 style={{ fontSize: 'clamp(32px,4vw,52px)', fontWeight: 900, letterSpacing: '-1.5px', color: theme.color.text1, margin: 0, lineHeight: 1.1 }}>From sign-up to screen<br />in four simple steps</h2>
           </motion.div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 relative">
             <div style={{ position: 'absolute', top: 32, left: '12.5%', right: '12.5%', height: 2, background: 'rgba(0,0,0,0.1)', zIndex: 0 }} />
             {HOW.map((s, i) => (
               <motion.div key={s.n} initial={{ opacity: 0, y: 24 }} animate={howReveal.visible ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.5, delay: i * 0.12 }}
                 style={{ padding: '0 16px', position: 'relative', zIndex: 1 }}>
-                <div style={{ width: 64, height: 64, borderRadius: 20, background: i === 0 ? '#06B6D4' : '#0f172a', border: i === 0 ? 'none' : '2px solid rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24, boxShadow: i === 0 ? '0 0 20px rgba(6,182,212,0.4)' : 'none' }}>
+                <div style={{ width: 64, height: 64, borderRadius: 20, background: i === 0 ? '#06B6D4' : theme.color.charcoal900, border: i === 0 ? 'none' : '2px solid rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24, boxShadow: i === 0 ? '0 0 20px rgba(6,182,212,0.4)' : 'none' }}>
                   <span style={{ fontSize: 18, fontWeight: 900, color: i === 0 ? '#ffffff' : '#06B6D4' }}>{s.n}</span>
                 </div>
-                <h3 style={{ fontSize: 18, fontWeight: 900, color: '#0f172a', margin: '0 0 12px', letterSpacing: '-0.3px', lineHeight: 1.3 }}>{s.title}</h3>
+                <h3 style={{ fontSize: 18, fontWeight: 900, color: theme.color.text1, margin: '0 0 12px', letterSpacing: '-0.3px', lineHeight: 1.3 }}>{s.title}</h3>
                 <p style={{ fontSize: 14, color: '#475569', lineHeight: 1.7, margin: 0, fontWeight: 500 }}>{s.body}</p>
               </motion.div>
             ))}
@@ -465,38 +466,38 @@ export default function LandingPage() {
         <div style={{ maxWidth: 1200, margin: '0 auto' }} ref={plansReveal.ref}>
           <motion.div initial={{ opacity: 0, y: 24 }} animate={plansReveal.visible ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.5 }} style={{ textAlign: 'center', marginBottom: 72 }}>
             <p style={{ fontSize: 13, fontWeight: 800, color: '#EAB308', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 12, textShadow: '0 0 20px rgba(234,179,8,0.5)' }}>Pricing</p>
-            <h2 style={{ fontSize: 'clamp(32px,4vw,52px)', fontWeight: 900, letterSpacing: '-1.5px', color: '#0f172a', margin: '0 0 16px', lineHeight: 1.1 }}>Simple, affordable, transparent</h2>
+            <h2 style={{ fontSize: 'clamp(32px,4vw,52px)', fontWeight: 900, letterSpacing: '-1.5px', color: theme.color.text1, margin: '0 0 16px', lineHeight: 1.1 }}>Simple, affordable, transparent</h2>
             <p style={{ fontSize: 18, color: '#475569', maxWidth: 540, margin: '0 auto', lineHeight: 1.7, fontWeight: 500 }}>Screen advertising starts from ₦1,000/minute. Podcast studio sessions start from ₦10,000/hour.</p>
           </motion.div>
 
-          <h3 style={{ fontSize: 24, fontWeight: 900, color: '#0f172a', margin: '0 0 32px', textAlign: 'center', letterSpacing: '-0.5px' }}>Digital Screen Packages</h3>
+          <h3 style={{ fontSize: 24, fontWeight: 900, color: theme.color.text1, margin: '0 0 32px', textAlign: 'center', letterSpacing: '-0.5px' }}>Digital Screen Packages</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-20">
             {PLANS.map((p, i) => (
               <motion.div key={p.name} className="plan-card" initial={{ opacity: 0, y: 24 }} animate={plansReveal.visible ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.5, delay: i * 0.08 }}
                 style={{ border: `2px solid ${p.popular ? '#EAB308' : 'rgba(0,0,0,0.08)'}`, borderRadius: 24, padding: '36px 32px', position: 'relative', boxShadow: p.popular ? '0 0 40px rgba(234,179,8,0.2)' : 'none' }}>
                 {p.popular && <div style={{ position: 'absolute', top: -14, left: '50%', transform: 'translateX(-50%)', background: '#EAB308', color: '#ffffff', fontSize: 11, fontWeight: 900, padding: '6px 18px', borderRadius: 100, whiteSpace: 'nowrap', letterSpacing: '0.08em', boxShadow: '0 4px 12px rgba(234,179,8,0.4)' }}>RECOMMENDED</div>}
-                <p style={{ fontSize: 18, fontWeight: 900, color: '#0f172a', margin: '0 0 8px' }}>{p.name}</p>
+                <p style={{ fontSize: 18, fontWeight: 900, color: theme.color.text1, margin: '0 0 8px' }}>{p.name}</p>
                 <p style={{ fontSize: 14, color: '#475569', margin: '0 0 24px', fontWeight: 600 }}>{p.minutes < 60 ? `${p.minutes} minute${p.minutes > 1 ? 's' : ''}` : `${p.minutes / 60} hour${p.minutes > 60 ? 's' : ''}`}</p>
-                <p style={{ fontSize: 42, fontWeight: 900, color: p.popular ? '#EAB308' : '#0f172a', margin: '0 0 8px', letterSpacing: '-1.5px', textShadow: p.popular ? '0 0 20px rgba(234,179,8,0.4)' : 'none' }}>₦{p.price.toLocaleString()}</p>
-                <p style={{ fontSize: 13, color: '#64748B', margin: '0 0 32px', fontWeight: 600 }}>₦1,000/min</p>
-                <Link href="/auth/register" style={{ display: 'block', textAlign: 'center', background: p.popular ? '#EAB308' : 'rgba(0,0,0,0.1)', color: p.popular ? '#ffffff' : '#0f172a', padding: '14px', borderRadius: 14, fontSize: 15, fontWeight: 800, textDecoration: 'none', boxShadow: p.popular ? '0 8px 20px rgba(234,179,8,0.2)' : 'none' }}>
+                <p style={{ fontSize: 42, fontWeight: 900, color: p.popular ? '#EAB308' : theme.color.text1, margin: '0 0 8px', letterSpacing: '-1.5px', textShadow: p.popular ? '0 0 20px rgba(234,179,8,0.4)' : 'none' }}>₦{p.price.toLocaleString()}</p>
+                <p style={{ fontSize: 13, color: theme.color.text3, margin: '0 0 32px', fontWeight: 600 }}>₦1,000/min</p>
+                <Link href="/auth/register" style={{ display: 'block', textAlign: 'center', background: p.popular ? '#EAB308' : 'rgba(0,0,0,0.1)', color: p.popular ? '#ffffff' : theme.color.text1, padding: '14px', borderRadius: 14, fontSize: 15, fontWeight: 800, textDecoration: 'none', boxShadow: p.popular ? '0 8px 20px rgba(234,179,8,0.2)' : 'none' }}>
                   Book {p.name} slot
                 </Link>
               </motion.div>
             ))}
           </div>
 
-          <h3 style={{ fontSize: 24, fontWeight: 900, color: '#0f172a', margin: '0 0 32px', textAlign: 'center', letterSpacing: '-0.5px' }}>Podcast Studio Packages</h3>
+          <h3 style={{ fontSize: 24, fontWeight: 900, color: theme.color.text1, margin: '0 0 32px', textAlign: 'center', letterSpacing: '-0.5px' }}>Podcast Studio Packages</h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 24, maxWidth: 800, margin: '0 auto' }}>
             {PODCAST_PLANS.map((p, i) => (
               <motion.div key={p.name} className="plan-card" initial={{ opacity: 0, y: 24 }} animate={plansReveal.visible ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.5, delay: i * 0.08 }}
                 style={{ border: `2px solid ${p.popular ? '#8B5CF6' : 'rgba(0,0,0,0.08)'}`, borderRadius: 24, padding: '36px 32px', position: 'relative', boxShadow: p.popular ? '0 0 40px rgba(139,92,246,0.15)' : 'none' }}>
                 {p.popular && <div style={{ position: 'absolute', top: -14, left: '50%', transform: 'translateX(-50%)', background: '#8B5CF6', color: '#ffffff', fontSize: 11, fontWeight: 900, padding: '6px 18px', borderRadius: 100, whiteSpace: 'nowrap', letterSpacing: '0.08em', boxShadow: '0 4px 12px rgba(139,92,246,0.4)' }}>RECOMMENDED</div>}
-                <p style={{ fontSize: 18, fontWeight: 900, color: '#0f172a', margin: '0 0 8px' }}>{p.name}</p>
+                <p style={{ fontSize: 18, fontWeight: 900, color: theme.color.text1, margin: '0 0 8px' }}>{p.name}</p>
                 <p style={{ fontSize: 14, color: '#475569', margin: '0 0 24px', fontWeight: 600 }}>{p.desc}</p>
-                <p style={{ fontSize: 42, fontWeight: 900, color: p.popular ? '#A78BFA' : '#0f172a', margin: '0 0 8px', letterSpacing: '-1.5px', textShadow: p.popular ? '0 0 20px rgba(167,139,250,0.4)' : 'none' }}>₦{p.price.toLocaleString()}</p>
-                <p style={{ fontSize: 13, color: '#64748B', margin: '0 0 32px', fontWeight: 600 }}>Per hour</p>
-                <Link href="/auth/register" style={{ display: 'block', textAlign: 'center', background: p.popular ? '#8B5CF6' : 'rgba(0,0,0,0.1)', color: p.popular ? '#ffffff' : '#0f172a', padding: '14px', borderRadius: 14, fontSize: 15, fontWeight: 800, textDecoration: 'none', boxShadow: p.popular ? '0 8px 20px rgba(139,92,246,0.2)' : 'none' }}>
+                <p style={{ fontSize: 42, fontWeight: 900, color: p.popular ? '#A78BFA' : theme.color.text1, margin: '0 0 8px', letterSpacing: '-1.5px', textShadow: p.popular ? '0 0 20px rgba(167,139,250,0.4)' : 'none' }}>₦{p.price.toLocaleString()}</p>
+                <p style={{ fontSize: 13, color: theme.color.text3, margin: '0 0 32px', fontWeight: 600 }}>Per hour</p>
+                <Link href="/auth/register" style={{ display: 'block', textAlign: 'center', background: p.popular ? '#8B5CF6' : 'rgba(0,0,0,0.1)', color: p.popular ? '#ffffff' : theme.color.text1, padding: '14px', borderRadius: 14, fontSize: 15, fontWeight: 800, textDecoration: 'none', boxShadow: p.popular ? '0 8px 20px rgba(139,92,246,0.2)' : 'none' }}>
                   Book Studio
                 </Link>
               </motion.div>
@@ -521,8 +522,8 @@ export default function LandingPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center max-w-[1200px] mx-auto">
           <div>
             <p style={{ fontSize: 13, fontWeight: 800, color: '#D4AF37', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 16, textShadow: '0 0 20px rgba(212,175,55,0.5)' }}>About Studio Arella</p>
-            <h2 style={{ fontSize: 'clamp(30px,3.5vw,46px)', fontWeight: 900, letterSpacing: '-1.5px', color: '#0f172a', margin: '0 0 24px', lineHeight: 1.15 }}>Umuahia's premier media and advertising hub</h2>
-            <p style={{ fontSize: 16, color: '#475569', lineHeight: 1.8, margin: '0 0 20px', fontWeight: 500 }}>Studio Arella is an initiative of <strong style={{ color: '#0f172a' }}>Bems Group</strong> — providing a high-traffic digital screen and a professional podcast studio to help your brand gain greater visibility within and beyond Abia State.</p>
+            <h2 style={{ fontSize: 'clamp(30px,3.5vw,46px)', fontWeight: 900, letterSpacing: '-1.5px', color: theme.color.text1, margin: '0 0 24px', lineHeight: 1.15 }}>Umuahia's premier media and advertising hub</h2>
+            <p style={{ fontSize: 16, color: '#475569', lineHeight: 1.8, margin: '0 0 20px', fontWeight: 500 }}>Studio Arella is an initiative of <strong style={{ color: theme.color.text1 }}>Bems Group</strong> — providing a high-traffic digital screen and a professional podcast studio to help your brand gain greater visibility within and beyond Abia State.</p>
             <p style={{ fontSize: 16, color: '#475569', lineHeight: 1.8, margin: '0 0 36px', fontWeight: 500 }}>Our digital screen is located at <strong style={{ color: '#D4AF37' }}>Bems Junction, Finbars, Bende Road</strong> — reaching thousands daily, while our in-house studio provides the perfect acoustic environment for creators.</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {[{ Icon: FaLocationDot, color: '#D4AF37', bg: 'rgba(212,175,55,0.1)', text: 'Bems Junction, Finbars, Bende Road, Umuahia, Abia State' }, { Icon: FaPhone, color: '#22c55e', bg: 'rgba(34,197,94,0.1)', text: '08164523926 — Diekolayomi Samuel Babatunde (Manager)' }, { Icon: FaEnvelope, color: '#06B6D4', bg: 'rgba(6,182,212,0.1)', text: 'Reach us through the support page for bookings enquiries' }].map(({ Icon, color, bg, text }) => (
@@ -540,7 +541,7 @@ export default function LandingPage() {
               <div style={{ position: 'absolute', bottom: 24, left: 24, right: 24 }}>
                 <div style={{ background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(12px)', border: '1px solid rgba(0,0,0,0.1)', borderRadius: 20, padding: '20px 24px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}><div style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 8px #22c55e' }} /><span style={{ fontSize: 12, fontWeight: 900, color: '#22c55e', letterSpacing: '0.06em' }}>SCREEN ONLINE</span></div>
-                  <p style={{ fontSize: 16, fontWeight: 900, color: '#0f172a', margin: '0 0 4px' }}>Studio Arella — Bems Junction</p>
+                  <p style={{ fontSize: 16, fontWeight: 900, color: theme.color.text1, margin: '0 0 4px' }}>Studio Arella — Bems Junction</p>
                   <p style={{ fontSize: 13, color: '#475569', margin: 0, fontWeight: 600 }}>10ft × 6ft Digital LED Display · Umuahia, Abia State</p>
                 </div>
               </div>
@@ -554,7 +555,7 @@ export default function LandingPage() {
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 64 }}>
             <p style={{ fontSize: 13, fontWeight: 800, color: '#EAB308', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 12, textShadow: '0 0 20px rgba(234,179,8,0.5)' }}>What people say</p>
-            <h2 style={{ fontSize: 'clamp(32px,3.5vw,52px)', fontWeight: 900, letterSpacing: '-1.5px', color: '#0f172a', margin: 0 }}>Trusted by Umuahia businesses</h2>
+            <h2 style={{ fontSize: 'clamp(32px,3.5vw,52px)', fontWeight: 900, letterSpacing: '-1.5px', color: theme.color.text1, margin: 0 }}>Trusted by Umuahia businesses</h2>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%, 320px),1fr))', gap: 24 }}>
             {[{ name: 'Chukwuemeka Agu', role: 'Owner, Agu Supermarket', text: "I listed my shop-front screen and had my first booking within the week. No phone calls, no negotiation — the ad was running. That's exactly what we needed.", color: '#D4AF37', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&q=80&auto=format&fit=crop&crop=face' }, { name: 'Ngozi Obi', role: 'Marketing Officer, Abia SME', text: 'We booked two slots near Umuahia market for a product launch, uploaded our graphic, and it went live the same day. The real-time data was a bonus we did not expect.', color: '#22c55e', avatar: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=80&h=80&q=80&auto=format&fit=crop&crop=face' }, { name: 'Ifeanyi Nwosu', role: 'Brand Manager, Nwosu & Sons', text: 'No minimum spend, no agency fees. We spent ₦15,000 on a one-week booking and got proper impression reports. Will definitely scale this up.', color: '#06B6D4', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&q=80&auto=format&fit=crop&crop=face' }].map(t => (
@@ -563,7 +564,7 @@ export default function LandingPage() {
                 <p style={{ fontSize: 16, color: '#475569', lineHeight: 1.75, margin: '0 0 28px', fontStyle: 'italic', fontWeight: 500 }}>&ldquo;{t.text}&rdquo;</p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                   <img src={t.avatar} alt={t.name} style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover', border: `3px solid ${t.color}30`, flexShrink: 0 }} />
-                  <div><p style={{ fontSize: 15, fontWeight: 900, color: '#0f172a', margin: 0 }}>{t.name}</p><p style={{ fontSize: 12, color: '#64748B', margin: '2px 0 0', fontWeight: 600 }}>{t.role}</p></div>
+                  <div><p style={{ fontSize: 15, fontWeight: 900, color: theme.color.text1, margin: 0 }}>{t.name}</p><p style={{ fontSize: 12, color: theme.color.text3, margin: '2px 0 0', fontWeight: 600 }}>{t.role}</p></div>
                 </div>
               </motion.div>
             ))}
@@ -575,7 +576,7 @@ export default function LandingPage() {
       <section id="faq" style={{ padding: 'var(--landing-py, 120px) 24px', background: 'rgba(0,0,0,0.02)', borderTop: '1px solid rgba(0,0,0,0.05)', position: 'relative', zIndex: 2, backdropFilter: 'blur(10px)' }}>
         <div style={{ maxWidth: 800, margin: '0 auto' }} ref={faqReveal.ref}>
           <motion.div initial={{ opacity: 0, y: 24 }} animate={faqReveal.visible ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.5 }} style={{ textAlign: 'center', marginBottom: 56 }}>
-            <h2 style={{ fontSize: 'clamp(32px,3.5vw,46px)', fontWeight: 900, letterSpacing: '-1.5px', color: '#0f172a', margin: '0 0 16px' }}>Frequently Asked Questions</h2>
+            <h2 style={{ fontSize: 'clamp(32px,3.5vw,46px)', fontWeight: 900, letterSpacing: '-1.5px', color: theme.color.text1, margin: '0 0 16px' }}>Frequently Asked Questions</h2>
             <p style={{ fontSize: 18, color: '#475569', fontWeight: 500 }}>Got questions? We've got answers.</p>
           </motion.div>
           <div style={{ borderTop: '1px solid rgba(0,0,0,0.08)' }}>
@@ -598,9 +599,9 @@ export default function LandingPage() {
           </div>
           <div>
             <p style={{ fontSize: 13, fontWeight: 800, color: '#A78BFA', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 16, textShadow: '0 0 20px rgba(167,139,250,0.5)' }}>Premium Facility</p>
-            <h2 style={{ fontSize: 'clamp(30px,3.5vw,46px)', fontWeight: 900, letterSpacing: '-1.5px', color: '#0f172a', margin: '0 0 24px', lineHeight: 1.15 }}>Acoustically Treated Podcast Studio</h2>
+            <h2 style={{ fontSize: 'clamp(30px,3.5vw,46px)', fontWeight: 900, letterSpacing: '-1.5px', color: theme.color.text1, margin: '0 0 24px', lineHeight: 1.15 }}>Acoustically Treated Podcast Studio</h2>
             <p style={{ fontSize: 16, color: '#475569', lineHeight: 1.8, margin: '0 0 20px', fontWeight: 500 }}>Whether you're starting a new show, recording an audiobook, or hosting a live stream, our fully-equipped podcast studio gives you the professional edge.</p>
-            <p style={{ fontSize: 16, color: '#475569', lineHeight: 1.8, margin: '0 0 36px', fontWeight: 500 }}>Book <strong style={{ color: '#0f172a' }}>Audio Only</strong> or <strong style={{ color: '#0f172a' }}>Audio + Video</strong> sessions. We provide the microphones, lighting, and engineering support.</p>
+            <p style={{ fontSize: 16, color: '#475569', lineHeight: 1.8, margin: '0 0 36px', fontWeight: 500 }}>Book <strong style={{ color: theme.color.text1 }}>Audio Only</strong> or <strong style={{ color: theme.color.text1 }}>Audio + Video</strong> sessions. We provide the microphones, lighting, and engineering support.</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 40 }}>
               {[{ Icon: FaMicrophone, color: '#A78BFA', bg: 'rgba(139,92,246,0.1)', text: 'High-end dynamic microphones and audio interfaces' }, { Icon: FaRadio, color: '#f43f5e', bg: 'rgba(244,63,94,0.1)', text: 'Live streaming setup to YouTube, Facebook, and Instagram' }, { Icon: FaHeadphones, color: '#38bdf8', bg: 'rgba(56,189,248,0.1)', text: 'Dedicated sound engineer available on request' }].map(({ Icon, color, bg, text }) => (
                 <div key={text} style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
@@ -609,7 +610,7 @@ export default function LandingPage() {
                 </div>
               ))}
             </div>
-            <Link href="/auth/register" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#8B5CF6', color: '#0f172a', padding: '16px 36px', borderRadius: 14, fontSize: 16, fontWeight: 800, textDecoration: 'none', boxShadow: '0 8px 24px rgba(139,92,246,0.3)' }}>
+            <Link href="/auth/register" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#8B5CF6', color: '#0F172A', padding: '16px 36px', borderRadius: 14, fontSize: 16, fontWeight: 800, textDecoration: 'none', boxShadow: '0 8px 24px rgba(139,92,246,0.3)' }}>
               Start Recording <FaArrowRight size={14} />
             </Link>
           </div>
@@ -617,27 +618,27 @@ export default function LandingPage() {
       </section>
 
       {/* DUAL CTA */}
-      <section style={{ padding: 'var(--landing-py-half, 60px) 24px var(--landing-py, 120px)', background: '#ffffff', position: 'relative', zIndex: 2 }}>
+      <section style={{ padding: 'var(--landing-py-half, 60px) 24px var(--landing-py, 120px)', background: theme.color.surface, position: 'relative', zIndex: 2 }}>
         <div className="dual-cta-grid" style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: 24 }}>
-          <div style={{ background: 'linear-gradient(135deg, rgba(212,175,55,0.2) 0%, rgba(6,182,212,0.2) 100%)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 32, padding: '48px 40px', position: 'relative', overflow: 'hidden', color: '#0f172a', boxShadow: '0 20px 60px rgba(212,175,55,0.15)', backdropFilter: 'blur(20px)' }}>
+          <div style={{ background: 'linear-gradient(135deg, rgba(212,175,55,0.2) 0%, rgba(6,182,212,0.2) 100%)', border: '1px solid rgba(212,175,55,0.3)', borderRadius: 32, padding: '48px 40px', position: 'relative', overflow: 'hidden', color: theme.color.text1, boxShadow: '0 20px 60px rgba(212,175,55,0.15)', backdropFilter: 'blur(20px)' }}>
             <div style={{ position: 'absolute', top: -50, right: -50, width: 200, height: 200, background: 'rgba(0,0,0,0.1)', borderRadius: '50%', filter: 'blur(40px)' }} />
-            <h3 style={{ fontSize: 32, fontWeight: 900, margin: '0 0 16px', letterSpacing: '-1px', color: '#0f172a' }}>Ready to launch your ad?</h3>
-            <p style={{ fontSize: 16, color: '#334155', margin: '0 0 32px', maxWidth: 360, lineHeight: 1.6, fontWeight: 500 }}>Create your account, upload your creative, and go live on the Studio Arella screen today.</p>
+            <h3 style={{ fontSize: 32, fontWeight: 900, margin: '0 0 16px', letterSpacing: '-1px', color: theme.color.text1 }}>Ready to launch your ad?</h3>
+            <p style={{ fontSize: 16, color: theme.color.text2, margin: '0 0 32px', maxWidth: 360, lineHeight: 1.6, fontWeight: 500 }}>Create your account, upload your creative, and go live on the Studio Arella screen today.</p>
             <Link href="/auth/register" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#D4AF37', color: '#ffffff', padding: '14px 28px', borderRadius: 14, fontSize: 15, fontWeight: 900, textDecoration: 'none', boxShadow: '0 8px 20px rgba(212,175,55,0.3)' }}>
               Create Advertiser Account <FaArrowRight size={13} />
             </Link>
           </div>
           <div style={{ background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.1)', borderRadius: 32, padding: '48px 40px', backdropFilter: 'blur(20px)' }}>
-            <h3 style={{ fontSize: 32, fontWeight: 900, color: '#0f172a', margin: '0 0 16px', letterSpacing: '-1px' }}>Need an ad design?</h3>
+            <h3 style={{ fontSize: 32, fontWeight: 900, color: theme.color.text1, margin: '0 0 16px', letterSpacing: '-1px' }}>Need an ad design?</h3>
             <p style={{ fontSize: 16, color: '#475569', margin: '0 0 32px', maxWidth: 360, lineHeight: 1.6, fontWeight: 500 }}>Our professional graphic design and video production team is ready to bring your brand to life.</p>
-            <Link href="/creative" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#F8FAFC', color: '#0f172a', padding: '14px 28px', borderRadius: 14, fontSize: 15, fontWeight: 900, textDecoration: 'none' }}>
+            <Link href="/creative" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: theme.color.bg, color: theme.color.text1, padding: '14px 28px', borderRadius: 14, fontSize: 15, fontWeight: 900, textDecoration: 'none' }}>
               Request Creative Services <FaArrowRight size={13} />
             </Link>
           </div>
           <div style={{ background: 'linear-gradient(135deg, rgba(139,92,246,0.1) 0%, rgba(139,92,246,0.02) 100%)', border: '1px solid rgba(139,92,246,0.2)', borderRadius: 32, padding: '48px 40px', backdropFilter: 'blur(20px)' }}>
-            <h3 style={{ fontSize: 32, fontWeight: 900, color: '#0f172a', margin: '0 0 16px', letterSpacing: '-1px' }}>Host your podcast?</h3>
+            <h3 style={{ fontSize: 32, fontWeight: 900, color: theme.color.text1, margin: '0 0 16px', letterSpacing: '-1px' }}>Host your podcast?</h3>
             <p style={{ fontSize: 16, color: '#475569', margin: '0 0 32px', maxWidth: 360, lineHeight: 1.6, fontWeight: 500 }}>Step into our soundproof studio. High-end mics, multi-cam video, and a dedicated engineer ready for you.</p>
-            <Link href="/auth/register" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#8B5CF6', color: '#0f172a', padding: '14px 28px', borderRadius: 14, fontSize: 15, fontWeight: 900, textDecoration: 'none', boxShadow: '0 8px 20px rgba(139,92,246,0.3)' }}>
+            <Link href="/auth/register" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#8B5CF6', color: '#0F172A', padding: '14px 28px', borderRadius: 14, fontSize: 15, fontWeight: 900, textDecoration: 'none', boxShadow: '0 8px 20px rgba(139,92,246,0.3)' }}>
               Book Studio Time <FaArrowRight size={13} />
             </Link>
           </div>
@@ -645,42 +646,42 @@ export default function LandingPage() {
       </section>
 
       {/* FOOTER */}
-      <footer style={{ background: '#f8fafc', padding: '80px 24px 40px', color: '#0f172a', position: 'relative', zIndex: 2, borderTop: '1px solid rgba(0,0,0,0.05)' }}>
+      <footer style={{ background: theme.color.bg, padding: '80px 24px 40px', color: theme.color.text1, position: 'relative', zIndex: 2, borderTop: '1px solid rgba(0,0,0,0.05)' }}>
         <div className="footer-grid" style={{ maxWidth: 1200, margin: '0 auto', display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1.5fr', gap: 48, marginBottom: 64 }}>
           <div>
             <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, textDecoration: 'none', marginBottom: 20 }}>
               <img src="/logo.png" alt="Studio Arella Logo" style={{ height: 80, objectFit: 'contain' }} />
             </Link>
-            <p style={{ fontSize: 14, color: '#64748B', lineHeight: 1.7, maxWidth: 300, margin: '0 0 24px', fontWeight: 500 }}>The easiest way to book premium digital screen advertising and professional podcast studio sessions in Umuahia. A Bems Group Initiative.</p>
+            <p style={{ fontSize: 14, color: theme.color.text3, lineHeight: 1.7, maxWidth: 300, margin: '0 0 24px', fontWeight: 500 }}>The easiest way to book premium digital screen advertising and professional podcast studio sessions in Umuahia. A Bems Group Initiative.</p>
             <div style={{ display: 'flex', gap: 12 }}>
               {[FaXTwitter, FaLinkedinIn, FaInstagram].map((Icon, i) => (
-                <a key={i} href="#" style={{ width: 36, height: 36, borderRadius: '50%', background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#475569', textDecoration: 'none', transition: 'color 0.2s, background 0.2s' }} onMouseEnter={e => { e.currentTarget.style.color = '#F8FAFC'; e.currentTarget.style.background = '#cbd5e1'; }} onMouseLeave={e => { e.currentTarget.style.color = '#94A3B8'; e.currentTarget.style.background = '#e2e8f0'; }}><Icon size={14} /></a>
+                <a key={i} href="#" style={{ width: 36, height: 36, borderRadius: '50%', background: theme.color.border, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#475569', textDecoration: 'none', transition: 'color 0.2s, background 0.2s' }} onMouseEnter={e => { e.currentTarget.style.color = '#F8FAFC'; e.currentTarget.style.background = theme.color.border2; }} onMouseLeave={e => { e.currentTarget.style.color = theme.color.text4; e.currentTarget.style.background = theme.color.border; }}><Icon size={14} /></a>
               ))}
             </div>
           </div>
           {[{ title: 'Platform', links: [['#how', 'How it works'], ['#pricing', 'Pricing Plans'], ['/auth/register', 'Create Account'], ['/auth/login', 'Sign in']] }, { title: 'Company', links: [['#', 'About Bems Group'], ['#services', 'Our Services'], ['/creative', 'Request Creative'], ['#faq', 'FAQ & Support']] }].map(({ title, links }) => (
             <div key={title}>
-              <p style={{ fontSize: 13, fontWeight: 800, color: '#0f172a', margin: '0 0 20px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>{title}</p>
+              <p style={{ fontSize: 13, fontWeight: 800, color: theme.color.text1, margin: '0 0 20px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>{title}</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                {links.map(([h, l]) => <a key={h} href={h} style={{ fontSize: 14, color: '#64748B', textDecoration: 'none', fontWeight: 500, transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#D4AF37'} onMouseLeave={e => e.currentTarget.style.color = '#64748B'}>{l}</a>)}
+                {links.map(([h, l]) => <a key={h} href={h} style={{ fontSize: 14, color: theme.color.text3, textDecoration: 'none', fontWeight: 500, transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#D4AF37'} onMouseLeave={e => e.currentTarget.style.color = theme.color.text3}>{l}</a>)}
               </div>
             </div>
           ))}
           <div>
-            <p style={{ fontSize: 13, fontWeight: 800, color: '#0f172a', margin: '0 0 20px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Contact</p>
-            <p style={{ fontSize: 14, color: '#64748B', margin: '0 0 8px', fontWeight: 500 }}>hello@studioarella.com</p>
-            <p style={{ fontSize: 14, color: '#64748B', margin: '0 0 24px', fontWeight: 500 }}>08164523926</p>
+            <p style={{ fontSize: 13, fontWeight: 800, color: theme.color.text1, margin: '0 0 20px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Contact</p>
+            <p style={{ fontSize: 14, color: theme.color.text3, margin: '0 0 8px', fontWeight: 500 }}>hello@studioarella.com</p>
+            <p style={{ fontSize: 14, color: theme.color.text3, margin: '0 0 24px', fontWeight: 500 }}>08164523926</p>
             <div style={{ padding: '16px', background: 'rgba(0,0,0,0.03)', borderRadius: 12, border: '1px solid rgba(0,0,0,0.05)' }}>
-              <p style={{ fontSize: 12, fontWeight: 800, color: '#0f172a', margin: '0 0 8px', letterSpacing: '0.05em' }}>OFFICE</p>
-              <p style={{ fontSize: 13, color: '#64748B', margin: 0, lineHeight: 1.5, fontWeight: 500 }}>Bems Junction, Finbars, Bende Road, Umuahia, Abia State</p>
+              <p style={{ fontSize: 12, fontWeight: 800, color: theme.color.text1, margin: '0 0 8px', letterSpacing: '0.05em' }}>OFFICE</p>
+              <p style={{ fontSize: 13, color: theme.color.text3, margin: 0, lineHeight: 1.5, fontWeight: 500 }}>Bems Junction, Finbars, Bende Road, Umuahia, Abia State</p>
             </div>
           </div>
         </div>
         <div style={{ maxWidth: 1200, margin: '0 auto', borderTop: '1px solid rgba(0,0,0,0.05)', paddingTop: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
-          <p style={{ fontSize: 13, color: '#64748B', margin: 0, fontWeight: 500 }}>© {new Date().getFullYear()} Studio Arella. All rights reserved.</p>
+          <p style={{ fontSize: 13, color: theme.color.text3, margin: 0, fontWeight: 500 }}>© {new Date().getFullYear()} Studio Arella. All rights reserved.</p>
           <div style={{ display: 'flex', gap: 24 }}>
             {['Privacy Policy', 'Terms of Service'].map(l => (
-              <a key={l} href="#" style={{ fontSize: 13, color: '#64748B', textDecoration: 'none', fontWeight: 500 }}>{l}</a>
+              <a key={l} href="#" style={{ fontSize: 13, color: theme.color.text3, textDecoration: 'none', fontWeight: 500 }}>{l}</a>
             ))}
           </div>
         </div>

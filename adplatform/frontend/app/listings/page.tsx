@@ -106,8 +106,8 @@ export default function ListingsPage() {
                       </div>
                       <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
                         onClick={() => handleDelete(s.id)}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.color.border, display: 'flex', padding: 4 }}
-                        onMouseOver={e => (e.currentTarget.style.color = theme.color.error)} onMouseOut={e => (e.currentTarget.style.color = theme.color.border)}>
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#E2E8F0', display: 'flex', padding: 4 }}
+                        onMouseOver={e => (e.currentTarget.style.color = theme.color.error)} onMouseOut={e => (e.currentTarget.style.color = '#E2E8F0')}>
                         <FaTrash size={13} />
                       </motion.button>
                     </div>

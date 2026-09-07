@@ -28,9 +28,11 @@ import { initializePayment, initializeCreditPayment, verifyPayment, monnifyWebho
 import { getNotifications, markRead, markAllRead, deleteNotification, getUnreadCount } from '../controllers/notificationController';
 import { submitCreativeRequest, getMyCreativeRequests, getAllCreativeRequests, updateCreativeRequestStatus } from '../controllers/creativeController';
 import { getAvailability, reserveSlot, reserveSeries, paySeriesFromWallet, getMyBookings, extendPodcastBooking, cancelPodcastBooking } from '../controllers/podcastController';
-import { createShow, getShow, createEpisode } from '../controllers/podcastShowController';
+import { createShow, getShow, getAllShows, createEpisode } from '../controllers/podcastShowController';
 import { sendChatMessage } from '../controllers/chatController';
 import { createReview } from '../controllers/reviewController';
+import { getFavorites, addFavorite, removeFavorite } from '../controllers/favoriteController';
+import { globalSearch } from '../controllers/searchController';
 
 import pool from '../db/pool';
 
@@ -50,8 +52,17 @@ router.post('/reviews', authenticate, createReview);
 
 // ── Podcast content (shows a creator publishes + their episodes) ──────────────
 router.post('/shows', authenticate, upload.fields([{ name: 'cover', maxCount: 1 }]), createShow);
+router.get('/shows', getAllShows);
 router.get('/shows/:id', getShow);
 router.post('/shows/:id/episodes', authenticate, upload.fields([{ name: 'cover', maxCount: 1 }, { name: 'audio', maxCount: 1 }]), createEpisode);
+
+// ── Favorites (starred pages) ──────────────────────────────────────────────────
+router.get('/favorites', authenticate, getFavorites);
+router.post('/favorites', authenticate, addFavorite);
+router.delete('/favorites', authenticate, removeFavorite);
+
+// ── Global search ────────────────────────────────────────────────────────────
+router.get('/search', authenticate, globalSearch);
 
 // ── Arella AI chat ──────────────────────────────────────────────────────────
 router.post('/chat', authenticate, chatLimiter, sendChatMessage);

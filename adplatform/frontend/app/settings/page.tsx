@@ -180,10 +180,10 @@ export default function SettingsPage() {
           {/* ─── PAGE HEADER ─── */}
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 14, marginBottom: 28 }}>
             <div>
-              <h1 style={{ fontFamily: theme.font.display, fontSize: 24, fontWeight: 700, color: '#0F172A', margin: '0 0 4px', letterSpacing: '-0.3px' }}>
+              <h1 style={{ fontFamily: theme.font.display, fontSize: 24, fontWeight: 700, color: theme.color.text1, margin: '0 0 4px', letterSpacing: '-0.3px' }}>
                 Settings & User Profile
               </h1>
-              <p style={{ fontSize: 13, color: '#64748B', margin: 0, fontWeight: 500 }}>
+              <p style={{ fontSize: 13, color: theme.color.text3, margin: 0, fontWeight: 500 }}>
                 Manage your profile details, security preferences, notification alerts, and billing accounts.
               </p>
             </div>
@@ -219,10 +219,10 @@ export default function SettingsPage() {
             {/* ─── LEFT SIDEBAR NAVIGATION ─── */}
             <div style={{ 
               flex: '0 0 240px', 
-              background: '#FFFFFF', 
+              background: theme.color.surface, 
               borderRadius: 20, 
               padding: '12px', 
-              border: '1px solid #E2E8F0', 
+              border: `1px solid ${theme.color.border}`, 
               boxShadow: '0 4px 20px rgba(0,0,0,0.02)', 
               display: 'flex', 
               flexDirection: 'column', 
@@ -252,7 +252,7 @@ export default function SettingsPage() {
                       textAlign: 'left' 
                     }}
                   >
-                    <Icon size={16} color={isActive ? '#C69A2C' : '#94A3B8'} />
+                    <Icon size={16} color={isActive ? '#C69A2C' : theme.color.text4} />
                     <span>{tab.label}</span>
                   </button>
                 );
@@ -265,14 +265,14 @@ export default function SettingsPage() {
               {/* ─── TAB 1: USER PROFILE ─── */}
               {activeTab === 'profile' && (
                 <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
-                  <div style={{ background: '#FFFFFF', borderRadius: 24, border: '1px solid #E2E8F0', padding: '32px', boxShadow: '0 4px 24px rgba(0,0,0,0.02)' }}>
+                  <div style={{ background: theme.color.surface, borderRadius: 24, border: `1px solid ${theme.color.border}`, padding: '32px', boxShadow: '0 4px 24px rgba(0,0,0,0.02)' }}>
                     
-                    <h2 style={{ fontSize: 18, fontWeight: 800, color: '#0F172A', margin: '0 0 20px', letterSpacing: '-0.3px' }}>
+                    <h2 style={{ fontSize: 18, fontWeight: 800, color: theme.color.text1, margin: '0 0 20px', letterSpacing: '-0.3px' }}>
                       Profile Information
                     </h2>
 
                     {/* Avatar Banner */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 28, paddingBottom: 24, borderBottom: '1px solid #F1F5F9' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 28, paddingBottom: 24, borderBottom: `1px solid ${theme.color.surface2}` }}>
                       <input
                         ref={avatarInputRef}
                         type="file"
@@ -327,7 +327,7 @@ export default function SettingsPage() {
 
                       <div style={{ flex: 1 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-                          <h3 style={{ fontSize: 18, fontWeight: 800, color: '#0F172A', margin: 0 }}>
+                          <h3 style={{ fontSize: 18, fontWeight: 800, color: theme.color.text1, margin: 0 }}>
                             {form.name || user?.name || 'Studio Arella Creator'}
                           </h3>
                           <span style={{ 
@@ -344,8 +344,8 @@ export default function SettingsPage() {
                             {user?.role || 'Creator'}
                           </span>
                         </div>
-                        <p style={{ fontSize: 13, color: '#64748B', margin: '0 0 6px' }}>{user?.email || 'creator@studioarella.com'}</p>
-                        <p style={{ fontSize: 11, color: '#94A3B8', margin: 0, fontWeight: 500 }}>JPG, PNG or GIF up to 5MB. Recommended square 400x400.</p>
+                        <p style={{ fontSize: 13, color: theme.color.text3, margin: '0 0 6px' }}>{user?.email || 'creator@studioarella.com'}</p>
+                        <p style={{ fontSize: 11, color: theme.color.text4, margin: 0, fontWeight: 500 }}>JPG, PNG or GIF up to 5MB. Recommended square 400x400.</p>
                       </div>
                     </div>
 
@@ -372,7 +372,7 @@ export default function SettingsPage() {
                           value={user?.email || 'creator@studioarella.com'} 
                           disabled 
                         />
-                        <span style={{ fontSize: 11, color: '#94A3B8', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <span style={{ fontSize: 11, color: theme.color.text4, marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
                           <Lock size={10} /> Email address cannot be modified directly
                         </span>
                       </div>
@@ -401,12 +401,12 @@ export default function SettingsPage() {
                           style={{ 
                             width: '100%', 
                             padding: '12px 14px', 
-                            background: '#FFFFFF', 
-                            border: '1.5px solid #E2E8F0', 
+                            background: theme.color.surface, 
+                            border: `1.5px solid ${theme.color.border}`, 
                             borderRadius: 12, 
                             fontSize: 13, 
                             fontFamily: F, 
-                            color: '#0F172A', 
+                            color: theme.color.text1, 
                             outline: 'none', 
                             cursor: 'pointer' 
                           }}
@@ -431,12 +431,12 @@ export default function SettingsPage() {
                         style={{
                           width: '100%',
                           padding: '12px 14px',
-                          background: '#FFFFFF',
-                          border: '1.5px solid #E2E8F0',
+                          background: theme.color.surface,
+                          border: `1.5px solid ${theme.color.border}`,
                           borderRadius: 12,
                           fontSize: 13,
                           fontFamily: F,
-                          color: '#0F172A',
+                          color: theme.color.text1,
                           outline: 'none',
                           resize: 'vertical'
                         }}
@@ -464,14 +464,14 @@ export default function SettingsPage() {
                 <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                   
                   {/* Password Card */}
-                  <div style={{ background: '#FFFFFF', borderRadius: 24, border: '1px solid #E2E8F0', padding: '32px', boxShadow: '0 4px 24px rgba(0,0,0,0.02)' }}>
+                  <div style={{ background: theme.color.surface, borderRadius: 24, border: `1px solid ${theme.color.border}`, padding: '32px', boxShadow: '0 4px 24px rgba(0,0,0,0.02)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
                       <Lock size={18} color="#C69A2C" />
-                      <h2 style={{ fontSize: 18, fontWeight: 800, color: '#0F172A', margin: 0 }}>
+                      <h2 style={{ fontSize: 18, fontWeight: 800, color: theme.color.text1, margin: 0 }}>
                         Change Password
                       </h2>
                     </div>
-                    <p style={{ fontSize: 13, color: '#64748B', margin: '0 0 24px' }}>
+                    <p style={{ fontSize: 13, color: theme.color.text3, margin: '0 0 24px' }}>
                       Ensure your account is protected with a secure password containing letters, numbers, and symbols.
                     </p>
 
@@ -504,7 +504,7 @@ export default function SettingsPage() {
                         loading={pwdLoading} 
                         loadingText="Updating Password..." 
                         onClick={handlePasswordSubmit} 
-                        style={{ background: '#0F172A', color: '#FFFFFF', padding: '12px 24px', borderRadius: 10, fontWeight: 800, fontSize: 13 }}
+                        style={{ background: theme.color.charcoal900, color: '#FFFFFF', padding: '12px 24px', borderRadius: 10, fontWeight: 800, fontSize: 13 }}
                       >
                         <Key size={14} /> Update Password
                       </Button>
@@ -512,16 +512,16 @@ export default function SettingsPage() {
                   </div>
 
                   {/* Two-Factor Authentication */}
-                  <div style={{ background: '#FFFFFF', borderRadius: 24, border: '1px solid #E2E8F0', padding: '32px', boxShadow: '0 4px 24px rgba(0,0,0,0.02)' }}>
+                  <div style={{ background: theme.color.surface, borderRadius: 24, border: `1px solid ${theme.color.border}`, padding: '32px', boxShadow: '0 4px 24px rgba(0,0,0,0.02)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 14 }}>
                       <div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
                           <Smartphone size={18} color="#C69A2C" />
-                          <h3 style={{ fontSize: 16, fontWeight: 800, color: '#0F172A', margin: 0 }}>
+                          <h3 style={{ fontSize: 16, fontWeight: 800, color: theme.color.text1, margin: 0 }}>
                             Two-Factor Authentication (2FA)
                           </h3>
                         </div>
-                        <p style={{ fontSize: 13, color: '#64748B', margin: 0 }}>
+                        <p style={{ fontSize: 13, color: theme.color.text3, margin: 0 }}>
                           Add an extra layer of security requiring an authenticator code when signing in.
                         </p>
                       </div>
@@ -535,7 +535,7 @@ export default function SettingsPage() {
                           width: 48,
                           height: 26,
                           borderRadius: 20,
-                          background: twoFactorEnabled ? '#10B981' : '#CBD5E1',
+                          background: twoFactorEnabled ? '#10B981' : theme.color.border2,
                           position: 'relative',
                           border: 'none',
                           cursor: 'pointer',
@@ -547,7 +547,7 @@ export default function SettingsPage() {
                           width: 20,
                           height: 20,
                           borderRadius: '50%',
-                          background: '#FFFFFF',
+                          background: theme.color.surface,
                           position: 'absolute',
                           top: 3,
                           left: twoFactorEnabled ? 25 : 3,
@@ -559,20 +559,20 @@ export default function SettingsPage() {
                   </div>
 
                   {/* Active Sessions */}
-                  <div style={{ background: '#FFFFFF', borderRadius: 24, border: '1px solid #E2E8F0', padding: '32px', boxShadow: '0 4px 24px rgba(0,0,0,0.02)' }}>
-                    <h3 style={{ fontSize: 16, fontWeight: 800, color: '#0F172A', margin: '0 0 16px' }}>
+                  <div style={{ background: theme.color.surface, borderRadius: 24, border: `1px solid ${theme.color.border}`, padding: '32px', boxShadow: '0 4px 24px rgba(0,0,0,0.02)' }}>
+                    <h3 style={{ fontSize: 16, fontWeight: 800, color: theme.color.text1, margin: '0 0 16px' }}>
                       Active Logged-in Devices
                     </h3>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', background: '#F8FAFC', borderRadius: 14, border: '1px solid #E2E8F0' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', background: theme.color.bg, borderRadius: 14, border: `1px solid ${theme.color.border}` }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                          <Laptop size={20} color="#0F172A" />
+                          <Laptop size={20} color={theme.color.text1} />
                           <div>
-                            <p style={{ fontSize: 13, fontWeight: 800, color: '#0F172A', margin: '0 0 2px' }}>
+                            <p style={{ fontSize: 13, fontWeight: 800, color: theme.color.text1, margin: '0 0 2px' }}>
                               Chrome on Windows 11 · Current Session
                             </p>
-                            <p style={{ fontSize: 11, color: '#64748B', margin: 0 }}>
+                            <p style={{ fontSize: 11, color: theme.color.text3, margin: 0 }}>
                               Lagos, Nigeria · IP: 102.89.44.12
                             </p>
                           </div>
@@ -582,14 +582,14 @@ export default function SettingsPage() {
                         </span>
                       </div>
 
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', background: '#FFFFFF', borderRadius: 14, border: '1px solid #E2E8F0' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', background: theme.color.surface, borderRadius: 14, border: `1px solid ${theme.color.border}` }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                          <Smartphone size={20} color="#64748B" />
+                          <Smartphone size={20} color={theme.color.text3} />
                           <div>
-                            <p style={{ fontSize: 13, fontWeight: 800, color: '#0F172A', margin: '0 0 2px' }}>
+                            <p style={{ fontSize: 13, fontWeight: 800, color: theme.color.text1, margin: '0 0 2px' }}>
                               Safari on iPhone 15 Pro
                             </p>
-                            <p style={{ fontSize: 11, color: '#64748B', margin: 0 }}>
+                            <p style={{ fontSize: 11, color: theme.color.text3, margin: 0 }}>
                               Lagos, Nigeria · Last seen 2 hours ago
                             </p>
                           </div>
@@ -639,11 +639,11 @@ export default function SettingsPage() {
               {/* ─── TAB 3: NOTIFICATIONS ─── */}
               {activeTab === 'notifications' && (
                 <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
-                  <div style={{ background: '#FFFFFF', borderRadius: 24, border: '1px solid #E2E8F0', padding: '32px', boxShadow: '0 4px 24px rgba(0,0,0,0.02)' }}>
-                    <h2 style={{ fontSize: 18, fontWeight: 800, color: '#0F172A', margin: '0 0 6px', letterSpacing: '-0.3px' }}>
+                  <div style={{ background: theme.color.surface, borderRadius: 24, border: `1px solid ${theme.color.border}`, padding: '32px', boxShadow: '0 4px 24px rgba(0,0,0,0.02)' }}>
+                    <h2 style={{ fontSize: 18, fontWeight: 800, color: theme.color.text1, margin: '0 0 6px', letterSpacing: '-0.3px' }}>
                       Notification Preferences
                     </h2>
-                    <p style={{ fontSize: 13, color: '#64748B', margin: '0 0 28px' }}>
+                    <p style={{ fontSize: 13, color: theme.color.text3, margin: '0 0 28px' }}>
                       Choose how Studio Arella delivers your broadcast updates, booking confirmations, and financial receipts.
                     </p>
 
@@ -665,14 +665,14 @@ export default function SettingsPage() {
                               alignItems: 'center', 
                               justifyContent: 'space-between', 
                               paddingBottom: 20, 
-                              borderBottom: '1px solid #F1F5F9' 
+                              borderBottom: `1px solid ${theme.color.surface2}` 
                             }}
                           >
                             <div style={{ paddingRight: 24 }}>
-                              <h4 style={{ fontSize: 14, fontWeight: 800, color: '#0F172A', margin: '0 0 3px' }}>
+                              <h4 style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1, margin: '0 0 3px' }}>
                                 {item.title}
                               </h4>
-                              <p style={{ fontSize: 12, color: '#64748B', margin: 0, lineHeight: 1.4 }}>
+                              <p style={{ fontSize: 12, color: theme.color.text3, margin: 0, lineHeight: 1.4 }}>
                                 {item.desc}
                               </p>
                             </div>
@@ -683,7 +683,7 @@ export default function SettingsPage() {
                                 width: 44,
                                 height: 24,
                                 borderRadius: 20,
-                                background: isChecked ? '#C69A2C' : '#CBD5E1',
+                                background: isChecked ? '#C69A2C' : theme.color.border2,
                                 position: 'relative',
                                 border: 'none',
                                 cursor: 'pointer',
@@ -696,7 +696,7 @@ export default function SettingsPage() {
                                 width: 18,
                                 height: 18,
                                 borderRadius: '50%',
-                                background: '#FFFFFF',
+                                background: theme.color.surface,
                                 position: 'absolute',
                                 top: 3,
                                 left: isChecked ? 23 : 3,
@@ -744,7 +744,7 @@ export default function SettingsPage() {
                       <Link
                         href="/finances"
                         style={{
-                          background: '#0F172A',
+                          background: theme.color.charcoal900,
                           color: '#FFFFFF',
                           padding: '10px 20px',
                           borderRadius: 10,
@@ -763,38 +763,38 @@ export default function SettingsPage() {
                   </div>
 
                   {/* Dedicated Virtual Bank Account Card */}
-                  <div style={{ background: '#FFFFFF', borderRadius: 24, border: '1px solid #E2E8F0', padding: '28px 32px', boxShadow: '0 4px 24px rgba(0,0,0,0.02)' }}>
+                  <div style={{ background: theme.color.surface, borderRadius: 24, border: `1px solid ${theme.color.border}`, padding: '28px 32px', boxShadow: '0 4px 24px rgba(0,0,0,0.02)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
                       <Building2 size={18} color="#C69A2C" />
-                      <h3 style={{ fontSize: 16, fontWeight: 800, color: '#0F172A', margin: 0 }}>
+                      <h3 style={{ fontSize: 16, fontWeight: 800, color: theme.color.text1, margin: 0 }}>
                         Dedicated Permanent Bank Account
                       </h3>
                     </div>
 
-                    <p style={{ fontSize: 13, color: '#64748B', margin: '0 0 20px' }}>
+                    <p style={{ fontSize: 13, color: theme.color.text3, margin: '0 0 20px' }}>
                       Transfers sent to this personalized account from any Nigerian bank will automatically fund your Studio Arella wallet.
                     </p>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, padding: '18px 20px', background: '#F8FAFC', borderRadius: 14, border: '1px solid #E2E8F0' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, padding: '18px 20px', background: theme.color.bg, borderRadius: 14, border: `1px solid ${theme.color.border}` }}>
                       <div>
-                        <span style={{ fontSize: 11, color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase' }}>Bank Name</span>
-                        <p style={{ fontSize: 14, fontWeight: 800, color: '#0F172A', margin: '4px 0 0' }}>Wema Bank</p>
+                        <span style={{ fontSize: 11, color: theme.color.text4, fontWeight: 700, textTransform: 'uppercase' }}>Bank Name</span>
+                        <p style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1, margin: '4px 0 0' }}>Wema Bank</p>
                       </div>
                       <div>
-                        <span style={{ fontSize: 11, color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase' }}>Account Number</span>
-                        <p style={{ fontSize: 15, fontWeight: 900, color: '#0F172A', margin: '4px 0 0', fontFamily: 'monospace' }}>0129384756</p>
+                        <span style={{ fontSize: 11, color: theme.color.text4, fontWeight: 700, textTransform: 'uppercase' }}>Account Number</span>
+                        <p style={{ fontSize: 15, fontWeight: 900, color: theme.color.text1, margin: '4px 0 0', fontFamily: 'monospace' }}>0129384756</p>
                       </div>
                       <div>
-                        <span style={{ fontSize: 11, color: '#94A3B8', fontWeight: 700, textTransform: 'uppercase' }}>Beneficiary</span>
-                        <p style={{ fontSize: 14, fontWeight: 800, color: '#0F172A', margin: '4px 0 0' }}>Studio Arella / Creator</p>
+                        <span style={{ fontSize: 11, color: theme.color.text4, fontWeight: 700, textTransform: 'uppercase' }}>Beneficiary</span>
+                        <p style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1, margin: '4px 0 0' }}>Studio Arella / Creator</p>
                       </div>
                     </div>
                   </div>
 
                   {/* Payment Methods on file */}
-                  <div style={{ background: '#FFFFFF', borderRadius: 24, border: '1px solid #E2E8F0', padding: '28px 32px', boxShadow: '0 4px 24px rgba(0,0,0,0.02)' }}>
+                  <div style={{ background: theme.color.surface, borderRadius: 24, border: `1px solid ${theme.color.border}`, padding: '28px 32px', boxShadow: '0 4px 24px rgba(0,0,0,0.02)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                      <h3 style={{ fontSize: 16, fontWeight: 800, color: '#0F172A', margin: 0 }}>
+                      <h3 style={{ fontSize: 16, fontWeight: 800, color: theme.color.text1, margin: 0 }}>
                         Saved Cards
                       </h3>
                       <button 
@@ -806,10 +806,10 @@ export default function SettingsPage() {
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', background: '#F8FAFC', borderRadius: 12, border: '1px solid #E2E8F0' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', background: theme.color.bg, borderRadius: 12, border: `1px solid ${theme.color.border}` }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                          <CreditCard size={18} color="#0F172A" />
-                          <span style={{ fontSize: 13, fontWeight: 700, color: '#0F172A' }}>Mastercard ending in 4242</span>
+                          <CreditCard size={18} color={theme.color.text1} />
+                          <span style={{ fontSize: 13, fontWeight: 700, color: theme.color.text1 }}>Mastercard ending in 4242</span>
                         </div>
                         <span style={{ fontSize: 11, fontWeight: 800, color: '#C69A2C' }}>Default</span>
                       </div>
@@ -822,23 +822,23 @@ export default function SettingsPage() {
               {/* ─── TAB 5: PREFERENCES ─── */}
               {activeTab === 'preferences' && (
                 <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
-                  <div style={{ background: '#FFFFFF', borderRadius: 24, border: '1px solid #E2E8F0', padding: '32px', boxShadow: '0 4px 24px rgba(0,0,0,0.02)' }}>
-                    <h2 style={{ fontSize: 18, fontWeight: 800, color: '#0F172A', margin: '0 0 6px', letterSpacing: '-0.3px' }}>
+                  <div style={{ background: theme.color.surface, borderRadius: 24, border: `1px solid ${theme.color.border}`, padding: '32px', boxShadow: '0 4px 24px rgba(0,0,0,0.02)' }}>
+                    <h2 style={{ fontSize: 18, fontWeight: 800, color: theme.color.text1, margin: '0 0 6px', letterSpacing: '-0.3px' }}>
                       Workspace Preferences
                     </h2>
-                    <p style={{ fontSize: 13, color: '#64748B', margin: '0 0 28px' }}>
+                    <p style={{ fontSize: 13, color: theme.color.text3, margin: '0 0 28px' }}>
                       Customize your regional formatting, display currency, and workspace experience.
                     </p>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                       
                       {/* Currency Selection */}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 20, borderBottom: '1px solid #F1F5F9' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 20, borderBottom: `1px solid ${theme.color.surface2}` }}>
                         <div>
-                          <h4 style={{ fontSize: 14, fontWeight: 800, color: '#0F172A', margin: '0 0 3px' }}>
+                          <h4 style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1, margin: '0 0 3px' }}>
                             Display Currency
                           </h4>
-                          <p style={{ fontSize: 12, color: '#64748B', margin: 0 }}>
+                          <p style={{ fontSize: 12, color: theme.color.text3, margin: 0 }}>
                             Select the primary currency shown across dashboards and booking invoices.
                           </p>
                         </div>
@@ -850,7 +850,7 @@ export default function SettingsPage() {
                               style={{
                                 padding: '8px 16px',
                                 borderRadius: 10,
-                                border: currency === curr ? '1.5px solid #C69A2C' : '1px solid #E2E8F0',
+                                border: currency === curr ? '1.5px solid #C69A2C' : `1px solid ${theme.color.border}`,
                                 background: currency === curr ? '#FFFDF5' : '#FFFFFF',
                                 color: currency === curr ? '#C69A2C' : '#475569',
                                 fontSize: 12,
@@ -866,12 +866,12 @@ export default function SettingsPage() {
                       </div>
 
                       {/* Timezone Selection */}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 20, borderBottom: '1px solid #F1F5F9' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 20, borderBottom: `1px solid ${theme.color.surface2}` }}>
                         <div>
-                          <h4 style={{ fontSize: 14, fontWeight: 800, color: '#0F172A', margin: '0 0 3px' }}>
+                          <h4 style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1, margin: '0 0 3px' }}>
                             Studio Timezone
                           </h4>
-                          <p style={{ fontSize: 12, color: '#64748B', margin: 0 }}>
+                          <p style={{ fontSize: 12, color: theme.color.text3, margin: 0 }}>
                             All ad slots and podcast sessions are scheduled according to this zone.
                           </p>
                         </div>
@@ -881,11 +881,11 @@ export default function SettingsPage() {
                           style={{
                             padding: '8px 14px',
                             borderRadius: 10,
-                            border: '1px solid #E2E8F0',
-                            background: '#FFFFFF',
+                            border: `1px solid ${theme.color.border}`,
+                            background: theme.color.surface,
                             fontSize: 12,
                             fontWeight: 700,
-                            color: '#0F172A',
+                            color: theme.color.text1,
                             fontFamily: F,
                             outline: 'none'
                           }}
@@ -900,10 +900,10 @@ export default function SettingsPage() {
                       {/* Audio Feedback */}
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <div>
-                          <h4 style={{ fontSize: 14, fontWeight: 800, color: '#0F172A', margin: '0 0 3px' }}>
+                          <h4 style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1, margin: '0 0 3px' }}>
                             Sound Effects & Micro-Audio
                           </h4>
-                          <p style={{ fontSize: 12, color: '#64748B', margin: 0 }}>
+                          <p style={{ fontSize: 12, color: theme.color.text3, margin: 0 }}>
                             Play subtle audio feedback when confirming ad slot reservations and cart additions.
                           </p>
                         </div>
@@ -913,7 +913,7 @@ export default function SettingsPage() {
                             width: 44,
                             height: 24,
                             borderRadius: 20,
-                            background: soundEnabled ? '#C69A2C' : '#CBD5E1',
+                            background: soundEnabled ? '#C69A2C' : theme.color.border2,
                             position: 'relative',
                             border: 'none',
                             cursor: 'pointer',
@@ -926,7 +926,7 @@ export default function SettingsPage() {
                             width: 18,
                             height: 18,
                             borderRadius: '50%',
-                            background: '#FFFFFF',
+                            background: theme.color.surface,
                             position: 'absolute',
                             top: 3,
                             left: soundEnabled ? 23 : 3,
@@ -967,14 +967,14 @@ export default function SettingsPage() {
                   transition={{ duration: 0.2 }}
                   style={{ width: '100%', maxWidth: 420, pointerEvents: 'auto' }}
                 >
-                  <div style={{ background: '#FFFFFF', borderRadius: 24, padding: '32px 28px', textAlign: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.15)', fontFamily: F }}>
+                  <div style={{ background: theme.color.surface, borderRadius: 24, padding: '32px 28px', textAlign: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.15)', fontFamily: F }}>
                     <div style={{ width: 56, height: 56, borderRadius: '50%', background: '#FFF1F2', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
                       <AlertTriangle size={26} color="#E11D48" />
                     </div>
-                    <h3 style={{ fontSize: 18, fontWeight: 800, color: '#0F172A', margin: '0 0 8px' }}>
+                    <h3 style={{ fontSize: 18, fontWeight: 800, color: theme.color.text1, margin: '0 0 8px' }}>
                       Delete your account?
                     </h3>
-                    <p style={{ fontSize: 13, color: '#64748B', margin: '0 0 24px', lineHeight: 1.5 }}>
+                    <p style={{ fontSize: 13, color: theme.color.text3, margin: '0 0 24px', lineHeight: 1.5 }}>
                       This will permanently remove all your campaigns, booked slots, and wallet balance. This cannot be undone.
                     </p>
                     <div style={{ display: 'flex', gap: 10 }}>
@@ -1019,8 +1019,8 @@ export default function SettingsPage() {
                 alignItems: 'center',
                 gap: 10,
                 padding: '12px 24px',
-                background: '#FFFFFF',
-                border: '1px solid #E2E8F0',
+                background: theme.color.surface,
+                border: `1px solid ${theme.color.border}`,
                 borderRadius: 24,
                 boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
                 textDecoration: 'none',
@@ -1033,7 +1033,7 @@ export default function SettingsPage() {
             >
               <span className="chat-fab-label">Chat with Arella</span>
               <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'linear-gradient(135deg, #6366F1, #A855F7, #EC4899)', padding: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ width: '100%', height: '100%', background: '#fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: '100%', height: '100%', background: theme.color.surface, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Globe size={13} color="#4F46E5" />
                 </div>
               </div>

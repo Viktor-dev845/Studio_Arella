@@ -95,7 +95,7 @@ export default function PodcastsPage() {
           aspectRatio: '1 / 1',
           borderRadius: 14,
           overflow: 'hidden',
-          background: '#F1F5F9',
+          background: theme.color.surface2,
           position: 'relative',
           boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
         }}
@@ -203,7 +203,7 @@ export default function PodcastsPage() {
           style={{
             fontSize: 13,
             fontWeight: 700,
-            color: '#0F172A',
+            color: theme.color.text1,
             margin: '0 0 3px',
             whiteSpace: 'nowrap',
             overflow: 'hidden',
@@ -215,7 +215,7 @@ export default function PodcastsPage() {
         <p
           style={{
             fontSize: 11,
-            color: '#94A3B8',
+            color: theme.color.text4,
             fontWeight: 500,
             margin: '0 0 3px',
             whiteSpace: 'nowrap',
@@ -270,7 +270,7 @@ export default function PodcastsPage() {
           style={{
             fontFamily: F,
             padding: '24px 32px 48px',
-            background: '#FFFFFF',
+            background: theme.color.surface,
             minHeight: '100%',
             display: 'flex',
             gap: 36,
@@ -290,10 +290,10 @@ export default function PodcastsPage() {
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <h2 style={{ fontSize: 14, fontWeight: 700, color: '#0F172A', margin: 0 }}>
+                  <h2 style={{ fontSize: 14, fontWeight: 700, color: theme.color.text1, margin: 0 }}>
                     Your trending topics ({PODCAST_ITEMS.length})
                   </h2>
-                  <span style={{ fontSize: 9, fontWeight: 800, color: '#94A3B8', background: '#F1F5F9', padding: '2px 7px', borderRadius: 100, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                  <span style={{ fontSize: 9, fontWeight: 800, color: theme.color.text4, background: theme.color.surface2, padding: '2px 7px', borderRadius: 100, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
                     Example
                   </span>
                 </div>
@@ -308,8 +308,8 @@ export default function PodcastsPage() {
                       gap: 6,
                       fontSize: 12,
                       fontWeight: trendingView === 'board' ? 700 : 500,
-                      color: trendingView === 'board' ? '#0F172A' : '#64748B',
-                      background: '#FFFFFF',
+                      color: trendingView === 'board' ? theme.color.text1 : theme.color.text3,
+                      background: theme.color.surface,
                       border: trendingView === 'board' ? '1px solid #E2E8F0' : '1px solid transparent',
                       borderRadius: 8,
                       padding: '5px 12px',
@@ -329,8 +329,8 @@ export default function PodcastsPage() {
                       gap: 6,
                       fontSize: 12,
                       fontWeight: trendingView === 'list' ? 700 : 500,
-                      color: trendingView === 'list' ? '#0F172A' : '#64748B',
-                      background: '#FFFFFF',
+                      color: trendingView === 'list' ? theme.color.text1 : theme.color.text3,
+                      background: theme.color.surface,
                       border: trendingView === 'list' ? '1px solid #E2E8F0' : '1px solid transparent',
                       borderRadius: 8,
                       padding: '5px 12px',
@@ -375,7 +375,7 @@ export default function PodcastsPage() {
                           height: 44,
                           borderRadius: 8,
                           overflow: 'hidden',
-                          background: '#F1F5F9',
+                          background: theme.color.surface2,
                           flexShrink: 0,
                         }}
                       >
@@ -386,10 +386,10 @@ export default function PodcastsPage() {
                         />
                       </div>
                       <div>
-                        <p style={{ fontSize: 13, fontWeight: 700, color: '#0F172A', margin: '0 0 2px' }}>
+                        <p style={{ fontSize: 13, fontWeight: 700, color: theme.color.text1, margin: '0 0 2px' }}>
                           {pod.title}
                         </p>
-                        <p style={{ fontSize: 11.5, color: '#94A3B8', fontWeight: 500, margin: 0 }}>
+                        <p style={{ fontSize: 11.5, color: theme.color.text4, fontWeight: 500, margin: 0 }}>
                           {pod.listeners} • {pod.episodes}
                         </p>
                       </div>
@@ -410,10 +410,10 @@ export default function PodcastsPage() {
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <h2 style={{ fontSize: 14, fontWeight: 700, color: '#0F172A', margin: 0 }}>
+                  <h2 style={{ fontSize: 14, fontWeight: 700, color: theme.color.text1, margin: 0 }}>
                     All podcasts (10)
                   </h2>
-                  <span style={{ fontSize: 9, fontWeight: 800, color: '#94A3B8', background: '#F1F5F9', padding: '2px 7px', borderRadius: 100, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                  <span style={{ fontSize: 9, fontWeight: 800, color: theme.color.text4, background: theme.color.surface2, padding: '2px 7px', borderRadius: 100, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
                     Example
                   </span>
                 </div>
@@ -428,8 +428,8 @@ export default function PodcastsPage() {
                       gap: 6,
                       fontSize: 12,
                       fontWeight: allView === 'board' ? 700 : 500,
-                      color: allView === 'board' ? '#0F172A' : '#64748B',
-                      background: '#FFFFFF',
+                      color: allView === 'board' ? theme.color.text1 : theme.color.text3,
+                      background: theme.color.surface,
                       border: allView === 'board' ? '1px solid #E2E8F0' : '1px solid transparent',
                       borderRadius: 8,
                       padding: '5px 12px',
@@ -449,8 +449,8 @@ export default function PodcastsPage() {
                       gap: 6,
                       fontSize: 12,
                       fontWeight: allView === 'list' ? 700 : 500,
-                      color: allView === 'list' ? '#0F172A' : '#64748B',
-                      background: '#FFFFFF',
+                      color: allView === 'list' ? theme.color.text1 : theme.color.text3,
+                      background: theme.color.surface,
                       border: allView === 'list' ? '1px solid #E2E8F0' : '1px solid transparent',
                       borderRadius: 8,
                       padding: '5px 12px',
@@ -494,7 +494,7 @@ export default function PodcastsPage() {
                           height: 44,
                           borderRadius: 8,
                           overflow: 'hidden',
-                          background: '#F1F5F9',
+                          background: theme.color.surface2,
                           flexShrink: 0,
                         }}
                       >
@@ -505,10 +505,10 @@ export default function PodcastsPage() {
                         />
                       </div>
                       <div>
-                        <p style={{ fontSize: 13, fontWeight: 700, color: '#0F172A', margin: '0 0 2px' }}>
+                        <p style={{ fontSize: 13, fontWeight: 700, color: theme.color.text1, margin: '0 0 2px' }}>
                           {pod.title}
                         </p>
-                        <p style={{ fontSize: 11.5, color: '#94A3B8', fontWeight: 500, margin: 0 }}>
+                        <p style={{ fontSize: 11.5, color: theme.color.text4, fontWeight: 500, margin: 0 }}>
                           {pod.listeners} • {pod.episodes}
                         </p>
                       </div>

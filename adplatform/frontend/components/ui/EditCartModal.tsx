@@ -180,7 +180,7 @@ export default function EditCartModal({ item, onClose, initialTab = 'time' }: Ed
           <AnimatedButton 
             onClick={handleSave} 
             disabled={conflict || loading}
-            style={{ width: "100%", padding: 16, borderRadius: 12, border: "none", background: theme.color.charcoal900, color: theme.color.surface, fontWeight: 800, fontSize: 16, cursor: conflict || loading ? "not-allowed" : "pointer", opacity: conflict || loading ? 0.7 : 1, display: "flex", justifyContent: "center", alignItems: "center", gap: 8 }}
+            style={{ width: "100%", padding: 16, borderRadius: 12, border: "none", background: theme.color.charcoal900, color: '#FFFFFF', fontWeight: 800, fontSize: 16, cursor: conflict || loading ? "not-allowed" : "pointer", opacity: conflict || loading ? 0.7 : 1, display: "flex", justifyContent: "center", alignItems: "center", gap: 8 }}
           >
             {loading ? 'Checking...' : conflict ? 'Slot Unavailable' : <><Check size={18} /> Save Changes</>}
           </AnimatedButton>

@@ -10,6 +10,7 @@ import GoogleButton from '@/components/ui/GoogleButton';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnimatedButton } from '@/components/ui/Animations';
 import api from '@/lib/api';
+import { theme } from '@/lib/theme';
 
 const F = "'Quicksand', sans-serif";
 
@@ -31,10 +32,10 @@ function PasswordStrength({ password }: { password: string }) {
         ))}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: 11, fontWeight: 700, color: score > 0 ? colors[score - 1] : '#94A3B8' }}>{score > 0 ? labels[score - 1] : ''}</span>
+        <span style={{ fontSize: 11, fontWeight: 700, color: score > 0 ? colors[score - 1] : theme.color.text4 }}>{score > 0 ? labels[score - 1] : ''}</span>
         <div style={{ display: 'flex', gap: 10 }}>
           {checks.map(c => (
-            <span key={c.label} style={{ fontSize: 10, color: c.pass ? '#22c55e' : '#94A3B8', display: 'flex', alignItems: 'center', gap: 3, fontWeight: 700 }}>
+            <span key={c.label} style={{ fontSize: 10, color: c.pass ? '#22c55e' : theme.color.text4, display: 'flex', alignItems: 'center', gap: 3, fontWeight: 700 }}>
               <div style={{ width: 10, height: 10, borderRadius: '50%', background: c.pass ? '#22c55e' : 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {c.pass && <FaCheck size={6} color="#fff" />}
               </div>
@@ -67,16 +68,16 @@ export default function RegisterPage() {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const inputStyle: React.CSSProperties = {
-    width: '100%', padding: '13px 14px', background: '#FFFFFF',
-    border: '1px solid #CBD5E1', borderRadius: 4, fontSize: 13,
-    fontFamily: F, color: '#0F172A', outline: 'none', boxSizing: 'border-box',
+    width: '100%', padding: '13px 14px', background: theme.color.surface,
+    border: `1px solid ${theme.color.border2}`, borderRadius: 4, fontSize: 13,
+    fontFamily: F, color: theme.color.text1, outline: 'none', boxSizing: 'border-box',
     transition: 'border-color 0.2s', fontWeight: 500
   };
   const onFocus = (e: any) => { e.target.style.borderColor = '#D4AF37'; };
-  const onBlur  = (e: any) => { e.target.style.borderColor = '#CBD5E1'; };
+  const onBlur  = (e: any) => { e.target.style.borderColor = theme.color.border2; };
 
   const labelStyle: React.CSSProperties = {
-    fontSize: 12, fontWeight: 500, color: '#64748B', display: 'block',
+    fontSize: 12, fontWeight: 500, color: theme.color.text3, display: 'block',
     marginBottom: 6,
   };
 
@@ -154,7 +155,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex" style={{ fontFamily: F, minHeight: '100vh', background: '#FFFFFF', position: 'relative' }}>
+    <div className="flex" style={{ fontFamily: F, minHeight: '100vh', background: theme.color.surface, position: 'relative' }}>
       
       {/* ── Left panel (Image + Overlay) ── */}
       <div className="hidden lg:flex flex-col justify-center" style={{ flex: '1 1 50%', maxWidth: '50%', position: 'relative', overflow: 'hidden' }}>
@@ -189,26 +190,26 @@ export default function RegisterPage() {
         
         <div style={{ position: 'absolute', top: 40, right: 40, textAlign: 'right' }}>
            <p style={{ fontSize: 11, color: '#CBD5E1', fontWeight: 700, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>YOUR</p>
-           <p style={{ fontSize: 13, color: '#64748B', fontWeight: 700, margin: 0 }}>Personal Info.</p>
+           <p style={{ fontSize: 13, color: theme.color.text3, fontWeight: 700, margin: 0 }}>Personal Info.</p>
         </div>
 
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}
           className="w-full max-w-[440px]">
 
-          <h1 style={{ fontSize: 32, fontWeight: 800, color: '#0F172A', margin: '0 0 8px', letterSpacing: '-0.5px' }}>Create Your Account!</h1>
-          <p style={{ fontSize: 15, color: '#64748B', margin: '0 0 32px', fontWeight: 500 }}>
+          <h1 style={{ fontSize: 32, fontWeight: 800, color: theme.color.text1, margin: '0 0 8px', letterSpacing: '-0.5px' }}>Create Your Account!</h1>
+          <p style={{ fontSize: 15, color: theme.color.text3, margin: '0 0 32px', fontWeight: 500 }}>
             Getting started is easy. Already have an account?{' '}
             <Link href="/auth/login" style={{ color: '#D4AF37', fontWeight: 600, textDecoration: 'none' }}>Sign in</Link>
           </p>
 
           <GoogleButton label="Sign up with Google" 
-             style={{ background: '#FFFFFF', color: '#0F172A', border: '1px solid #E2E8F0', boxShadow: '0 2px 4px rgba(0,0,0,0.02)', fontWeight: 600 }} 
+             style={{ background: theme.color.surface, color: theme.color.text1, border: `1px solid ${theme.color.border}`, boxShadow: '0 2px 4px rgba(0,0,0,0.02)', fontWeight: 600 }} 
           />
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, margin: '24px 0' }}>
-            <div style={{ flex: 1, height: 1, background: '#F1F5F9' }} />
+            <div style={{ flex: 1, height: 1, background: theme.color.surface2 }} />
             <span style={{ fontSize: 12, color: '#475569', fontWeight: 500 }}>Or continue with</span>
-            <div style={{ flex: 1, height: 1, background: '#F1F5F9' }} />
+            <div style={{ flex: 1, height: 1, background: theme.color.surface2 }} />
           </div>
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -228,11 +229,11 @@ export default function RegisterPage() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                <div>
-                  <label style={labelStyle}>Business name <span style={{fontWeight:400, color:'#94A3B8'}}>(optional)</span></label>
+                  <label style={labelStyle}>Business name <span style={{fontWeight:400, color:theme.color.text4}}>(optional)</span></label>
                   <input type="text" placeholder="Brand name" value={form.business_name} onChange={e => setForm({ ...form, business_name: e.target.value })} style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
                </div>
                <div>
-                  <label style={labelStyle}>Phone <span style={{fontWeight:400, color:'#94A3B8'}}>(optional)</span></label>
+                  <label style={labelStyle}>Phone <span style={{fontWeight:400, color:theme.color.text4}}>(optional)</span></label>
                   <input type="tel" placeholder="08012345678" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
                </div>
             </div>
@@ -240,7 +241,7 @@ export default function RegisterPage() {
               <label style={labelStyle}>Password*</label>
               <div style={{ position: 'relative' }}>
                 <input type={showPw ? 'text' : 'password'} placeholder="Enter password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} required style={{ ...inputStyle, paddingRight: 60 }} onFocus={onFocus} onBlur={onBlur} />
-                <button type="button" onClick={() => setShowPw(p => !p)} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#0F172A', fontWeight: 600, fontSize: 11 }}>{showPw ? 'Hide' : 'Show'}</button>
+                <button type="button" onClick={() => setShowPw(p => !p)} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text1, fontWeight: 600, fontSize: 11 }}>{showPw ? 'Hide' : 'Show'}</button>
               </div>
               <PasswordStrength password={form.password} />
             </div>
@@ -248,12 +249,12 @@ export default function RegisterPage() {
               <label style={labelStyle}>Confirm password*</label>
               <div style={{ position: 'relative' }}>
                 <input type={showConfirmPw ? 'text' : 'password'} placeholder="Confirm password" value={form.confirm_password} onChange={e => setForm({ ...form, confirm_password: e.target.value })} required style={{ ...inputStyle, paddingRight: 60 }} onFocus={onFocus} onBlur={onBlur} />
-                <button type="button" onClick={() => setShowConfirmPw(p => !p)} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#0F172A', fontWeight: 600, fontSize: 11 }}>{showConfirmPw ? 'Hide' : 'Show'}</button>
+                <button type="button" onClick={() => setShowConfirmPw(p => !p)} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text1, fontWeight: 600, fontSize: 11 }}>{showConfirmPw ? 'Hide' : 'Show'}</button>
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginTop: 12, marginBottom: 8 }}>
-              <input type="checkbox" id="terms" required style={{ marginTop: 2, accentColor: '#D4AF37', cursor: 'pointer', width: 16, height: 16, borderRadius: 4, border: '1px solid #CBD5E1' }} />
-              <label htmlFor="terms" style={{ fontSize: 13, color: '#64748B', lineHeight: 1.5, cursor: 'pointer', fontWeight: 500 }}>
+              <input type="checkbox" id="terms" required style={{ marginTop: 2, accentColor: '#D4AF37', cursor: 'pointer', width: 16, height: 16, borderRadius: 4, border: `1px solid ${theme.color.border2}` }} />
+              <label htmlFor="terms" style={{ fontSize: 13, color: theme.color.text3, lineHeight: 1.5, cursor: 'pointer', fontWeight: 500 }}>
                 I agree to terms & conditions. Read terms & conditions <Link href="/terms" style={{ color: '#D4AF37', textDecoration: 'none', fontWeight: 500 }}>here</Link>
               </label>
             </div>
@@ -283,7 +284,7 @@ export default function RegisterPage() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              style={{ position: 'relative', background: '#FFFFFF', borderRadius: 16, padding: '40px', width: '100%', maxWidth: 460, boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', textAlign: 'center' }}
+              style={{ position: 'relative', background: theme.color.surface, borderRadius: 16, padding: '40px', width: '100%', maxWidth: 460, boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', textAlign: 'center' }}
             >
               {showSuccessModal ? (
                 <>
@@ -292,7 +293,7 @@ export default function RegisterPage() {
                       <FaCheck size={32} color="#FFFFFF" />
                     </div>
                   </div>
-                  <h2 style={{ fontSize: 20, fontWeight: 700, color: '#0F172A', margin: '0 0 32px' }}>
+                  <h2 style={{ fontSize: 20, fontWeight: 700, color: theme.color.text1, margin: '0 0 32px' }}>
                     Account created successfully
                   </h2>
                   <AnimatedButton
@@ -304,12 +305,12 @@ export default function RegisterPage() {
                 </>
               ) : (
                 <>
-                  <h2 style={{ fontSize: 20, fontWeight: 700, color: '#0F172A', margin: '0 0 32px' }}>
+                  <h2 style={{ fontSize: 20, fontWeight: 700, color: theme.color.text1, margin: '0 0 32px' }}>
                     We sent you a code. Check your email
                   </h2>
 
                   <div style={{ textAlign: 'left', marginBottom: 8 }}>
-                    <label style={{ fontSize: 13, fontWeight: 600, color: '#64748B' }}>Enter code*</label>
+                    <label style={{ fontSize: 13, fontWeight: 600, color: theme.color.text3 }}>Enter code*</label>
                   </div>
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, marginBottom: 8 }}>
@@ -326,21 +327,21 @@ export default function RegisterPage() {
                         onPaste={handleOtpPaste}
                         disabled={verifying}
                         style={{
-                          width: '100%', height: 56, background: '#FFFFFF',
-                          border: `1px solid ${digit || index === 0 ? '#D4AF37' : '#E2E8F0'}`,
-                          borderRadius: 8, fontSize: 20, fontWeight: 700, color: '#0F172A',
+                          width: '100%', height: 56, background: theme.color.surface,
+                          border: `1px solid ${digit || index === 0 ? '#D4AF37' : theme.color.border}`,
+                          borderRadius: 8, fontSize: 20, fontWeight: 700, color: theme.color.text1,
                           textAlign: 'center', outline: 'none',
                           boxShadow: digit || index === 0 ? '0 0 0 2px rgba(212,175,55,0.1)' : 'none',
                           transition: 'all 0.2s',
                         }}
                         onFocus={(e) => { e.target.style.borderColor = '#D4AF37'; e.target.style.boxShadow = '0 0 0 2px rgba(212,175,55,0.1)'; }}
-                        onBlur={(e) => { if(!digit && index !== 0) { e.target.style.borderColor = '#E2E8F0'; e.target.style.boxShadow = 'none'; } }}
+                        onBlur={(e) => { if(!digit && index !== 0) { e.target.style.borderColor = theme.color.border; e.target.style.boxShadow = 'none'; } }}
                       />
                     ))}
                   </div>
 
                   <div style={{ textAlign: 'right', marginBottom: 24 }}>
-                    <span style={{ fontSize: 13, color: '#94A3B8', fontWeight: 500 }}>
+                    <span style={{ fontSize: 13, color: theme.color.text4, fontWeight: 500 }}>
                       Didn't get code?{' '}
                       <button onClick={handleResend} disabled={resending} style={{ background: 'none', border: 'none', color: '#D4AF37', fontWeight: 600, cursor: resending ? 'wait' : 'pointer', padding: 0 }}>
                         {resending ? 'Sending...' : 'Resend'}

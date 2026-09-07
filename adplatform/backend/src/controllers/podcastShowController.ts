@@ -56,6 +56,24 @@ export const createShow: RequestHandler = async (req, res) => {
   }
 };
 
+// ── List all published shows (real, public catalog — backs the audience
+// ── preview mode: what a listener browsing Studio Arella would actually see) ──
+export const getAllShows: RequestHandler = async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT p.id, p.title, p.description, p.cover_url, p.created_at, u.name as creator_name,
+         (SELECT COUNT(*) FROM podcast_episodes e WHERE e.podcast_id = p.id AND e.status = 'published') as episode_count
+       FROM podcasts p
+       LEFT JOIN users u ON p.user_id = u.id
+       WHERE EXISTS (SELECT 1 FROM podcast_episodes e WHERE e.podcast_id = p.id AND e.status = 'published')
+       ORDER BY p.created_at DESC`
+    );
+    res.json({ shows: result.rows });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 // ── Get a show + its episodes ────────────────────────────────────────────────
 export const getShow: RequestHandler = async (req, res) => {
   try {

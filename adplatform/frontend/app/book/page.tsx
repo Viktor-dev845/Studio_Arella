@@ -604,7 +604,7 @@ function DoohScheduler() {
           <div style={{ background: theme.color.charcoal900, borderRadius: 16, padding: '18px 24px', marginBottom: 24, position: 'relative', overflow: 'hidden', border: `1px solid ${theme.color.border}` }}>
             <div style={{ position: 'absolute', bottom: -24, right: -24, width: 100, height: 100, background: 'rgba(224,165,38,0.12)', borderRadius: '50%', pointerEvents: 'none' }} />
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', position: 'relative', zIndex: 1 }}>
-              <p style={{ margin: 0, fontSize: 13.5, fontWeight: 600, color: theme.color.surface, lineHeight: 1.5, maxWidth: 480 }}>
+              <p style={{ margin: 0, fontSize: 13.5, fontWeight: 600, color: '#FFFFFF', lineHeight: 1.5, maxWidth: 480 }}>
                 We're running an Ad space promo — get a discount for bookings longer than 3 months.
               </p>
               <AnimatedButton
@@ -627,7 +627,7 @@ function DoohScheduler() {
                   <FaFilm size={32} color={theme.color.text4} style={{ margin: '0 auto 16px', display: 'block' }} />
                   <p style={{ fontSize: 15, color: theme.color.text3 }}>You have no approved ads yet.</p>
                   <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginTop: 16 }}>
-                    <AnimatedButton onClick={() => router.push('/ads')} style={{ background: theme.color.charcoal900, color: theme.color.surface, border: "none", padding: "10px 20px", borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+                    <AnimatedButton onClick={() => router.push('/ads')} style={{ background: theme.color.charcoal900, color: '#FFFFFF', border: "none", padding: "10px 20px", borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
                       Create or Upload Ad
                     </AnimatedButton>
                     <AnimatedButton onClick={() => setShowCreativeServiceModal(true)} style={{ background: 'transparent', color: theme.color.text1, border: `1px solid ${theme.color.border}`, padding: "10px 20px", borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>

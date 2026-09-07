@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { FaCircleCheck, FaCircleXmark, FaArrowRight } from 'react-icons/fa6';
 import api from '@/lib/api';
+import { theme } from '@/lib/theme';
 
 const F = "'Quicksand', sans-serif";
 
@@ -31,14 +32,14 @@ function VerifyEmailContent() {
   }, [params]);
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, fontFamily: F }}>
+    <div style={{ minHeight: '100vh', background: theme.color.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, fontFamily: F }}>
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
         className="p-6 md:p-10"
-        style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 20, maxWidth: 440, width: '100%', textAlign: 'center', boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
+        style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 20, maxWidth: 440, width: '100%', textAlign: 'center', boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
 
         <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 9, textDecoration: 'none', marginBottom: 28 }}>
           <div style={{ width: 34, height: 34, background: '#D4AF37', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: 15, color: '#111111' }}>B</div>
-          <span style={{ fontSize: 15, fontWeight: 800, color: '#1A1A1A' }}>Bems<span style={{ fontWeight: 500, color: '#94A3B8' }}>Screens</span></span>
+          <span style={{ fontSize: 15, fontWeight: 800, color: '#1A1A1A' }}>Bems<span style={{ fontWeight: 500, color: theme.color.text4 }}>Screens</span></span>
         </Link>
 
         {status === 'loading' && (
@@ -55,7 +56,7 @@ function VerifyEmailContent() {
               <FaCircleCheck size={28} color="#16A34A" />
             </div>
             <h2 style={{ fontSize: 22, fontWeight: 900, color: '#1A1A1A', margin: '0 0 8px' }}>Email verified!</h2>
-            <p style={{ fontSize: 14, color: '#64748B', margin: '0 0 24px', lineHeight: 1.6 }}>{message}</p>
+            <p style={{ fontSize: 14, color: theme.color.text3, margin: '0 0 24px', lineHeight: 1.6 }}>{message}</p>
             <Link href="/onboarding" style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: '#D4AF37', color: '#111111', padding: '12px 24px', borderRadius: 10, fontSize: 14, fontWeight: 800, textDecoration: 'none' }}>
               Go to dashboard <FaArrowRight size={13} />
             </Link>
@@ -68,10 +69,10 @@ function VerifyEmailContent() {
               <FaCircleXmark size={28} color="#EF4444" />
             </div>
             <h2 style={{ fontSize: 22, fontWeight: 900, color: '#1A1A1A', margin: '0 0 8px' }}>Verification failed</h2>
-            <p style={{ fontSize: 14, color: '#64748B', margin: '0 0 24px', lineHeight: 1.6 }}>{message}</p>
+            <p style={{ fontSize: 14, color: theme.color.text3, margin: '0 0 24px', lineHeight: 1.6 }}>{message}</p>
             <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
               <ResendButton />
-              <Link href="/auth/login" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#475569', padding: '10px 20px', borderRadius: 10, fontSize: 13, textDecoration: 'none', fontWeight: 600 }}>
+              <Link href="/auth/login" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: theme.color.bg, border: `1px solid ${theme.color.border}`, color: '#475569', padding: '10px 20px', borderRadius: 10, fontSize: 13, textDecoration: 'none', fontWeight: 600 }}>
                 Sign in
               </Link>
             </div>

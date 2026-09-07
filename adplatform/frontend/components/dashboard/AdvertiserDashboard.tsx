@@ -27,15 +27,15 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     return (
       <div
         style={{
-          background: '#FFFFFF',
-          border: '1px solid #E2E8F0',
+          background: theme.color.surface,
+          border: `1px solid ${theme.color.border}`,
           borderRadius: 8,
           padding: '8px 12px',
           boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
           fontFamily: F,
         }}
       >
-        <p style={{ fontSize: 11, color: '#64748B', margin: '0 0 4px', fontWeight: 600 }}>{label}</p>
+        <p style={{ fontSize: 11, color: theme.color.text3, margin: '0 0 4px', fontWeight: 600 }}>{label}</p>
         {payload.map((entry: any, index: number) => (
           <p key={index} style={{ fontSize: 13, fontWeight: 800, color: entry.color, margin: 0 }}>
             {entry.name}: {entry.value?.toLocaleString()}
@@ -68,7 +68,7 @@ const TRAFFIC_BY_PODCAST = [
   { name: 'Family life', filled: 60 },
 ];
 
-const BAR_COLORS = ['#FDE68A', '#FEF3C7', '#0F172A', '#ECFCCB', '#FCD34D', '#FEF3C7', '#ECFCCB', '#FEF3C7', '#0F172A', '#FDE68A', '#FEF3C7', '#ECFCCB'];
+const BAR_COLORS = ['#FDE68A', '#FEF3C7', theme.color.text1, '#ECFCCB', '#FCD34D', '#FEF3C7', '#ECFCCB', '#FEF3C7', theme.color.text1, '#FDE68A', '#FEF3C7', '#ECFCCB'];
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 function podcastBookingsByMonth(bookings: any[]) {
@@ -111,7 +111,7 @@ const ACTIVITIES = [
 ];
 
 const EXAMPLE_BADGE: React.CSSProperties = {
-  fontSize: 9, fontWeight: 800, color: '#94A3B8', background: '#F1F5F9',
+  fontSize: 9, fontWeight: 800, color: theme.color.text4, background: theme.color.surface2,
   padding: '2px 7px', borderRadius: 100, letterSpacing: '0.04em', textTransform: 'uppercase',
 };
 
@@ -210,7 +210,7 @@ export default function AdvertiserDashboard() {
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 20 }}>
         {/* Header: Overview and Today dropdown */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <h1 style={{ fontFamily: theme.font.display, fontSize: 20, fontWeight: 800, color: '#0F172A', margin: 0, letterSpacing: '-0.3px' }}>
+          <h1 style={{ fontFamily: theme.font.display, fontSize: 20, fontWeight: 800, color: theme.color.text1, margin: 0, letterSpacing: '-0.3px' }}>
             Overview
           </h1>
           <button
@@ -227,7 +227,7 @@ export default function AdvertiserDashboard() {
               fontFamily: F,
             }}
           >
-            Today <ChevronDown size={14} color="#64748B" />
+            Today <ChevronDown size={14} color={theme.color.text3} />
           </button>
         </div>
 
@@ -243,11 +243,11 @@ export default function AdvertiserDashboard() {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 16px' }}>
-              <p style={{ fontSize: 13, color: '#0F172A', margin: 0, fontWeight: 700 }}>Total Podcast</p>
+              <p style={{ fontSize: 13, color: theme.color.text1, margin: 0, fontWeight: 700 }}>Total Podcast</p>
               <span style={EXAMPLE_BADGE}>Example</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 28, fontWeight: 800, color: '#0F172A', lineHeight: 1 }}>7</span>
+              <span style={{ fontSize: 28, fontWeight: 800, color: theme.color.text1, lineHeight: 1 }}>7</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#10B981', fontSize: 11, fontWeight: 800 }}>
                 +11.01% <FaArrowTrendUp size={10} />
               </div>
@@ -264,12 +264,12 @@ export default function AdvertiserDashboard() {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 16px' }}>
-              <p style={{ fontSize: 13, color: '#0F172A', margin: 0, fontWeight: 700 }}>Total Active Listeners</p>
+              <p style={{ fontSize: 13, color: theme.color.text1, margin: 0, fontWeight: 700 }}>Total Active Listeners</p>
               <span style={EXAMPLE_BADGE}>Example</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 28, fontWeight: 800, color: '#0F172A', lineHeight: 1 }}>3,671</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#64748B', fontSize: 11, fontWeight: 800 }}>
+              <span style={{ fontSize: 28, fontWeight: 800, color: theme.color.text1, lineHeight: 1 }}>3,671</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: theme.color.text3, fontSize: 11, fontWeight: 800 }}>
                 -0.03% <FaArrowTrendDown size={10} />
               </div>
             </div>
@@ -285,11 +285,11 @@ export default function AdvertiserDashboard() {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 16px' }}>
-              <p style={{ fontSize: 13, color: '#0F172A', margin: 0, fontWeight: 700 }}>Followers</p>
+              <p style={{ fontSize: 13, color: theme.color.text1, margin: 0, fontWeight: 700 }}>Followers</p>
               <span style={EXAMPLE_BADGE}>Example</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 28, fontWeight: 800, color: '#0F172A', lineHeight: 1 }}>3,671</span>
+              <span style={{ fontSize: 28, fontWeight: 800, color: theme.color.text1, lineHeight: 1 }}>3,671</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#10B981', fontSize: 11, fontWeight: 800 }}>
                 +15.03% <FaArrowTrendUp size={10} />
               </div>
@@ -305,9 +305,9 @@ export default function AdvertiserDashboard() {
               border: '1px solid rgba(212,175,55,0.06)',
             }}
           >
-            <p style={{ fontSize: 13, color: '#0F172A', margin: '0 0 16px', fontWeight: 700 }}>Booked Podcast Slots</p>
+            <p style={{ fontSize: 13, color: theme.color.text1, margin: '0 0 16px', fontWeight: 700 }}>Booked Podcast Slots</p>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 28, fontWeight: 800, color: '#0F172A', lineHeight: 1 }}>{bookedPodcastSlots}</span>
+              <span style={{ fontSize: 28, fontWeight: 800, color: theme.color.text1, lineHeight: 1 }}>{bookedPodcastSlots}</span>
             </div>
           </div>
         </div>
@@ -315,16 +315,16 @@ export default function AdvertiserDashboard() {
         {/* Row 2: Line Chart & Traffic by Podcast */}
         <div className="dash-chart-split" style={{ display: 'grid', gridTemplateColumns: '2fr 1.15fr', gap: 16 }}>
           {/* Left Chart Card */}
-          <div style={{ background: '#FFFFFF', borderRadius: 20, padding: '22px 24px', border: '1px solid #F1F5F9' }}>
+          <div style={{ background: theme.color.surface, borderRadius: 20, padding: '22px 24px', border: `1px solid ${theme.color.surface2}` }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                <span style={{ fontSize: 14, fontWeight: 800, color: '#0F172A' }}>Total Podcast Views</span>
-                <span style={{ fontSize: 13, fontWeight: 500, color: '#94A3B8', cursor: 'pointer' }}>Total Followers</span>
+                <span style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1 }}>Total Podcast Views</span>
+                <span style={{ fontSize: 13, fontWeight: 500, color: theme.color.text4, cursor: 'pointer' }}>Total Followers</span>
                 <span style={EXAMPLE_BADGE}>Example</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#475569', fontWeight: 600 }}>
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#0F172A' }} /> This year
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: theme.color.charcoal900 }} /> This year
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#475569', fontWeight: 600 }}>
                   <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#818CF8' }} /> Last year
@@ -335,18 +335,18 @@ export default function AdvertiserDashboard() {
             <div style={{ height: 210, width: '100%' }}>
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={VIEWS_DATA} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
-                  <CartesianGrid vertical={false} stroke="#F8FAFC" />
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94A3B8' }} dy={8} />
+                  <CartesianGrid vertical={false} stroke={theme.color.bg} />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: theme.color.text4 }} dy={8} />
                   <YAxis
                     domain={[0, 32000]}
                     ticks={[0, 10000, 20000, 30000]}
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fontSize: 11, fill: '#94A3B8' }}
+                    tick={{ fontSize: 11, fill: theme.color.text4 }}
                     tickFormatter={(val) => (val === 0 ? '0' : `${val / 1000}K`)}
                   />
                   <Tooltip content={<CustomTooltip />} />
-                  <Line type="monotone" dataKey="thisYear" name="This year" stroke="#0F172A" strokeWidth={1.8} dot={false} activeDot={{ r: 4 }} />
+                  <Line type="monotone" dataKey="thisYear" name="This year" stroke={theme.color.text1} strokeWidth={1.8} dot={false} activeDot={{ r: 4 }} />
                   <Line type="monotone" dataKey="lastYear" name="Last year" stroke="#818CF8" strokeWidth={1.8} strokeDasharray="3 3" dot={false} activeDot={{ r: 4 }} />
                 </LineChart>
               </ResponsiveContainer>
@@ -354,20 +354,20 @@ export default function AdvertiserDashboard() {
           </div>
 
           {/* Right Card: Traffic by Podcast */}
-          <div style={{ background: '#FFFFFF', borderRadius: 20, padding: '22px 24px', border: '1px solid #F1F5F9' }}>
+          <div style={{ background: theme.color.surface, borderRadius: 20, padding: '22px 24px', border: `1px solid ${theme.color.surface2}` }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 20px' }}>
-              <p style={{ fontSize: 14, fontWeight: 800, color: '#0F172A', margin: 0 }}>Traffic by Podcast</p>
+              <p style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1, margin: 0 }}>Traffic by Podcast</p>
               <span style={EXAMPLE_BADGE}>Example</span>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               {TRAFFIC_BY_PODCAST.map((t, idx) => (
                 <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14 }}>
-                  <span style={{ fontSize: 12, color: '#334155', fontWeight: 600, width: 85, whiteSpace: 'nowrap' }}>
+                  <span style={{ fontSize: 12, color: theme.color.text2, fontWeight: 600, width: 85, whiteSpace: 'nowrap' }}>
                     {t.name}
                   </span>
                   <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <div style={{ height: 4, width: `${t.filled}%`, background: '#0F172A', borderRadius: 2 }} />
-                    <div style={{ height: 4, width: `${100 - t.filled}%`, background: '#F1F5F9', borderRadius: 2 }} />
+                    <div style={{ height: 4, width: `${t.filled}%`, background: theme.color.charcoal900, borderRadius: 2 }} />
+                    <div style={{ height: 4, width: `${100 - t.filled}%`, background: theme.color.surface2, borderRadius: 2 }} />
                   </div>
                 </div>
               ))}
@@ -376,14 +376,14 @@ export default function AdvertiserDashboard() {
         </div>
 
         {/* Row 3: Podcast Bookings (12 Months Bar Chart) */}
-        <div style={{ background: '#FFFFFF', borderRadius: 20, padding: '22px 24px', border: '1px solid #F1F5F9' }}>
-          <p style={{ fontSize: 14, fontWeight: 800, color: '#0F172A', margin: '0 0 16px' }}>Podcast Bookings ({new Date().getFullYear()})</p>
+        <div style={{ background: theme.color.surface, borderRadius: 20, padding: '22px 24px', border: `1px solid ${theme.color.surface2}` }}>
+          <p style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1, margin: '0 0 16px' }}>Podcast Bookings ({new Date().getFullYear()})</p>
           <div style={{ height: 190, width: '100%' }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={podcastBookingsMonthly} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
-                <CartesianGrid vertical={false} stroke="#F8FAFC" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94A3B8' }} dy={8} />
-                <YAxis domain={[0, monthlyMax]} ticks={yAxisTicks} allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94A3B8' }} />
+                <CartesianGrid vertical={false} stroke={theme.color.bg} />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: theme.color.text4 }} dy={8} />
+                <YAxis domain={[0, monthlyMax]} ticks={yAxisTicks} allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: theme.color.text4 }} />
                 <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }} />
                 <Bar dataKey="val" name="Bookings" radius={[10, 10, 10, 10]} barSize={18}>
                   {podcastBookingsMonthly.map((entry, index) => (
@@ -400,7 +400,7 @@ export default function AdvertiserDashboard() {
       <div style={{ width: 330, display: 'flex', flexDirection: 'column', gap: 28, flexShrink: 0 }}>
         {/* My Balance Section */}
         <div>
-          <p style={{ fontSize: 14, fontWeight: 800, color: '#0F172A', margin: '0 0 14px' }}>My Balance</p>
+          <p style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1, margin: '0 0 14px' }}>My Balance</p>
           <div className="dash-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
             {/* Ad Slot Card */}
             <div
@@ -489,8 +489,8 @@ export default function AdvertiserDashboard() {
               href="/book"
               style={{
                 padding: '9px 12px',
-                background: '#F1F5F9',
-                color: '#0F172A',
+                background: theme.color.surface2,
+                color: theme.color.text1,
                 borderRadius: 8,
                 fontSize: 12,
                 fontWeight: 700,
@@ -504,8 +504,8 @@ export default function AdvertiserDashboard() {
               href="/finances"
               style={{
                 padding: '9px 12px',
-                background: '#FFFFFF',
-                border: '1px solid #E2E8F0',
+                background: theme.color.surface,
+                border: `1px solid ${theme.color.border}`,
                 color: '#C69A2C',
                 borderRadius: 8,
                 fontSize: 12,
@@ -522,7 +522,7 @@ export default function AdvertiserDashboard() {
         {/* Activities Section */}
         <div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 14px' }}>
-            <p style={{ fontSize: 14, fontWeight: 800, color: '#0F172A', margin: 0 }}>Activities</p>
+            <p style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1, margin: 0 }}>Activities</p>
             <span style={EXAMPLE_BADGE}>Example</span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -539,10 +539,10 @@ export default function AdvertiserDashboard() {
                   }}
                 />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: 12, color: '#0F172A', fontWeight: 700, margin: '0 0 1px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <p style={{ fontSize: 12, color: theme.color.text1, fontWeight: 700, margin: '0 0 1px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {act.title}
                   </p>
-                  <p style={{ fontSize: 11, color: '#94A3B8', margin: 0 }}>{act.time}</p>
+                  <p style={{ fontSize: 11, color: theme.color.text4, margin: 0 }}>{act.time}</p>
                 </div>
               </div>
             ))}
@@ -551,7 +551,7 @@ export default function AdvertiserDashboard() {
 
         {/* Recent Booking Calendar Section */}
         <div>
-          <p style={{ fontSize: 14, fontWeight: 800, color: '#0F172A', margin: '0 0 14px' }}>Recent Booking Calendar</p>
+          <p style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1, margin: '0 0 14px' }}>Recent Booking Calendar</p>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
             <span style={{ fontSize: 12, color: '#475569', fontWeight: 600 }}>{today}</span>
@@ -559,27 +559,27 @@ export default function AdvertiserDashboard() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 }}>
             {upcomingEvents.length === 0 ? (
-              <p style={{ fontSize: 12, color: '#94A3B8', fontWeight: 600 }}>No upcoming bookings.</p>
+              <p style={{ fontSize: 12, color: theme.color.text4, fontWeight: 600 }}>No upcoming bookings.</p>
             ) : upcomingEvents.map((ev, i) => (
               <div
                 key={i}
                 style={{
-                  background: '#FFFFFF',
-                  border: '1px solid #E2E8F0',
+                  background: theme.color.surface,
+                  border: `1px solid ${theme.color.border}`,
                   borderLeft: `3px solid ${ev.border}`,
                   borderRadius: 8,
                   padding: '10px 14px',
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                  <p style={{ fontSize: 12, color: '#0F172A', fontWeight: 700, margin: 0 }}>{ev.title}</p>
+                  <p style={{ fontSize: 12, color: theme.color.text1, fontWeight: 700, margin: 0 }}>{ev.title}</p>
                   {ev.isToday && (
-                    <span style={{ fontSize: 8.5, background: '#0F172A', color: '#FFFFFF', padding: '1px 6px', borderRadius: 10, fontWeight: 800, letterSpacing: '0.04em' }}>
+                    <span style={{ fontSize: 8.5, background: theme.color.charcoal900, color: '#FFFFFF', padding: '1px 6px', borderRadius: 10, fontWeight: 800, letterSpacing: '0.04em' }}>
                       TODAY
                     </span>
                   )}
                 </div>
-                <p style={{ fontSize: 11, color: '#64748B', margin: 0, fontWeight: 600 }}>{formatEventDay(ev.time)} · {formatEventTime(ev.time)}</p>
+                <p style={{ fontSize: 11, color: theme.color.text3, margin: 0, fontWeight: 600 }}>{formatEventDay(ev.time)} · {formatEventTime(ev.time)}</p>
               </div>
             ))}
           </div>
@@ -589,8 +589,8 @@ export default function AdvertiserDashboard() {
               href="/book"
               style={{
                 padding: '8px 12px',
-                background: '#F1F5F9',
-                color: '#0F172A',
+                background: theme.color.surface2,
+                color: theme.color.text1,
                 borderRadius: 8,
                 fontSize: 12,
                 fontWeight: 700,
@@ -604,8 +604,8 @@ export default function AdvertiserDashboard() {
               href="/podcast/book"
               style={{
                 padding: '8px 12px',
-                background: '#FFFFFF',
-                border: '1px solid #E2E8F0',
+                background: theme.color.surface,
+                border: `1px solid ${theme.color.border}`,
                 color: '#C69A2C',
                 borderRadius: 8,
                 fontSize: 12,
@@ -646,8 +646,8 @@ export default function AdvertiserDashboard() {
               alignItems: 'center',
               gap: 8,
               padding: '10px 18px',
-              background: '#FFFFFF',
-              border: '1px solid #E2E8F0',
+              background: theme.color.surface,
+              border: `1px solid ${theme.color.border}`,
               borderRadius: 24,
               boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
               textDecoration: 'none',
@@ -675,7 +675,7 @@ export default function AdvertiserDashboard() {
                 style={{
                   width: '100%',
                   height: '100%',
-                  background: '#fff',
+                  background: theme.color.surface,
                   borderRadius: '50%',
                   display: 'flex',
                   alignItems: 'center',

@@ -109,11 +109,11 @@ export default function AddPodcastPage() {
     width: '100%',
     padding: '12px 16px',
     borderRadius: 8,
-    border: '1px solid #E2E8F0',
-    background: '#FFFFFF',
+    border: `1px solid ${theme.color.border}`,
+    background: theme.color.surface,
     fontSize: 13,
     fontWeight: 500,
-    color: '#0F172A',
+    color: theme.color.text1,
     fontFamily: F,
     outline: 'none',
     boxSizing: 'border-box',
@@ -126,7 +126,7 @@ export default function AddPodcastPage() {
           style={{
             fontFamily: F,
             padding: '24px 32px 48px',
-            background: '#FFFFFF',
+            background: theme.color.surface,
             minHeight: '100%',
             display: 'flex',
             gap: 36,
@@ -146,7 +146,7 @@ export default function AddPodcastPage() {
                     gap: 4,
                     fontSize: 13,
                     fontWeight: 700,
-                    color: '#0F172A',
+                    color: theme.color.text1,
                     textDecoration: 'none',
                   }}
                 >
@@ -154,14 +154,14 @@ export default function AddPodcastPage() {
                   <span>Back</span>
                 </Link>
 
-                <h1 style={{ fontSize: 14, fontWeight: 700, color: '#0F172A', margin: 0 }}>
+                <h1 style={{ fontSize: 14, fontWeight: 700, color: theme.color.text1, margin: 0 }}>
                   Add podcast
                 </h1>
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
-                <span style={{ fontSize: 12, fontWeight: 600, color: '#64748B' }}>Today</span>
-                <ChevronDown size={14} color="#64748B" />
+                <span style={{ fontSize: 12, fontWeight: 600, color: theme.color.text3 }}>Today</span>
+                <ChevronDown size={14} color={theme.color.text3} />
               </div>
             </div>
 
@@ -181,8 +181,8 @@ export default function AddPodcastPage() {
                   width: 76,
                   height: 76,
                   borderRadius: 12,
-                  border: '1px solid #E2E8F0',
-                  background: '#F8FAFC',
+                  border: `1px solid ${theme.color.border}`,
+                  background: theme.color.bg,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -194,10 +194,10 @@ export default function AddPodcastPage() {
                 {coverPhotoPreview ? (
                   <img src={coverPhotoPreview} alt="Cover Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 ) : (
-                  <Camera size={22} color="#94A3B8" strokeWidth={1.75} />
+                  <Camera size={22} color={theme.color.text4} strokeWidth={1.75} />
                 )}
               </button>
-              <p style={{ fontSize: 13, fontWeight: 700, color: '#0F172A', margin: '10px 0 0' }}>
+              <p style={{ fontSize: 13, fontWeight: 700, color: theme.color.text1, margin: '10px 0 0' }}>
                 Add cover photo
               </p>
             </div>
@@ -240,11 +240,11 @@ export default function AddPodcastPage() {
                     justifyContent: 'space-between',
                     cursor: 'pointer',
                     userSelect: 'none',
-                    color: selectedEpisode ? '#0F172A' : '#94A3B8',
+                    color: selectedEpisode ? theme.color.text1 : theme.color.text4,
                   }}
                 >
                   <span>{selectedEpisode ? `Episode ${selectedEpisode}` : 'Select episode (optional)'}</span>
-                  <ChevronDown size={15} color="#94A3B8" />
+                  <ChevronDown size={15} color={theme.color.text4} />
                 </div>
 
                 {episodeDropdownOpen && (
@@ -255,8 +255,8 @@ export default function AddPodcastPage() {
                       left: 0,
                       marginTop: 4,
                       width: 140,
-                      background: '#FFFFFF',
-                      border: '1px solid #E2E8F0',
+                      background: theme.color.surface,
+                      border: `1px solid ${theme.color.border}`,
                       borderRadius: 8,
                       boxShadow: '0 10px 25px rgba(0,0,0,0.08)',
                       zIndex: 20,
@@ -276,10 +276,10 @@ export default function AddPodcastPage() {
                             padding: '8px 16px',
                             fontSize: 13,
                             fontWeight: 600,
-                            color: '#0F172A',
+                            color: theme.color.text1,
                             cursor: 'pointer',
                           }}
-                          onMouseOver={(e) => (e.currentTarget.style.background = '#F8FAFC')}
+                          onMouseOver={(e) => (e.currentTarget.style.background = theme.color.bg)}
                           onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
                         >
                           {ep}
@@ -287,7 +287,7 @@ export default function AddPodcastPage() {
                       ))}
                     </div>
                     {/* Gold indicator bar matching screenshot */}
-                    <div style={{ width: 4, background: '#F8FAFC', position: 'relative' }}>
+                    <div style={{ width: 4, background: theme.color.bg, position: 'relative' }}>
                       <div
                         style={{
                           width: 3,
@@ -332,7 +332,7 @@ export default function AddPodcastPage() {
 
             {/* Upload podcast box */}
             <div>
-              <p style={{ fontSize: 13, fontWeight: 700, color: '#0F172A', margin: '0 0 10px' }}>
+              <p style={{ fontSize: 13, fontWeight: 700, color: theme.color.text1, margin: '0 0 10px' }}>
                 Upload podcast
               </p>
 
@@ -377,10 +377,10 @@ export default function AddPodcastPage() {
                   <UploadCloud size={16} color="#FFFFFF" strokeWidth={2.5} />
                 </div>
 
-                <p style={{ fontSize: 13, fontWeight: 700, color: '#0F172A', margin: '0 0 4px' }}>
+                <p style={{ fontSize: 13, fontWeight: 700, color: theme.color.text1, margin: '0 0 4px' }}>
                   {audioFile ? audioFile.name : 'Drag & Drop or choose file to upload'}
                 </p>
-                <p style={{ fontSize: 11, color: '#94A3B8', margin: 0, fontWeight: 500 }}>
+                <p style={{ fontSize: 11, color: theme.color.text4, margin: 0, fontWeight: 500 }}>
                   Supported formats : mp3
                 </p>
               </div>
@@ -399,7 +399,7 @@ export default function AddPodcastPage() {
                 />
                 <Calendar
                   size={16}
-                  color="#94A3B8"
+                  color={theme.color.text4}
                   style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)' }}
                 />
               </div>
@@ -415,7 +415,7 @@ export default function AddPodcastPage() {
                 />
                 <Clock
                   size={16}
-                  color="#94A3B8"
+                  color={theme.color.text4}
                   style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)' }}
                 />
               </div>
@@ -442,11 +442,11 @@ export default function AddPodcastPage() {
                     justifyContent: 'space-between',
                     cursor: 'pointer',
                     userSelect: 'none',
-                    color: contentRating ? '#0F172A' : '#94A3B8',
+                    color: contentRating ? theme.color.text1 : theme.color.text4,
                   }}
                 >
                   <span>{contentRating || 'Content rating'}</span>
-                  <ChevronDown size={15} color="#94A3B8" />
+                  <ChevronDown size={15} color={theme.color.text4} />
                 </div>
 
                 {ratingDropdownOpen && (
@@ -457,8 +457,8 @@ export default function AddPodcastPage() {
                       left: 0,
                       marginBottom: 4,
                       width: '100%',
-                      background: '#FFFFFF',
-                      border: '1px solid #E2E8F0',
+                      background: theme.color.surface,
+                      border: `1px solid ${theme.color.border}`,
                       borderRadius: 8,
                       boxShadow: '0 10px 25px rgba(0,0,0,0.08)',
                       zIndex: 20,
@@ -478,10 +478,10 @@ export default function AddPodcastPage() {
                             padding: '9px 16px',
                             fontSize: 12.5,
                             fontWeight: 600,
-                            color: '#0F172A',
+                            color: theme.color.text1,
                             cursor: 'pointer',
                           }}
-                          onMouseOver={(e) => (e.currentTarget.style.background = '#F8FAFC')}
+                          onMouseOver={(e) => (e.currentTarget.style.background = theme.color.bg)}
                           onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
                         >
                           {item}
@@ -489,7 +489,7 @@ export default function AddPodcastPage() {
                       ))}
                     </div>
                     {/* Gold indicator bar */}
-                    <div style={{ width: 4, background: '#F8FAFC', position: 'relative' }}>
+                    <div style={{ width: 4, background: theme.color.bg, position: 'relative' }}>
                       <div
                         style={{
                           width: 3,
@@ -514,11 +514,11 @@ export default function AddPodcastPage() {
                   style={{
                     padding: '10px 24px',
                     borderRadius: 8,
-                    border: '1px solid #E2E8F0',
-                    background: '#FFFFFF',
+                    border: `1px solid ${theme.color.border}`,
+                    background: theme.color.surface,
                     fontSize: 12.5,
                     fontWeight: 700,
-                    color: '#0F172A',
+                    color: theme.color.text1,
                     cursor: 'pointer',
                     fontFamily: F,
                   }}
@@ -567,7 +567,7 @@ export default function AddPodcastPage() {
           >
             <div
               style={{
-                background: '#FFFFFF', borderRadius: 24, padding: '40px 32px 32px',
+                background: theme.color.surface, borderRadius: 24, padding: '40px 32px 32px',
                 textAlign: 'center', maxWidth: 340, width: '100%', margin: 16,
                 boxShadow: '0 20px 60px rgba(0,0,0,0.18)',
               }}
@@ -585,7 +585,7 @@ export default function AddPodcastPage() {
                   <Check size={28} color="#FFFFFF" strokeWidth={3} />
                 </div>
               </div>
-              <h3 style={{ fontSize: 16, fontWeight: 800, color: '#0F172A', margin: '0 0 24px' }}>
+              <h3 style={{ fontSize: 16, fontWeight: 800, color: theme.color.text1, margin: '0 0 24px' }}>
                 Your podcast was a success
               </h3>
               <button

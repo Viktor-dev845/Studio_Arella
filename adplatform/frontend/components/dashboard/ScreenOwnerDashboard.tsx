@@ -95,7 +95,7 @@ export default function ScreenOwnerDashboard() {
                 </ResponsiveContainer>
               ) : (
                 <div style={{ height: 160, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, background: theme.color.surface2, borderRadius: 10, border: `1px dashed ${theme.color.border}` }}>
-                  <TrendingUp size={26} color={theme.color.border2} />
+                  <TrendingUp size={26} color="#CBD5E1" />
                   <p style={{ fontSize: 13, color: theme.color.text4, margin: 0 }}>No bookings yet</p>
                 </div>
               )}
@@ -110,7 +110,7 @@ export default function ScreenOwnerDashboard() {
               </div>
               {!hasScreens ? (
                 <div style={{ padding: '28px 0', textAlign: 'center', background: theme.color.surface2, borderRadius: 12, border: `1px dashed ${theme.color.border}` }}>
-                  <FaDisplay size={26} color={theme.color.border2} style={{ margin: '0 auto 10px', display: 'block' }} />
+                  <FaDisplay size={26} color="#CBD5E1" style={{ margin: '0 auto 10px', display: 'block' }} />
                   <p style={{ fontSize: 14, fontWeight: 700, color: theme.color.text2, margin: '0 0 4px' }}>No screens listed yet</p>
                   <p style={{ fontSize: 12, color: theme.color.text4, margin: '0 0 14px' }}>List your display to start receiving bookings</p>
                   <Link href="/listings" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: theme.color.warning, color: '#fff', padding: '9px 18px', borderRadius: 9, fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>

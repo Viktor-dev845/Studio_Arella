@@ -47,8 +47,8 @@ const F = theme.font.body;
 const CustomChartTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 12, padding: '12px 16px', boxShadow: '0 8px 24px rgba(0,0,0,0.08)', fontFamily: F }}>
-        <p style={{ fontSize: 11, fontWeight: 700, color: '#64748B', margin: '0 0 6px', textTransform: 'uppercase' }}>{label}</p>
+      <div style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 12, padding: '12px 16px', boxShadow: '0 8px 24px rgba(0,0,0,0.08)', fontFamily: F }}>
+        <p style={{ fontSize: 11, fontWeight: 700, color: theme.color.text3, margin: '0 0 6px', textTransform: 'uppercase' }}>{label}</p>
         {payload.map((entry: any, index: number) => (
           <div key={index} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 800, color: entry.color, margin: index > 0 ? '4px 0 0' : 0 }}>
             <span style={{ width: 8, height: 8, borderRadius: '50%', background: entry.color }} />
@@ -195,7 +195,7 @@ export default function AnalyticsPage() {
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: 28 }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-                <h1 style={{ fontFamily: theme.font.display, fontSize: 24, fontWeight: 700, color: '#0F172A', margin: 0, letterSpacing: '-0.3px' }}>
+                <h1 style={{ fontFamily: theme.font.display, fontSize: 24, fontWeight: 700, color: theme.color.text1, margin: 0, letterSpacing: '-0.3px' }}>
                   Analytics & Performance
                 </h1>
                 <span style={{ fontSize: 11, background: '#ECFDF5', color: '#059669', padding: '3px 10px', borderRadius: 20, fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
@@ -203,7 +203,7 @@ export default function AnalyticsPage() {
                   Live Proof of Play
                 </span>
               </div>
-              <p style={{ fontSize: 13, color: '#64748B', margin: 0, fontWeight: 500 }}>
+              <p style={{ fontSize: 13, color: theme.color.text3, margin: 0, fontWeight: 500 }}>
                 Real-time broadcast execution metrics, viewer impressions, and prime screen airtime reporting.
               </p>
             </div>
@@ -211,7 +211,7 @@ export default function AnalyticsPage() {
             {/* Timeframe & Export */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
               {/* Timeframe Switcher */}
-              <div style={{ display: 'inline-flex', background: '#F8FAFC', padding: 3, borderRadius: 10, border: '1px solid #E2E8F0' }}>
+              <div style={{ display: 'inline-flex', background: theme.color.bg, padding: 3, borderRadius: 10, border: `1px solid ${theme.color.border}` }}>
                 {[
                   { id: 'today', label: 'Today' },
                   { id: '7d', label: '7 Days' },
@@ -223,7 +223,7 @@ export default function AnalyticsPage() {
                     onClick={() => { setTimeframe(t.id as any); toast(`Viewing ${t.label} analytics`, 'success'); }}
                     style={{
                       background: timeframe === t.id ? '#FFFFFF' : 'transparent',
-                      color: timeframe === t.id ? '#0F172A' : '#64748B',
+                      color: timeframe === t.id ? theme.color.text1 : theme.color.text3,
                       border: 'none',
                       borderRadius: 7,
                       padding: '6px 14px',
@@ -310,22 +310,22 @@ export default function AnalyticsPage() {
                 bg: '#F0F9FF' 
               },
             ].map((stat, i) => (
-              <FadeCard key={stat.label} delay={i * 0.05} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 16, padding: '20px 22px', position: 'relative', overflow: 'hidden' }}>
+              <FadeCard key={stat.label} delay={i * 0.05} style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 16, padding: '20px 22px', position: 'relative', overflow: 'hidden' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: '#64748B' }}>{stat.label}</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: theme.color.text3 }}>{stat.label}</span>
                   <div style={{ width: 34, height: 34, borderRadius: 10, background: stat.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <stat.icon size={16} color={stat.color} />
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 4 }}>
-                  <p style={{ fontSize: 22, fontWeight: 800, color: '#0F172A', margin: 0, letterSpacing: '-0.5px' }}>
+                  <p style={{ fontSize: 22, fontWeight: 800, color: theme.color.text1, margin: 0, letterSpacing: '-0.5px' }}>
                     {stat.value}
                   </p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 800, color: stat.up ? '#10B981' : '#EF4444' }}>
                     {stat.trend}
                   </div>
                 </div>
-                <p style={{ fontSize: 11, color: '#94A3B8', margin: 0, fontWeight: 600 }}>{stat.subValue}</p>
+                <p style={{ fontSize: 11, color: theme.color.text4, margin: 0, fontWeight: 600 }}>{stat.subValue}</p>
               </FadeCard>
             ))}
           </div>
@@ -334,13 +334,13 @@ export default function AnalyticsPage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 20, marginBottom: 24 }}>
             
             {/* Chart 1: Proof of Play Trend (AreaChart) */}
-            <FadeCard delay={0.15} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 20, padding: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
+            <FadeCard delay={0.15} style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 20, padding: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
                 <div>
-                  <h3 style={{ fontSize: 16, fontWeight: 800, color: '#0F172A', margin: '0 0 2px' }}>
+                  <h3 style={{ fontSize: 16, fontWeight: 800, color: theme.color.text1, margin: '0 0 2px' }}>
                     Proof of Play & Reach Velocity
                   </h3>
-                  <p style={{ fontSize: 12, color: '#64748B', margin: 0 }}>
+                  <p style={{ fontSize: 12, color: theme.color.text3, margin: 0 }}>
                     Verified screen play count over {timeframe === '30d' ? 'the past 30 days' : 'the active period'}
                   </p>
                 </div>
@@ -358,9 +358,9 @@ export default function AnalyticsPage() {
                         <stop offset="95%" stopColor="#C69A2C" stopOpacity={0.0}/>
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-                    <XAxis dataKey="time" stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={false} />
-                    <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={false} tickFormatter={v => `${v}`} />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme.color.surface2} />
+                    <XAxis dataKey="time" stroke={theme.color.text4} fontSize={11} tickLine={false} axisLine={false} />
+                    <YAxis stroke={theme.color.text4} fontSize={11} tickLine={false} axisLine={false} tickFormatter={v => `${v}`} />
                     <Tooltip content={<CustomChartTooltip />} />
                     <Area type="monotone" dataKey="plays" name="Screen Plays" stroke="#C69A2C" strokeWidth={2.5} fillOpacity={1} fill="url(#goldGradient)" />
                   </AreaChart>
@@ -369,27 +369,27 @@ export default function AnalyticsPage() {
             </FadeCard>
 
             {/* Chart 2: Plays by Screen Location (BarChart) */}
-            <FadeCard delay={0.2} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 20, padding: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
+            <FadeCard delay={0.2} style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 20, padding: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
                 <div>
-                  <h3 style={{ fontSize: 16, fontWeight: 800, color: '#0F172A', margin: '0 0 2px' }}>
+                  <h3 style={{ fontSize: 16, fontWeight: 800, color: theme.color.text1, margin: '0 0 2px' }}>
                     Airtime Distribution by Billboard
                   </h3>
-                  <p style={{ fontSize: 12, color: '#64748B', margin: 0 }}>
+                  <p style={{ fontSize: 12, color: theme.color.text3, margin: 0 }}>
                     Comparative execution volume per billboard terminal
                   </p>
                 </div>
-                <Tv size={18} color="#64748B" />
+                <Tv size={18} color={theme.color.text3} />
               </div>
 
               <div style={{ height: 260, width: '100%' }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={SCREEN_BAR_DATA} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-                    <XAxis dataKey="screen" stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={false} />
-                    <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} axisLine={false} />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme.color.surface2} />
+                    <XAxis dataKey="screen" stroke={theme.color.text4} fontSize={11} tickLine={false} axisLine={false} />
+                    <YAxis stroke={theme.color.text4} fontSize={11} tickLine={false} axisLine={false} />
                     <Tooltip content={<CustomChartTooltip />} />
-                    <Bar dataKey="plays" name="Total Plays" fill="#0F172A" radius={[6, 6, 0, 0]} />
+                    <Bar dataKey="plays" name="Total Plays" fill={theme.color.text1} radius={[6, 6, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -398,15 +398,15 @@ export default function AnalyticsPage() {
           </div>
 
           {/* ─── PROOF OF PLAY TABLE ─── */}
-          <FadeCard delay={0.25} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 20, boxShadow: '0 4px 24px rgba(0,0,0,0.02)', overflow: 'hidden' }}>
+          <FadeCard delay={0.25} style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 20, boxShadow: '0 4px 24px rgba(0,0,0,0.02)', overflow: 'hidden' }}>
             
             {/* Table Toolbar */}
-            <div style={{ padding: '20px 24px', borderBottom: '1px solid #F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 14 }}>
+            <div style={{ padding: '20px 24px', borderBottom: `1px solid ${theme.color.surface2}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 14 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <h2 style={{ fontSize: 16, fontWeight: 800, color: '#0F172A', margin: 0 }}>
+                <h2 style={{ fontSize: 16, fontWeight: 800, color: theme.color.text1, margin: 0 }}>
                   Proof of Play Breakdown
                 </h2>
-                <span style={{ fontSize: 12, fontWeight: 700, color: '#64748B', background: '#F8FAFC', padding: '3px 10px', borderRadius: 14 }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: theme.color.text3, background: theme.color.bg, padding: '3px 10px', borderRadius: 14 }}>
                   {filteredData.length} records
                 </span>
               </div>
@@ -414,7 +414,7 @@ export default function AnalyticsPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                 {/* Search */}
                 <div style={{ position: 'relative', width: 220 }}>
-                  <Search size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
+                  <Search size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: theme.color.text4 }} />
                   <input 
                     type="text" 
                     placeholder="Search creative, ref, screen..." 
@@ -423,8 +423,8 @@ export default function AnalyticsPage() {
                     style={{ 
                       width: '100%', 
                       padding: '8px 12px 8px 34px', 
-                      background: '#F8FAFC', 
-                      border: '1px solid #E2E8F0', 
+                      background: theme.color.bg, 
+                      border: `1px solid ${theme.color.border}`, 
                       borderRadius: 10, 
                       fontSize: 12, 
                       fontWeight: 500, 
@@ -442,11 +442,11 @@ export default function AnalyticsPage() {
                   style={{
                     padding: '8px 12px',
                     borderRadius: 10,
-                    border: '1px solid #E2E8F0',
-                    background: '#FFFFFF',
+                    border: `1px solid ${theme.color.border}`,
+                    background: theme.color.surface,
                     fontSize: 12,
                     fontWeight: 700,
-                    color: '#334155',
+                    color: theme.color.text2,
                     outline: 'none',
                     fontFamily: F,
                     cursor: 'pointer'
@@ -465,13 +465,13 @@ export default function AnalyticsPage() {
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse', textAlign: 'left' }}>
                 <thead>
-                  <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
+                  <tr style={{ background: theme.color.bg, borderBottom: `1px solid ${theme.color.border}` }}>
                     {['Creative & Ad Info', 'Billboard Screen', 'Booking Ref', 'Play Count', 'Est. Reach', 'Last Broadcast', 'Status'].map((h, i) => (
                       <th 
                         key={h} 
                         style={{ 
                           padding: '14px 20px', 
-                          color: '#64748B', 
+                          color: theme.color.text3, 
                           fontWeight: 700, 
                           fontSize: 11, 
                           textTransform: 'uppercase', 
@@ -491,15 +491,15 @@ export default function AnalyticsPage() {
                         <div style={{ width: 56, height: 56, borderRadius: 16, background: '#FFFDF5', border: '1px solid #FDE68A', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
                           <PlayCircle size={24} color="#C69A2C" />
                         </div>
-                        <p style={{ fontSize: 15, fontWeight: 700, color: '#0F172A', margin: '0 0 4px' }}>No analytics records match</p>
-                        <p style={{ fontSize: 12, color: '#94A3B8', margin: 0 }}>Try adjusting your search query or screen filter.</p>
+                        <p style={{ fontSize: 15, fontWeight: 700, color: theme.color.text1, margin: '0 0 4px' }}>No analytics records match</p>
+                        <p style={{ fontSize: 12, color: theme.color.text4, margin: 0 }}>Try adjusting your search query or screen filter.</p>
                       </td>
                     </tr>
                   ) : (
                     currentRecords.map(r => (
                       <tr 
                         key={r.id}
-                        style={{ borderBottom: '1px solid #F1F5F9', transition: 'background 0.15s' }}
+                        style={{ borderBottom: `1px solid ${theme.color.surface2}`, transition: 'background 0.15s' }}
                         onMouseEnter={e => e.currentTarget.style.background = '#FBFDFE'}
                         onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                       >
@@ -510,10 +510,10 @@ export default function AnalyticsPage() {
                               <Tv size={16} color="#C69A2C" />
                             </div>
                             <div>
-                              <p style={{ fontSize: 13, fontWeight: 700, color: '#0F172A', margin: '0 0 2px' }}>
+                              <p style={{ fontSize: 13, fontWeight: 700, color: theme.color.text1, margin: '0 0 2px' }}>
                                 {r.creative_title}
                               </p>
-                              <span style={{ fontSize: 11, color: '#64748B', fontWeight: 500 }}>
+                              <span style={{ fontSize: 11, color: theme.color.text3, fontWeight: 500 }}>
                                 {r.airtime_mins} mins total airtime
                               </span>
                             </div>
@@ -522,10 +522,10 @@ export default function AnalyticsPage() {
 
                         {/* Screen */}
                         <td style={{ padding: '16px 20px' }}>
-                          <p style={{ fontSize: 13, fontWeight: 700, color: '#0F172A', margin: '0 0 2px' }}>
+                          <p style={{ fontSize: 13, fontWeight: 700, color: theme.color.text1, margin: '0 0 2px' }}>
                             {r.screen_name}
                           </p>
-                          <span style={{ fontSize: 11, color: '#64748B' }}>
+                          <span style={{ fontSize: 11, color: theme.color.text3 }}>
                             {r.city}
                           </span>
                         </td>
@@ -546,15 +546,15 @@ export default function AnalyticsPage() {
 
                         {/* Impressions */}
                         <td style={{ padding: '16px 20px', textAlign: 'right' }}>
-                          <span style={{ fontSize: 13, fontWeight: 800, color: '#0F172A' }}>
+                          <span style={{ fontSize: 13, fontWeight: 800, color: theme.color.text1 }}>
                             ~{Number(r.impressions).toLocaleString()}
                           </span>
                         </td>
 
                         {/* Last Played */}
-                        <td style={{ padding: '16px 20px', color: '#64748B', fontSize: 12 }}>
+                        <td style={{ padding: '16px 20px', color: theme.color.text3, fontSize: 12 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <Clock size={12} color="#94A3B8" />
+                            <Clock size={12} color={theme.color.text4} />
                             <span>{new Date(r.last_played).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })} · {new Date(r.last_played).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</span>
                           </div>
                         </td>
@@ -566,14 +566,14 @@ export default function AnalyticsPage() {
                             fontWeight: 700, 
                             padding: '4px 10px', 
                             borderRadius: 20, 
-                            background: r.status === 'Live' ? '#ECFDF5' : '#F8FAFC',
-                            color: r.status === 'Live' ? '#059669' : '#64748B',
-                            border: `1px solid ${r.status === 'Live' ? '#A7F3D0' : '#E2E8F0'}`,
+                            background: r.status === 'Live' ? '#ECFDF5' : theme.color.bg,
+                            color: r.status === 'Live' ? '#059669' : theme.color.text3,
+                            border: `1px solid ${r.status === 'Live' ? '#A7F3D0' : theme.color.border}`,
                             display: 'inline-flex',
                             alignItems: 'center',
                             gap: 4
                           }}>
-                            <span style={{ width: 5, height: 5, borderRadius: '50%', background: r.status === 'Live' ? '#10B981' : '#94A3B8' }} />
+                            <span style={{ width: 5, height: 5, borderRadius: '50%', background: r.status === 'Live' ? '#10B981' : theme.color.text4 }} />
                             {r.status}
                           </span>
                         </td>
@@ -585,21 +585,21 @@ export default function AnalyticsPage() {
             </div>
 
             {/* Pagination Controls */}
-            <div style={{ padding: '16px 24px', borderTop: '1px solid #F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
+            <div style={{ padding: '16px 24px', borderTop: `1px solid ${theme.color.surface2}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
               {/* Left: Page Size Selector */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 12, color: '#64748B', fontWeight: 600 }}>Showing</span>
+                <span style={{ fontSize: 12, color: theme.color.text3, fontWeight: 600 }}>Showing</span>
                 <select 
                   value={pageSize}
                   onChange={e => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
                   style={{ 
                     padding: '4px 8px', 
                     borderRadius: 8, 
-                    border: '1px solid #E2E8F0', 
+                    border: `1px solid ${theme.color.border}`, 
                     fontSize: 12, 
                     fontWeight: 700, 
-                    color: '#0F172A', 
-                    background: '#FFFFFF',
+                    color: theme.color.text1, 
+                    background: theme.color.surface,
                     outline: 'none',
                     fontFamily: F
                   }}
@@ -611,7 +611,7 @@ export default function AnalyticsPage() {
               </div>
 
               {/* Center: Range text */}
-              <div style={{ fontSize: 12, color: '#64748B', fontWeight: 600 }}>
+              <div style={{ fontSize: 12, color: theme.color.text3, fontWeight: 600 }}>
                 Showing {totalRecords === 0 ? 0 : startIndex + 1} to {endIndex} out of {totalRecords} records
               </div>
 
@@ -624,9 +624,9 @@ export default function AnalyticsPage() {
                     width: 28,
                     height: 28,
                     borderRadius: 6,
-                    border: '1px solid #E2E8F0',
-                    background: '#FFFFFF',
-                    color: currentPage === 1 ? '#CBD5E1' : '#334155',
+                    border: `1px solid ${theme.color.border}`,
+                    background: theme.color.surface,
+                    color: currentPage === 1 ? theme.color.border2 : theme.color.text2,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -649,7 +649,7 @@ export default function AnalyticsPage() {
                         borderRadius: 6,
                         border: isActive ? '1px solid #C69A2C' : '1px solid transparent',
                         background: isActive ? '#FFFDF5' : 'transparent',
-                        color: isActive ? '#C69A2C' : '#64748B',
+                        color: isActive ? '#C69A2C' : theme.color.text3,
                         fontSize: 12,
                         fontWeight: isActive ? 800 : 600,
                         cursor: 'pointer',
@@ -668,9 +668,9 @@ export default function AnalyticsPage() {
                     width: 28,
                     height: 28,
                     borderRadius: 6,
-                    border: '1px solid #E2E8F0',
-                    background: '#FFFFFF',
-                    color: currentPage === totalPages ? '#CBD5E1' : '#334155',
+                    border: `1px solid ${theme.color.border}`,
+                    background: theme.color.surface,
+                    color: currentPage === totalPages ? theme.color.border2 : theme.color.text2,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -696,8 +696,8 @@ export default function AnalyticsPage() {
                 alignItems: 'center',
                 gap: 10,
                 padding: '12px 24px',
-                background: '#FFFFFF',
-                border: '1px solid #E2E8F0',
+                background: theme.color.surface,
+                border: `1px solid ${theme.color.border}`,
                 borderRadius: 24,
                 boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
                 textDecoration: 'none',
@@ -710,7 +710,7 @@ export default function AnalyticsPage() {
             >
               <span className="chat-fab-label">Chat with Arella</span>
               <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'linear-gradient(135deg, #6366F1, #A855F7, #EC4899)', padding: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ width: '100%', height: '100%', background: '#fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: '100%', height: '100%', background: theme.color.surface, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Globe size={13} color="#4F46E5" />
                 </div>
               </div>

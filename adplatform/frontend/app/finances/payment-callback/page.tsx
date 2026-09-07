@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import api from '@/lib/api';
 import { FaArrowRight, FaCreditCard, FaCircleCheck, FaCircleXmark } from 'react-icons/fa6';
+import { theme } from '@/lib/theme';
 
 const F = "'Quicksand', sans-serif";
 
@@ -48,7 +49,7 @@ function FinancesPaymentCallbackContent() {
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        style={{ maxWidth: 480, width: '100%', background: '#fff', border: '1px solid #E2E8F0', borderRadius: 20, padding: 36, textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,0.05)' }}
+        style={{ maxWidth: 480, width: '100%', background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 20, padding: 36, textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,0.05)' }}
       >
         {/* Logo */}
         <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, textDecoration: 'none', marginBottom: 28 }}>
@@ -60,7 +61,7 @@ function FinancesPaymentCallbackContent() {
             <div style={{ width: 44, height: 44, border: '3px solid rgba(212,175,55,0.2)', borderTopColor: '#D4AF37', borderRadius: '50%', animation: 'spin 0.75s linear infinite', margin: '0 auto 20px' }} />
             <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
             <p style={{ fontSize: 16, fontWeight: 600, color: '#1A1A1A', margin: '0 0 6px' }}>Confirming your payment...</p>
-            <p style={{ fontSize: 13, color: '#64748B', margin: 0 }}>Please wait, updating your balance...</p>
+            <p style={{ fontSize: 13, color: theme.color.text3, margin: 0 }}>Please wait, updating your balance...</p>
           </>
         )}
 
@@ -71,7 +72,7 @@ function FinancesPaymentCallbackContent() {
             </div>
             <p style={{ fontSize: 11, fontWeight: 700, color: '#22c55e', letterSpacing: '0.1em', textTransform: 'uppercase', margin: '0 0 8px' }}>Credits Added</p>
             <h2 style={{ fontSize: 22, fontWeight: 800, color: '#1A1A1A', margin: '0 0 10px', letterSpacing: '-0.3px' }}>Top-up Successful!</h2>
-            <p style={{ fontSize: 14, color: '#64748B', margin: '0 0 24px', lineHeight: 1.6 }}>{message}</p>
+            <p style={{ fontSize: 14, color: theme.color.text3, margin: '0 0 24px', lineHeight: 1.6 }}>{message}</p>
 
             <div style={{ display: 'flex', gap: 10 }}>
               <Link href="/finances" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: '#D4AF37', color: '#111111', padding: '12px', borderRadius: 10, fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>
@@ -87,7 +88,7 @@ function FinancesPaymentCallbackContent() {
               <FaCircleXmark size={30} color="#ef4444" />
             </div>
             <h2 style={{ fontSize: 20, fontWeight: 800, color: '#1A1A1A', margin: '0 0 10px' }}>Top-up Failed</h2>
-            <p style={{ fontSize: 14, color: '#64748B', margin: '0 0 24px', lineHeight: 1.6 }}>{message}</p>
+            <p style={{ fontSize: 14, color: theme.color.text3, margin: '0 0 24px', lineHeight: 1.6 }}>{message}</p>
             <div style={{ display: 'flex', gap: 10 }}>
               <Link href="/finances" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: '#D4AF37', color: '#111111', padding: '12px', borderRadius: 10, fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>
                 Try Again <FaArrowRight size={12} />
