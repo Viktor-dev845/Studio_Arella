@@ -45,16 +45,20 @@ export const createScreen : RequestHandler = async (req, res) => {
   }
 };
 
+// Screens are centrally admin-managed (see getScreens: "managed by Bems
+// Group admin"), not per-owner — any admin must be able to manage any
+// screen, not just the one who happens to be recorded as owner_id.
 export const updateScreen : RequestHandler = async (req, res) => {
     const authReq = req as AuthRequest;
+  if (authReq.user?.role !== 'admin') { res.status(403).json({ message: 'Admin only' }); return; }
   try {
     const { name, location, type, size, price_per_sec, impressions_per_day, status } = req.body;
     const result = await pool.query(
       `UPDATE screens SET name=COALESCE($1,name), location=COALESCE($2,location),
        type=COALESCE($3,type), size=COALESCE($4,size), price_per_sec=COALESCE($5,price_per_sec),
        impressions_per_day=COALESCE($6,impressions_per_day), status=COALESCE($7,status)
-       WHERE id=$8 AND owner_id=$9 RETURNING *`,
-      [name, location, type, size, price_per_sec, impressions_per_day, status, req.params.id, authReq.user?.id]
+       WHERE id=$8 RETURNING *`,
+      [name, location, type, size, price_per_sec, impressions_per_day, status, req.params.id]
     );
     if (!result.rows[0]) { res.status(404).json({ message: 'Screen not found' }); return; }
     res.json(result.rows[0]);
@@ -65,8 +69,9 @@ export const updateScreen : RequestHandler = async (req, res) => {
 
 export const deleteScreen : RequestHandler = async (req, res) => {
     const authReq = req as AuthRequest;
+  if (authReq.user?.role !== 'admin') { res.status(403).json({ message: 'Admin only' }); return; }
   try {
-    const result = await pool.query('DELETE FROM screens WHERE id=$1 AND owner_id=$2 RETURNING id', [req.params.id, authReq.user?.id]);
+    const result = await pool.query('DELETE FROM screens WHERE id=$1 RETURNING id', [req.params.id]);
     if (!result.rows[0]) { res.status(404).json({ message: 'Screen not found' }); return; }
     res.json({ message: 'Screen deleted' });
   } catch (err) {

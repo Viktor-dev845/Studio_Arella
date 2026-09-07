@@ -121,10 +121,17 @@ export const reserveSlots: RequestHandler = async (req, res) => {
     const costPerSec = totalSeconds > 0 ? totalCost / totalSeconds : 0;
 
     await client.query('BEGIN');
-    
+
+    // Serialize all reservation attempts for this screen so two concurrent
+    // requests can't both pass the conflict check below before either has
+    // inserted its slots — the conflict check alone can't catch a race
+    // against another transaction's not-yet-committed insert. Automatically
+    // released at COMMIT/ROLLBACK.
+    await client.query('SELECT pg_advisory_xact_lock(hashtext($1))', [screen_id]);
+
     // Clear any previous unpaid bookings for this user to allow them to recreate their cart without waiting 10 minutes
     await client.query(`
-      DELETE FROM bookings 
+      DELETE FROM bookings
       WHERE user_id = $1 AND status = 'pending_payment'
     `, [authReq.user?.id]);
 
@@ -182,7 +189,7 @@ export const reserveSlots: RequestHandler = async (req, res) => {
   } catch (err: any) {
     await client.query('ROLLBACK');
     console.error('Reserve slots error', err);
-    res.status(500).json({ message: err.message || 'Failed to reserve slots' });
+    res.status(500).json({ message: 'Failed to reserve slots' });
   } finally {
     client.release();
   }
@@ -198,13 +205,17 @@ export const createBooking: RequestHandler = async (req, res) => {
       res.status(400).json({ message: 'Screen, start time, and end time are required' }); return;
     }
 
-    // Check creative is approved if provided
+    // Check creative is approved if provided, and capture its real per-minute
+    // rate — this is the actual pricing source of truth used elsewhere
+    // (reserveSlots), not a flat platform-wide rate.
+    let adPpmRate: number | null = null;
     if (ad_id) {
-      const ad = await pool.query('SELECT status FROM ads WHERE id = $1 AND user_id = $2', [ad_id, authReq.user?.id]);
+      const ad = await pool.query('SELECT status, ppm_rate FROM ads WHERE id = $1 AND user_id = $2', [ad_id, authReq.user?.id]);
       if (!ad.rows[0]) { res.status(404).json({ message: 'Creative not found' }); return; }
       if (ad.rows[0].status !== 'approved') {
         res.status(400).json({ message: 'Only approved creatives can be attached to a booking' }); return;
       }
+      adPpmRate = Number(ad.rows[0].ppm_rate) || 1000;
     }
 
     // Check for double-booking
@@ -232,9 +243,19 @@ export const createBooking: RequestHandler = async (req, res) => {
       res.status(409).json({ message: 'This time slot has been blocked by the admin.' }); return;
     }
 
-    // Server-side price validation
+    // Server-side price validation — never trust the client-supplied amount.
+    // Uses the ad's real per-minute rate when a creative is attached
+    // (matching reserveSlots' pricing), or the screen's real price_per_sec
+    // otherwise. Neither falls back to a hardcoded flat rate.
     const mins = Number(duration_minutes);
-    const expectedCost = mins * 1000;
+    let expectedCost: number;
+    if (adPpmRate !== null) {
+      expectedCost = mins * adPpmRate;
+    } else {
+      const screen = await pool.query('SELECT price_per_sec FROM screens WHERE id = $1', [screen_id]);
+      if (!screen.rows[0]) { res.status(404).json({ message: 'Screen not found' }); return; }
+      expectedCost = mins * 60 * Number(screen.rows[0].price_per_sec);
+    }
     if (Math.abs(Number(total_cost) - expectedCost) > 1) {
       res.status(400).json({ message: 'Cost mismatch. Please refresh and try again.' }); return;
     }
@@ -275,16 +296,26 @@ export const cancelBooking: RequestHandler = async (req, res) => {
     const isAdmin = authReq.user?.role === 'admin';
     const { reason, force_refund } = req.body;
 
+    await client.query('BEGIN');
+
+    // Locked for the duration of this transaction so a second concurrent
+    // cancel on the same booking blocks here instead of racing past the
+    // 'cancelled' status check below and double-refunding the wallet.
     const bookingRes = await client.query(
       `SELECT b.*, u.email as user_email, u.name as user_name
        FROM bookings b LEFT JOIN users u ON b.user_id = u.id
-       WHERE b.id = $1 ${!isAdmin ? 'AND b.user_id = $2' : ''}`,
+       WHERE b.id = $1 ${!isAdmin ? 'AND b.user_id = $2' : ''}
+       FOR UPDATE OF b`,
       isAdmin ? [req.params.id] : [req.params.id, authReq.user?.id]
     );
-    if (!bookingRes.rows[0]) { res.status(404).json({ message: 'Booking not found' }); return; }
+    if (!bookingRes.rows[0]) {
+      await client.query('ROLLBACK');
+      res.status(404).json({ message: 'Booking not found' }); return;
+    }
 
     const booking = bookingRes.rows[0];
     if (['cancelled', 'completed'].includes(booking.status)) {
+      await client.query('ROLLBACK');
       res.status(400).json({ message: 'This booking cannot be cancelled' }); return;
     }
 
@@ -293,8 +324,6 @@ export const cancelBooking: RequestHandler = async (req, res) => {
     const cancellationHours = 48;
     const eligibleForRefund = isAdmin ? (force_refund !== false) : hoursUntilSlot >= cancellationHours;
     const refundAmount = eligibleForRefund ? Number(booking.total_cost) : 0;
-
-    await client.query('BEGIN');
 
     await client.query(
       `UPDATE bookings SET status = 'cancelled', cancelled_at = NOW(),

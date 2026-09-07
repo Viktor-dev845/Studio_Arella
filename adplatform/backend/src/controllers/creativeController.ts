@@ -91,11 +91,17 @@ export const getAllCreativeRequests : RequestHandler = async (req, res) => {
   }
 };
 
+const VALID_CREATIVE_REQUEST_STATUSES = new Set(['pending', 'in_progress', 'completed', 'cancelled']);
+
 export const updateCreativeRequestStatus : RequestHandler = async (req, res) => {
     const authReq = req as AuthRequest;
   if (authReq.user?.role !== 'admin') { res.status(403).json({ message: 'Admin only' }); return; }
   try {
     const { status, admin_notes } = req.body;
+    if (!VALID_CREATIVE_REQUEST_STATUSES.has(status)) {
+      res.status(400).json({ message: "Status must be one of: pending, in_progress, completed, cancelled" });
+      return;
+    }
     const result = await pool.query(
       'UPDATE creative_requests SET status=$1, admin_notes=$2 WHERE id=$3 RETURNING *',
       [status, admin_notes, req.params.id]

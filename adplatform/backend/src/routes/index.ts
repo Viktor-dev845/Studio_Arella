@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import passport from '../middleware/passport';
 import { upload } from '../middleware/upload';
 import { authenticate } from '../middleware/auth';
+import { otpGuessLimiter, otpRequestLimiter, authLimiter, chatLimiter } from '../middleware/rateLimit';
 
 // Auth
 import { register, login, getMe, updateProfile, changePassword, verifyEmail, resendVerification, forgotPassword, resetPassword, acceptTerms, markTourSeen } from '../controllers/authController';
@@ -53,18 +54,18 @@ router.get('/shows/:id', getShow);
 router.post('/shows/:id/episodes', authenticate, upload.fields([{ name: 'cover', maxCount: 1 }, { name: 'audio', maxCount: 1 }]), createEpisode);
 
 // ── Arella AI chat ──────────────────────────────────────────────────────────
-router.post('/chat', authenticate, sendChatMessage);
+router.post('/chat', authenticate, chatLimiter, sendChatMessage);
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
-router.post('/auth/register', register);
-router.post('/auth/login', login);
+router.post('/auth/register', authLimiter, register);
+router.post('/auth/login', authLimiter, login);
 router.get('/auth/me', authenticate, getMe);
 router.put('/auth/profile', authenticate, updateProfile);
 router.put('/auth/password', authenticate, changePassword);
-router.post('/auth/verify-email', authenticate, verifyEmail);
-router.post('/auth/resend-verification', resendVerification);
-router.post('/auth/forgot-password', forgotPassword);
-router.post('/auth/reset-password', resetPassword);
+router.post('/auth/verify-email', authenticate, otpGuessLimiter, verifyEmail);
+router.post('/auth/resend-verification', otpRequestLimiter, resendVerification);
+router.post('/auth/forgot-password', otpRequestLimiter, forgotPassword);
+router.post('/auth/reset-password', otpGuessLimiter, resetPassword);
 router.post('/auth/accept-terms', authenticate, acceptTerms);
 router.post('/auth/tour-seen', authenticate, markTourSeen);
 

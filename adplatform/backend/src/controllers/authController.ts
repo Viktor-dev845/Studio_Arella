@@ -398,26 +398,45 @@ export const forgotPassword: RequestHandler = async (req, res) => {
 };
 
 // ── Reset password ────────────────────────────────────────────────────────────
+// Per-token attempt lockout below is defense in depth alongside the IP-based
+// otpGuessLimiter on this route — the limiter alone can be bypassed by an
+// attacker spread across many IPs, but a lockout tied to the token itself
+// can't be, since it caps guesses against that one code regardless of source.
+const MAX_RESET_ATTEMPTS = 5;
+
 export const resetPassword: RequestHandler = async (req, res) => {
   try {
     const { email, code, password } = req.body;
     if (!email || !code || !password) { res.status(400).json({ message: 'Email, code, and password are required' }); return; }
     if (password.length < 6) { res.status(400).json({ message: 'Password must be at least 6 characters' }); return; }
 
-    const result = await pool.query(
+    // The current active (unused, unexpired) reset token for this email, if any.
+    const activeToken = await pool.query(
       `SELECT t.* FROM password_reset_tokens t
        JOIN users u ON u.id = t.user_id
-       WHERE t.token = $1 AND u.email = $2 AND t.used = false AND t.expires_at > NOW()`,
-      [code, email]
+       WHERE u.email = $1 AND t.used = false AND t.expires_at > NOW()
+       ORDER BY t.created_at DESC LIMIT 1`,
+      [email]
     );
-    if (!result.rows[0]) {
+    const tokenRow = activeToken.rows[0];
+
+    if (tokenRow && tokenRow.attempts >= MAX_RESET_ATTEMPTS) {
+      await pool.query('UPDATE password_reset_tokens SET used = true WHERE id = $1', [tokenRow.id]);
+      res.status(429).json({ message: 'Too many incorrect attempts. Please request a new reset code.' });
+      return;
+    }
+
+    if (!tokenRow || tokenRow.token !== code) {
+      if (tokenRow) {
+        await pool.query('UPDATE password_reset_tokens SET attempts = attempts + 1 WHERE id = $1', [tokenRow.id]);
+      }
       res.status(400).json({ message: 'Invalid or expired reset code. Please request a new one.' });
       return;
     }
 
     const hashed = await bcrypt.hash(password, 12);
-    await pool.query('UPDATE users SET password = $1 WHERE id = $2', [hashed, result.rows[0].user_id]);
-    await pool.query('UPDATE password_reset_tokens SET used = true WHERE id = $1', [result.rows[0].id]);
+    await pool.query('UPDATE users SET password = $1 WHERE id = $2', [hashed, tokenRow.user_id]);
+    await pool.query('UPDATE password_reset_tokens SET used = true WHERE id = $1', [tokenRow.id]);
     res.json({ message: 'Password reset successfully. You can now sign in.' });
   } catch (err) {
     res.status(500).json({ message: 'Reset failed' });

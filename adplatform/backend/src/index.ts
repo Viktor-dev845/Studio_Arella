@@ -148,6 +148,13 @@ app.listen(PORT, async () => {
       `);
       console.log('✅ podcast_bookings start_time/end_time migrated to TIMESTAMPTZ');
     }
+
+    // HOTFIX: track failed reset-code guesses per token so a reset code can
+    // be locked out after a handful of wrong attempts, independent of the
+    // IP-based rate limiter (defense in depth against a distributed attack).
+    await pool.query(`
+      ALTER TABLE password_reset_tokens ADD COLUMN IF NOT EXISTS attempts INTEGER DEFAULT 0;
+    `);
   } catch (err) {
     console.error('❌ Failed to run database migrations:', err);
   }

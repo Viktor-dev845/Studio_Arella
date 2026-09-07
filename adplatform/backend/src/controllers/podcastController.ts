@@ -34,9 +34,14 @@ const PACKAGE_RATE_PER_HOUR: Record<string, number> = {
   'Audio + Video': 20000,
 };
 
+// Single fixed key — there is exactly one bookable studio resource, so every
+// reservation attempt serializes against every other one platform-wide.
+const STUDIO_ADVISORY_LOCK_KEY = 'studio-arella-podcast-studio';
+
 export const reserveSlot = async (req: Request, res: Response) => {
+  const userId = (req as any).user.id;
+  const client = await pool.connect();
   try {
-    const userId = (req as any).user.id;
     const { package_type, start_time, end_time, duration_minutes, notes } = req.body;
 
     if (!start_time || !end_time || !duration_minutes) {
@@ -54,7 +59,14 @@ export const reserveSlot = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Invalid package type' });
     }
 
-    const conflictCheck = await pool.query(
+    await client.query('BEGIN');
+
+    // Serializes every reservation attempt against every other one so two
+    // concurrent requests can't both pass the conflict check below before
+    // either has inserted its booking. Released automatically at COMMIT/ROLLBACK.
+    await client.query('SELECT pg_advisory_xact_lock(hashtext($1))', [STUDIO_ADVISORY_LOCK_KEY]);
+
+    const conflictCheck = await client.query(
       `SELECT id FROM podcast_bookings
        WHERE (status IN ('confirmed', 'completed') OR (status = 'pending' AND created_at >= NOW() - INTERVAL '5 minutes'))
        AND (start_time < $2 AND end_time > $1)`,
@@ -62,6 +74,7 @@ export const reserveSlot = async (req: Request, res: Response) => {
     );
 
     if (conflictCheck.rows.length > 0) {
+      await client.query('ROLLBACK');
       return res.status(409).json({ message: 'Time slot is already booked or reserved.' });
     }
 
@@ -69,7 +82,7 @@ export const reserveSlot = async (req: Request, res: Response) => {
     const booking_number = 'POD-' + Math.random().toString(36).substr(2, 8).toUpperCase();
     const total_cost = Math.round((Number(duration_minutes) / 60) * ratePerHour);
 
-    const { rows } = await pool.query(
+    const { rows } = await client.query(
       `INSERT INTO podcast_bookings
        (booking_number, user_id, package_type, start_time, end_time, duration_minutes, addons, base_cost, addons_cost, total_cost, status, payment_status, notes)
        VALUES ($1, $2, $3, $4, $5, $6, '[]'::jsonb, $7, 0, $7, 'pending', 'pending', $8)
@@ -77,10 +90,14 @@ export const reserveSlot = async (req: Request, res: Response) => {
       [booking_number, userId, package_type, start_time, end_time, duration_minutes, total_cost, notes?.trim() || null]
     );
 
+    await client.query('COMMIT');
     res.json({ message: 'Slot reserved successfully', booking_id: rows[0].id, booking_number: rows[0].booking_number, total_cost });
   } catch (error: any) {
+    await client.query('ROLLBACK').catch(() => {});
     console.error('Error reserving podcast slot:', error);
     res.status(500).json({ message: 'Failed to reserve slot' });
+  } finally {
+    client.release();
   }
 };
 
@@ -117,6 +134,11 @@ export const reserveSeries = async (req: Request, res: Response) => {
     }
 
     await client.query('BEGIN');
+
+    // Same platform-wide serialization as the single-session reserve endpoint
+    // — without it, two concurrent series/slot reservations could each pass
+    // the conflict check below before either has inserted its bookings.
+    await client.query('SELECT pg_advisory_xact_lock(hashtext($1))', [STUDIO_ADVISORY_LOCK_KEY]);
 
     // Conflict-check every session against existing bookings AND against each
     // other in this same request (in case the picked pattern overlaps itself).
@@ -305,15 +327,21 @@ export const cancelPodcastBooking = async (req: Request, res: Response) => {
   const userId = (req as any).user.id;
   const client = await pool.connect();
   try {
+    await client.query('BEGIN');
+
+    // Locked so a second concurrent cancel on the same booking blocks here
+    // instead of racing past the 'cancelled' status check and double-refunding.
     const bookingRes = await client.query(
-      `SELECT * FROM podcast_bookings WHERE id = $1 AND user_id = $2`,
+      `SELECT * FROM podcast_bookings WHERE id = $1 AND user_id = $2 FOR UPDATE`,
       [req.params.id, userId]
     );
     if (!bookingRes.rows[0]) {
+      await client.query('ROLLBACK');
       return res.status(404).json({ message: 'Booking not found' });
     }
     const booking = bookingRes.rows[0];
     if (['cancelled', 'completed'].includes(booking.status)) {
+      await client.query('ROLLBACK');
       return res.status(400).json({ message: 'This booking cannot be cancelled' });
     }
 
@@ -321,8 +349,6 @@ export const cancelPodcastBooking = async (req: Request, res: Response) => {
     const hoursUntilSession = (new Date(booking.start_time).getTime() - Date.now()) / (1000 * 60 * 60);
     const eligibleForRefund = hoursUntilSession >= 48;
     const refundAmount = eligibleForRefund ? Number(booking.total_cost) : 0;
-
-    await client.query('BEGIN');
 
     await client.query(
       `UPDATE podcast_bookings

@@ -4,19 +4,22 @@ import { AuthRequest } from '../middleware/auth';
 
 const VALID_BOOKING_TYPES = new Set(['ad', 'podcast']);
 
-// A booking can only be reviewed once it has actually happened.
+// A booking can only be reviewed once it was actually paid for AND has
+// happened — excluding unpaid 'pending'/'pending_payment' bookings, which
+// previously only failed the "!= cancelled" check, letting someone review a
+// session they never actually paid for or attended.
 async function findEndedBooking(bookingType: string, bookingId: string, userId: string) {
   if (bookingType === 'ad') {
     const res = await pool.query(
       `SELECT id, booking_number FROM bookings
-       WHERE id = $1 AND user_id = $2 AND end_time <= NOW() AND status != 'cancelled'`,
+       WHERE id = $1 AND user_id = $2 AND end_time <= NOW() AND status IN ('active', 'ended', 'completed')`,
       [bookingId, userId]
     );
     return res.rows[0] || null;
   }
   const res = await pool.query(
     `SELECT id, booking_number FROM podcast_bookings
-     WHERE id = $1 AND user_id = $2 AND end_time <= NOW() AND status != 'cancelled'`,
+     WHERE id = $1 AND user_id = $2 AND end_time <= NOW() AND status IN ('confirmed', 'completed')`,
     [bookingId, userId]
   );
   return res.rows[0] || null;

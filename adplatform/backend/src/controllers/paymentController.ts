@@ -197,7 +197,7 @@ export const payFromWallet: RequestHandler = async (req, res) => {
     // 1. Get booking
     let booking;
     if (booking_type === 'podcast') {
-      const resQuery = await client.query('SELECT * FROM podcast_bookings WHERE id = $1 AND user_id = $2 AND status = $3', [booking_id, authReq.user?.id, 'pending']);
+      const resQuery = await client.query('SELECT * FROM podcast_bookings WHERE id = $1 AND user_id = $2 AND status = $3 FOR UPDATE', [booking_id, authReq.user?.id, 'pending']);
       if (resQuery.rows.length === 0) {
         await client.query('ROLLBACK');
         res.status(404).json({ message: 'Booking not found or already paid' }); return;
@@ -208,7 +208,7 @@ export const payFromWallet: RequestHandler = async (req, res) => {
         res.status(400).json({ message: 'Reservation expired (5 min limit). Please re-book your slot.' }); return;
       }
     } else {
-      const bookingRes = await client.query('SELECT * FROM bookings WHERE id = $1 AND user_id = $2 AND status = $3', [booking_id, authReq.user?.id, 'pending_payment']);
+      const bookingRes = await client.query('SELECT * FROM bookings WHERE id = $1 AND user_id = $2 AND status = $3 FOR UPDATE', [booking_id, authReq.user?.id, 'pending_payment']);
       if (bookingRes.rows.length === 0) {
         await client.query('ROLLBACK');
         res.status(404).json({ message: 'Booking not found or already paid / expired' }); return;
@@ -226,7 +226,7 @@ export const payFromWallet: RequestHandler = async (req, res) => {
     }
 
     // 3. Check wallet balance
-    const userRes = await client.query('SELECT credits FROM users WHERE id = $1', [authReq.user?.id]);
+    const userRes = await client.query('SELECT credits FROM users WHERE id = $1 FOR UPDATE', [authReq.user?.id]);
     const credits = parseFloat(userRes.rows[0].credits);
     const totalCost = parseFloat(booking.total_cost);
     
@@ -510,7 +510,17 @@ async function processConfirmedPayment(reference: string, meta: any, amountPaid:
       await client.query('COMMIT');
       return;
     }
-    
+
+    // Idempotency guard — Monnify redelivers SUCCESSFUL_TRANSACTION webhooks
+    // on ordinary retry (e.g. if our ack didn't arrive in time), which is
+    // expected behavior, not an attack. Without this, a routine retry would
+    // record a second debit transaction for the same payment.
+    const alreadyProcessed = await client.query('SELECT id FROM transactions WHERE reference = $1', [reference]);
+    if (alreadyProcessed.rows.length > 0) {
+      await client.query('COMMIT');
+      return;
+    }
+
     const isPodcast = meta.type === 'podcast_booking';
 
     // 1. Mark booking as active
