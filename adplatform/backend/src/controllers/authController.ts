@@ -5,6 +5,8 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import dns from 'dns';
 import { promisify } from 'util';
+import { v2 as cloudinary } from 'cloudinary';
+import { Readable } from 'stream';
 import { AuthRequest } from '../middleware/auth';
 import {
   sendVerificationEmail, sendWelcomeEmail,
@@ -12,6 +14,14 @@ import {
 } from '../services/emailService';
 
 const resolveMx = promisify(dns.resolveMx);
+
+if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME.trim(),
+    api_key: process.env.CLOUDINARY_API_KEY.trim(),
+    api_secret: process.env.CLOUDINARY_API_SECRET.trim(),
+  });
+}
 
 // Known disposable / temp email domains to block
 const DISPOSABLE_DOMAINS = new Set([
@@ -296,6 +306,35 @@ export const updateProfile: RequestHandler = async (req, res) => {
     res.json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ message: 'Update failed' });
+  }
+};
+
+// ── Upload profile photo ────────────────────────────────────────────────────
+export const uploadAvatar: RequestHandler = async (req, res) => {
+  const authReq = req as AuthRequest;
+  try {
+    const file = (req as any).file as Express.Multer.File | undefined;
+    if (!file) { res.status(400).json({ message: 'No image file provided' }); return; }
+
+    const uploadResult: any = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        { folder: `studio-arella/avatars/${authReq.user?.id}`, resource_type: 'image' },
+        (error, result) => (error ? reject(error) : resolve(result))
+      );
+      const readable = new Readable();
+      readable.push(file.buffer);
+      readable.push(null);
+      readable.pipe(stream);
+    });
+
+    const result = await pool.query(
+      'UPDATE users SET avatar = $1 WHERE id = $2 RETURNING id, name, first_name, last_name, email, role, credits, business_name, phone, logo_url, language, avatar',
+      [uploadResult.secure_url, authReq.user?.id]
+    );
+    res.json(result.rows[0]);
+  } catch (err: any) {
+    console.error('Avatar upload error:', err);
+    res.status(500).json({ message: 'Could not upload photo. Please try again.' });
   }
 };
 

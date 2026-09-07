@@ -152,9 +152,17 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
         <div style={{ position: 'relative' }}>
           <button onClick={() => setDropOpen(o => !o)}
             style={{ display: 'flex', alignItems: 'center', gap: 9, background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: F }}>
-            <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#fff' }}>
-              {user?.name?.[0]?.toUpperCase() || 'A'}
-            </div>
+            {user?.avatar ? (
+              <img
+                src={user.avatar}
+                alt={user.name || 'Profile'}
+                style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', display: 'block' }}
+              />
+            ) : (
+              <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#fff' }}>
+                {user?.name?.[0]?.toUpperCase() || 'A'}
+              </div>
+            )}
           </button>
 
           <AnimatePresence>

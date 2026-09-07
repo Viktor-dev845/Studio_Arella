@@ -21,3 +21,18 @@ export const upload = multer({
   fileFilter,
   limits: { fileSize: 500 * 1024 * 1024 }, // 500MB
 });
+
+const avatarFileFilter = (_req: any, file: any, cb: any) => {
+  const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+  if (allowed.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error(`File type not allowed: ${file.mimetype}`), false);
+  }
+};
+
+export const avatarUpload = multer({
+  storage,
+  fileFilter: avatarFileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB — a profile photo, not a creative asset
+});

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { PageTransition, FadeCard } from '@/components/ui/Animations';
 import { useToast } from '@/components/ui/ToastProvider';
@@ -13,9 +13,9 @@ import {
   Shield, 
   Bell, 
   Palette, 
-  CreditCard, 
-  Camera, 
-  Lock, 
+  CreditCard,
+  Camera,
+  Lock,
   Key, 
   Check, 
   Smartphone, 
@@ -57,6 +57,8 @@ export default function SettingsPage() {
     language: 'en'
   });
   const [savingProfile, setSavingProfile] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
   
   // Security Form
   const [pwdForm, setPwdForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
@@ -105,11 +107,36 @@ export default function SettingsPage() {
       const res = await api.put('/auth/profile', { name: form.name, language: form.language });
       updateUser(res.data);
       toast('Profile updated successfully!', 'success');
-    } catch { 
-      updateUser({ ...user, name: form.name, language: form.language });
-      toast('Profile saved locally!', 'success');
-    } finally { 
-      setSavingProfile(false); 
+    } catch {
+      toast('Could not save your profile. Please try again.', 'error');
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
+  const handleAvatarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    if (!['image/jpeg', 'image/jpg', 'image/png', 'image/gif'].includes(file.type)) {
+      toast('Please choose a JPG, PNG, or GIF image', 'error');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast('Image must be under 5MB', 'error');
+      return;
+    }
+    setUploadingAvatar(true);
+    try {
+      const formData = new FormData();
+      formData.append('avatar', file);
+      const res = await api.put('/auth/avatar', formData, { headers: { 'Content-Type': undefined } });
+      updateUser(res.data);
+      toast('Profile photo updated!', 'success');
+    } catch (err: any) {
+      toast(err?.response?.data?.message || 'Could not upload photo. Please try again.', 'error');
+    } finally {
+      setUploadingAvatar(false);
     }
   };
 
@@ -246,34 +273,55 @@ export default function SettingsPage() {
 
                     {/* Avatar Banner */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 28, paddingBottom: 24, borderBottom: '1px solid #F1F5F9' }}>
-                      <div style={{ 
-                        position: 'relative', 
-                        width: 76, 
-                        height: 76, 
-                        borderRadius: '50%', 
-                        background: 'linear-gradient(135deg, #D4AF37 0%, #B49020 100%)', 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'center', 
-                        fontSize: 28, 
-                        fontWeight: 900, 
-                        color: '#FFFFFF', 
-                        boxShadow: '0 8px 24px rgba(180, 144, 32, 0.25)', 
-                        cursor: 'pointer' 
-                      }}>
-                        {user?.name?.[0]?.toUpperCase() || 'C'}
-                        <div style={{ 
-                          position: 'absolute', 
-                          inset: 0, 
-                          borderRadius: '50%', 
-                          background: 'rgba(0,0,0,0.3)', 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          justifyContent: 'center', 
-                          opacity: 0, 
-                          transition: 'opacity 0.2s' 
-                        }} className="hover:opacity-100">
-                          <Camera color="#FFFFFF" size={20} />
+                      <input
+                        ref={avatarInputRef}
+                        type="file"
+                        accept="image/jpeg,image/jpg,image/png,image/gif"
+                        style={{ display: 'none' }}
+                        onChange={handleAvatarFileChange}
+                      />
+                      <div
+                        onClick={() => !uploadingAvatar && avatarInputRef.current?.click()}
+                        style={{
+                          position: 'relative',
+                          width: 76,
+                          height: 76,
+                          borderRadius: '50%',
+                          background: user?.avatar ? 'transparent' : 'linear-gradient(135deg, #D4AF37 0%, #B49020 100%)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: 28,
+                          fontWeight: 900,
+                          color: '#FFFFFF',
+                          boxShadow: '0 8px 24px rgba(180, 144, 32, 0.25)',
+                          cursor: uploadingAvatar ? 'wait' : 'pointer',
+                          overflow: 'hidden',
+                        }}
+                        className="group"
+                        title="Click to change photo"
+                      >
+                        {user?.avatar ? (
+                          <img src={user.avatar} alt={user.name || 'Profile'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ) : (
+                          user?.name?.[0]?.toUpperCase() || 'C'
+                        )}
+                        <div style={{
+                          position: 'absolute',
+                          inset: 0,
+                          borderRadius: '50%',
+                          background: 'rgba(0,0,0,0.4)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          opacity: uploadingAvatar ? 1 : 0,
+                          transition: 'opacity 0.2s',
+                        }} className="group-hover:opacity-100">
+                          {uploadingAvatar ? (
+                            <div style={{ width: 18, height: 18, border: '2px solid rgba(255,255,255,0.4)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+                          ) : (
+                            <Camera color="#FFFFFF" size={20} />
+                          )}
                         </div>
                       </div>
 

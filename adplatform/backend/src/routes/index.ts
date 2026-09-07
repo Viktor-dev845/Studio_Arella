@@ -1,11 +1,11 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import passport from '../middleware/passport';
-import { upload } from '../middleware/upload';
+import { upload, avatarUpload } from '../middleware/upload';
 import { authenticate } from '../middleware/auth';
 import { otpGuessLimiter, otpRequestLimiter, authLimiter, chatLimiter } from '../middleware/rateLimit';
 
 // Auth
-import { register, login, getMe, updateProfile, changePassword, verifyEmail, resendVerification, forgotPassword, resetPassword, acceptTerms, markTourSeen } from '../controllers/authController';
+import { register, login, getMe, updateProfile, uploadAvatar, changePassword, verifyEmail, resendVerification, forgotPassword, resetPassword, acceptTerms, markTourSeen } from '../controllers/authController';
 import { googleCallback } from '../controllers/googleAuthController';
 
 // Features
@@ -61,6 +61,16 @@ router.post('/auth/register', authLimiter, register);
 router.post('/auth/login', authLimiter, login);
 router.get('/auth/me', authenticate, getMe);
 router.put('/auth/profile', authenticate, updateProfile);
+router.put('/auth/avatar', authenticate, (req, res, next) => {
+  // Multer throws outside the normal Express flow — no global error handler
+  // exists in this app, so without catching it here a bad file (too large,
+  // wrong type) would fall through to Express's default HTML error page
+  // instead of the clean JSON error the frontend expects.
+  avatarUpload.single('avatar')(req, res, (err: any) => {
+    if (err) { res.status(400).json({ message: err.message || 'Upload failed' }); return; }
+    next();
+  });
+}, uploadAvatar);
 router.put('/auth/password', authenticate, changePassword);
 router.post('/auth/verify-email', authenticate, otpGuessLimiter, verifyEmail);
 router.post('/auth/resend-verification', otpRequestLimiter, resendVerification);
