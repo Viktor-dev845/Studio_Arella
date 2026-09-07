@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { Suspense, useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Search, Monitor, Mic, X, Calendar, Loader2, Download, Star, ArrowLeft, Check } from 'lucide-react';
@@ -65,6 +65,14 @@ const UNIT_MINUTES: Record<ExtendUnit, number> = { minutes: 1, hours: 60, days: 
 const TAB_VALUES = ['screen', 'podcast', 'calendar'] as const;
 
 export default function BookingsPage() {
+  return (
+    <Suspense fallback={null}>
+      <BookingsPageContent />
+    </Suspense>
+  );
+}
+
+function BookingsPageContent() {
   const { toast } = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
