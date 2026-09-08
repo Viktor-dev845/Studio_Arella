@@ -25,7 +25,7 @@ export default function ScreenOwnerDashboard() {
   useEffect(() => {
     Promise.all([
       api.get('/screens?my=true&limit=5'),
-      api.get('/bookings?limit=5'),
+      api.get('/bookings?limit=5&owned_screens=true'),
       api.get('/finances/balance'),
     ]).then(([sc, bk, bal]) => {
       setScreens(sc.data.screens || []);
@@ -34,8 +34,13 @@ export default function ScreenOwnerDashboard() {
     }).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
-  const weeklyData = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d => ({
-    day: d, bookings: bookings.length > 0 ? Math.floor(Math.random() * 4) : 0,
+  const dayCounts = new Array(7).fill(0);
+  for (const b of bookings) {
+    const d = new Date(b.start_time || b.created_at);
+    if (!isNaN(d.getTime())) dayCounts[d.getDay()]++;
+  }
+  const weeklyData = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, i) => ({
+    day, bookings: dayCounts[(i + 1) % 7],
   }));
 
   if (loading) return (
@@ -60,7 +65,7 @@ export default function ScreenOwnerDashboard() {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12 }}>
               {[
-                { label: 'Total Earnings', value: `₦${(balance?.credits || 0).toLocaleString()}`, icon: DollarSign, color: theme.color.warning, bg: theme.color.warningLight, border: theme.color.warning },
+                { label: 'Booking Value', value: `₦${bookings.reduce((s, b) => s + Number(b.total_cost || 0), 0).toLocaleString()}`, icon: DollarSign, color: theme.color.warning, bg: theme.color.warningLight, border: theme.color.warning },
                 { label: 'Active Screens', value: screens.filter(s => s.status === 'active').length, icon: Monitor, color: theme.color.info, bg: theme.color.infoLight, border: theme.color.infoBorder },
                 { label: 'Total Bookings', value: bookings.length, icon: CalendarCheck, color: theme.color.success, bg: theme.color.successLight, border: theme.color.success },
               ].map(({ label, value, icon: Icon, color, bg, border }, i) => (
@@ -141,7 +146,7 @@ export default function ScreenOwnerDashboard() {
             <FadeCard delay={0.08} style={{ background: '#0A0A0A', borderRadius: 16, padding: '22px 20px', color: '#fff' }}>
               <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', margin: '0 0 6px' }}>Wallet Balance</p>
               <p style={{ fontSize: 30, fontWeight: 900, margin: '0 0 2px', letterSpacing: '-0.5px', color: '#F97316' }}>₦{(balance?.credits || 0).toLocaleString()}</p>
-              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: '0 0 16px' }}>Your current earnings</p>
+              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: '0 0 16px' }}>Your available wallet credits</p>
               <Link href="/finances" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: '#F97316', color: '#fff', padding: '11px', borderRadius: 10, fontSize: 13, fontWeight: 800, textDecoration: 'none' }}>
                 View Transactions <FaArrowRight size={12} />
               </Link>

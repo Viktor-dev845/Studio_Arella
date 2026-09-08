@@ -168,6 +168,82 @@ app.listen(PORT, async () => {
       );
       CREATE UNIQUE INDEX IF NOT EXISTS idx_page_favorites_unique ON page_favorites(user_id, path);
     `);
+
+    // HOTFIX: real support tickets — the Support page's "Submit a Ticket" form
+    // previously discarded input and showed a fabricated success toast.
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS support_tickets (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        issue_type VARCHAR(100),
+        subject VARCHAR(255) NOT NULL,
+        message TEXT NOT NULL,
+        status VARCHAR(50) DEFAULT 'open',
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS idx_support_tickets_user_id ON support_tickets(user_id);
+    `);
+
+    // HOTFIX: real account deletion — Settings' "Delete Account" previously
+    // made no API call at all. Soft-deletes via the same `suspended` flag the
+    // login flow already gates on, plus a timestamp for when it happened.
+    await pool.query(`
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+    `);
+
+    // HOTFIX: Settings' profile form let users edit handle/location/bio, but
+    // none of those had a backing column — every edit was silently discarded
+    // and the fields were pre-filled with fake placeholder text instead of
+    // real (empty) values.
+    await pool.query(`
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS handle VARCHAR(100);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS location VARCHAR(255);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS bio TEXT;
+    `);
+
+    // HOTFIX: real 2FA, notification preferences, active sessions (with
+    // per-request revocation), and saved cards — Settings previously showed
+    // all four as fully interactive UI that was 100% local state, resetting
+    // on every reload and persisting nothing.
+    await pool.query(`
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_secret VARCHAR(255);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_enabled BOOLEAN DEFAULT false;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS notification_preferences JSONB DEFAULT '{"emailBookings":true,"emailBroadcasts":true,"emailWallet":true,"emailWeekly":false,"smsAlerts":true,"smsSecurity":true}';
+
+      CREATE TABLE IF NOT EXISTS sessions (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        jti VARCHAR(64) NOT NULL UNIQUE,
+        user_agent TEXT,
+        ip_address VARCHAR(64),
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        last_active_at TIMESTAMPTZ DEFAULT NOW(),
+        revoked_at TIMESTAMPTZ
+      );
+      CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id);
+      CREATE INDEX IF NOT EXISTS idx_sessions_jti ON sessions(jti);
+
+      CREATE TABLE IF NOT EXISTS saved_cards (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        authorization_code VARCHAR(255) NOT NULL,
+        card_type VARCHAR(50),
+        last4 VARCHAR(4),
+        exp_month VARCHAR(4),
+        exp_year VARCHAR(4),
+        bank VARCHAR(100),
+        is_default BOOLEAN DEFAULT false,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_saved_cards_unique ON saved_cards(user_id, authorization_code);
+    `);
+
+    // HOTFIX: the redesigned /book page has a real "Describe your Ad" field
+    // that needs somewhere to actually persist to, unlike before.
+    await pool.query(`
+      ALTER TABLE ads ADD COLUMN IF NOT EXISTS description TEXT;
+    `);
   } catch (err) {
     console.error('❌ Failed to run database migrations:', err);
   }

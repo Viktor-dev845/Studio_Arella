@@ -8,6 +8,9 @@ import { promisify } from 'util';
 import { v2 as cloudinary } from 'cloudinary';
 import { Readable } from 'stream';
 import { AuthRequest } from '../middleware/auth';
+import { issueSessionToken, describeUserAgent } from '../utils/session';
+import speakeasy from 'speakeasy';
+import QRCode from 'qrcode';
 import {
   sendVerificationEmail, sendWelcomeEmail,
   sendPasswordResetEmail,
@@ -50,11 +53,6 @@ async function validateEmailDomain(email: string): Promise<{ valid: boolean; rea
     return { valid: false, reason: `The email domain "${domain}" does not exist or cannot receive emails.` };
   }
 }
-
-const signToken = (payload: object) =>
-  jwt.sign(payload, process.env.JWT_SECRET as string, {
-    expiresIn: process.env.JWT_EXPIRES_IN || '7d',
-  } as jwt.SignOptions);
 
 // ── Register ──────────────────────────────────────────────────────────────────
 export const register: RequestHandler = async (req, res) => {
@@ -107,7 +105,7 @@ export const register: RequestHandler = async (req, res) => {
     );
     const user = result.rows[0];
 
-    // Create 6-digit verification code
+    // Create 4-digit verification code
     const code = Math.floor(1000 + Math.random() * 9000).toString();
     await pool.query(
       `INSERT INTO email_verification_tokens (user_id, token, expires_at)
@@ -115,7 +113,7 @@ export const register: RequestHandler = async (req, res) => {
       [user.id, code]
     );
 
-    const jwtToken = signToken({ id: user.id, email: user.email, role: user.role, name: user.name });
+    const jwtToken = await issueSessionToken({ id: user.id, email: user.email, role: user.role, name: user.name }, req);
     res.status(201).json({
       token: jwtToken,
       user: { ...user, email_verified: false },
@@ -143,7 +141,7 @@ export const verifyEmail: RequestHandler = async (req, res) => {
       [userId, code]
     );
     if (!result.rows[0]) {
-      res.status(400).json({ message: 'Invalid or expired 6-digit code. Please request a new one.' });
+      res.status(400).json({ message: 'Invalid or expired 4-digit code. Please request a new one.' });
       return;
     }
 
@@ -237,7 +235,19 @@ export const login: RequestHandler = async (req, res) => {
     const match = await bcrypt.compare(password, user.password);
     if (!match) { res.status(401).json({ message: 'Incorrect email or password' }); return; }
 
-    const token = signToken({ id: user.id, email: user.email, role: user.role, name: user.name });
+    if (user.two_factor_enabled) {
+      // Short-lived, session-less token — proves the password step already
+      // passed, without granting API access until the TOTP step also passes.
+      const pendingToken = jwt.sign(
+        { id: user.id, type: 'pending_2fa' },
+        process.env.JWT_SECRET as string,
+        { expiresIn: '5m' }
+      );
+      res.json({ requires_2fa: true, pending_token: pendingToken });
+      return;
+    }
+
+    const token = await issueSessionToken({ id: user.id, email: user.email, role: user.role, name: user.name }, req);
     const { password: _, ...safeUser } = user;
     res.json({ token, user: safeUser });
   } catch (err) {
@@ -251,7 +261,8 @@ export const getMe: RequestHandler = async (req, res) => {
   try {
     const result = await pool.query(
       `SELECT id, name, first_name, last_name, email, role, credits, business_name, phone, logo_url,
-              avatar, email_verified, suspended, language, terms_accepted, has_seen_tour, created_at
+              avatar, email_verified, suspended, language, terms_accepted, has_seen_tour, created_at,
+              handle, location, bio, two_factor_enabled, notification_preferences
        FROM users WHERE id = $1`,
       [authReq.user?.id]
     );
@@ -288,8 +299,8 @@ export const getMe: RequestHandler = async (req, res) => {
 export const updateProfile: RequestHandler = async (req, res) => {
   const authReq = req as AuthRequest;
   try {
-    const { first_name, last_name, business_name, phone, language, logo_url } = req.body;
-    const fullName = first_name && last_name ? `${first_name.trim()} ${last_name.trim()}` : undefined;
+    const { name, first_name, last_name, business_name, phone, language, logo_url, handle, location, bio } = req.body;
+    const fullName = first_name && last_name ? `${first_name.trim()} ${last_name.trim()}` : name;
     const result = await pool.query(
       `UPDATE users
        SET name = COALESCE($1, name),
@@ -298,10 +309,13 @@ export const updateProfile: RequestHandler = async (req, res) => {
            business_name = COALESCE($4, business_name),
            phone = COALESCE($5, phone),
            language = COALESCE($6, language),
-           logo_url = COALESCE($7, logo_url)
-       WHERE id = $8
-       RETURNING id, name, first_name, last_name, email, role, credits, business_name, phone, logo_url, language`,
-      [fullName, first_name, last_name, business_name, phone, language, logo_url, authReq.user?.id]
+           logo_url = COALESCE($7, logo_url),
+           handle = COALESCE($8, handle),
+           location = COALESCE($9, location),
+           bio = COALESCE($10, bio)
+       WHERE id = $11
+       RETURNING id, name, first_name, last_name, email, role, credits, business_name, phone, logo_url, language, handle, location, bio`,
+      [fullName, first_name, last_name, business_name, phone, language, logo_url, handle, location, bio, authReq.user?.id]
     );
     res.json(result.rows[0]);
   } catch (err) {
@@ -382,6 +396,68 @@ export const changePassword: RequestHandler = async (req, res) => {
   }
 };
 
+// ── Delete Account ─────────────────────────────────────────────────────────────
+// Soft-deletes (suspends the account, same gate the login flow already checks)
+// rather than hard-deleting — bookings/transactions must survive for financial
+// record-keeping even after a user closes their account.
+export const deleteAccount: RequestHandler = async (req, res) => {
+  const authReq = req as AuthRequest;
+  try {
+    const { password } = req.body;
+    if (!password) {
+      res.status(400).json({ message: 'Please enter your password to confirm account deletion' });
+      return;
+    }
+
+    const userResult = await pool.query('SELECT password FROM users WHERE id = $1', [authReq.user?.id]);
+    const user = userResult.rows[0];
+    if (!user) { res.status(404).json({ message: 'User not found' }); return; }
+
+    if (user.password) {
+      const match = await bcrypt.compare(password, user.password);
+      if (!match) { res.status(401).json({ message: 'Incorrect password' }); return; }
+    }
+
+    await pool.query('UPDATE users SET suspended = true, deleted_at = NOW() WHERE id = $1', [authReq.user?.id]);
+    res.json({ message: 'Your account has been deleted.' });
+  } catch (err) {
+    console.error('Delete account error:', err);
+    res.status(500).json({ message: 'Failed to delete account' });
+  }
+};
+
+// ── Become a Screen Owner ───────────────────────────────────────────────────────
+// One-way upgrade from 'advertiser' — unlocks self-service screen listing
+// (POST/PUT/DELETE /screens scoped to screens they own) without taking away
+// any existing advertiser capability, since every other permission check in
+// this app is a deny-list on 'admin', not an allow-list on 'advertiser'.
+export const becomeScreenOwner: RequestHandler = async (req, res) => {
+  const authReq = req as AuthRequest;
+  try {
+    const userResult = await pool.query('SELECT id, email, name, role FROM users WHERE id = $1', [authReq.user?.id]);
+    const user = userResult.rows[0];
+    if (!user) { res.status(404).json({ message: 'User not found' }); return; }
+    if (user.role === 'admin') { res.status(400).json({ message: 'Admin accounts already manage all screens.' }); return; }
+    if (user.role === 'screen_owner') { res.json({ message: 'You are already a screen owner.', role: 'screen_owner' }); return; }
+
+    await pool.query(`UPDATE users SET role = 'screen_owner' WHERE id = $1`, [authReq.user?.id]);
+    // The JWT embeds role at issue time and is never re-checked against the
+    // DB per-request (see middleware/auth.ts), so the client's existing
+    // token would keep failing every screen-management call as the old role
+    // until it expires — issue a fresh one now instead. Reusing the current
+    // jti (when present) keeps this as the same session rather than adding
+    // a phantom extra "device" to the Active Sessions list.
+    const token = await issueSessionToken(
+      { id: user.id, email: user.email, role: 'screen_owner', name: user.name },
+      req,
+      authReq.user?.jti
+    );
+    res.json({ message: 'You can now list and manage your own screens!', role: 'screen_owner', token });
+  } catch (err) {
+    console.error('Become screen owner error:', err);
+    res.status(500).json({ message: 'Could not complete upgrade. Please try again.' });
+  }
+};
 
 // ── Accept Terms ──────────────────────────────────────────────────────────────
 export const acceptTerms: RequestHandler = async (req, res) => {
@@ -479,5 +555,157 @@ export const resetPassword: RequestHandler = async (req, res) => {
     res.json({ message: 'Password reset successfully. You can now sign in.' });
   } catch (err) {
     res.status(500).json({ message: 'Reset failed' });
+  }
+};
+
+// ── Two-Factor Auth (TOTP) ──────────────────────────────────────────────────────
+// Real, standard authenticator-app based 2FA (Google Authenticator, Authy,
+// etc.) — no SMS cost, works offline. The secret is stored as soon as setup
+// starts but two_factor_enabled only flips true after the user proves they
+// actually scanned it by submitting one real code, so a setup a user never
+// finishes can't accidentally lock them out.
+export const setup2FA: RequestHandler = async (req, res) => {
+  const authReq = req as AuthRequest;
+  try {
+    const userRes = await pool.query('SELECT email FROM users WHERE id = $1', [authReq.user?.id]);
+    const user = userRes.rows[0];
+    if (!user) { res.status(404).json({ message: 'User not found' }); return; }
+
+    const secret = speakeasy.generateSecret({ name: `Studio Arella (${user.email})` });
+    await pool.query('UPDATE users SET two_factor_secret = $1 WHERE id = $2', [secret.base32, authReq.user?.id]);
+
+    const qrCode = await QRCode.toDataURL(secret.otpauth_url as string);
+    res.json({ qr_code: qrCode, manual_key: secret.base32 });
+  } catch (err) {
+    console.error('2FA setup error:', err);
+    res.status(500).json({ message: 'Could not start 2FA setup. Please try again.' });
+  }
+};
+
+export const verifySetup2FA: RequestHandler = async (req, res) => {
+  const authReq = req as AuthRequest;
+  try {
+    const { code } = req.body;
+    if (!code) { res.status(400).json({ message: 'Enter the 6-digit code from your authenticator app' }); return; }
+
+    const userRes = await pool.query('SELECT two_factor_secret FROM users WHERE id = $1', [authReq.user?.id]);
+    const secret = userRes.rows[0]?.two_factor_secret;
+    if (!secret) { res.status(400).json({ message: 'Start 2FA setup first' }); return; }
+
+    const valid = speakeasy.totp.verify({ secret, encoding: 'base32', token: code, window: 1 });
+    if (!valid) { res.status(400).json({ message: 'Incorrect code. Please try again.' }); return; }
+
+    await pool.query('UPDATE users SET two_factor_enabled = true WHERE id = $1', [authReq.user?.id]);
+    res.json({ message: 'Two-factor authentication enabled!' });
+  } catch (err) {
+    res.status(500).json({ message: 'Could not verify code. Please try again.' });
+  }
+};
+
+export const disable2FA: RequestHandler = async (req, res) => {
+  const authReq = req as AuthRequest;
+  try {
+    const { password } = req.body;
+    if (!password) { res.status(400).json({ message: 'Enter your password to confirm' }); return; }
+
+    const userRes = await pool.query('SELECT password FROM users WHERE id = $1', [authReq.user?.id]);
+    const user = userRes.rows[0];
+    if (!user?.password || !(await bcrypt.compare(password, user.password))) {
+      res.status(401).json({ message: 'Incorrect password' });
+      return;
+    }
+
+    await pool.query('UPDATE users SET two_factor_enabled = false, two_factor_secret = NULL WHERE id = $1', [authReq.user?.id]);
+    res.json({ message: 'Two-factor authentication disabled.' });
+  } catch (err) {
+    res.status(500).json({ message: 'Could not disable 2FA. Please try again.' });
+  }
+};
+
+// Completes login for an account with 2FA enabled — exchanges the short-lived
+// pending_token (proof the password step passed) plus a real TOTP code for
+// an actual session token.
+export const verify2FALogin: RequestHandler = async (req, res) => {
+  try {
+    const { pending_token, code } = req.body;
+    if (!pending_token || !code) { res.status(400).json({ message: 'Missing verification code' }); return; }
+
+    let decoded: { id: string; type: string };
+    try {
+      decoded = jwt.verify(pending_token, process.env.JWT_SECRET as string) as any;
+    } catch {
+      res.status(401).json({ message: 'Your session expired. Please sign in again.' });
+      return;
+    }
+    if (decoded.type !== 'pending_2fa') { res.status(401).json({ message: 'Invalid verification session' }); return; }
+
+    const userRes = await pool.query('SELECT * FROM users WHERE id = $1', [decoded.id]);
+    const user = userRes.rows[0];
+    if (!user?.two_factor_secret) { res.status(400).json({ message: '2FA is not set up on this account' }); return; }
+
+    const valid = speakeasy.totp.verify({ secret: user.two_factor_secret, encoding: 'base32', token: code, window: 1 });
+    if (!valid) { res.status(400).json({ message: 'Incorrect code' }); return; }
+
+    const token = await issueSessionToken({ id: user.id, email: user.email, role: user.role, name: user.name }, req);
+    const { password: _, two_factor_secret: __, ...safeUser } = user;
+    res.json({ token, user: safeUser });
+  } catch (err) {
+    res.status(500).json({ message: 'Verification failed. Please try again.' });
+  }
+};
+
+// ── Active Sessions ──────────────────────────────────────────────────────────────
+export const getSessions: RequestHandler = async (req, res) => {
+  const authReq = req as AuthRequest;
+  try {
+    const result = await pool.query(
+      `SELECT id, jti, user_agent, ip_address, created_at, last_active_at
+       FROM sessions WHERE user_id = $1 AND revoked_at IS NULL
+       ORDER BY last_active_at DESC`,
+      [authReq.user?.id]
+    );
+    const sessions = result.rows.map((s) => ({
+      id: s.id,
+      device: describeUserAgent(s.user_agent),
+      ip_address: s.ip_address,
+      created_at: s.created_at,
+      last_active_at: s.last_active_at,
+      is_current: s.jti === authReq.user?.jti,
+    }));
+    res.json({ sessions });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+export const revokeSession: RequestHandler = async (req, res) => {
+  const authReq = req as AuthRequest;
+  try {
+    const result = await pool.query(
+      'UPDATE sessions SET revoked_at = NOW() WHERE id = $1 AND user_id = $2 RETURNING id',
+      [req.params.id, authReq.user?.id]
+    );
+    if (!result.rows[0]) { res.status(404).json({ message: 'Session not found' }); return; }
+    res.json({ message: 'Session revoked' });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// ── Notification Preferences ────────────────────────────────────────────────────
+export const updateNotificationPreferences: RequestHandler = async (req, res) => {
+  const authReq = req as AuthRequest;
+  try {
+    const prefs = req.body;
+    if (!prefs || typeof prefs !== 'object') { res.status(400).json({ message: 'Invalid preferences' }); return; }
+
+    const result = await pool.query(
+      `UPDATE users SET notification_preferences = COALESCE(notification_preferences, '{}'::jsonb) || $1::jsonb
+       WHERE id = $2 RETURNING notification_preferences`,
+      [JSON.stringify(prefs), authReq.user?.id]
+    );
+    res.json({ notification_preferences: result.rows[0].notification_preferences });
+  } catch (err) {
+    res.status(500).json({ message: 'Could not save preferences' });
   }
 };

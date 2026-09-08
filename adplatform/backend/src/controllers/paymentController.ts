@@ -704,6 +704,33 @@ export const initializePaystackPayment: RequestHandler = async (req, res) => {
   }
 };
 
+// Captures a real, reusable Paystack card authorization from a successful
+// charge so it can show up as a genuine "Saved Card" in Settings — opportunistic,
+// the same way most apps actually build this (from a real completed payment,
+// not a separate tokenize-only flow, which Paystack doesn't cleanly support
+// without charging something anyway).
+async function saveCardFromAuthorization(userId: string | undefined, authorization: any) {
+  if (!userId || !authorization?.reusable || !authorization?.authorization_code) return;
+  try {
+    await pool.query(
+      `INSERT INTO saved_cards (user_id, authorization_code, card_type, last4, exp_month, exp_year, bank)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       ON CONFLICT (user_id, authorization_code) DO NOTHING`,
+      [
+        userId,
+        authorization.authorization_code,
+        authorization.card_type || authorization.brand || null,
+        authorization.last4 || null,
+        authorization.exp_month || null,
+        authorization.exp_year || null,
+        authorization.bank || null,
+      ]
+    );
+  } catch (e) {
+    console.error('Failed to save card authorization:', e);
+  }
+}
+
 // ── Paystack: Verify payment (client-side callback) ───────────────────────────
 export const verifyPaystackPayment: RequestHandler = async (req, res) => {
   try {
@@ -735,6 +762,7 @@ export const verifyPaystackPayment: RequestHandler = async (req, res) => {
     }
 
     await processConfirmedPayment(reference, meta, txn.amount / 100); // convert kobo → naira
+    await saveCardFromAuthorization(meta.user_id, txn.authorization);
     res.json({ success: true, message: 'Payment confirmed and booking activated.' });
   } catch (err) {
     console.error('Paystack verify error:', err);
@@ -789,6 +817,7 @@ export const paystackWebhook: RequestHandler = async (req, res) => {
       } else if (meta.booking_id) {
         await processConfirmedPayment(ref, meta, amountPaid);
       }
+      await saveCardFromAuthorization(meta.user_id, data.authorization);
     }
   } catch (err) {
     console.error('Paystack webhook error:', err);
@@ -919,5 +948,43 @@ export const createReservedAccount: RequestHandler = async (req, res) => {
   } catch (err) {
     console.error('Reserved account creation error:', err);
     res.status(500).json({ message: 'An internal error occurred while creating your reserved account.' });
+  }
+};
+
+// ── Saved Cards ────────────────────────────────────────────────────────────────
+export const getSavedCards: RequestHandler = async (req, res) => {
+  const authReq = req as AuthRequest;
+  try {
+    const result = await pool.query(
+      `SELECT id, card_type, last4, exp_month, exp_year, bank, is_default, created_at
+       FROM saved_cards WHERE user_id = $1 ORDER BY is_default DESC, created_at DESC`,
+      [authReq.user?.id]
+    );
+    res.json({ cards: result.rows });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+export const deleteSavedCard: RequestHandler = async (req, res) => {
+  const authReq = req as AuthRequest;
+  try {
+    const cardRes = await pool.query(
+      'SELECT authorization_code FROM saved_cards WHERE id = $1 AND user_id = $2',
+      [req.params.id, authReq.user?.id]
+    );
+    const card = cardRes.rows[0];
+    if (!card) { res.status(404).json({ message: 'Card not found' }); return; }
+
+    // Best-effort: actually deactivate the authorization on Paystack's side
+    // too, not just remove our local record.
+    await paystackReq('POST', '/customer/deactivate_authorization', {
+      authorization_code: card.authorization_code,
+    }).catch((e) => console.error('Paystack deactivate authorization failed:', e));
+
+    await pool.query('DELETE FROM saved_cards WHERE id = $1', [req.params.id]);
+    res.json({ message: 'Card removed' });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
   }
 };

@@ -5,7 +5,7 @@ import { authenticate } from '../middleware/auth';
 import { otpGuessLimiter, otpRequestLimiter, authLimiter, chatLimiter } from '../middleware/rateLimit';
 
 // Auth
-import { register, login, getMe, updateProfile, uploadAvatar, changePassword, verifyEmail, resendVerification, forgotPassword, resetPassword, acceptTerms, markTourSeen } from '../controllers/authController';
+import { register, login, getMe, updateProfile, uploadAvatar, changePassword, deleteAccount, becomeScreenOwner, verifyEmail, resendVerification, forgotPassword, resetPassword, acceptTerms, markTourSeen, setup2FA, verifySetup2FA, disable2FA, verify2FALogin, getSessions, revokeSession, updateNotificationPreferences } from '../controllers/authController';
 import { googleCallback } from '../controllers/googleAuthController';
 
 // Features
@@ -24,11 +24,12 @@ import { getBalance, getTransactions, getTotalRevenue } from '../controllers/fin
 import { getDashboardStats, getHourlyAnalytics, getAdvertiserProofOfPlay } from '../controllers/analyticsController';
 import { getPlatformStats, getAllUsers, getAllBookings, getAllCampaigns, getAllScreens, updateUserRole, getAllTransactions, getAllPodcastBookings } from '../controllers/adminController';
 import { getPlans, getBaseRate } from '../controllers/pricingController';
-import { initializePayment, initializeCreditPayment, verifyPayment, monnifyWebhook, devBypassPayment, payFromWallet, initializePaystackPayment, verifyPaystackPayment, paystackWebhook, initializePaystackCreditPayment, createReservedAccount } from '../controllers/paymentController';
+import { initializePayment, initializeCreditPayment, verifyPayment, monnifyWebhook, devBypassPayment, payFromWallet, initializePaystackPayment, verifyPaystackPayment, paystackWebhook, initializePaystackCreditPayment, createReservedAccount, getSavedCards, deleteSavedCard } from '../controllers/paymentController';
 import { getNotifications, markRead, markAllRead, deleteNotification, getUnreadCount } from '../controllers/notificationController';
 import { submitCreativeRequest, getMyCreativeRequests, getAllCreativeRequests, updateCreativeRequestStatus } from '../controllers/creativeController';
+import { submitTicket, getMyTickets } from '../controllers/supportController';
 import { getAvailability, reserveSlot, reserveSeries, paySeriesFromWallet, getMyBookings, extendPodcastBooking, cancelPodcastBooking } from '../controllers/podcastController';
-import { createShow, getShow, getAllShows, createEpisode } from '../controllers/podcastShowController';
+import { createShow, getShow, getAllShows, getMyShows, createEpisode } from '../controllers/podcastShowController';
 import { sendChatMessage } from '../controllers/chatController';
 import { createReview } from '../controllers/reviewController';
 import { getFavorites, addFavorite, removeFavorite } from '../controllers/favoriteController';
@@ -53,6 +54,7 @@ router.post('/reviews', authenticate, createReview);
 // ── Podcast content (shows a creator publishes + their episodes) ──────────────
 router.post('/shows', authenticate, upload.fields([{ name: 'cover', maxCount: 1 }]), createShow);
 router.get('/shows', getAllShows);
+router.get('/shows/mine', authenticate, getMyShows);
 router.get('/shows/:id', getShow);
 router.post('/shows/:id/episodes', authenticate, upload.fields([{ name: 'cover', maxCount: 1 }, { name: 'audio', maxCount: 1 }]), createEpisode);
 
@@ -83,6 +85,18 @@ router.put('/auth/avatar', authenticate, (req, res, next) => {
   });
 }, uploadAvatar);
 router.put('/auth/password', authenticate, changePassword);
+router.delete('/auth/account', authenticate, deleteAccount);
+router.post('/auth/become-screen-owner', authenticate, becomeScreenOwner);
+
+router.post('/auth/2fa/setup', authenticate, setup2FA);
+router.post('/auth/2fa/verify-setup', authenticate, verifySetup2FA);
+router.post('/auth/2fa/disable', authenticate, disable2FA);
+router.post('/auth/2fa/login-verify', verify2FALogin);
+
+router.get('/auth/sessions', authenticate, getSessions);
+router.delete('/auth/sessions/:id', authenticate, revokeSession);
+
+router.put('/auth/notification-preferences', authenticate, updateNotificationPreferences);
 router.post('/auth/verify-email', authenticate, otpGuessLimiter, verifyEmail);
 router.post('/auth/resend-verification', otpRequestLimiter, resendVerification);
 router.post('/auth/forgot-password', otpRequestLimiter, forgotPassword);
@@ -150,6 +164,8 @@ router.post('/payments/initialize-credits', authenticate, initializeCreditPaymen
 router.get('/payments/verify/:reference', authenticate, verifyPayment);
 router.post('/payments/webhook/monnify', monnifyWebhook); // No auth — Monnify signs with HMAC
 router.post('/payments/reserved-account', authenticate, createReservedAccount);
+router.get('/payments/cards', authenticate, getSavedCards);
+router.delete('/payments/cards/:id', authenticate, deleteSavedCard);
 
 // Paystack (alternative gateway)
 router.post('/payments/paystack/initialize', authenticate, initializePaystackPayment);
@@ -162,6 +178,9 @@ router.post('/creative-requests', authenticate, submitCreativeRequest);
 router.get('/creative-requests/mine', authenticate, getMyCreativeRequests);
 router.get('/creative-requests/all', authenticate, getAllCreativeRequests);
 router.put('/creative-requests/:id/status', authenticate, updateCreativeRequestStatus);
+
+router.post('/support/tickets', authenticate, submitTicket);
+router.get('/support/tickets/mine', authenticate, getMyTickets);
 
 // ── Notifications ────────────────────────────────────────────────────────────
 router.get('/notifications', authenticate, getNotifications);

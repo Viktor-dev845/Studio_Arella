@@ -14,9 +14,8 @@ import {
   Loader2, 
   CreditCard, 
   Wallet, 
-  ShieldCheck, 
-  Tag, 
-  Check, 
+  ShieldCheck,
+  Check,
   ArrowRight, 
   Globe, 
   Plus, 
@@ -69,12 +68,9 @@ export default function CartPage() {
   const [campaignId, setCampaignId] = useState<string | null>(null);
   
   // Wallet Balance
-  const [walletBalance, setWalletBalance] = useState<number>(5215005.25);
-  
-  // Promo code state
-  const [promoCode, setPromoCode] = useState('');
-  const [discountApplied, setDiscountApplied] = useState(false);
-  
+  const [walletBalance, setWalletBalance] = useState<number>(0);
+
+
   // Modals
   const [showWalletModal, setShowWalletModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -86,11 +82,10 @@ export default function CartPage() {
   useEffect(() => {
     api.get('/finances/balance')
       .then(res => {
-        if (res.data?.credits) setWalletBalance(res.data.credits);
+        setWalletBalance(Number(res.data?.credits ?? 0));
       })
       .catch(() => {
-        // Fallback default
-        setWalletBalance(5215005.25);
+        toast('Could not load your wallet balance.', 'error');
       });
   }, []);
 
@@ -133,24 +128,9 @@ export default function CartPage() {
 
   // Calculations
   const rawTotal = getCartTotal();
-  const discountAmount = discountApplied ? rawTotal * 0.1 : 0;
-  const finalTotal = Math.max(0, rawTotal - discountAmount);
+  const finalTotal = rawTotal;
   const totalMinutes = cart.reduce((acc, c) => acc + Math.ceil((c.durationSec || 60) / 60), 0);
   const hasSufficientBalance = walletBalance >= finalTotal;
-
-  // Coupon handling
-  const handleApplyPromo = () => {
-    if (!promoCode.trim()) {
-      toast('Please enter a promo code', 'error');
-      return;
-    }
-    if (promoCode.toUpperCase() === 'ARELLA10' || promoCode.toUpperCase() === 'PROMO3M') {
-      setDiscountApplied(true);
-      toast('10% discount applied successfully!', 'success');
-    } else {
-      toast('Invalid promo code. Try ARELLA10', 'error');
-    }
-  };
 
   // Initiate Checkout — always reserves real slots first, regardless of payment method.
   // No step here may silently treat a failure as success: a customer who sees
@@ -469,68 +449,6 @@ export default function CartPage() {
                   );
                 })}
 
-                {/* Promo Banner (Matching Studio Arella Figma Frame) */}
-                <div style={{ 
-                  background: '#1E222B', 
-                  borderRadius: 20, 
-                  padding: '24px 28px', 
-                  position: 'relative', 
-                  overflow: 'hidden', 
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.12)' 
-                }}>
-                  <div style={{ position: 'absolute', bottom: -30, right: -30, width: 140, height: 140, background: 'rgba(212,175,55,0.15)', borderRadius: '50%', pointerEvents: 'none' }} />
-                  
-                  <div style={{ position: 'relative', zIndex: 1, marginBottom: 14 }}>
-                    <p style={{ fontSize: 14, color: '#FFFFFF', fontWeight: 700, margin: '0 0 6px', lineHeight: 1.4 }}>
-                      we are running Ad space promo, get a discount for more than 3months booking
-                    </p>
-                    <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', margin: 0 }}>
-                      Use code <code style={{ color: '#E3C762', fontWeight: 800 }}>ARELLA10</code> at checkout for an instant 10% discount on airtime.
-                    </p>
-                  </div>
-
-                  <div style={{ position: 'relative', zIndex: 1, display: 'flex', gap: 10 }}>
-                    <input 
-                      type="text"
-                      placeholder="Enter promo code (e.g. ARELLA10)"
-                      value={promoCode}
-                      onChange={e => setPromoCode(e.target.value)}
-                      style={{ 
-                        flex: 1, 
-                        padding: '10px 14px', 
-                        background: 'rgba(255,255,255,0.08)', 
-                        border: '1px solid rgba(255,255,255,0.15)', 
-                        borderRadius: 10, 
-                        color: '#FFFFFF', 
-                        fontSize: 12, 
-                        fontWeight: 600, 
-                        outline: 'none',
-                        fontFamily: F
-                      }}
-                    />
-                    <button
-                      onClick={handleApplyPromo}
-                      style={{
-                        background: discountApplied ? '#10B981' : '#E3C762',
-                        color: discountApplied ? '#FFFFFF' : '#1E222B',
-                        border: 'none',
-                        borderRadius: 10,
-                        padding: '10px 18px',
-                        fontSize: 12,
-                        fontWeight: 800,
-                        cursor: 'pointer',
-                        fontFamily: F,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 6
-                      }}
-                    >
-                      {discountApplied ? <Check size={14} /> : <Tag size={14} />}
-                      <span>{discountApplied ? 'Applied' : 'Apply'}</span>
-                    </button>
-                  </div>
-                </div>
-
                 {/* Campaign Picker Attachment */}
                 <div style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 18, padding: 20 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
@@ -566,12 +484,6 @@ export default function CartPage() {
                       <span>Subtotal</span>
                       <strong style={{ color: theme.color.text1 }}>{naira(rawTotal)}</strong>
                     </div>
-                    {discountApplied && (
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#10B981' }}>
-                        <span>Promo Discount (10%)</span>
-                        <strong>-{naira(discountAmount)}</strong>
-                      </div>
-                    )}
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: theme.color.text3 }}>
                       <span>Screen Billboard</span>
                       <strong style={{ color: theme.color.text1, textAlign: 'right' }}>Bems Junction, Umuahia</strong>

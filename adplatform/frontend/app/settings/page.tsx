@@ -5,6 +5,7 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import { PageTransition, FadeCard } from '@/components/ui/Animations';
 import { useToast } from '@/components/ui/ToastProvider';
 import { useAuthStore } from '@/store/authStore';
+import { useRouter } from 'next/navigation';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import api from '@/lib/api';
@@ -44,7 +45,8 @@ const TABS = [
 ];
 
 export default function SettingsPage() {
-  const { user, updateUser } = useAuthStore();
+  const { user, updateUser, logout } = useAuthStore();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('profile');
   
   // Profile Form
@@ -52,19 +54,144 @@ export default function SettingsPage() {
     name: '',
     handle: '',
     phone: '',
-    location: 'Lagos, Nigeria',
+    location: '',
     bio: '',
     language: 'en'
   });
   const [savingProfile, setSavingProfile] = useState(false);
+  const [billing, setBilling] = useState<{ credits: number; reserved_account_number: string | null; reserved_account_bank: string | null } | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
   
   // Security Form
   const [pwdForm, setPwdForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
   const [pwdLoading, setPwdLoading] = useState(false);
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deletingAccount, setDeletingAccount] = useState(false);
+
+  // Two-Factor Auth
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
+  const [show2FASetup, setShow2FASetup] = useState(false);
+  const [qrCode, setQrCode] = useState('');
+  const [manualKey, setManualKey] = useState('');
+  const [twoFactorCode, setTwoFactorCode] = useState('');
+  const [setting2FA, setSetting2FA] = useState(false);
+  const [show2FADisable, setShow2FADisable] = useState(false);
+  const [disable2FAPassword, setDisable2FAPassword] = useState('');
+  const [disabling2FA, setDisabling2FA] = useState(false);
+
+  const handleStart2FASetup = async () => {
+    setSetting2FA(true);
+    try {
+      const res = await api.post('/auth/2fa/setup');
+      setQrCode(res.data.qr_code);
+      setManualKey(res.data.manual_key);
+      setShow2FASetup(true);
+    } catch (err: any) {
+      toast(err?.response?.data?.message || 'Could not start 2FA setup.', 'error');
+    } finally {
+      setSetting2FA(false);
+    }
+  };
+
+  const handleConfirm2FASetup = async () => {
+    if (twoFactorCode.length !== 6) { toast('Enter the 6-digit code from your authenticator app', 'error'); return; }
+    setSetting2FA(true);
+    try {
+      await api.post('/auth/2fa/verify-setup', { code: twoFactorCode });
+      setTwoFactorEnabled(true);
+      setShow2FASetup(false);
+      setTwoFactorCode('');
+      toast('Two-factor authentication enabled!', 'success');
+    } catch (err: any) {
+      toast(err?.response?.data?.message || 'Incorrect code. Please try again.', 'error');
+    } finally {
+      setSetting2FA(false);
+    }
+  };
+
+  const handleDisable2FA = async () => {
+    if (!disable2FAPassword) { toast('Enter your password to confirm', 'error'); return; }
+    setDisabling2FA(true);
+    try {
+      await api.post('/auth/2fa/disable', { password: disable2FAPassword });
+      setTwoFactorEnabled(false);
+      setShow2FADisable(false);
+      setDisable2FAPassword('');
+      toast('Two-factor authentication disabled.', 'success');
+    } catch (err: any) {
+      toast(err?.response?.data?.message || 'Incorrect password.', 'error');
+    } finally {
+      setDisabling2FA(false);
+    }
+  };
+
+  // Active Sessions
+  const [sessions, setSessions] = useState<{ id: string; device: string; ip_address: string; last_active_at: string; is_current: boolean }[]>([]);
+  const [loadingSessions, setLoadingSessions] = useState(true);
+
+  const fetchSessions = async () => {
+    try {
+      const res = await api.get('/auth/sessions');
+      setSessions(res.data?.sessions || []);
+    } catch {
+      setSessions([]);
+    } finally {
+      setLoadingSessions(false);
+    }
+  };
+
+  const handleRevokeSession = async (id: string) => {
+    try {
+      await api.delete(`/auth/sessions/${id}`);
+      setSessions((prev) => prev.filter((s) => s.id !== id));
+      toast('Session revoked', 'success');
+    } catch (err: any) {
+      toast(err?.response?.data?.message || 'Could not revoke session.', 'error');
+    }
+  };
+
+  // Saved Cards
+  const [savedCards, setSavedCards] = useState<{ id: string; card_type: string | null; last4: string | null; bank: string | null }[]>([]);
+  const [loadingCards, setLoadingCards] = useState(true);
+
+  const fetchSavedCards = async () => {
+    try {
+      const res = await api.get('/payments/cards');
+      setSavedCards(res.data?.cards || []);
+    } catch {
+      setSavedCards([]);
+    } finally {
+      setLoadingCards(false);
+    }
+  };
+
+  const handleDeleteCard = async (id: string) => {
+    try {
+      await api.delete(`/payments/cards/${id}`);
+      setSavedCards((prev) => prev.filter((c) => c.id !== id));
+      toast('Card removed', 'success');
+    } catch (err: any) {
+      toast(err?.response?.data?.message || 'Could not remove card.', 'error');
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!deletePassword) { toast('Please enter your password to confirm', 'error'); return; }
+    setDeletingAccount(true);
+    try {
+      await api.delete('/auth/account', { data: { password: deletePassword } });
+      toast('Your account has been deleted.', 'success');
+      setShowDeleteModal(false);
+      logout();
+      router.push('/auth/login');
+    } catch (err: any) {
+      toast(err?.response?.data?.message || 'Could not delete account. Please try again.', 'error');
+    } finally {
+      setDeletingAccount(false);
+    }
+  };
 
   // Notification Toggles
   const [notifications, setNotifications] = useState({
@@ -75,6 +202,7 @@ export default function SettingsPage() {
     smsAlerts: true,
     smsSecurity: true,
   });
+  const [savingNotification, setSavingNotification] = useState<string | null>(null);
 
   // Preferences
   const [currency, setCurrency] = useState('NGN');
@@ -87,28 +215,54 @@ export default function SettingsPage() {
     if (user) {
       setForm({
         name: user.name || '',
-        handle: user.email ? `@${user.email.split('@')[0]}` : '@creator',
-        phone: '+234 812 345 6789',
-        location: 'Lagos, Nigeria',
-        bio: 'Digital creator & advertiser booking prime billboard screens across Nigeria.',
+        handle: user.handle || (user.email ? `@${user.email.split('@')[0]}` : ''),
+        phone: user.phone || '',
+        location: user.location || '',
+        bio: user.bio || '',
         language: user.language || 'en'
       });
+      setTwoFactorEnabled(Boolean(user.two_factor_enabled));
+      if (user.notification_preferences) {
+        setNotifications((prev) => ({ ...prev, ...user.notification_preferences }));
+      }
     }
   }, [user]);
 
+  useEffect(() => {
+    fetchSessions();
+    fetchSavedCards();
+  }, []);
+
+  useEffect(() => {
+    api.get('/finances/balance')
+      .then((res) => setBilling({
+        credits: Number(res.data?.credits ?? 0),
+        reserved_account_number: res.data?.reserved_account_number || null,
+        reserved_account_bank: res.data?.reserved_account_bank || null,
+      }))
+      .catch(() => setBilling({ credits: 0, reserved_account_number: null, reserved_account_bank: null }));
+  }, []);
+
   // Profile Save
   const handleSaveProfile = async () => {
-    if (!form.name.trim()) { 
-      toast('Name cannot be empty', 'error'); 
-      return; 
+    if (!form.name.trim()) {
+      toast('Name cannot be empty', 'error');
+      return;
     }
     setSavingProfile(true);
     try {
-      const res = await api.put('/auth/profile', { name: form.name, language: form.language });
+      const res = await api.put('/auth/profile', {
+        name: form.name,
+        language: form.language,
+        phone: form.phone,
+        handle: form.handle,
+        location: form.location,
+        bio: form.bio,
+      });
       updateUser(res.data);
       toast('Profile updated successfully!', 'success');
-    } catch {
-      toast('Could not save your profile. Please try again.', 'error');
+    } catch (err: any) {
+      toast(err?.response?.data?.message || 'Could not save your profile. Please try again.', 'error');
     } finally {
       setSavingProfile(false);
     }
@@ -159,17 +313,26 @@ export default function SettingsPage() {
       await api.put('/auth/password', { currentPassword: pwdForm.currentPassword, newPassword: pwdForm.newPassword });
       toast('Password changed successfully!', 'success');
       setPwdForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    } catch (err: any) { 
-      toast(err.response?.data?.message || 'Password changed successfully', 'success'); 
-      setPwdForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    } finally { 
+    } catch (err: any) {
+      toast(err.response?.data?.message || 'Could not change password. Please try again.', 'error');
+    } finally {
       setPwdLoading(false); 
     }
   };
 
-  const toggleNotification = (key: keyof typeof notifications) => {
-    setNotifications(prev => ({ ...prev, [key]: !prev[key] }));
-    toast('Notification preference updated', 'success');
+  const toggleNotification = async (key: keyof typeof notifications) => {
+    const newValue = !notifications[key];
+    setNotifications(prev => ({ ...prev, [key]: newValue }));
+    setSavingNotification(key);
+    try {
+      await api.put('/auth/notification-preferences', { [key]: newValue });
+      toast('Notification preference updated', 'success');
+    } catch (err: any) {
+      setNotifications(prev => ({ ...prev, [key]: !newValue }));
+      toast(err?.response?.data?.message || 'Could not save preference.', 'error');
+    } finally {
+      setSavingNotification(null);
+    }
   };
 
   return (
@@ -527,10 +690,8 @@ export default function SettingsPage() {
                       </div>
 
                       <button
-                        onClick={() => {
-                          setTwoFactorEnabled(!twoFactorEnabled);
-                          toast(twoFactorEnabled ? '2FA disabled' : '2FA activated successfully!', 'success');
-                        }}
+                        onClick={() => { if (twoFactorEnabled) setShow2FADisable(true); else handleStart2FASetup(); }}
+                        disabled={setting2FA}
                         style={{
                           width: 48,
                           height: 26,
@@ -538,7 +699,7 @@ export default function SettingsPage() {
                           background: twoFactorEnabled ? '#10B981' : theme.color.border2,
                           position: 'relative',
                           border: 'none',
-                          cursor: 'pointer',
+                          cursor: setting2FA ? 'wait' : 'pointer',
                           padding: 0,
                           transition: 'background 0.2s'
                         }}
@@ -564,44 +725,41 @@ export default function SettingsPage() {
                       Active Logged-in Devices
                     </h3>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', background: theme.color.bg, borderRadius: 14, border: `1px solid ${theme.color.border}` }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                          <Laptop size={20} color={theme.color.text1} />
-                          <div>
-                            <p style={{ fontSize: 13, fontWeight: 800, color: theme.color.text1, margin: '0 0 2px' }}>
-                              Chrome on Windows 11 · Current Session
-                            </p>
-                            <p style={{ fontSize: 11, color: theme.color.text3, margin: 0 }}>
-                              Lagos, Nigeria · IP: 102.89.44.12
-                            </p>
+                    {loadingSessions ? (
+                      <p style={{ fontSize: 13, color: theme.color.text3 }}>Loading sessions…</p>
+                    ) : sessions.length === 0 ? (
+                      <p style={{ fontSize: 13, color: theme.color.text3 }}>No active sessions found.</p>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                        {sessions.map((s) => (
+                          <div key={s.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', background: s.is_current ? theme.color.bg : theme.color.surface, borderRadius: 14, border: `1px solid ${theme.color.border}` }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                              {s.device.includes('iOS') || s.device.includes('Android') ? <Smartphone size={20} color={theme.color.text3} /> : <Laptop size={20} color={theme.color.text1} />}
+                              <div>
+                                <p style={{ fontSize: 13, fontWeight: 800, color: theme.color.text1, margin: '0 0 2px' }}>
+                                  {s.device}{s.is_current ? ' · Current Session' : ''}
+                                </p>
+                                <p style={{ fontSize: 11, color: theme.color.text3, margin: 0 }}>
+                                  IP: {s.ip_address} · {s.is_current ? 'Active now' : `Last seen ${new Date(s.last_active_at).toLocaleString()}`}
+                                </p>
+                              </div>
+                            </div>
+                            {s.is_current ? (
+                              <span style={{ fontSize: 11, fontWeight: 800, color: '#059669', background: '#ECFDF5', padding: '3px 10px', borderRadius: 20 }}>
+                                Active Now
+                              </span>
+                            ) : (
+                              <button
+                                onClick={() => handleRevokeSession(s.id)}
+                                style={{ background: 'none', border: 'none', color: '#EF4444', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}
+                              >
+                                Revoke
+                              </button>
+                            )}
                           </div>
-                        </div>
-                        <span style={{ fontSize: 11, fontWeight: 800, color: '#059669', background: '#ECFDF5', padding: '3px 10px', borderRadius: 20 }}>
-                          Active Now
-                        </span>
+                        ))}
                       </div>
-
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', background: theme.color.surface, borderRadius: 14, border: `1px solid ${theme.color.border}` }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                          <Smartphone size={20} color={theme.color.text3} />
-                          <div>
-                            <p style={{ fontSize: 13, fontWeight: 800, color: theme.color.text1, margin: '0 0 2px' }}>
-                              Safari on iPhone 15 Pro
-                            </p>
-                            <p style={{ fontSize: 11, color: theme.color.text3, margin: 0 }}>
-                              Lagos, Nigeria · Last seen 2 hours ago
-                            </p>
-                          </div>
-                        </div>
-                        <button 
-                          onClick={() => toast('Session logged out', 'success')}
-                          style={{ background: 'none', border: 'none', color: '#EF4444', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}
-                        >
-                          Revoke
-                        </button>
-                      </div>
-                    </div>
+                    )}
                   </div>
 
                   {/* Danger Zone */}
@@ -734,10 +892,10 @@ export default function SettingsPage() {
                           Available Broadcast Balance
                         </span>
                         <h2 style={{ fontSize: 32, fontWeight: 900, color: '#FFFFFF', margin: '4px 0 6px', letterSpacing: '-0.5px' }}>
-                          ₦5,215,005.25
+                          {billing ? `₦${billing.credits.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'Loading…'}
                         </h2>
                         <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', margin: 0, fontWeight: 600 }}>
-                          Equivalent to ~5,215 airtime broadcast minutes
+                          Manage top-ups and transaction history from your Wallet
                         </p>
                       </div>
 
@@ -771,49 +929,68 @@ export default function SettingsPage() {
                       </h3>
                     </div>
 
-                    <p style={{ fontSize: 13, color: theme.color.text3, margin: '0 0 20px' }}>
-                      Transfers sent to this personalized account from any Nigerian bank will automatically fund your Studio Arella wallet.
-                    </p>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, padding: '18px 20px', background: theme.color.bg, borderRadius: 14, border: `1px solid ${theme.color.border}` }}>
-                      <div>
-                        <span style={{ fontSize: 11, color: theme.color.text4, fontWeight: 700, textTransform: 'uppercase' }}>Bank Name</span>
-                        <p style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1, margin: '4px 0 0' }}>Wema Bank</p>
-                      </div>
-                      <div>
-                        <span style={{ fontSize: 11, color: theme.color.text4, fontWeight: 700, textTransform: 'uppercase' }}>Account Number</span>
-                        <p style={{ fontSize: 15, fontWeight: 900, color: theme.color.text1, margin: '4px 0 0', fontFamily: 'monospace' }}>0129384756</p>
-                      </div>
-                      <div>
-                        <span style={{ fontSize: 11, color: theme.color.text4, fontWeight: 700, textTransform: 'uppercase' }}>Beneficiary</span>
-                        <p style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1, margin: '4px 0 0' }}>Studio Arella / Creator</p>
-                      </div>
-                    </div>
+                    {billing?.reserved_account_number ? (
+                      <>
+                        <p style={{ fontSize: 13, color: theme.color.text3, margin: '0 0 20px' }}>
+                          Transfers sent to this personalized account from any Nigerian bank will automatically fund your Studio Arella wallet.
+                        </p>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, padding: '18px 20px', background: theme.color.bg, borderRadius: 14, border: `1px solid ${theme.color.border}` }}>
+                          <div>
+                            <span style={{ fontSize: 11, color: theme.color.text4, fontWeight: 700, textTransform: 'uppercase' }}>Bank Name</span>
+                            <p style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1, margin: '4px 0 0' }}>{billing.reserved_account_bank}</p>
+                          </div>
+                          <div>
+                            <span style={{ fontSize: 11, color: theme.color.text4, fontWeight: 700, textTransform: 'uppercase' }}>Account Number</span>
+                            <p style={{ fontSize: 15, fontWeight: 900, color: theme.color.text1, margin: '4px 0 0', fontFamily: 'monospace' }}>{billing.reserved_account_number}</p>
+                          </div>
+                          <div>
+                            <span style={{ fontSize: 11, color: theme.color.text4, fontWeight: 700, textTransform: 'uppercase' }}>Beneficiary</span>
+                            <p style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1, margin: '4px 0 0' }}>Studio Arella / {user?.name || 'Creator'}</p>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <p style={{ fontSize: 13, color: theme.color.text3, margin: '0 0 16px' }}>
+                          You haven't generated a dedicated account yet. Verify your BVN or NIN on the Wallet page to get one.
+                        </p>
+                        <Link href="/finances" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 700, color: theme.color.gold, textDecoration: 'none' }}>
+                          Set up on Wallet <ExternalLink size={13} />
+                        </Link>
+                      </>
+                    )}
                   </div>
 
                   {/* Payment Methods on file */}
                   <div style={{ background: theme.color.surface, borderRadius: 24, border: `1px solid ${theme.color.border}`, padding: '28px 32px', boxShadow: '0 4px 24px rgba(0,0,0,0.02)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                      <h3 style={{ fontSize: 16, fontWeight: 800, color: theme.color.text1, margin: 0 }}>
-                        Saved Cards
-                      </h3>
-                      <button 
-                        onClick={() => toast('Redirecting to add card...', 'success')}
-                        style={{ background: 'none', border: 'none', color: '#C69A2C', fontSize: 12, fontWeight: 800, cursor: 'pointer' }}
-                      >
-                        + Add Card
-                      </button>
-                    </div>
+                    <h3 style={{ fontSize: 16, fontWeight: 800, color: theme.color.text1, margin: '0 0 6px' }}>
+                      Saved Cards
+                    </h3>
+                    <p style={{ fontSize: 12, color: theme.color.text4, margin: '0 0 16px' }}>
+                      Cards are saved automatically the next time you pay by card at checkout.
+                    </p>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', background: theme.color.bg, borderRadius: 12, border: `1px solid ${theme.color.border}` }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                          <CreditCard size={18} color={theme.color.text1} />
-                          <span style={{ fontSize: 13, fontWeight: 700, color: theme.color.text1 }}>Mastercard ending in 4242</span>
-                        </div>
-                        <span style={{ fontSize: 11, fontWeight: 800, color: '#C69A2C' }}>Default</span>
+                    {loadingCards ? (
+                      <p style={{ fontSize: 13, color: theme.color.text3 }}>Loading…</p>
+                    ) : savedCards.length === 0 ? (
+                      <p style={{ fontSize: 13, color: theme.color.text3 }}>No saved cards yet.</p>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        {savedCards.map((c) => (
+                          <div key={c.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', background: theme.color.bg, borderRadius: 12, border: `1px solid ${theme.color.border}` }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                              <CreditCard size={18} color={theme.color.text1} />
+                              <span style={{ fontSize: 13, fontWeight: 700, color: theme.color.text1, textTransform: 'capitalize' }}>
+                                {c.card_type || 'Card'} ending in {c.last4 || '····'}{c.bank ? ` · ${c.bank}` : ''}
+                              </span>
+                            </div>
+                            <button onClick={() => handleDeleteCard(c.id)} style={{ background: 'none', border: 'none', color: '#EF4444', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+                              Remove
+                            </button>
+                          </div>
+                        ))}
                       </div>
-                    </div>
+                    )}
                   </div>
 
                 </motion.div>
@@ -946,6 +1123,86 @@ export default function SettingsPage() {
 
         </div>
 
+        {/* ─── MODAL: 2FA SETUP ─── */}
+        <AnimatePresence>
+          {show2FASetup && (
+            <>
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                onClick={() => { setShow2FASetup(false); setTwoFactorCode(''); }}
+                style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.5)', zIndex: 200, backdropFilter: 'blur(4px)' }} />
+              <div style={{ position: 'fixed', inset: 0, zIndex: 201, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, pointerEvents: 'none' }}>
+                <motion.div initial={{ opacity: 0, scale: 0.94, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96, y: 10 }} transition={{ duration: 0.2 }}
+                  style={{ width: '100%', maxWidth: 400, pointerEvents: 'auto' }}>
+                  <div style={{ background: theme.color.surface, borderRadius: 24, padding: '32px 28px', textAlign: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.15)', fontFamily: F }}>
+                    <h3 style={{ fontSize: 18, fontWeight: 800, color: theme.color.text1, margin: '0 0 8px' }}>
+                      Set up two-factor authentication
+                    </h3>
+                    <p style={{ fontSize: 13, color: theme.color.text3, margin: '0 0 20px', lineHeight: 1.5 }}>
+                      Scan this QR code with Google Authenticator, Authy, or any TOTP app, then enter the 6-digit code it shows.
+                    </p>
+                    {qrCode && (
+                      <img src={qrCode} alt="2FA QR code" style={{ width: 180, height: 180, margin: '0 auto 12px', borderRadius: 12, border: `1px solid ${theme.color.border}` }} />
+                    )}
+                    <p style={{ fontSize: 11, color: theme.color.text4, margin: '0 0 20px', wordBreak: 'break-all', fontFamily: 'monospace' }}>
+                      Manual key: {manualKey}
+                    </p>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={6}
+                      placeholder="000000"
+                      value={twoFactorCode}
+                      onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, ''))}
+                      style={{ width: '100%', padding: '12px 14px', marginBottom: 20, borderRadius: 10, border: `1.5px solid ${theme.color.border}`, fontSize: 20, letterSpacing: 6, textAlign: 'center', fontFamily: F, color: theme.color.text1, background: theme.color.bg, outline: 'none', boxSizing: 'border-box' }}
+                    />
+                    <div style={{ display: 'flex', gap: 10 }}>
+                      <Button onClick={() => { setShow2FASetup(false); setTwoFactorCode(''); }} variant="secondary" style={{ flex: 1 }}>Cancel</Button>
+                      <Button onClick={handleConfirm2FASetup} loading={setting2FA} loadingText="Verifying..." style={{ flex: 1 }}>Verify & Enable</Button>
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* ─── MODAL: 2FA DISABLE ─── */}
+        <AnimatePresence>
+          {show2FADisable && (
+            <>
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                onClick={() => { setShow2FADisable(false); setDisable2FAPassword(''); }}
+                style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.5)', zIndex: 200, backdropFilter: 'blur(4px)' }} />
+              <div style={{ position: 'fixed', inset: 0, zIndex: 201, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, pointerEvents: 'none' }}>
+                <motion.div initial={{ opacity: 0, scale: 0.94, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96, y: 10 }} transition={{ duration: 0.2 }}
+                  style={{ width: '100%', maxWidth: 380, pointerEvents: 'auto' }}>
+                  <div style={{ background: theme.color.surface, borderRadius: 24, padding: '32px 28px', textAlign: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.15)', fontFamily: F }}>
+                    <h3 style={{ fontSize: 18, fontWeight: 800, color: theme.color.text1, margin: '0 0 8px' }}>
+                      Disable two-factor authentication?
+                    </h3>
+                    <p style={{ fontSize: 13, color: theme.color.text3, margin: '0 0 20px', lineHeight: 1.5 }}>
+                      Your account will be less secure. Enter your password to confirm.
+                    </p>
+                    <input
+                      type="password"
+                      placeholder="Your password"
+                      value={disable2FAPassword}
+                      onChange={(e) => setDisable2FAPassword(e.target.value)}
+                      style={{ width: '100%', padding: '12px 14px', marginBottom: 20, borderRadius: 10, border: `1.5px solid ${theme.color.border}`, fontSize: 13, fontFamily: F, color: theme.color.text1, background: theme.color.bg, outline: 'none', boxSizing: 'border-box' }}
+                    />
+                    <div style={{ display: 'flex', gap: 10 }}>
+                      <Button onClick={() => { setShow2FADisable(false); setDisable2FAPassword(''); }} variant="secondary" style={{ flex: 1 }}>Cancel</Button>
+                      <button onClick={handleDisable2FA} disabled={disabling2FA} style={{ flex: 1, padding: '12px', background: '#E11D48', color: '#FFFFFF', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 800, cursor: disabling2FA ? 'not-allowed' : 'pointer', opacity: disabling2FA ? 0.7 : 1, fontFamily: F }}>
+                        {disabling2FA ? 'Disabling…' : 'Disable 2FA'}
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
+            </>
+          )}
+        </AnimatePresence>
+
         {/* ─── MODAL: CONFIRM ACCOUNT DELETION ─── */}
         <AnimatePresence>
           {showDeleteModal && (
@@ -974,18 +1231,23 @@ export default function SettingsPage() {
                     <h3 style={{ fontSize: 18, fontWeight: 800, color: theme.color.text1, margin: '0 0 8px' }}>
                       Delete your account?
                     </h3>
-                    <p style={{ fontSize: 13, color: theme.color.text3, margin: '0 0 24px', lineHeight: 1.5 }}>
-                      This will permanently remove all your campaigns, booked slots, and wallet balance. This cannot be undone.
+                    <p style={{ fontSize: 13, color: theme.color.text3, margin: '0 0 16px', lineHeight: 1.5 }}>
+                      Your account will be deactivated immediately and you'll be signed out. This cannot be undone.
                     </p>
+                    <input
+                      type="password"
+                      placeholder="Enter your password to confirm"
+                      value={deletePassword}
+                      onChange={(e) => setDeletePassword(e.target.value)}
+                      style={{ width: '100%', padding: '12px 14px', marginBottom: 20, borderRadius: 10, border: `1.5px solid ${theme.color.border}`, fontSize: 13, fontFamily: F, color: theme.color.text1, background: theme.color.bg, outline: 'none', boxSizing: 'border-box' }}
+                    />
                     <div style={{ display: 'flex', gap: 10 }}>
-                      <Button onClick={() => setShowDeleteModal(false)} variant="secondary" style={{ flex: 1 }}>
+                      <Button onClick={() => { setShowDeleteModal(false); setDeletePassword(''); }} variant="secondary" style={{ flex: 1 }}>
                         Cancel
                       </Button>
                       <button
-                        onClick={() => {
-                          toast('Account deletion request registered', 'error');
-                          setShowDeleteModal(false);
-                        }}
+                        onClick={handleDeleteAccount}
+                        disabled={deletingAccount}
                         style={{
                           flex: 1,
                           padding: '12px',
@@ -995,11 +1257,12 @@ export default function SettingsPage() {
                           borderRadius: 10,
                           fontSize: 13,
                           fontWeight: 800,
-                          cursor: 'pointer',
+                          cursor: deletingAccount ? 'not-allowed' : 'pointer',
+                          opacity: deletingAccount ? 0.7 : 1,
                           fontFamily: F
                         }}
                       >
-                        Confirm Delete
+                        {deletingAccount ? 'Deleting…' : 'Confirm Delete'}
                       </button>
                     </div>
                   </div>

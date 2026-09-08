@@ -8,9 +8,14 @@ import { createNotification, notifyAdmins } from '../services/notificationServic
 export const getBookings: RequestHandler = async (req, res) => {
   const authReq = req as AuthRequest;
   try {
-    const { limit = 20, page = 1, screen_id, status } = req.query;
+    const { limit = 20, page = 1, screen_id, status, owned_screens } = req.query;
     const offset = (Number(page) - 1) * Number(limit);
     const isAdmin = authReq.user?.role === 'admin';
+    // Screen owners viewing their earnings dashboard want bookings placed ON
+    // their screens by other advertisers, not bookings they personally made —
+    // an explicit opt-in flag so the default (my own bookings) never changes
+    // for an advertiser who also happens to own screens.
+    const wantsOwnedScreens = owned_screens === 'true' && authReq.user?.role === 'screen_owner';
 
     let query = `
       SELECT b.*,
@@ -28,7 +33,11 @@ export const getBookings: RequestHandler = async (req, res) => {
       WHERE 1=1`;
 
     const params: any[] = [];
-    if (!isAdmin) { params.push(authReq.user?.id); query += ` AND b.user_id = $${params.length}`; }
+    if (wantsOwnedScreens) {
+      params.push(authReq.user?.id); query += ` AND s.owner_id = $${params.length}`;
+    } else if (!isAdmin) {
+      params.push(authReq.user?.id); query += ` AND b.user_id = $${params.length}`;
+    }
     if (screen_id) { params.push(screen_id); query += ` AND b.screen_id = $${params.length}`; }
     if (status && status !== 'all') { params.push(status); query += ` AND b.status = $${params.length}`; }
     query += ` ORDER BY b.created_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;

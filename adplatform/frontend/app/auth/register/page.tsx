@@ -62,7 +62,7 @@ export default function RegisterPage() {
   // OTP Modal State
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [otpCode, setOtpCode] = useState(['', '', '', '', '', '']);
+  const [otpCode, setOtpCode] = useState(['', '', '', '']);
   const [verifying, setVerifying] = useState(false);
   const [resending, setResending] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -86,6 +86,7 @@ export default function RegisterPage() {
     if (!form.first_name.trim())    { toast('Please enter your first name', 'error'); return; }
     if (!form.last_name.trim())     { toast('Please enter your last name', 'error'); return; }
     if (!form.email.trim())         { toast('Please enter your email', 'error'); return; }
+    if (!form.phone.trim())         { toast('Please enter your phone number', 'error'); return; }
     if (form.password.length < 6)   { toast('Password must be at least 6 characters', 'error'); return; }
     if (form.password !== form.confirm_password) { toast('Passwords do not match', 'error'); return; }
     try {
@@ -120,7 +121,7 @@ export default function RegisterPage() {
     newCode[index] = value;
     setOtpCode(newCode);
 
-    if (value && index < 5) inputRefs.current[index + 1]?.focus();
+    if (value && index < 3) inputRefs.current[index + 1]?.focus();
     if (newCode.every(v => v !== '')) handleVerify(newCode.join(''));
   };
 
@@ -132,12 +133,12 @@ export default function RegisterPage() {
 
   const handleOtpPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
-    const pastedData = e.clipboardData.getData('text/plain').replace(/\D/g, '').slice(0, 6);
+    const pastedData = e.clipboardData.getData('text/plain').replace(/\D/g, '').slice(0, 4);
     if (!pastedData) return;
     const newCode = [...otpCode];
     for (let i = 0; i < pastedData.length; i++) newCode[i] = pastedData[i];
     setOtpCode(newCode);
-    const focusIndex = pastedData.length < 6 ? pastedData.length : 5;
+    const focusIndex = pastedData.length < 4 ? pastedData.length : 3;
     inputRefs.current[focusIndex]?.focus();
     if (newCode.every(v => v !== '')) handleVerify(newCode.join(''));
   };
@@ -233,8 +234,8 @@ export default function RegisterPage() {
                   <input type="text" placeholder="Brand name" value={form.business_name} onChange={e => setForm({ ...form, business_name: e.target.value })} style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
                </div>
                <div>
-                  <label style={labelStyle}>Phone <span style={{fontWeight:400, color:theme.color.text4}}>(optional)</span></label>
-                  <input type="tel" placeholder="08012345678" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
+                  <label style={labelStyle}>Phone*</label>
+                  <input type="tel" placeholder="08012345678" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} required style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
                </div>
             </div>
             <div>

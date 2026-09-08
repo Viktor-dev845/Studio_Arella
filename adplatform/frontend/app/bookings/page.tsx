@@ -40,12 +40,12 @@ function formatDuration(startIso: string, endIso: string) {
 }
 
 const STATUS_LABEL: Record<string, { label: string; className: string }> = {
-  active:          { label: 'Active',    className: 'text-green-600' },
-  confirmed:       { label: 'Confirmed', className: 'text-green-600' },
-  pending_payment: { label: 'Pending',   className: 'text-gray-400' },
-  pending:         { label: 'Pending',   className: 'text-gray-400' },
-  completed:       { label: 'Ended',     className: 'text-gray-400' },
-  ended:           { label: 'Ended',     className: 'text-gray-400' },
+  active:          { label: 'Active',    className: 'text-green-600 dark:text-green-400' },
+  confirmed:       { label: 'Confirmed', className: 'text-green-600 dark:text-green-400' },
+  pending_payment: { label: 'Pending',   className: 'text-gray-400 dark:text-slate-500' },
+  pending:         { label: 'Pending',   className: 'text-gray-400 dark:text-slate-500' },
+  completed:       { label: 'Ended',     className: 'text-gray-400 dark:text-slate-500' },
+  ended:           { label: 'Ended',     className: 'text-gray-400 dark:text-slate-500' },
   cancelled:       { label: 'Cancelled', className: 'text-red-400' },
   failed:          { label: 'Failed',    className: 'text-red-400' },
 };
@@ -257,17 +257,17 @@ function BookingsPageContent() {
         <div className="font-body max-w-7xl mx-auto">
           {/* Page Title */}
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-[16px] font-bold text-gray-900">My bookings</h1>
+            <h1 className="text-[16px] font-bold text-gray-900 dark:text-slate-50">My bookings</h1>
           </div>
 
           {/* Header & Tabs */}
           <div className="mb-8">
-            <div className="flex items-center justify-between border-b border-gray-200 mb-8">
+            <div className="flex items-center justify-between border-b border-gray-200 dark:border-white/10 mb-8">
               <div className="flex items-center gap-8">
                 <button
                   onClick={() => setActiveTab('screen')}
                   className={`flex items-center gap-2 pb-3 text-[13px] font-bold transition-colors relative ${
-                    activeTab === 'screen' ? 'text-[#C69A2C]' : 'text-gray-400 hover:text-gray-600'
+                    activeTab === 'screen' ? 'text-[#C69A2C]' : 'text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300'
                   }`}
                 >
                   <Monitor size={16} />
@@ -280,7 +280,7 @@ function BookingsPageContent() {
                 <button
                   onClick={() => setActiveTab('podcast')}
                   className={`flex items-center gap-2 pb-3 text-[13px] font-bold transition-colors relative ${
-                    activeTab === 'podcast' ? 'text-[#C69A2C]' : 'text-gray-400 hover:text-gray-600'
+                    activeTab === 'podcast' ? 'text-[#C69A2C]' : 'text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300'
                   }`}
                 >
                   <Mic size={16} />
@@ -293,7 +293,7 @@ function BookingsPageContent() {
                 <button
                   onClick={() => setActiveTab('calendar')}
                   className={`flex items-center gap-2 pb-3 text-[13px] font-bold transition-colors relative ${
-                    activeTab === 'calendar' ? 'text-[#C69A2C]' : 'text-gray-400 hover:text-gray-600'
+                    activeTab === 'calendar' ? 'text-[#C69A2C]' : 'text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300'
                   }`}
                 >
                   <Calendar size={16} />
@@ -312,27 +312,27 @@ function BookingsPageContent() {
             <>
               {/* Controls */}
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-                <h2 className="text-sm font-bold text-gray-900">
+                <h2 className="text-sm font-bold text-gray-900 dark:text-slate-50">
                   {activeTab === 'podcast' ? 'All podcast bookings' : 'All Ad bookings'}
                 </h2>
 
                 <div className="flex items-center gap-3 w-full sm:w-auto">
                   {/* Search */}
                   <div className="relative flex-1 sm:w-72">
-                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" />
                     <input
                       type="text"
                       placeholder="Search"
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
-                      className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:ring-1 focus:ring-gray-200 focus:border-gray-300 transition-colors"
+                      className="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-[#111111] border border-gray-200 dark:border-white/10 rounded-lg text-xs font-bold text-gray-900 dark:text-slate-50 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:ring-1 focus:ring-gray-200 focus:border-gray-300 dark:focus:border-white/20 transition-colors"
                     />
                   </div>
 
                   {/* Export */}
                   <button
                     onClick={handleExport}
-                    className="flex items-center gap-1.5 px-5 py-2.5 bg-white border border-[#C69A2C] rounded-lg text-xs font-bold text-[#C69A2C] hover:bg-[#C69A2C]/5 transition-colors"
+                    className="flex items-center gap-1.5 px-5 py-2.5 bg-white dark:bg-[#111111] border border-[#C69A2C] rounded-lg text-xs font-bold text-[#C69A2C] hover:bg-[#C69A2C]/5 transition-colors"
                   >
                     <Download size={13} />
                     Export
@@ -349,30 +349,30 @@ function BookingsPageContent() {
               </div>
 
               {/* Table */}
-              <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
+              <div className="bg-white dark:bg-[#111111] rounded-2xl overflow-hidden shadow-sm border border-gray-100 dark:border-white/10">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-gray-100 bg-white">
+                      <tr className="border-b border-gray-100 dark:border-white/10 bg-white dark:bg-[#111111]">
                         {(activeTab === 'podcast'
                           ? ['SESSION INFO', 'SCHEDULE', 'BILLING (NGN)', 'DURATION', 'STATUS', 'ACTION']
                           : ['CAMPAIGN INFO', 'SCHEDULE', 'BILLING (NGN)', 'DURATION', 'STATUS', 'ACTION']
                         ).map((h) => (
-                          <th key={h} className="text-left px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">{h}</th>
+                          <th key={h} className="text-left px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {loading ? (
                         <tr>
-                          <td colSpan={6} className="px-6 py-16 text-center text-gray-400">
+                          <td colSpan={6} className="px-6 py-16 text-center text-gray-400 dark:text-slate-500">
                             <Loader2 size={20} className="animate-spin inline-block mr-2" />
                             Loading bookings…
                           </td>
                         </tr>
                       ) : filteredRows.length === 0 ? (
                         <tr>
-                          <td colSpan={6} className="px-6 py-16 text-center text-gray-400 text-sm">
+                          <td colSpan={6} className="px-6 py-16 text-center text-gray-400 dark:text-slate-500 text-sm">
                             {search
                               ? 'No bookings match your search.'
                               : activeTab === 'podcast'
@@ -381,17 +381,18 @@ function BookingsPageContent() {
                           </td>
                         </tr>
                       ) : filteredRows.map((b) => {
-                        const statusInfo = STATUS_LABEL[b.status] || { label: b.status, className: 'text-gray-500' };
+                        const statusInfo = STATUS_LABEL[b.status] || { label: b.status, className: 'text-gray-500 dark:text-slate-400' };
                         const bookingType = activeTab === 'podcast' ? 'podcast' : 'ad';
                         const showCancel = CANCELLABLE_STATUSES[bookingType === 'podcast' ? 'podcast' : 'screen'].has(b.status);
-                        const showExtend = EXTENDABLE_STATUSES[bookingType === 'podcast' ? 'podcast' : 'screen'].has(b.status);
+                        const showExtend = EXTENDABLE_STATUSES[bookingType === 'podcast' ? 'podcast' : 'screen'].has(b.status)
+                          && new Date(b.end_time).getTime() > Date.now();
                         const showReview = canReview(b);
                         return (
-                          <tr key={b.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors">
-                            <td className="px-6 py-4 text-[13px] font-bold text-gray-700">{b.info}</td>
-                            <td className="px-6 py-4 text-xs font-semibold text-gray-500">{formatSchedule(b.start_time)}</td>
-                            <td className="px-6 py-4 text-[13px] font-bold text-gray-700">{naira(b.billing)}</td>
-                            <td className="px-6 py-4 text-[13px] font-semibold text-gray-500">{b.duration}</td>
+                          <tr key={b.id} className="border-b border-gray-50 dark:border-white/10 last:border-0 hover:bg-gray-50 dark:hover:bg-white/[0.06] transition-colors">
+                            <td className="px-6 py-4 text-[13px] font-bold text-gray-700 dark:text-slate-200">{b.info}</td>
+                            <td className="px-6 py-4 text-xs font-semibold text-gray-500 dark:text-slate-400">{formatSchedule(b.start_time)}</td>
+                            <td className="px-6 py-4 text-[13px] font-bold text-gray-700 dark:text-slate-200">{naira(b.billing)}</td>
+                            <td className="px-6 py-4 text-[13px] font-semibold text-gray-500 dark:text-slate-400">{b.duration}</td>
                             <td className="px-6 py-4">
                               <span className={`text-xs font-bold ${statusInfo.className}`}>{statusInfo.label}</span>
                             </td>
@@ -408,7 +409,7 @@ function BookingsPageContent() {
                                 {showCancel && (
                                   <button
                                     onClick={() => setCancelTarget({ id: b.id, info: b.info, type: bookingType })}
-                                    className="text-xs font-bold text-red-500 hover:text-red-600 transition-colors"
+                                    className="text-xs font-bold text-red-500 dark:text-red-400 hover:text-red-600 transition-colors"
                                   >
                                     Cancel
                                   </button>
@@ -422,7 +423,7 @@ function BookingsPageContent() {
                                   </button>
                                 )}
                                 {!showExtend && !showCancel && !showReview && (
-                                  <span className="text-xs text-gray-300">—</span>
+                                  <span className="text-xs text-gray-300 dark:text-slate-500">—</span>
                                 )}
                               </div>
                             </td>
@@ -436,7 +437,7 @@ function BookingsPageContent() {
 
               {/* Real count line (no fake pagination) */}
               {!loading && filteredRows.length > 0 && (
-                <div className="mt-6 text-xs text-gray-500 font-medium">
+                <div className="mt-6 text-xs text-gray-500 dark:text-slate-400 font-medium">
                   Showing {filteredRows.length} of {rows.length} booking{rows.length === 1 ? '' : 's'}
                 </div>
               )}
@@ -447,17 +448,17 @@ function BookingsPageContent() {
         {/* Cancel confirm modal */}
         {cancelTarget && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px]">
-            <div className="bg-white rounded-[24px] pt-10 pb-8 px-8 max-w-[360px] w-full mx-4 shadow-2xl flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-150">
-              <h3 className="text-[15px] font-bold text-gray-900 mb-2 leading-snug">
+            <div className="bg-white dark:bg-[#111111] rounded-[24px] pt-10 pb-8 px-8 max-w-[360px] w-full mx-4 shadow-2xl flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-150">
+              <h3 className="text-[15px] font-bold text-gray-900 dark:text-slate-50 mb-2 leading-snug">
                 Cancel this booking?
               </h3>
-              <p className="text-[12px] text-gray-500 mb-8">{cancelTarget.info}</p>
+              <p className="text-[12px] text-gray-500 dark:text-slate-400 mb-8">{cancelTarget.info}</p>
               <div className="flex items-center justify-center gap-3 w-full">
                 <button
                   type="button"
                   disabled={cancelling}
                   onClick={() => setCancelTarget(null)}
-                  className="flex-1 py-2.5 rounded-[12px] border border-gray-200 bg-white text-[13px] font-bold text-gray-800 hover:bg-gray-50 transition-colors disabled:opacity-50"
+                  className="flex-1 py-2.5 rounded-[12px] border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111111] text-[13px] font-bold text-gray-800 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-white/[0.06] transition-colors disabled:opacity-50"
                 >
                   No, keep it
                 </button>
@@ -478,15 +479,15 @@ function BookingsPageContent() {
         {/* Cancel success modal */}
         {cancelSuccessInfo && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px]">
-            <div className="bg-white rounded-[24px] pt-10 pb-8 px-8 max-w-[360px] w-full mx-4 shadow-2xl flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-150">
+            <div className="bg-white dark:bg-[#111111] rounded-[24px] pt-10 pb-8 px-8 max-w-[360px] w-full mx-4 shadow-2xl flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-150">
               <div className="relative flex items-center justify-center w-36 h-36 mb-3">
                 <div className="absolute inset-0 bg-[#C69A2C]/25 blur-2xl rounded-full"></div>
                 <div className="relative w-[64px] h-[64px] bg-[#9E7B21] rounded-full flex items-center justify-center shadow-[0_4px_20px_rgba(158,123,33,0.35)]">
                   <X size={28} className="text-white" strokeWidth={3} />
                 </div>
               </div>
-              <h3 className="text-[16px] font-bold text-gray-900 mb-2">Booking cancelled</h3>
-              <p className="text-[12px] text-gray-500 mb-8">{cancelSuccessInfo}</p>
+              <h3 className="text-[16px] font-bold text-gray-900 dark:text-slate-50 mb-2">Booking cancelled</h3>
+              <p className="text-[12px] text-gray-500 dark:text-slate-400 mb-8">{cancelSuccessInfo}</p>
               <button
                 type="button"
                 onClick={() => setCancelSuccessInfo(null)}
@@ -501,19 +502,19 @@ function BookingsPageContent() {
         {/* Extend modal */}
         {extendTarget && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-            <div className="bg-white rounded-[24px] w-full max-w-[440px] shadow-2xl relative animate-in fade-in zoom-in duration-200">
+            <div className="bg-white dark:bg-[#111111] rounded-[24px] w-full max-w-[440px] shadow-2xl relative animate-in fade-in zoom-in duration-200">
               <div className="flex items-center justify-between p-6 pb-2">
-                <button onClick={() => setExtendTarget(null)} className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-900">
+                <button onClick={() => setExtendTarget(null)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-white/[0.06] rounded-full transition-colors text-gray-900 dark:text-slate-50">
                   <ArrowLeft size={18} />
                 </button>
-                <h2 className="text-[15px] font-bold text-gray-900">Extend booking</h2>
-                <button onClick={() => setExtendTarget(null)} className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-900">
+                <h2 className="text-[15px] font-bold text-gray-900 dark:text-slate-50">Extend booking</h2>
+                <button onClick={() => setExtendTarget(null)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-white/[0.06] rounded-full transition-colors text-gray-900 dark:text-slate-50">
                   <X size={18} />
                 </button>
               </div>
 
               <div className="px-8 pb-8 pt-4 space-y-5">
-                <p className="text-[12.5px] text-gray-500">{extendTarget.info}</p>
+                <p className="text-[12.5px] text-gray-500 dark:text-slate-400">{extendTarget.info}</p>
 
                 <div className="flex gap-3">
                   <input
@@ -521,12 +522,12 @@ function BookingsPageContent() {
                     min={1}
                     value={extendAmount}
                     onChange={(e) => setExtendAmount(e.target.value)}
-                    className="w-24 px-4 py-3 bg-white border border-gray-200 rounded-[12px] text-[14px] font-bold text-gray-900 text-center focus:outline-none focus:border-[#C69A2C]"
+                    className="w-24 px-4 py-3 bg-white dark:bg-[#111111] border border-gray-200 dark:border-white/10 rounded-[12px] text-[14px] font-bold text-gray-900 dark:text-slate-50 text-center focus:outline-none focus:border-[#C69A2C]"
                   />
                   <select
                     value={extendUnit}
                     onChange={(e) => setExtendUnit(e.target.value as ExtendUnit)}
-                    className="flex-1 px-4 py-3 bg-white border border-gray-200 rounded-[12px] text-[13px] font-bold text-gray-900 focus:outline-none focus:border-[#C69A2C]"
+                    className="flex-1 px-4 py-3 bg-white dark:bg-[#111111] border border-gray-200 dark:border-white/10 rounded-[12px] text-[13px] font-bold text-gray-900 dark:text-slate-50 focus:outline-none focus:border-[#C69A2C]"
                   >
                     <option value="minutes">Minutes</option>
                     <option value="hours">Hours</option>
@@ -534,7 +535,7 @@ function BookingsPageContent() {
                   </select>
                 </div>
 
-                <p className="text-[11.5px] text-gray-400 leading-relaxed">
+                <p className="text-[11.5px] text-gray-400 dark:text-slate-500 leading-relaxed">
                   This adds time immediately after your current booking ends. You'll be charged from your wallet for the extra time — the exact cost is confirmed when you extend, based on your booking's real rate.
                 </p>
 
@@ -554,15 +555,15 @@ function BookingsPageContent() {
         {/* Extend success modal */}
         {extendSuccess && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px]">
-            <div className="bg-white rounded-[24px] pt-10 pb-8 px-8 max-w-[360px] w-full mx-4 shadow-2xl flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-150">
+            <div className="bg-white dark:bg-[#111111] rounded-[24px] pt-10 pb-8 px-8 max-w-[360px] w-full mx-4 shadow-2xl flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-150">
               <div className="relative flex items-center justify-center w-36 h-36 mb-3">
                 <div className="absolute inset-0 bg-[#C69A2C]/25 blur-2xl rounded-full"></div>
                 <div className="relative w-[64px] h-[64px] bg-[#9E7B21] rounded-full flex items-center justify-center shadow-[0_4px_20px_rgba(158,123,33,0.35)]">
                   <Check size={28} className="text-white" strokeWidth={3} />
                 </div>
               </div>
-              <h3 className="text-[16px] font-bold text-gray-900 mb-2">Booking extended</h3>
-              <p className="text-[12px] text-gray-500 mb-8">
+              <h3 className="text-[16px] font-bold text-gray-900 dark:text-slate-50 mb-2">Booking extended</h3>
+              <p className="text-[12px] text-gray-500 dark:text-slate-400 mb-8">
                 {extendSuccess.info} — {naira(extendSuccess.cost)} charged from your wallet.
               </p>
               <button
@@ -579,26 +580,26 @@ function BookingsPageContent() {
         {/* Review modal */}
         {reviewTarget && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px] p-4">
-            <div className="bg-white rounded-[24px] w-full max-w-[420px] shadow-2xl relative animate-in fade-in zoom-in duration-200">
+            <div className="bg-white dark:bg-[#111111] rounded-[24px] w-full max-w-[420px] shadow-2xl relative animate-in fade-in zoom-in duration-200">
               <div className="flex items-center justify-between p-6 pb-2">
-                <button onClick={() => setReviewTarget(null)} className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-900">
+                <button onClick={() => setReviewTarget(null)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-white/[0.06] rounded-full transition-colors text-gray-900 dark:text-slate-50">
                   <ArrowLeft size={18} />
                 </button>
-                <h2 className="text-[15px] font-bold text-gray-900">Send a review</h2>
-                <button onClick={() => setReviewTarget(null)} className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-900">
+                <h2 className="text-[15px] font-bold text-gray-900 dark:text-slate-50">Send a review</h2>
+                <button onClick={() => setReviewTarget(null)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-white/[0.06] rounded-full transition-colors text-gray-900 dark:text-slate-50">
                   <X size={18} />
                 </button>
               </div>
 
               <div className="px-8 pb-10 pt-4 space-y-5">
-                <p className="text-[12.5px] text-gray-500">{reviewTarget.info}</p>
+                <p className="text-[12.5px] text-gray-500 dark:text-slate-400">{reviewTarget.info}</p>
 
                 <input
                   type="text"
                   placeholder="Title of your review (optional)"
                   value={reviewTitle}
                   onChange={(e) => setReviewTitle(e.target.value)}
-                  className="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-[12px] text-[13px] font-medium text-gray-900 placeholder:text-[#94A3B8] placeholder:font-normal focus:outline-none focus:border-[#C69A2C] transition-colors"
+                  className="w-full px-4 py-3.5 bg-white dark:bg-[#111111] border border-gray-200 dark:border-white/10 rounded-[12px] text-[13px] font-medium text-gray-900 dark:text-slate-50 placeholder:text-[#94A3B8] placeholder:font-normal focus:outline-none focus:border-[#C69A2C] transition-colors"
                 />
 
                 <textarea
@@ -606,12 +607,12 @@ function BookingsPageContent() {
                   value={reviewBody}
                   onChange={(e) => setReviewBody(e.target.value)}
                   rows={4}
-                  className="w-full px-4 py-3.5 bg-white border border-gray-200 rounded-[12px] text-[13px] font-medium text-gray-900 placeholder:text-[#94A3B8] placeholder:font-normal focus:outline-none focus:border-[#C69A2C] transition-colors resize-none"
+                  className="w-full px-4 py-3.5 bg-white dark:bg-[#111111] border border-gray-200 dark:border-white/10 rounded-[12px] text-[13px] font-medium text-gray-900 dark:text-slate-50 placeholder:text-[#94A3B8] placeholder:font-normal focus:outline-none focus:border-[#C69A2C] transition-colors resize-none"
                 />
 
                 <div>
-                  <p className="text-[12px] font-semibold text-gray-800 mb-2.5 text-left">Rate your experience</p>
-                  <div className="w-full border border-dashed border-gray-300 rounded-[12px] py-6 flex flex-col items-center justify-center bg-white transition-colors">
+                  <p className="text-[12px] font-semibold text-gray-800 dark:text-slate-200 mb-2.5 text-left">Rate your experience</p>
+                  <div className="w-full border border-dashed border-gray-300 dark:border-white/20 rounded-[12px] py-6 flex flex-col items-center justify-center bg-white dark:bg-[#111111] transition-colors">
                     <div className="flex gap-2.5 mb-2">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <button
@@ -627,7 +628,7 @@ function BookingsPageContent() {
                         </button>
                       ))}
                     </div>
-                    <p className="text-[12px] font-medium text-gray-700">
+                    <p className="text-[12px] font-medium text-gray-700 dark:text-slate-200">
                       {['Terrible', 'Poor', 'Average', 'Good', 'Excellent'][reviewRating - 1]}
                     </p>
                   </div>
@@ -651,14 +652,14 @@ function BookingsPageContent() {
         {/* Review success modal */}
         {reviewSuccess && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px] p-4">
-            <div className="bg-white rounded-[24px] pt-10 pb-8 px-8 max-w-[360px] w-full mx-4 shadow-2xl flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-150">
+            <div className="bg-white dark:bg-[#111111] rounded-[24px] pt-10 pb-8 px-8 max-w-[360px] w-full mx-4 shadow-2xl flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-150">
               <div className="relative flex items-center justify-center w-36 h-36 mb-3">
                 <div className="absolute inset-0 bg-[#C69A2C]/25 blur-2xl rounded-full"></div>
                 <div className="relative w-[64px] h-[64px] bg-[#9E7B21] rounded-full flex items-center justify-center shadow-[0_4px_20px_rgba(158,123,33,0.35)]">
                   <Check size={28} className="text-white" strokeWidth={3} />
                 </div>
               </div>
-              <h3 className="text-[15px] font-bold text-gray-900 mb-8">We received your feedback</h3>
+              <h3 className="text-[15px] font-bold text-gray-900 dark:text-slate-50 mb-8">We received your feedback</h3>
               <button
                 onClick={() => setReviewSuccess(false)}
                 className="w-[140px] py-2.5 rounded-[12px] bg-[#C69A2C] hover:bg-[#b58b24] text-[13px] font-bold text-white transition-colors shadow-sm"

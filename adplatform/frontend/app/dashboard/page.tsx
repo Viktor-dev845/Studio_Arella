@@ -5,6 +5,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import AdvertiserDashboard from '@/components/dashboard/AdvertiserDashboard';
+import ScreenOwnerDashboard from '@/components/dashboard/ScreenOwnerDashboard';
 
 export default function DashboardPage() {
   const { user, loadFromStorage, checkAuth } = useAuthStore();
@@ -35,11 +36,10 @@ export default function DashboardPage() {
     </DashboardLayout>
   );
 
-  // All regular users are advertisers.
   // Admins are redirected to /admin on login — they don't use this page.
   return (
     <DashboardLayout>
-      <AdvertiserDashboard />
+      {user.role === 'screen_owner' ? <ScreenOwnerDashboard /> : <AdvertiserDashboard />}
     </DashboardLayout>
   );
 }

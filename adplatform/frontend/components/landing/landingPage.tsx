@@ -6,8 +6,8 @@ import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import { theme } from '@/lib/theme';
 import {
   FaLocationDot, FaDisplay, FaBolt, FaBullhorn, FaArrowRight,
-  FaStar, FaChevronDown, FaXTwitter, FaLinkedinIn,
-  FaInstagram, FaPhone, FaEnvelope, FaPlay, FaFilm, FaPaintbrush, FaMicrophone, FaRadio, FaHeadphones
+  FaStar, FaChevronDown,
+  FaPhone, FaEnvelope, FaPlay, FaFilm, FaPaintbrush, FaMicrophone, FaRadio, FaHeadphones
 } from 'react-icons/fa6';
 
 const F = "'Quicksand', sans-serif";
@@ -653,13 +653,8 @@ export default function LandingPage() {
               <img src="/logo.png" alt="Studio Arella Logo" style={{ height: 80, objectFit: 'contain' }} />
             </Link>
             <p style={{ fontSize: 14, color: theme.color.text3, lineHeight: 1.7, maxWidth: 300, margin: '0 0 24px', fontWeight: 500 }}>The easiest way to book premium digital screen advertising and professional podcast studio sessions in Umuahia. A Bems Group Initiative.</p>
-            <div style={{ display: 'flex', gap: 12 }}>
-              {[FaXTwitter, FaLinkedinIn, FaInstagram].map((Icon, i) => (
-                <a key={i} href="#" style={{ width: 36, height: 36, borderRadius: '50%', background: theme.color.border, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#475569', textDecoration: 'none', transition: 'color 0.2s, background 0.2s' }} onMouseEnter={e => { e.currentTarget.style.color = '#F8FAFC'; e.currentTarget.style.background = theme.color.border2; }} onMouseLeave={e => { e.currentTarget.style.color = theme.color.text4; e.currentTarget.style.background = theme.color.border; }}><Icon size={14} /></a>
-              ))}
-            </div>
           </div>
-          {[{ title: 'Platform', links: [['#how', 'How it works'], ['#pricing', 'Pricing Plans'], ['/auth/register', 'Create Account'], ['/auth/login', 'Sign in']] }, { title: 'Company', links: [['#', 'About Bems Group'], ['#services', 'Our Services'], ['/creative', 'Request Creative'], ['#faq', 'FAQ & Support']] }].map(({ title, links }) => (
+          {[{ title: 'Platform', links: [['#how', 'How it works'], ['#pricing', 'Pricing Plans'], ['/auth/register', 'Create Account'], ['/auth/login', 'Sign in']] }, { title: 'Company', links: [['#services', 'Our Services'], ['/creative', 'Request Creative'], ['#faq', 'FAQ & Support']] }].map(({ title, links }) => (
             <div key={title}>
               <p style={{ fontSize: 13, fontWeight: 800, color: theme.color.text1, margin: '0 0 20px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>{title}</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -680,8 +675,8 @@ export default function LandingPage() {
         <div style={{ maxWidth: 1200, margin: '0 auto', borderTop: '1px solid rgba(0,0,0,0.05)', paddingTop: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
           <p style={{ fontSize: 13, color: theme.color.text3, margin: 0, fontWeight: 500 }}>© {new Date().getFullYear()} Studio Arella. All rights reserved.</p>
           <div style={{ display: 'flex', gap: 24 }}>
-            {['Privacy Policy', 'Terms of Service'].map(l => (
-              <a key={l} href="#" style={{ fontSize: 13, color: theme.color.text3, textDecoration: 'none', fontWeight: 500 }}>{l}</a>
+            {[{ label: 'Privacy Policy', href: '/privacy' }, { label: 'Terms of Service', href: '/terms' }].map(({ label, href }) => (
+              <Link key={label} href={href} style={{ fontSize: 13, color: theme.color.text3, textDecoration: 'none', fontWeight: 500 }}>{label}</Link>
             ))}
           </div>
         </div>

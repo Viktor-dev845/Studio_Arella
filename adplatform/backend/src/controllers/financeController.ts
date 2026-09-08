@@ -60,7 +60,7 @@ export const getTotalRevenue : RequestHandler = async (req, res) => {
     const authReq = req as AuthRequest;
   try {
     const bookingsRes = await pool.query(
-      `SELECT COALESCE(SUM(total_cost), 0) as total FROM bookings WHERE user_id = $1 AND status IN ('active', 'completed')`,
+      `SELECT COALESCE(SUM(total_cost), 0) as total FROM bookings WHERE user_id = $1 AND status IN ('active', 'ended', 'completed')`,
       [authReq.user?.id]
     );
     const podcastRes = await pool.query(

@@ -16,7 +16,9 @@ export default function LoginPage() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { login } = useAuthStore();
+  const [pendingToken, setPendingToken] = useState<string | null>(null);
+  const [twoFactorCode, setTwoFactorCode] = useState('');
+  const { login, completeTwoFactorLogin } = useAuthStore();
   const { toast } = useToast();
   const router = useRouter();
 
@@ -47,10 +49,28 @@ export default function LoginPage() {
     
     setLoading(true);
     try {
-      const user = await login(form.email, form.password);
-      router.push((user as any)?.role === 'admin' ? '/admin' : '/dashboard');
+      const result = await login(form.email, form.password);
+      if ('requires_2fa' in result && result.requires_2fa) {
+        setPendingToken(result.pending_token);
+        setLoading(false);
+        return;
+      }
+      router.push((result as any)?.role === 'admin' ? '/admin' : '/dashboard');
     } catch (err: any) {
       toast(err?.response?.data?.message || 'Incorrect email or password', 'error');
+      setLoading(false);
+    }
+  };
+
+  const handleVerify2FA = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (twoFactorCode.length !== 6 || !pendingToken) { toast('Enter the 6-digit code from your authenticator app', 'error'); return; }
+    setLoading(true);
+    try {
+      const user = await completeTwoFactorLogin(pendingToken, twoFactorCode);
+      router.push((user as any)?.role === 'admin' ? '/admin' : '/dashboard');
+    } catch (err: any) {
+      toast(err?.response?.data?.message || 'Incorrect code. Please try again.', 'error');
       setLoading(false);
     }
   };
@@ -100,58 +120,94 @@ export default function LoginPage() {
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}
           className="w-full max-w-[420px]">
 
-          <h1 style={{ fontSize: 32, fontWeight: 800, color: theme.color.text1, margin: '0 0 8px', letterSpacing: '-0.5px' }}>Log in</h1>
-          <p style={{ fontSize: 15, color: theme.color.text3, margin: '0 0 32px', fontWeight: 500 }}>
-            Don't have an account?{' '}
-            <Link href="/auth/register" style={{ color: '#D4AF37', fontWeight: 600, textDecoration: 'none' }}>Sign up</Link>
-          </p>
-
-          <GoogleButton label="Log in with Google" 
-             style={{ background: theme.color.surface, color: theme.color.text1, border: `1px solid ${theme.color.border}`, boxShadow: '0 2px 4px rgba(0,0,0,0.02)', fontWeight: 600 }} 
-          />
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, margin: '24px 0' }}>
-            <div style={{ flex: 1, height: 1, background: theme.color.surface2 }} />
-            <span style={{ fontSize: 12, color: '#475569', fontWeight: 500 }}>Or continue with</span>
-            <div style={{ flex: 1, height: 1, background: theme.color.surface2 }} />
-          </div>
-
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-
-            <div>
-              <label style={labelStyle}>Email address*</label>
-              <input type="email" placeholder="you@example.com"
-                value={form.email}
-                onChange={e => setForm({ ...form, email: e.target.value })}
-                required style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
-            </div>
-
-            <div>
-              <label style={labelStyle}>Password*</label>
-              <div style={{ position: 'relative' }}>
-                <input type={showPw ? 'text' : 'password'} placeholder="Enter password"
-                  value={form.password}
-                  onChange={e => setForm({ ...form, password: e.target.value })}
-                  required style={{ ...inputStyle, paddingRight: 60 }} onFocus={onFocus} onBlur={onBlur} />
-                <button type="button" onClick={() => setShowPw(p => !p)}
-                  style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text1, fontWeight: 600, fontSize: 11 }}>
-                  {showPw ? 'Hide' : 'Show'}
+          {pendingToken ? (
+            <>
+              <h1 style={{ fontSize: 32, fontWeight: 800, color: theme.color.text1, margin: '0 0 8px', letterSpacing: '-0.5px' }}>Two-factor code</h1>
+              <p style={{ fontSize: 15, color: theme.color.text3, margin: '0 0 32px', fontWeight: 500 }}>
+                Enter the 6-digit code from your authenticator app.
+              </p>
+              <form onSubmit={handleVerify2FA} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={6}
+                  placeholder="000000"
+                  autoFocus
+                  value={twoFactorCode}
+                  onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, ''))}
+                  style={{ ...inputStyle, fontSize: 24, letterSpacing: 8, textAlign: 'center' }}
+                  onFocus={onFocus} onBlur={onBlur}
+                />
+                <AnimatedButton
+                  type="submit"
+                  loading={loading}
+                  loadingText="Verifying..."
+                  style={{ width: '100%', padding: '14px', background: '#D4AF37', color: '#0F172A', borderRadius: 6, fontSize: 15, fontWeight: 700, border: 'none', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(212,175,55,0.2)' }}
+                >
+                  Verify & Log in
+                </AnimatedButton>
+                <button type="button" onClick={() => { setPendingToken(null); setTwoFactorCode(''); }}
+                  style={{ background: 'none', border: 'none', color: theme.color.text3, fontSize: 13, fontWeight: 600, cursor: 'pointer', textAlign: 'center' }}>
+                  Back to login
                 </button>
-              </div>
-              <div style={{ textAlign: 'right', marginTop: 8 }}>
-                 <Link href="/auth/forgot-password" style={{ fontSize: 12, color: '#D4AF37', fontWeight: 600, textDecoration: 'none' }}>Forgot password?</Link>
-              </div>
-            </div>
+              </form>
+            </>
+          ) : (
+            <>
+              <h1 style={{ fontSize: 32, fontWeight: 800, color: theme.color.text1, margin: '0 0 8px', letterSpacing: '-0.5px' }}>Log in</h1>
+              <p style={{ fontSize: 15, color: theme.color.text3, margin: '0 0 32px', fontWeight: 500 }}>
+                Don't have an account?{' '}
+                <Link href="/auth/register" style={{ color: '#D4AF37', fontWeight: 600, textDecoration: 'none' }}>Sign up</Link>
+              </p>
 
-            <AnimatedButton
-              type="submit"
-              loading={loading}
-              loadingText="Logging in..."
-              style={{ width: '100%', padding: '14px', background: '#D4AF37', color: '#0F172A', borderRadius: 6, fontSize: 15, fontWeight: 700, border: 'none', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(212,175,55,0.2)', marginTop: 8 }}
-            >
-              Log in
-            </AnimatedButton>
-          </form>
+              <GoogleButton label="Log in with Google"
+                 style={{ background: theme.color.surface, color: theme.color.text1, border: `1px solid ${theme.color.border}`, boxShadow: '0 2px 4px rgba(0,0,0,0.02)', fontWeight: 600 }}
+              />
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16, margin: '24px 0' }}>
+                <div style={{ flex: 1, height: 1, background: theme.color.surface2 }} />
+                <span style={{ fontSize: 12, color: '#475569', fontWeight: 500 }}>Or continue with</span>
+                <div style={{ flex: 1, height: 1, background: theme.color.surface2 }} />
+              </div>
+
+              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+                <div>
+                  <label style={labelStyle}>Email address*</label>
+                  <input type="email" placeholder="you@example.com"
+                    value={form.email}
+                    onChange={e => setForm({ ...form, email: e.target.value })}
+                    required style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
+                </div>
+
+                <div>
+                  <label style={labelStyle}>Password*</label>
+                  <div style={{ position: 'relative' }}>
+                    <input type={showPw ? 'text' : 'password'} placeholder="Enter password"
+                      value={form.password}
+                      onChange={e => setForm({ ...form, password: e.target.value })}
+                      required style={{ ...inputStyle, paddingRight: 60 }} onFocus={onFocus} onBlur={onBlur} />
+                    <button type="button" onClick={() => setShowPw(p => !p)}
+                      style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text1, fontWeight: 600, fontSize: 11 }}>
+                      {showPw ? 'Hide' : 'Show'}
+                    </button>
+                  </div>
+                  <div style={{ textAlign: 'right', marginTop: 8 }}>
+                     <Link href="/auth/forgot-password" style={{ fontSize: 12, color: '#D4AF37', fontWeight: 600, textDecoration: 'none' }}>Forgot password?</Link>
+                  </div>
+                </div>
+
+                <AnimatedButton
+                  type="submit"
+                  loading={loading}
+                  loadingText="Logging in..."
+                  style={{ width: '100%', padding: '14px', background: '#D4AF37', color: '#0F172A', borderRadius: 6, fontSize: 15, fontWeight: 700, border: 'none', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(212,175,55,0.2)', marginTop: 8 }}
+                >
+                  Log in
+                </AnimatedButton>
+              </form>
+            </>
+          )}
         </motion.div>
       </div>
 

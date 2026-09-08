@@ -1,1371 +1,424 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo, Suspense } from "react";
-import { createPortal } from "react-dom";
-import { ChevronLeft, ChevronRight, ChevronDown, Clock, Info, X, Check, Ticket, AlertTriangle, Trash2, Repeat as RepeatIcon } from "lucide-react";
-import DashboardLayout from '@/components/layout/DashboardLayout';
-import { useToast } from '@/components/ui/ToastProvider';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useCartStore } from '@/store/cartStore';
-import { useAuthStore } from '@/store/authStore';
+import { Calendar, Clock, Upload, ChevronDown, Check, X, ArrowLeft } from 'lucide-react';
+import DashboardLayout from '@/components/layout/DashboardLayout';
+import { PageTransition } from '@/components/ui/Animations';
+import { useToast } from '@/components/ui/ToastProvider';
 import api from '@/lib/api';
-import { FaImage, FaFilm, FaWallet, FaCreditCard } from 'react-icons/fa6';
-import { AnimatedButton, PageTransition } from '@/components/ui/Animations';
-import RequestCreativeServiceModal from '@/components/ui/RequestCreativeServiceModal';
 import { theme } from '@/lib/theme';
 
+const F = theme.font.body;
 const SCREEN_ID = '00000000-0000-0000-0000-000000000001';
-const START_HOUR = 7;
-const END_HOUR = 20; // 8 PM
-const DAY_MIN = (END_HOUR - START_HOUR) * 60;
-const PPM = 1000; 
+const OPEN_HOUR = 7;
+const CLOSE_HOUR = 20;
 
-function calcCost(totalSeconds: number, rate: number) {
-  if (totalSeconds <= 0) return { cost: 0, base: 0, extra: 0, extraSeconds: 0 };
-  const totalMinutes = Math.ceil(totalSeconds / 60);
-  const cost = totalMinutes * rate;
-  const extra = totalMinutes > 1 ? cost - rate : 0;
-  const extraSeconds = totalSeconds > 60 ? totalSeconds - 60 : 0;
-  return { cost, base: rate, extra, extraSeconds };
-}
+type DurationUnit = 'hourly' | 'weekly' | 'monthly';
+type CampaignType = 'one_time' | 'recurring';
+type Step = 'form' | 'billing' | 'card' | 'wallet' | 'success';
 
-function naira(n: number) { return `₦${Number(n).toLocaleString("en-NG", { minimumFractionDigits: 2 })}`; }
-function pad(n: number) { return String(n).padStart(2, "0"); }
-function localDateKey(d: Date) { return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; }
-function addDays(d: Date, n: number) { const r = new Date(d); r.setDate(r.getDate() + n); return r; }
-function addMonths(d: Date, n: number) { const r = new Date(d); r.setMonth(r.getMonth() + n); return r; }
-function addYears(d: Date, n: number) { const r = new Date(d); r.setFullYear(r.getFullYear() + n); return r; }
-function isSameDate(a: Date, b: Date) { return localDateKey(a) === localDateKey(b); }
-function minutesToHHMM(min: number) { return `${pad(Math.floor(min / 60))}:${pad(min % 60)}`; }
-function formatMin(min: number) {
-  const totalSeconds = Math.round(min * 60);
-  const h = Math.floor(totalSeconds / 3600);
-  const m = Math.floor((totalSeconds % 3600) / 60);
-  const s = totalSeconds % 60;
-  const period = h < 12 ? "AM" : "PM";
-  const hh = h % 12 === 0 ? 12 : h % 12;
-  if (s > 0) return `${hh}:${pad(m)}:${pad(s)} ${period}`;
-  return `${hh}:${pad(m)} ${period}`;
-}
-function formatDurationSec(sec: number) {
-  const m = Math.floor(sec / 60), s = sec % 60;
-  if (m === 0) return `${s}s`;
-  return s === 0 ? `${m} min` : `${m}m ${s}s`;
-}
+// Turns the form's fields into a real list of {start, end} slots for
+// POST /bookings/reserve. "Hourly" books one continuous block on the chosen
+// day. "Weekly"/"Monthly" book a fixed 1-hour slot at the same time each day
+// — for "One time booking" that's just the first day; for "Recurring" it
+// repeats daily across the full period (7 or 30 days per unit).
+function buildSlots(dateStr: string, timeStr: string, unit: DurationUnit, count: number, campaignType: CampaignType) {
+  const [h, m] = (timeStr || '09:00').split(':').map(Number);
+  const baseDate = new Date(`${dateStr}T00:00:00`);
+  const startHour = Math.min(Math.max(h, OPEN_HOUR), CLOSE_HOUR - 1);
 
-function availableMinsForward(startMin: number, bookings: any[]) {
-  const dayEnd = END_HOUR * 60;
-  let boundary = dayEnd;
-  for (const b of bookings) if (b.startMin >= startMin && b.startMin < boundary) boundary = b.startMin;
-  return Math.max(0, boundary - startMin);
-}
+  const slots: { start: string; end: string; mins: number }[] = [];
 
-function availableMinsBackward(endMin: number, bookings: any[]) {
-  const dayStart = START_HOUR * 60;
-  let boundary = dayStart;
-  for (const b of bookings) { const be = b.startMin + b.durationMin; if (be <= endMin && be > boundary) boundary = be; }
-  return Math.max(0, endMin - boundary);
-}
-function isStartInsideBooking(startMin: number, bookings: any[]) {
-  return bookings.some((b) => startMin >= b.startMin && startMin < b.startMin + b.durationMin);
-}
-
-function getAvailableStartMin(hour: number, bookings: any[]) {
-  let bookedMins = 0;
-  for (const b of bookings) {
-     const bStart = b.startMin;
-     const bEnd = b.startMin + b.durationMin;
-     const hStart = hour * 60;
-     const hEnd = (hour + 1) * 60;
-     
-     const overlapStart = Math.max(bStart, hStart);
-     const overlapEnd = Math.min(bEnd, hEnd);
-     if (overlapStart < overlapEnd) {
-        bookedMins += (overlapEnd - overlapStart);
-     }
+  if (unit === 'hourly') {
+    const hours = Math.min(Math.max(count, 1), CLOSE_HOUR - startHour);
+    const start = new Date(baseDate);
+    start.setHours(startHour, m || 0, 0, 0);
+    const end = new Date(start.getTime() + hours * 60 * 60000);
+    slots.push({ start: start.toISOString(), end: end.toISOString(), mins: hours * 60 });
+    return slots;
   }
-  return (hour * 60) + bookedMins;
+
+  const totalDays = campaignType === 'recurring' ? count * (unit === 'weekly' ? 7 : 30) : 1;
+  for (let i = 0; i < totalDays; i++) {
+    const day = new Date(baseDate);
+    day.setDate(day.getDate() + i);
+    const start = new Date(day);
+    start.setHours(startHour, m || 0, 0, 0);
+    const end = new Date(start.getTime() + 60 * 60000);
+    slots.push({ start: start.toISOString(), end: end.toISOString(), mins: 60 });
+  }
+  return slots;
 }
 
-const WEEKDAYS = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
-
-function Portal({ children }: { children: React.ReactNode }) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  if (!mounted) return null;
-  return createPortal(children, document.body);
-}
-
-export default function BookPage() {
+export default function BookAdPage() {
   return (
-    <Suspense fallback={<div />}>
-      <DoohScheduler />
+    <Suspense fallback={null}>
+      <BookAdForm />
     </Suspense>
   );
 }
 
-function DoohScheduler() {
-  const { toast } = useToast();
+function BookAdForm() {
   const router = useRouter();
-  const { user } = useAuthStore();
+  const searchParams = useSearchParams();
+  const { toast } = useToast();
 
-  const [showCreativeServiceModal, setShowCreativeServiceModal] = useState(false);
+  const [description, setDescription] = useState('');
+  const [durationUnit, setDurationUnit] = useState<DurationUnit>('hourly');
+  const [campaignType, setCampaignType] = useState<CampaignType>('one_time');
+  const [durationCount, setDurationCount] = useState('1');
+  const [showDurationDropdown, setShowDurationDropdown] = useState(false);
+  const [showCampaignDropdown, setShowCampaignDropdown] = useState(false);
 
-  const today = useMemo(() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; }, []);
-  const [viewDate, setViewDate] = useState(today);
-  const [calCursor, setCalCursor] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
-  const [baseRate, setBaseRate] = useState(333.33);
-
-  useEffect(() => {
-    api.get('/pricing/rate').then(res => setBaseRate(res.data.rate)).catch(console.error);
-  }, []);
-  
-  // Creatives integration
-  const [approvedCreatives, setApprovedCreatives] = useState<any[]>([]);
-  const [selectedCreative, setSelectedCreative] = useState<any | null>(null);
-  const videoSeconds = selectedCreative?.duration_seconds || 60;
-  
-  const { cart, addToCart, addMultipleToCart, updateCartItem, getCartTotal } = useCartStore();
-  const [liveBookings, setLiveBookings] = useState<any[]>([]);
-  
-  const [draft, setDraft] = useState<any>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [filePreview, setFilePreview] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
-  const [message, setMessage] = useState("");
-  const [spreadModal, setSpreadModal] = useState(false);
-  const [spreadDuration, setSpreadDuration] = useState("4weeks");
-  const [spreadPattern, setSpreadPattern] = useState("weekdays");
-  const [spreadReplicate, setSpreadReplicate] = useState(true);
-  const [replicationConfig, setReplicationConfig] = useState<{ active: boolean, duration: string } | null>(null);
-  const [customDays, setCustomDays] = useState<number[]>([]);
-  
-  // Tabbed Multi-Day Editor State
-  const [spreadTabs, setSpreadTabs] = useState<Date[]>([]);
-  const [activeTabDateKey, setActiveTabDateKey] = useState<string | null>(null);
-  const [multiDaySelections, setMultiDaySelections] = useState<Record<string, { selectedHours: number[], draft: any, draftLoops: number, minuteSelections?: Record<number, number> }>>({});
-  
-  const [editCartItem, setEditCartItem] = useState<any>(null);
-  const [editHour, setEditHour] = useState(8);
-  const [editMinute, setEditMinute] = useState(0);
-  const [isRestoring, setIsRestoring] = useState(true);
-  const [currentStep, setCurrentStep] = useState(1);
-  const [selectedHours, setSelectedHours] = useState<number[]>([]);
-  const [minuteSelections, setMinuteSelections] = useState<Record<number, number>>({});
-  const [activeMinuteGridHour, setActiveMinuteGridHour] = useState<number | null>(null);
-  
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [scheduleDate, setScheduleDate] = useState(searchParams.get('date') || '');
+  const [scheduleTime, setScheduleTime] = useState('');
+
+  const [submitting, setSubmitting] = useState(false);
+  const [step, setStep] = useState<Step>('form');
+  const [bookingId, setBookingId] = useState<string | null>(null);
+  const [totalCost, setTotalCost] = useState(0);
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [paying, setPaying] = useState(false);
+  const [cardForm, setCardForm] = useState({ name: '', number: '', expiry: '', cvv: '' });
+
   useEffect(() => {
-    if (selectedHours.length > 0) {
-      if (activeMinuteGridHour === null || !selectedHours.includes(activeMinuteGridHour)) {
-        setActiveMinuteGridHour(selectedHours[0]);
-      }
-    } else {
-      setActiveMinuteGridHour(null);
-    }
-  }, [selectedHours, activeMinuteGridHour]);
+    api.get('/finances/balance').then((res) => setWalletBalance(Number(res.data?.credits ?? 0))).catch(() => {});
+  }, []);
 
-  const [draftLoops, setDraftLoops] = useState(1);
-  const activeLoops = draft ? draft.loops : draftLoops;
-  const draftDurationSec = activeLoops * (videoSeconds || 60);
-  const draftDurationMin = Math.ceil(draftDurationSec / 60);
-  const [showSlotModal, setShowSlotModal] = useState(false);
-  const [requestedMinutes, setRequestedMinutes] = useState(1);
-  const anchorRef = useRef<number | null>(null);
-  const timelineRef = useRef<HTMLDivElement | null>(null);
-
-  // Switch tabs in Multi-Day Editor
-  function handleTabChange(date: Date) {
-    const key = localDateKey(date);
-    if (activeTabDateKey) {
-      // Save current state to multiDaySelections before switching
-      setMultiDaySelections(prev => ({
-        ...prev,
-        [activeTabDateKey]: { selectedHours, draft, draftLoops, minuteSelections }
-      }));
+  const handleFile = (f: File | null) => {
+    if (!f) return;
+    if (!['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'video/mp4', 'video/quicktime'].includes(f.type)) {
+      toast('Please choose a JPG, PNG, GIF, or MP4/MOV file', 'error');
+      return;
     }
-    
-    // Load state from new tab
-    setActiveTabDateKey(key);
-    setViewDate(date);
-    
-    const state = multiDaySelections[key];
-    if (state) {
-      setSelectedHours(state.selectedHours);
-      setDraft(state.draft);
-      setDraftLoops(state.draftLoops);
-      setMinuteSelections(state.minuteSelections || {});
-    } else {
-      setSelectedHours([]);
-      setDraft(null);
-      setDraftLoops(1);
-      setMinuteSelections({});
-    }
-  }
+    setFile(f);
+    setFilePreview(URL.createObjectURL(f));
+  };
 
-  // Hydrate state from sessionStorage
-  useEffect(() => {
+  const durationLabel = { hourly: 'Hourly', weekly: 'Weekly', monthly: 'Monthly' }[durationUnit];
+  const campaignLabel = { one_time: 'One time booking', recurring: 'Recurring booking' }[campaignType];
+
+  const handleBookSlot = async () => {
+    if (!file) { toast('Please upload your ad materials', 'error'); return; }
+    if (!scheduleDate) { toast('Please choose a delivery date', 'error'); return; }
+    const count = parseInt(durationCount) || 1;
+
+    setSubmitting(true);
     try {
-      const saved = sessionStorage.getItem('rella-booking-state');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.currentStep) setCurrentStep(parsed.currentStep > 2 ? 2 : parsed.currentStep);
-        if (parsed.viewDate) setViewDate(new Date(parsed.viewDate));
-        if (parsed.selectedHours) setSelectedHours(parsed.selectedHours);
-        if (parsed.draftLoops) setDraftLoops(parsed.draftLoops);
-        if (parsed.draft) setDraft({ ...parsed.draft, date: new Date(parsed.draft.date) });
-      }
-    } catch(e) {}
-    setIsRestoring(false);
-  }, []);
+      // 1. Upload the creative for real (goes through the same AI moderation /
+      // Cloudinary pipeline as the Ads page).
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('title', description.slice(0, 60) || `Ad booked ${new Date().toLocaleDateString()}`);
+      formData.append('description', description);
+      formData.append('media_type', file.type.startsWith('video') ? 'video' : 'image');
+      const adRes = await api.post('/ads', formData, { headers: { 'Content-Type': undefined } });
+      const adId = adRes.data?.ad?.id;
+      if (!adId) throw new Error('Could not create ad creative');
 
-  // Save state to sessionStorage
-  useEffect(() => {
-    if (isRestoring) return;
-    const stateToSave = {
-      currentStep,
-      viewDate: viewDate.toISOString(),
-      selectedHours,
-      draftLoops,
-      draft: draft ? { ...draft, date: draft.date.toISOString() } : null,
-      selectedCreativeId: selectedCreative?.id
-    };
-    sessionStorage.setItem('rella-booking-state', JSON.stringify(stateToSave));
-  }, [currentStep, viewDate, selectedHours, draftLoops, draft, selectedCreative, isRestoring]);
-
-  // Fetch approved ads
-  useEffect(() => {
-    api.get('/ads').then((a) => {
-      const allowed = (a.data.ads || []).filter((ad: any) => ad.status === 'approved' || ad.status === 'pending');
-      setApprovedCreatives(allowed);
-      let restoredCreativeId = null;
-      try {
-        const saved = sessionStorage.getItem('rella-booking-state');
-        if (saved) restoredCreativeId = JSON.parse(saved).selectedCreativeId;
-      } catch(e) {}
-      if (restoredCreativeId) {
-        const found = allowed.find((c: any) => c.id === restoredCreativeId);
-        if (found) {
-          setSelectedCreative(found);
-          return;
-        }
-      }
-      if (allowed.length > 0) setSelectedCreative(allowed[0]);
-    }).catch(() => {});
-  }, []);
-
-  // Fetch live bookings
-  useEffect(() => {
-    const fetchSlots = () => {
-      const s = new Date(calCursor.getFullYear(), calCursor.getMonth(), 1).toISOString();
-      const e = new Date(calCursor.getFullYear(), calCursor.getMonth() + 1, 0).toISOString();
-      api.get(`/bookings/slots?screen_id=${SCREEN_ID}&start_date=${s}&end_date=${e}`)
-        .then(res => {
-           const slots = res.data.slots || [];
-           const formatted = slots.map((s: any) => {
-             const utcStart = new Date(s.start_time);
-             const watStart = new Date(utcStart.getTime() + 3600000);
-             const sd = new Date(watStart.getUTCFullYear(), watStart.getUTCMonth(), watStart.getUTCDate(), watStart.getUTCHours(), watStart.getUTCMinutes());
-
-             const utcEnd = new Date(s.end_time);
-             const watEnd = new Date(utcEnd.getTime() + 3600000);
-             const ed = new Date(watEnd.getUTCFullYear(), watEnd.getUTCMonth(), watEnd.getUTCDate(), watEnd.getUTCHours(), watEnd.getUTCMinutes());
-             return {
-               dateKey: localDateKey(sd),
-               startMin: sd.getHours() * 60 + sd.getMinutes(),
-               durationMin: (ed.getTime() - sd.getTime()) / 60000,
-               label: "Booked Slot"
-             };
-           });
-           setLiveBookings(formatted);
-        })
-        .catch(console.error);
-    };
-    fetchSlots();
-    const interval = setInterval(fetchSlots, 10000);
-    return () => clearInterval(interval);
-  }, [calCursor]);
-
-  function bookingsForDate(dateKey: string) {
-    const others = liveBookings.filter((b) => b.dateKey === dateKey).map((b) => ({ ...b, type: "other" }));
-    const cartItems = cart.filter((c) => localDateKey(new Date(c.date)) === dateKey)
-      .map((c) => ({ startMin: c.startMin, durationMin: Math.max(1, Math.round(c.durationSec / 60)), label: selectedCreative?.title || "Your booking", type: "cart" }));
-    return [...others, ...cartItems];
-  }
-
-  const autoSelectSlot = (date: Date, hour: number) => {
-    const bookings = bookingsForDate(localDateKey(date));
-    let firstAvailMin = hour * 60;
-    while(firstAvailMin < (hour + 1) * 60 && isStartInsideBooking(firstAvailMin, bookings)) {
-      firstAvailMin++;
-    }
-    if (firstAvailMin < (hour + 1) * 60) {
-      setDraft({ date, startMin: firstAvailMin, loops: draftLoops });
-      setMinuteSelections(prev => ({ ...prev, [hour]: firstAvailMin }));
-    } else {
-      setDraft(null);
+      // 2. Reserve the real slot(s) computed from the form.
+      const slots = buildSlots(scheduleDate, scheduleTime, durationUnit, count, campaignType);
+      const reserveRes = await api.post('/bookings/reserve', { screen_id: SCREEN_ID, ad_id: adId, slots });
+      setBookingId(reserveRes.data.booking_id);
+      setTotalCost(Number(reserveRes.data.total_cost || 0));
+      setStep('billing');
+    } catch (err: any) {
+      toast(err?.response?.data?.message || 'Could not book this slot. Please try again.', 'error');
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  function minuteFromClientY(clientY: number) {
-    if (!timelineRef.current) return START_HOUR * 60;
-    const rect = timelineRef.current.getBoundingClientRect();
-    const scrollTop = timelineRef.current.scrollTop;
-    const y = clientY - rect.top + scrollTop;
-    let min = START_HOUR * 60 + y / PPM;
-    min = Math.round(min);
-    return Math.max(START_HOUR * 60, Math.min(END_HOUR * 60, min));
-  }
+  const handlePayWallet = async () => {
+    if (!bookingId) return;
+    setPaying(true);
+    try {
+      await api.post('/payments/wallet', { booking_id: bookingId });
+      setStep('success');
+    } catch (err: any) {
+      toast(err?.response?.data?.message || 'Payment failed. Please try again.', 'error');
+    } finally {
+      setPaying(false);
+    }
+  };
 
-  function handleTimelineDown(e: any) {
-    if (!selectedCreative) {
-      toast("Please select an ad creative first", "error");
+  const handlePayCard = async () => {
+    if (!bookingId) return;
+    if (!cardForm.name || !cardForm.number || !cardForm.expiry || !cardForm.cvv) {
+      toast('Please fill in your card details', 'error');
       return;
     }
-    if (e.target.closest("[data-pill]")) return;
-    const point = e.touches ? e.touches[0] : e;
-    const min = minuteFromClientY(point.clientY);
-    const bookings = bookingsForDate(localDateKey(viewDate));
-    if (isStartInsideBooking(min, bookings)) return;
-    anchorRef.current = min;
-    setDraft({ date: viewDate, startMin: min, loops: 1 });
-    setDragging(true);
-    setMessage("");
-  }
-
-  useEffect(() => {
-    if (!dragging) return;
-    function move(e: any) {
-      if (!anchorRef.current) return;
-      const point = e.touches ? e.touches[0] : e;
-      const cur = minuteFromClientY(point.clientY);
-      const anchor = anchorRef.current;
-      const bookings = bookingsForDate(localDateKey(viewDate));
-      const direction = cur >= anchor ? 1 : -1;
-      
-      const draggedMins = Math.max(1, Math.abs(cur - anchor));
-      const desiredLoops = Math.max(1, Math.floor((draggedMins * 60) / (videoSeconds || 60)));
-      
-      let loops, startMin;
-      if (direction > 0) {
-        const availMins = availableMinsForward(anchor, bookings);
-        const maxL = Math.floor((availMins * 60) / (videoSeconds || 60));
-        loops = Math.min(desiredLoops, maxL);
-        startMin = anchor;
+    setPaying(true);
+    try {
+      const res = await api.post('/payments/initialize', { booking_id: bookingId });
+      const checkoutUrl = res.data?.checkout_url || res.data?.authorization_url;
+      if (checkoutUrl) {
+        window.location.href = checkoutUrl;
       } else {
-        const availMins = availableMinsBackward(anchor, bookings);
-        const maxL = Math.floor((availMins * 60) / (videoSeconds || 60));
-        loops = Math.min(desiredLoops, maxL);
-        
-        const allocatedMins = Math.ceil((loops * (videoSeconds || 60)) / 60);
-        startMin = anchor - allocatedMins;
+        toast('Could not start payment. Please try again.', 'error');
       }
-      setDraft({ date: viewDate, startMin, loops });
+    } catch (err: any) {
+      toast(err?.response?.data?.message || 'Could not start payment. Please try again.', 'error');
+    } finally {
+      setPaying(false);
     }
-    function up() { setDragging(false); }
-    window.addEventListener("pointermove", move);
-    window.addEventListener("pointerup", up);
-    window.addEventListener("touchmove", move, { passive: true });
-    window.addEventListener("touchend", up);
-    return () => {
-      window.removeEventListener("pointermove", move);
-      window.removeEventListener("pointerup", up);
-      window.removeEventListener("touchmove", move);
-      window.removeEventListener("touchend", up);
-    };
-  }, [dragging, viewDate, videoSeconds, liveBookings, cart]);
+  };
 
-  const draftBookings = draft ? bookingsForDate(localDateKey(draft.date)) : [];
-  const draftInsideBooking = draft ? isStartInsideBooking(draft.startMin, draftBookings) : false;
-  
-  const availMins = draft ? availableMinsForward(draft.startMin, draftBookings) : 0;
-  const draftMaxLoops = draft ? Math.floor((availMins * 60) / (videoSeconds || 60)) : 0;
-  
-  const draftPrice = calcCost(draftDurationSec, baseRate);
-
-  function handleAddToCart() {
-    if (!selectedCreative) { toast("Please select a creative first", "error"); return; }
-    if (!draft || draft.loops < 1) { setMessage("There isn't enough open room here to fit even one full play of your video."); return; }
-    if (draftInsideBooking || draft.loops > draftMaxLoops) {
-      setMessage("That overlaps a booking already on this day — adjust the time.");
-      return;
-    }
-    addToCart({
-      id: crypto.randomUUID(),
-      creative: selectedCreative,
-      date: draft.date,
-      startMin: draft.startMin,
-      loops: draft.loops,
-      durationSec: draftDurationSec,
-      priceInfo: draftPrice
-    });
-    setDraft(null);
-    setMessage("");
-    toast("Added to cart", "success");
-  }
-
-  function handleSpreadAdd() {
-    if (!selectedCreative) { toast("Please select a creative first", "error"); return; }
-    
-    const startDate = draft ? draft.date : viewDate;
-    let endDate = new Date(startDate);
-    if (spreadDuration === "1week") endDate = addDays(startDate, 7);
-    else if (spreadDuration === "4weeks") endDate = addDays(startDate, spreadReplicate ? 7 : 28);
-    else if (spreadDuration === "3months") endDate = addDays(startDate, spreadReplicate ? 7 : 90);
-    else if (spreadDuration === "6months") endDate = addDays(startDate, spreadReplicate ? 7 : 180);
-    else if (spreadDuration === "1year") endDate = addDays(startDate, spreadReplicate ? 7 : 365);
-
-    const targetDates: Date[] = [];
-    let curDate = new Date(startDate);
-    
-    let dayIndex = 0;
-    while (curDate < endDate) {
-      const dayOfWeek = curDate.getDay(); 
-      
-      let shouldAdd = false;
-      if (spreadPattern === "daily") shouldAdd = true;
-      else if (spreadPattern === "weekdays") shouldAdd = (dayOfWeek >= 1 && dayOfWeek <= 5);
-      else if (spreadPattern === "weekends") shouldAdd = (dayOfWeek === 0 || dayOfWeek === 6);
-      else if (spreadPattern === "custom") shouldAdd = customDays.includes(dayOfWeek);
-      else if (spreadPattern === "alternate") shouldAdd = (dayIndex % 2 === 0);
-      
-      if (shouldAdd) targetDates.push(new Date(curDate));
-      
-      curDate = addDays(curDate, 1);
-      dayIndex++;
-    }
-    
-    if (targetDates.length === 0) {
-      toast("No days matched your pattern", "error");
-      return;
-    }
-
-    const newSelections: Record<string, { selectedHours: number[], draft: any, draftLoops: number }> = {};
-    targetDates.forEach(d => {
-      const isFirst = localDateKey(d) === localDateKey(targetDates[0]);
-      if (spreadReplicate || isFirst) {
-        const copyDraft = draft ? { ...draft, date: new Date(d) } : null;
-        newSelections[localDateKey(d)] = { selectedHours: [...selectedHours], draft: copyDraft, draftLoops };
-      } else {
-        newSelections[localDateKey(d)] = { selectedHours: [], draft: null, draftLoops: 1 };
-      }
-    });
-
-    setSpreadTabs(targetDates);
-    setMultiDaySelections(newSelections);
-    setActiveTabDateKey(localDateKey(targetDates[0]));
-    setViewDate(targetDates[0]);
-    if (spreadReplicate && spreadDuration !== "1week") {
-      setReplicationConfig({ active: true, duration: spreadDuration });
-    } else {
-      setReplicationConfig(null);
-    }
-    
-    setSpreadModal(false);
-  }
-
-  function openCartEdit(item: any) {
-    setEditCartItem(item);
-    setEditHour(Math.floor(item.startMin / 60));
-    setEditMinute(item.startMin % 60);
-  }
-
-  function saveCartEdit() {
-    if (!editCartItem) return;
-    const newStartMin = editHour * 60 + editMinute;
-    if (newStartMin < START_HOUR * 60 || newStartMin >= END_HOUR * 60) {
-       toast("Time must be between 7 AM and 8 PM", "error"); return;
-    }
-    
-    const dateKey = localDateKey(editCartItem.date);
-    const existing = [
-      ...liveBookings.filter((b) => b.dateKey === dateKey).map((b) => ({ ...b, type: "other" })),
-      ...cart.filter((c) => c.id !== editCartItem.id && localDateKey(new Date(c.date)) === dateKey).map((c) => ({ startMin: c.startMin, durationMin: Math.round(c.durationSec / 60) })),
-    ];
-    const requiredEnd = newStartMin + editCartItem.durationSec / 60;
-    const conflict = isStartInsideBooking(newStartMin, existing) || existing.some((b) => newStartMin < b.startMin + (b.durationMin || 0) && requiredEnd > b.startMin);
-    
-    if (conflict) {
-       toast("This time slot is already booked on this day. Choose another time.", "error"); return;
-    }
-    
-    updateCartItem(editCartItem.id, { startMin: newStartMin });
-    setEditCartItem(null);
-    toast("Time updated successfully", "success");
-  }
-
-  const cartTotal = getCartTotal();
-
-  // ---- month calendar cells ----
-  const monthCells = useMemo(() => {
-    const year = calCursor.getFullYear(), month = calCursor.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const startOffset = (firstDay.getDay() + 6) % 7;
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const cells = [];
-    for (let i = 0; i < startOffset; i++) cells.push(null);
-    for (let d = 1; d <= daysInMonth; d++) cells.push(new Date(year, month, d));
-    return cells;
-  }, [calCursor]);
-
-  function dayStatus(d: Date) {
-    if (!d) return { status: 'none', available: 0 };
-    const key = localDateKey(d);
-    const other = liveBookings.filter((b) => b.dateKey === key);
-    const mine = cart.filter((c) => localDateKey(new Date(c.date)) === key);
-    
-    let bookedMins = 0;
-    other.forEach(b => bookedMins += b.durationMin);
-    mine.forEach(m => bookedMins += Math.max(1, Math.round(m.durationSec / 60)));
-    
-    const available = Math.max(0, DAY_MIN - bookedMins);
-
-    if (other.length === 0 && mine.length === 0) return { status: 'green', available };
-    if (bookedMins >= DAY_MIN) return { status: 'red', available };
-    return { status: 'amber', available };
-  }
-
-  const hours = [];
-  for (let h = START_HOUR; h <= END_HOUR; h++) hours.push(h);
-  const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
-  const showNowLine = isSameDate(viewDate, today) && nowMin >= START_HOUR * 60 && nowMin <= END_HOUR * 60;
-  const maxTouchedHour = useMemo(() => {
-     if (selectedHours.length === 0) return null;
-     const simBookings = [...bookingsForDate(localDateKey(viewDate))];
-     let maxHour = -1;
-     
-     selectedHours.forEach(h => {
-        const startMin = getAvailableStartMin(h, simBookings);
-        const durationMin = Math.ceil(activeLoops * (videoSeconds || 60) / 60);
-        if (startMin + durationMin <= 20 * 60) {
-           simBookings.push({ startMin, durationMin, type: 'virtual' });
-           for(let hr = Math.floor(startMin/60); hr <= Math.floor((startMin + durationMin - 1)/60); hr++) {
-              if (hr > maxHour) maxHour = hr;
-           }
-        }
-     });
-     
-     return maxHour === -1 ? null : maxHour;
-  }, [selectedHours, activeLoops, videoSeconds, viewDate, liveBookings, cart]);
-
-  useEffect(() => {
-     if (maxTouchedHour !== null) {
-         setActiveMinuteGridHour(maxTouchedHour);
-     }
-  }, [maxTouchedHour]);
+  const inputStyle: React.CSSProperties = {
+    width: '100%', padding: '14px 16px', background: theme.color.surface,
+    border: `1px solid ${theme.color.border}`, borderRadius: 10, fontSize: 14,
+    fontFamily: F, color: theme.color.text1, outline: 'none', boxSizing: 'border-box',
+  };
+  const labelStyle: React.CSSProperties = { fontSize: 13, fontWeight: 600, color: theme.color.text2, marginBottom: 8, display: 'block' };
 
   return (
     <DashboardLayout>
       <PageTransition>
-        <div className="qs" style={{ minHeight: "100%", color: theme.color.text1 }}>
-          <style>{`
-            .qs { font-family: var(--font-quicksand), 'Quicksand', sans-serif; }
-            .mono { font-family: var(--font-plex), 'IBM Plex Mono', monospace; }
-            .timeline-bg { touch-action: none; }
-            .day-cell { transition: all 120ms ease; }
-            .day-cell:hover:not(.empty) { background: ${theme.color.goldLight}; }
-            input[type="number"]::-webkit-inner-spin-button { opacity: 1; }
-            .pill { box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
-            ::-webkit-scrollbar { width: 8px; }
-            ::-webkit-scrollbar-thumb { background: ${theme.color.border}; border-radius: 4px; }
-          `}</style>
+        <div style={{ fontFamily: F, padding: '24px 32px 48px', display: 'flex', gap: 28, alignItems: 'flex-start', maxWidth: 1100 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h1 style={{ fontFamily: theme.font.display, fontSize: 22, fontWeight: 800, color: theme.color.text1, margin: '0 0 20px' }}>Book Ad</h1>
 
-          {/* Header & Step Indicator */}
-          <div style={{ background: theme.color.charcoal900, padding: "20px 28px", borderRadius: 16, marginBottom: 24, border: `1px solid ${theme.color.border}`, boxShadow: theme.shadow.md }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
               <div>
-                <div style={{ color: theme.color.gold, fontWeight: 800, fontSize: 22, letterSpacing: '-0.3px' }}>Studio Arella</div>
-                <div className="mono" style={{ color: theme.color.text4, fontSize: 13, marginTop: 4 }}>Bems Junction LED Screen — Umuahia</div>
+                <label style={labelStyle}>Describe your Ad</label>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Describe your Ad"
+                  rows={4}
+                  style={{ ...inputStyle, resize: 'vertical', fontFamily: F }}
+                />
               </div>
-              <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
-                {[
-                  { step: 1, label: "Choose Ad" },
-                  { step: 2, label: "Schedule" },
-                  
-                ].map((s) => (
-                  <div key={s.step} style={{ display: "flex", alignItems: "center", gap: 8, opacity: currentStep === s.step ? 1 : 0.5 }}>
-                    <div style={{
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      width: 32, height: 32, borderRadius: "50%",
-                      background: currentStep === s.step ? theme.color.gold : currentStep > s.step ? theme.color.success : theme.color.surface2,
-                      color: currentStep === s.step ? theme.color.charcoal900 : theme.color.text1,
-                      fontWeight: 700, fontSize: 13, transition: "all 0.2s",
-                      border: currentStep > s.step ? `1px solid ${theme.color.success}` : `1px solid ${theme.color.border}`
-                    }}>
-                      {currentStep > s.step ? "✓" : s.step}
-                    </div>
-                    <span style={{ color: currentStep === s.step ? theme.color.gold : theme.color.surface, fontSize: 14, fontWeight: 700, display: "none" }} className="md:inline-block">
-                      {s.label}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
 
-          {/* Promo banner */}
-          <div style={{ background: theme.color.charcoal900, borderRadius: 16, padding: '18px 24px', marginBottom: 24, position: 'relative', overflow: 'hidden', border: `1px solid ${theme.color.border}` }}>
-            <div style={{ position: 'absolute', bottom: -24, right: -24, width: 100, height: 100, background: 'rgba(224,165,38,0.12)', borderRadius: '50%', pointerEvents: 'none' }} />
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', position: 'relative', zIndex: 1 }}>
-              <p style={{ margin: 0, fontSize: 13.5, fontWeight: 600, color: '#FFFFFF', lineHeight: 1.5, maxWidth: 480 }}>
-                We're running an Ad space promo — get a discount for bookings longer than 3 months.
-              </p>
-              <AnimatedButton
-                onClick={() => router.push('/podcast/book')}
-                style={{ background: theme.color.gold, color: theme.color.charcoal900, border: 'none', borderRadius: 8, padding: '9px 18px', fontSize: 11.5, fontWeight: 800, letterSpacing: '0.04em', textTransform: 'uppercase', cursor: 'pointer', whiteSpace: 'nowrap' }}
-              >
-                Book Podcast Session
-              </AnimatedButton>
-            </div>
-          </div>
-
-          {/* STEP 1: CHOOSE AD */}
-          {currentStep === 1 && (
-            <div style={{ background: theme.color.surface, borderRadius: 24, padding: "clamp(24px, 5vw, 40px) clamp(20px, 5vw, 36px)", border: `1px solid ${theme.color.border2}`, boxShadow: theme.shadow.md, transition: "all 0.3s ease" }}>
-              <div style={{ fontWeight: 800, fontSize: 26, marginBottom: 12, color: theme.color.text1, letterSpacing: "-0.5px" }}>Step 1: Choose Your Creative</div>
-              <p style={{ color: theme.color.text3, fontSize: 15, marginBottom: 32 }}>Select the advertisement you want to schedule on the screen.</p>
-              
-              {approvedCreatives.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '60px 0', background: theme.color.surface2, borderRadius: 12, border: `1px dashed ${theme.color.border}` }}>
-                  <FaFilm size={32} color={theme.color.text4} style={{ margin: '0 auto 16px', display: 'block' }} />
-                  <p style={{ fontSize: 15, color: theme.color.text3 }}>You have no approved ads yet.</p>
-                  <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginTop: 16 }}>
-                    <AnimatedButton onClick={() => router.push('/ads')} style={{ background: theme.color.charcoal900, color: '#FFFFFF', border: "none", padding: "10px 20px", borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
-                      Create or Upload Ad
-                    </AnimatedButton>
-                    <AnimatedButton onClick={() => setShowCreativeServiceModal(true)} style={{ background: 'transparent', color: theme.color.text1, border: `1px solid ${theme.color.border}`, padding: "10px 20px", borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
-                      Request creative services
-                    </AnimatedButton>
-                  </div>
-                </div>
-              ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: 20 }}>
-                  {approvedCreatives.map(c => {
-                    const isSelected = selectedCreative?.id === c.id;
-                    return (
-                      <div key={c.id} onClick={() => setSelectedCreative(c)}
-                        style={{
-                          border: isSelected ? `2px solid ${theme.color.gold}` : `1px solid ${theme.color.border}`,
-                          borderRadius: 20, cursor: 'pointer',
-                          background: isSelected ? theme.color.goldLight : theme.color.surface,
-                          display: 'flex', flexDirection: 'column', overflow: 'hidden',
-                          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                          boxShadow: isSelected ? `0 12px 32px ${theme.color.goldLight}` : theme.shadow.md,
-                          transform: isSelected ? 'translateY(-4px)' : 'translateY(0)'
-                        }}>
-                        <div style={{ width: '100%', height: 180, background: theme.color.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', borderBottom: `1px solid ${theme.color.border2}` }}>
-                          {c.file_url ? (
-                            c.file_type === 'video' ? (
-                              <video
-                                src={c.file_url.startsWith('http') ? c.file_url : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000'}${c.file_url}`} 
-                                autoPlay muted loop playsInline
-                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                              />
-                            ) : (
-                              <img
-                                src={c.file_url.startsWith('http') ? c.file_url : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000'}${c.file_url}`} 
-                                alt="Ad preview"
-                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                              />
-                            )
-                          ) : (
-                            (c.file_type || c.media_type || '').includes('video') ? <FaFilm color={theme.color.text3} size={32} /> : <FaImage color={theme.color.text3} size={32} />
-                          )}
-                          <div style={{ position: 'absolute', top: 12, right: 12, width: 28, height: 28, borderRadius: '50%', background: isSelected ? theme.color.gold : 'rgba(255,255,255,0.9)', border: isSelected ? `8px solid ${theme.color.gold}` : '2px solid rgba(0,0,0,0.1)', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', transition: 'all 0.2s', zIndex: 10 }} />
-                        </div>
-                        <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                          <p style={{ margin: 0, fontSize: 18, fontWeight: 800, color: theme.color.text1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.title}</p>
-                          <p className="mono" style={{ margin: 0, fontSize: 13, color: theme.color.text3, fontWeight: 600 }}>Duration: {c.duration_seconds || 60} sec</p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-              
-
-              
-              {selectedCreative && (
-                <div style={{ marginTop: 32, display: 'flex' }}>
-                  <AnimatedButton onClick={() => {
-                    setCurrentStep(2);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }} style={{ background: theme.color.gold, color: theme.color.charcoal900, border: "none", padding: "16px 32px", borderRadius: 12, fontSize: 16, fontWeight: 800, cursor: "pointer", display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, boxShadow: theme.shadow.gold, width: "100%" }}>
-                    Next: Choose Date & Time <ChevronRight size={18} />
-                  </AnimatedButton>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* STEP 2: SCHEDULE */}
-          {currentStep === 2 && (
-            <div style={{ maxWidth: 900, margin: "0 auto", width: "100%" }}>
-              
-              {/* LEFT COLUMN: Calendar */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 16, width: "100%" }}>
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <button onClick={() => setCurrentStep(1)} style={{ background: theme.color.surface2, border: `1px solid ${theme.color.border}`, color: theme.color.text1, padding: "8px 16px", borderRadius: 8, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, fontSize: 14, fontWeight: 800, transition: "all 0.2s" }}>
-                    <ChevronLeft size={16} /> Back to Step 1
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                {/* Duration dropdown */}
+                <div style={{ position: 'relative' }}>
+                  <label style={labelStyle}>Duration</label>
+                  <button type="button" onClick={() => { setShowDurationDropdown((o) => !o); setShowCampaignDropdown(false); }}
+                    style={{ ...inputStyle, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', textAlign: 'left' }}>
+                    <span>{durationLabel}</span>
+                    <ChevronDown size={15} color={theme.color.text4} />
                   </button>
+                  {showDurationDropdown && (
+                    <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 6, background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 10, boxShadow: '0 10px 30px rgba(0,0,0,0.12)', zIndex: 10, width: '100%', overflow: 'hidden' }}>
+                      {(['hourly', 'weekly', 'monthly'] as DurationUnit[]).map((u) => (
+                        <div key={u} onClick={() => { setDurationUnit(u); setShowDurationDropdown(false); }}
+                          style={{ padding: '10px 16px', fontSize: 14, color: theme.color.text1, cursor: 'pointer' }}
+                          onMouseOver={(e) => (e.currentTarget.style.background = theme.color.surface2)}
+                          onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}>
+                          {{ hourly: 'Hourly', weekly: 'Weekly', monthly: 'Monthly' }[u]}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
-                <div style={{ background: theme.color.surface, borderRadius: 24, padding: "32px", border: `1px solid ${theme.color.border2}`, boxShadow: theme.shadow.md, transition: "all 0.3s ease" }}>
-                  <div style={{ fontWeight: 800, fontSize: 24, marginBottom: 8, color: theme.color.text1, letterSpacing: "-0.5px" }}>Select a Date</div>
-                  <div style={{ fontSize: 14, color: theme.color.text3, marginBottom: 24 }}>Green dots mean fully available.</div>
-                  
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, background: theme.color.surface2, padding: "10px 14px", borderRadius: 12, border: `1px solid ${theme.color.border}` }}>
-                    <button onClick={() => setCalCursor(new Date(calCursor.getFullYear(), calCursor.getMonth() - 1, 1))} style={{ ...iconBtnStyle, background: '#efb842', border: '1px solid #f1b945' }}><ChevronLeft size={18} color="#000" /></button>
-                    <div style={{ fontWeight: 800, fontSize: 16, color: theme.color.text1 }}>
-                      {calCursor.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+                {/* Campaign type dropdown */}
+                <div style={{ position: 'relative' }}>
+                  <label style={labelStyle}>How would you run your Ad campaign?</label>
+                  <button type="button" onClick={() => { setShowCampaignDropdown((o) => !o); setShowDurationDropdown(false); }}
+                    style={{ ...inputStyle, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', textAlign: 'left' }}>
+                    <span>{campaignLabel}</span>
+                    <ChevronDown size={15} color={theme.color.text4} />
+                  </button>
+                  {showCampaignDropdown && (
+                    <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 6, background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 10, boxShadow: '0 10px 30px rgba(0,0,0,0.12)', zIndex: 10, width: '100%', overflow: 'hidden' }}>
+                      {(['one_time', 'recurring'] as CampaignType[]).map((c) => (
+                        <div key={c} onClick={() => { setCampaignType(c); setShowCampaignDropdown(false); }}
+                          style={{ padding: '10px 16px', fontSize: 14, color: theme.color.text1, cursor: 'pointer' }}
+                          onMouseOver={(e) => (e.currentTarget.style.background = theme.color.surface2)}
+                          onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}>
+                          {{ one_time: 'One time booking', recurring: 'Recurring booking' }[c]}
+                        </div>
+                      ))}
                     </div>
-                    <button onClick={() => setCalCursor(new Date(calCursor.getFullYear(), calCursor.getMonth() + 1, 1))} style={{ ...iconBtnStyle, background: '#efb842', border: '1px solid #f1b945' }}><ChevronRight size={18} color="#000" /></button>
+                  )}
+                </div>
+              </div>
+
+              {(durationUnit !== 'hourly' || campaignType === 'recurring') && (
+                <div>
+                  <label style={labelStyle}>Enter number of {durationUnit === 'monthly' ? 'months' : durationUnit === 'weekly' ? 'weeks' : 'hours'}</label>
+                  <input type="number" min={1} value={durationCount} onChange={(e) => setDurationCount(e.target.value)} style={inputStyle} />
+                </div>
+              )}
+
+              <div>
+                <label style={labelStyle}>Upload Ad materials (You can upload multiple files at once)</label>
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+                  onDragLeave={() => setDragging(false)}
+                  onDrop={(e) => { e.preventDefault(); setDragging(false); handleFile(e.dataTransfer.files?.[0] || null); }}
+                  style={{
+                    border: `2px dashed ${dragging ? theme.color.gold : theme.color.border}`,
+                    borderRadius: 12, padding: file ? 16 : 40, textAlign: 'center', cursor: 'pointer',
+                    background: dragging ? theme.color.goldLight : theme.color.surface2,
+                  }}
+                >
+                  <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/gif,video/mp4,video/quicktime" hidden onChange={(e) => handleFile(e.target.files?.[0] || null)} />
+                  {file && filePreview ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      {file.type.startsWith('video') ? (
+                        <video src={filePreview} style={{ width: 64, height: 64, objectFit: 'cover', borderRadius: 8 }} muted />
+                      ) : (
+                        <img src={filePreview} alt="preview" style={{ width: 64, height: 64, objectFit: 'cover', borderRadius: 8 }} />
+                      )}
+                      <div style={{ textAlign: 'left', flex: 1 }}>
+                        <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: theme.color.text1 }}>{file.name}</p>
+                        <p style={{ margin: 0, fontSize: 11, color: theme.color.text3 }}>{(file.size / 1024 / 1024).toFixed(1)} MB</p>
+                      </div>
+                      <button type="button" onClick={(e) => { e.stopPropagation(); setFile(null); setFilePreview(null); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text3 }}>
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <div style={{ width: 40, height: 40, borderRadius: '50%', background: theme.color.gold, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+                        <Upload size={18} color="#fff" />
+                      </div>
+                      <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: theme.color.text2 }}>Drag &amp; Drop or choose file to upload</p>
+                      <p style={{ margin: '4px 0 0', fontSize: 11, color: theme.color.text4 }}>Supported formats: jpeg, png, gif, mp4</p>
+                    </>
+                  )}
+                </div>
+                <p style={{ fontSize: 12, color: theme.color.text3, margin: '10px 0 0' }}>
+                  Don&apos;t have Ad materials yet?{' '}
+                  <a href="/creative" style={{ color: theme.color.gold, fontWeight: 700, textDecoration: 'none' }}>Request Ad creative services</a>
+                </p>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <div>
+                  <label style={labelStyle}>Schedule service delivery timeline</label>
+                  <div style={{ position: 'relative' }}>
+                    <input type="date" min={new Date().toISOString().slice(0, 10)} value={scheduleDate} onChange={(e) => setScheduleDate(e.target.value)} style={{ ...inputStyle, paddingRight: 38 }} />
+                    <Calendar size={16} color={theme.color.text4} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
                   </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 6, marginBottom: 14 }}>
-                    {WEEKDAYS.map((w) => <div key={w} className="mono" style={{ fontSize: 13, textAlign: "center", color: theme.color.text3, fontWeight: 700 }}>{w}</div>)}
-                  </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 8 }}>
-                    {monthCells.map((d, i) => {
-                      if (!d) return <div key={i} />;
-                      const { status, available } = dayStatus(d);
-                      const isViewing = isSameDate(d, viewDate);
-                      const isToday = isSameDate(d, today);
-                      const isPast = d.getTime() < today.getTime();
-                      const colorMap: any = { 'green': theme.color.success, 'amber': theme.color.warning, 'red': theme.color.error, 'none': 'transparent' };
-                      
-                      return (
-                        <button key={i} onClick={() => { 
-                            if (status === 'red' || isPast) return;
-                            let firstValidHour = 7;
-                            if (isSameDate(d, today)) {
-                               const currentHour = new Date().getHours();
-                               if (currentHour >= 7 && currentHour <= 20) {
-                                  firstValidHour = currentHour;
-                               } else if (currentHour > 20) {
-                                  firstValidHour = 20; // Fallback
-                               }
-                            }
-                            setViewDate(d); 
-                            setSelectedHours([firstValidHour]);
-                            setDraftLoops(1);
-                            autoSelectSlot(d, firstValidHour);
-                            setShowSlotModal(true);
-                          }} className="day-cell"
-                          title={isPast ? undefined : `${available} available slot${available === 1 ? '' : 's'}`}
-                          style={{
-                            aspectRatio: "1", borderRadius: 12, border: isToday && !isViewing ? `1px solid ${theme.color.gold}` : "1px solid transparent",
-                            background: isViewing ? theme.color.surface2 : "transparent", color: isPast ? theme.color.text4 : theme.color.text1,
-                            fontSize: 16, cursor: (status === 'red' || isPast) ? "not-allowed" : "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6,
-                            boxShadow: isViewing ? `inset 0 0 0 2px ${theme.color.charcoal900}` : "none",
-                            opacity: isPast ? 0.4 : 1
-                          }}>
-                          <span className="mono" style={{ fontWeight: isViewing ? 800 : 600 }}>{d.getDate()}</span>
-                          <span style={{ width: 6, height: 6, borderRadius: '50%', background: colorMap[status] }} />
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <div style={{ display: "flex", gap: 24, marginTop: 24, fontSize: 13, color: theme.color.text3, justifyContent: "center", fontWeight: 600 }}>
-                    <span style={{ display: "flex", alignItems: "center", gap: 8 }}><Dot color={theme.color.success} /> Available</span>
-                    <span style={{ display: "flex", alignItems: "center", gap: 8 }}><Dot color={theme.color.warning} /> Partially full</span>
-                    <span style={{ display: "flex", alignItems: "center", gap: 8 }}><Dot color={theme.color.error} /> Full</span>
+                </div>
+                <div>
+                  <label style={labelStyle}>Set timer (optional)</label>
+                  <div style={{ position: 'relative' }}>
+                    <input type="time" value={scheduleTime} onChange={(e) => setScheduleTime(e.target.value)} style={{ ...inputStyle, paddingRight: 38 }} />
+                    <Clock size={16} color={theme.color.text4} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
                   </div>
                 </div>
               </div>
 
-
-            </div>
-          )}
-
-          {/* ALL MODALS (Rendered outside step logic so they can appear in any step) */}
-          <Portal>
-            {/* SLOT MODAL: Period & Minute Grid */}
-            {showSlotModal && (
-              <div className="qs" style={{ position: "fixed", inset: 0, zIndex: 100, background: "rgba(10,10,10,0.4)", backdropFilter: "blur(12px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, animation: "fadeIn 0.2s ease-out" }}>
-              <style>{`@keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }`}</style>
-              <div style={{ background: theme.color.surface, borderRadius: 24, width: "100%", maxWidth: 700, maxHeight: "95vh", overflowY: "auto", position: "relative", boxShadow: "0 24px 60px rgba(0,0,0,0.2)", border: `1px solid ${theme.color.border2}` }}>
-                
-                <button onClick={() => setShowSlotModal(false)} style={{ position: "absolute", top: 16, right: 16, background: theme.color.surface2, border: `1px solid ${theme.color.border}`, borderRadius: "50%", padding: 10, cursor: "pointer", zIndex: 10, display: "flex", color: theme.color.text1 }}>
-                  <X size={18} />
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 8 }}>
+                <button type="button" onClick={() => router.push('/dashboard')} style={{ padding: '12px 24px', background: 'transparent', border: `1px solid ${theme.color.border}`, borderRadius: 10, fontSize: 14, fontWeight: 700, color: theme.color.text2, cursor: 'pointer', fontFamily: F }}>
+                  Cancel
                 </button>
-                
-                <div style={{ padding: "clamp(20px, 5vw, 36px) clamp(20px, 5vw, 32px)" }}>
-                  <div style={{ fontWeight: 800, fontSize: 24, marginBottom: spreadTabs.length > 1 ? 16 : 28, paddingRight: 40, color: theme.color.text1 }}>
-                    {spreadTabs.length > 1 ? 'Multi-Day Schedule' : `Schedule for ${viewDate.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}`}
-                  </div>
-
-                  {/* Multi-Day Tabs */}
-                  {(() => {
-                     const simBookings = [...bookingsForDate(localDateKey(viewDate))];
-                     let localHasConflict = false;
-                     const touched = new Set<number>();
-                     
-                     selectedHours.forEach(h => {
-                        const startMin = getAvailableStartMin(h, simBookings);
-                        const durationMin = Math.ceil(activeLoops * (videoSeconds || 60) / 60);
-                        if (startMin + durationMin > 20 * 60) {
-                           localHasConflict = true;
-                        } else {
-                           simBookings.push({ startMin, durationMin, type: 'virtual' });
-                           for(let hr = Math.floor(startMin/60); hr <= Math.floor((startMin + durationMin - 1)/60); hr++) {
-                              touched.add(hr);
-                           }
-                        }
-                     });
-                     
-                     // Attach to window or a ref isn't needed if we just render it inside this block. 
-                     // But we can't easily pass it down without wrapping. 
-                     // Let's just wrap the rest of the modal content in a function!
-                     return (
-                        <>
-                  {spreadTabs.length > 1 && (
-                    <div style={{ marginBottom: 28 }}>
-                      <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 16, marginBottom: 12, borderBottom: `1px solid ${theme.color.border}` }}>
-                        {spreadTabs.map(tabDate => {
-                          const isTabActive = localDateKey(tabDate) === activeTabDateKey;
-                          return (
-                            <div
-                              key={localDateKey(tabDate)}
-                              onClick={() => handleTabChange(tabDate)}
-                              style={{
-                                padding: "6px 14px",
-                                fontSize: 14,
-                                borderRadius: 10,
-                                border: `1px solid ${isTabActive ? theme.color.goldMid : 'transparent'}`,
-                                background: isTabActive ? theme.color.goldLight : theme.color.surface2,
-                                color: isTabActive ? theme.color.charcoal900 : theme.color.text3,
-                                fontWeight: isTabActive ? 800 : 700,
-                                cursor: "pointer",
-                                whiteSpace: "nowrap",
-                                transition: "all 0.2s",
-                                display: "flex",
-                                alignItems: "center"
-                              }}
-                            >
-                              {spreadReplicate 
-                                ? tabDate.toLocaleDateString("en-US", { weekday: "short" }) 
-                                : tabDate.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
-                            </div>
-                          );
-                        })}
-                      </div>
-                      <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                        <button onClick={() => {
-                           setMultiDaySelections(prev => {
-                             const next = { ...prev };
-                             Object.keys(next).forEach(k => {
-                               next[k] = { selectedHours: [...selectedHours], draft: draft ? { ...draft, date: new Date(k) } : null, draftLoops };
-                             });
-                             return next;
-                           });
-                           toast("Replicated to all days!", "success");
-                        }} style={{ background: theme.color.surface2, border: `1px solid ${theme.color.border}`, padding: "8px 12px", borderRadius: 8, fontSize: 13, fontWeight: 700, color: theme.color.text1, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, transition: "all 0.2s" }} className="hover:bg-gray-50">
-                          <RepeatIcon size={14} color={theme.color.goldDark} /> Replicate These Hours to All Days
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Period Selector (Hours) */}
-                  {(() => {
-                    const allHoursPassed = isSameDate(viewDate, today) && hours.every(h => h < new Date().getHours());
-                    
-                    if (allHoursPassed) {
-                      return (
-                        <div style={{ marginBottom: 28, background: theme.color.warningLight, color: theme.color.warning, padding: 20, borderRadius: 16, border: `1px solid ${theme.color.warning}` }}>
-                          <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <AlertTriangle size={20} /> Booking Hours Have Passed
-                          </div>
-                          <div style={{ fontSize: 14, color: theme.color.text2 }}>
-                            The operating hours for this date have already passed. Please close this modal and select a future date from the calendar to book your ad slot.
-                          </div>
-                        </div>
-                      );
-                    }
-
-                    return (
-                      <div style={{ marginBottom: 28 }}>
-                        <div style={{ fontSize: 12, fontWeight: 800, color: theme.color.text3, textTransform: "uppercase", letterSpacing: '0.05em', marginBottom: 14 }}>Select Hour</div>
-                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(90px, 1fr))", gap: 10 }}>
-                          {hours.map((h) => {
-                            const isSelected = selectedHours.includes(h);
-                            const isTouched = touched.has(h);
-                            const isPastHour = isSameDate(viewDate, today) && h < new Date().getHours();
-                            return (
-                              <button key={h} disabled={isPastHour} onClick={() => {
-                                let newHours = [...selectedHours];
-                                if (isSelected) {
-                                  newHours = newHours.filter(x => x !== h);
-                                  setMinuteSelections(prev => {
-                                    const next = { ...prev };
-                                    delete next[h];
-                                    return next;
-                                  });
-                                  if (newHours.length === 0) setDraft(null);
-                                } else {
-                                  newHours.push(h);
-                                  autoSelectSlot(viewDate, h);
-                                }
-                                newHours.sort((a,b) => a-b);
-                                setSelectedHours(newHours);
-                              }}
-                                style={{
-                                  background: isPastHour ? 'transparent' : isSelected ? theme.color.gold : isTouched ? theme.color.goldLight : theme.color.surface2,
-                                  color: isPastHour ? theme.color.text4 : isSelected || isTouched ? theme.color.charcoal900 : theme.color.text1,
-                                  fontWeight: isSelected || isTouched ? 800 : 700,
-                                  border: `1px solid ${isPastHour ? theme.color.border2 : isSelected || isTouched ? theme.color.goldMid : theme.color.border}`,
-                                  borderRadius: 999, padding: "12px 0", fontSize: 14, 
-                                  cursor: isPastHour ? "not-allowed" : "pointer", 
-                                  transition: "all 0.2s ease",
-                                  boxShadow: isSelected ? theme.shadow.gold : "0 2px 4px rgba(0,0,0,0.02)",
-                                  opacity: isPastHour ? 0.4 : 1
-                                }}>
-                                {formatMin(h * 60)}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    );
-                  })()}
-
-                  {/* Draft Summary & Add to Cart */}
-                  {selectedHours.length > 0 && ! (isSameDate(viewDate, today) && hours.every(h => h < new Date().getHours())) && (() => {
-                    const draftPrice = calcCost(draftDurationSec, selectedCreative?.ppm_rate || PPM);
-                    
-                    const isInvalid = localHasConflict;
-                    let displayTotalCost = 0;
-                    let displayTotalBlocks = 0;
-                    let displayTotalSec = 0;
-                    
-                    let multiplier = 1;
-                    if (replicationConfig?.active) {
-                      if (replicationConfig.duration === "4weeks") multiplier = 4;
-                      else if (replicationConfig.duration === "3months") multiplier = 13;
-                      else if (replicationConfig.duration === "6months") multiplier = 26;
-                      else if (replicationConfig.duration === "1year") multiplier = 52;
-                    }
-
-                    if (spreadTabs.length > 1) {
-                      const currentSelections = { ...multiDaySelections };
-                      if (activeTabDateKey) currentSelections[activeTabDateKey] = { selectedHours, draft, draftLoops };
-                      
-                      Object.keys(currentSelections).forEach(key => {
-                        const state = currentSelections[key];
-                        if (!state || !state.selectedHours) return;
-                        displayTotalBlocks += state.selectedHours.length * multiplier;
-                        const loops = state.draft ? state.draft.loops : state.draftLoops;
-                        displayTotalSec += loops * (videoSeconds || 60) * state.selectedHours.length * multiplier;
-                        const costPerBlock = calcCost(loops * (videoSeconds || 60), selectedCreative?.ppm_rate || PPM).cost;
-                        displayTotalCost += costPerBlock * state.selectedHours.length * multiplier;
-                      });
-                    } else {
-                      displayTotalCost = draftPrice.cost * selectedHours.length;
-                      displayTotalBlocks = selectedHours.length;
-                      displayTotalSec = activeLoops * (videoSeconds || 60) * selectedHours.length;
-                    }
-
-                    return (
-                      <div style={{ marginTop: 28, padding: "28px", background: isInvalid ? theme.color.errorLight : `linear-gradient(135deg, ${theme.color.surface2} 0%, ${theme.color.surface} 100%)`, border: `1px solid ${isInvalid ? theme.color.error : theme.color.border2}`, borderRadius: 20, boxShadow: theme.shadow.md }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-                          <div style={{ fontWeight: 800, fontSize: 20, color: isInvalid ? theme.color.error : theme.color.text1, letterSpacing: "-0.3px" }}>
-                            {isInvalid ? 'Invalid Selection' : (spreadTabs.length > 1 ? 'Total Spread Booking Details' : 'Duration & Booking Details')}
-                          </div>
-                          <button onClick={() => { setSelectedHours([]); setDraft(null); }} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 4, color: theme.color.text3, fontSize: 13, fontWeight: 700 }}><X size={16} /> Clear</button>
-                        </div>
-
-                        {/* Loops Stepper */}
-                        <div style={{ display: "flex", alignItems: "center", gap: 20, marginBottom: 20, flexWrap: "wrap" }}>
-                          <div>
-                            <div style={{ fontSize: 12, fontWeight: 800, color: theme.color.text3, textTransform: "uppercase", marginBottom: 6 }}>Loops (Full Plays)</div>
-                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                              <button onClick={() => {
-                                setDraftLoops(prev => Math.max(1, prev - 1));
-                                if (draft) setDraft({ ...draft, loops: Math.max(1, draft.loops - 1) });
-                              }} style={{...stepBtnStyle, width: 36, height: 36}}>−</button>
-                              <span className="mono" style={{ width: 44, textAlign: "center", fontWeight: 800, fontSize: 20, color: theme.color.text1 }}>{activeLoops}</span>
-                              <button onClick={() => {
-                                setDraftLoops(prev => prev + 1);
-                                if (draft) setDraft({ ...draft, loops: draft.loops + 1 });
-                              }} style={{ ...stepBtnStyle, width: 36, height: 36 }}>+</button>
-                            </div>
-                          </div>
-                          <div style={{ flex: 1, minWidth: 200 }}>
-                            <div style={{ background: theme.color.surface, borderRadius: 16, padding: "16px 20px", border: `1px solid ${theme.color.border2}`, boxShadow: "inset 0 2px 4px rgba(0,0,0,0.02)" }}>
-                              <div className="mono" style={{ fontSize: 15, display: "flex", justifyContent: "space-between", alignItems: "center", fontWeight: 700 }}>
-                                <span style={{ color: theme.color.text2 }}>
-                                  {displayTotalBlocks} Block(s) selected <span style={{ color: theme.color.text4, fontWeight: 500, fontSize: 13 }}>({Math.ceil(displayTotalSec / 60)} min total)</span>
-                                </span>
-                                <span style={{ color: theme.color.goldDark, fontWeight: 800, fontSize: 20 }}>{naira(displayTotalCost)}</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {isInvalid ? (
-                           <div style={{ display: "flex", gap: 10, alignItems: "center", background: theme.color.surface, borderRadius: 10, padding: "14px", fontSize: 14, color: theme.color.error, border: `1px solid ${theme.color.errorLight}` }}>
-                             <AlertTriangle size={18} style={{ flexShrink: 0 }} />
-                             <span style={{ fontWeight: 600 }}>Not enough open room for this selection. Try different hours or fewer loops.</span>
-                           </div>
-                        ) : (
-                           <>
-                             <div style={{ fontSize: 14, color: theme.color.text3, lineHeight: 1.6, marginBottom: 20, fontWeight: 500 }}>
-                               <strong>Video Length:</strong> {videoSeconds}s<br/>
-                               <strong>Total Time Needed for Booking:</strong> {Math.floor(displayTotalSec / 60)} min {displayTotalSec % 60}sec ({displayTotalSec} sec)<br/>
-                             </div>
-                             
-                             <div className="flex flex-wrap items-center gap-3 md:gap-4 w-full">
-                               <button onClick={() => {
-                                  const newItems: any[] = [];
-                                  
-                                  const generateItemsForDate = (d: Date, state: any) => {
-                                     const dateSimBookings = [...bookingsForDate(localDateKey(d))];
-                                     state.selectedHours.forEach((h: number) => {
-                                        const startMin = getAvailableStartMin(h, dateSimBookings);
-                                        const durationMin = Math.ceil((state.draft ? state.draft.loops : state.draftLoops) * (videoSeconds || 60) / 60);
-                                        
-                                        if (startMin + durationMin <= 20 * 60) {
-                                           dateSimBookings.push({ startMin, durationMin, type: 'virtual' });
-                                           newItems.push({
-                                              id: crypto.randomUUID(),
-                                              creative: selectedCreative,
-                                              date: d,
-                                              startMin,
-                                              durationSec: (state.draft ? state.draft.loops : state.draftLoops) * (videoSeconds || 60),
-                                              priceInfo: calcCost((state.draft ? state.draft.loops : state.draftLoops) * (videoSeconds || 60), selectedCreative?.ppm_rate || PPM)
-                                           });
-                                        }
-                                     });
-                                  };
-
-                                  if (spreadTabs.length > 1) {
-                                    const finalSelections = { ...multiDaySelections };
-                                    if (activeTabDateKey) finalSelections[activeTabDateKey] = { selectedHours, draft, draftLoops, minuteSelections };
-                                    
-                                    if (replicationConfig?.active) {
-                                      const startDate = spreadTabs[0];
-                                      let totalDays = 0;
-                                      if (replicationConfig.duration === "4weeks") totalDays = 28;
-                                      else if (replicationConfig.duration === "3months") totalDays = 90;
-                                      else if (replicationConfig.duration === "6months") totalDays = 180;
-                                      else if (replicationConfig.duration === "1year") totalDays = 365;
-
-                                      for (let i = 0; i < totalDays; i++) {
-                                        const cur = addDays(startDate, i);
-                                        const matchingMasterDay = spreadTabs.find(t => t.getDay() === cur.getDay());
-                                        if (matchingMasterDay) {
-                                          const state = finalSelections[localDateKey(matchingMasterDay)];
-                                          if (state && state.selectedHours.length > 0) {
-                                            generateItemsForDate(cur, state);
-                                          }
-                                        }
-                                      }
-                                    } else {
-                                      Object.keys(finalSelections).forEach(key => {
-                                        const state = finalSelections[key];
-                                        if (state && state.selectedHours.length > 0) {
-                                          generateItemsForDate(new Date(key), state);
-                                        }
-                                      });
-                                    }
-                                  } else {
-                                    generateItemsForDate(viewDate, { selectedHours, draft, draftLoops, minuteSelections });
-                                  }
-                                  
-                                  if (newItems.length > 0) {
-                                     addMultipleToCart(newItems);
-                                     setSelectedHours([]);
-                                     setDraft(null);
-                                     setMinuteSelections({});
-                                     setSpreadTabs([]);
-                                     setActiveTabDateKey(null);
-                                     setMultiDaySelections({});
-                                     setReplicationConfig(null);
-                                     toast(`Added ${newItems.length} slot(s) to Cart!`, "success");
-                                     router.push('/cart');
-                                  }
-                               }} className="flex-1 min-w-[200px] justify-center" style={{ padding: "16px 28px", borderRadius: 12, border: "none", background: theme.color.gold, color: theme.color.charcoal900, fontSize: 16, fontWeight: 800, cursor: "pointer", display: "flex", gap: 10, alignItems: "center", boxShadow: theme.shadow.gold, transition: "all 0.2s" }}>
-                                 Add to Cart
-                               </button>
-                               <button onClick={() => setSpreadModal(true)} className="flex-1 min-w-[160px] justify-center" style={{ padding: "14px 20px", borderRadius: 12, border: `1px solid ${theme.color.border2}`, background: theme.color.surface, fontSize: 15, fontWeight: 700, cursor: "pointer", color: theme.color.text1, display: "flex", gap: 8, alignItems: "center", boxShadow: "0 1px 2px rgba(0,0,0,0.03)" }}>
-                                 <RepeatIcon size={16} /> Spread Booking...
-                               </button>
-                               {cart.length > 0 && (
-                                 <button onClick={() => {
-                                    setShowSlotModal(false);
-                                    router.push('/cart');
-                                 }} className="w-full md:w-auto md:flex-1 justify-center" style={{ padding: "14px 20px", borderRadius: 12, border: "none", background: theme.color.charcoal900, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", display: "flex", gap: 8, alignItems: "center", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>
-                                   View Cart ({cart.length}) <ChevronRight size={16} />
-                                 </button>
-                               )}
-                             </div>
-                           </>
-                        )}
-                      </div>
-                    );
-                  })()}
-
-                  {/* Minute Grid Tabs */}
-                  {touched.size > 0 && (
-                    <div style={{ marginTop: 28 }}>
-                      {touched.size > 1 && (
-                        <div style={{ display: "flex", gap: 8, marginBottom: 12, overflowX: "auto", paddingBottom: 4 }}>
-                          {Array.from(touched).sort((a,b)=>a-b).map(hour => (
-                            <button
-                              key={hour}
-                              onClick={() => setActiveMinuteGridHour(hour)}
-                              style={{
-                                padding: "8px 16px",
-                                borderRadius: 12,
-                                border: `1px solid ${activeMinuteGridHour === hour ? theme.color.goldMid : theme.color.border2}`,
-                                background: activeMinuteGridHour === hour ? theme.color.goldLight : theme.color.surface2,
-                                color: activeMinuteGridHour === hour ? theme.color.goldDark : theme.color.text1,
-                                fontWeight: 700,
-                                cursor: "pointer",
-                                fontSize: 13,
-                                whiteSpace: "nowrap"
-                              }}
-                            >
-                              {formatMin(hour * 60)} Slots
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                      
-                      {activeMinuteGridHour !== null && touched.has(activeMinuteGridHour) && (
-                        <div style={{ background: theme.color.surface2, borderRadius: 20, padding: "28px", border: `1px solid ${theme.color.border2}`, boxShadow: "inset 0 2px 4px rgba(0,0,0,0.02)" }}>
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-                            <div style={{ fontWeight: 800, fontSize: 18, color: theme.color.text1, letterSpacing: "-0.3px" }}>{formatMin(activeMinuteGridHour * 60)} Slots (Minute-by-Minute)</div>
-                            <div style={{ fontSize: 12, fontWeight: 700, color: theme.color.goldDark, background: theme.color.goldLight, padding: "6px 12px", borderRadius: 8 }}>
-                              {(() => {
-                                 const bookings = bookingsForDate(localDateKey(viewDate));
-                                 let available = 0;
-                                 for(let m=0; m<60; m++) {
-                                   if(!isStartInsideBooking(activeMinuteGridHour * 60 + m, bookings)) available++;
-                                 }
-                                 return `${available} Available Slots`;
-                              })()}
-                            </div>
-                          </div>
-
-                          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(40px, 1fr))", gap: 8 }}>
-                            {Array.from({ length: 60 }).map((_, m) => {
-                              const minOfDay = activeMinuteGridHour * 60 + m;
-                              const bookings = bookingsForDate(localDateKey(viewDate));
-                              const otherBookings = bookings.filter((b: any) => b.type !== 'cart');
-                              const cartBookings = bookings.filter((b: any) => b.type === 'cart');
-                              
-                              const isBookedByOther = isStartInsideBooking(minOfDay, otherBookings);
-                              const isInCart = isStartInsideBooking(minOfDay, cartBookings);
-                              const isPastMinute = isSameDate(viewDate, today) && minOfDay < (new Date().getHours() * 60 + new Date().getMinutes());
-                              
-                              let isSelected = false;
-                              if (!isBookedByOther && !isInCart) {
-                                 // Check if it falls in ANY of our auto-allocated blocks
-                                 const simBookings = [...bookingsForDate(localDateKey(viewDate))];
-                                 selectedHours.forEach(h => {
-                                    const startMin = getAvailableStartMin(h, simBookings);
-                                    const durationMin = Math.ceil(activeLoops * (videoSeconds || 60) / 60);
-                                    if (startMin + durationMin <= 20 * 60) {
-                                       simBookings.push({ startMin, durationMin, type: 'virtual' });
-                                       if (minOfDay >= startMin && minOfDay < startMin + durationMin) {
-                                          isSelected = true;
-                                       }
-                                    }
-                                 });
-                              }
-
-                              return (
-                                <div key={m}
-                                  title="Minutes are automatically assigned by the system"
-                                  style={{
-                                    aspectRatio: "1.5", borderRadius: 10, 
-                                    border: `1px solid ${isSelected || isInCart ? theme.color.goldMid : isBookedByOther || isPastMinute ? "transparent" : theme.color.border2}`,
-                                    background: isBookedByOther || isPastMinute ? theme.color.surface2 : isSelected || isInCart ? theme.color.gold : theme.color.surface,
-                                    color: isBookedByOther || isPastMinute ? theme.color.text4 : isSelected || isInCart ? theme.color.charcoal900 : theme.color.text2,
-                                    fontWeight: isSelected || isInCart ? 800 : 600,
-                                    fontSize: 13, display: "flex", alignItems: "center", justifyContent: "center",
-                                    cursor: "default", 
-                                    opacity: isBookedByOther || isPastMinute ? 0.3 : (isInCart ? 0.9 : 1), 
-                                    transition: "all 0.2s ease",
-                                    boxShadow: isSelected || isInCart ? theme.shadow.gold : "0 1px 2px rgba(0,0,0,0.03)"
-                                  }}
-                                  className="mono">
-                                  :{String(m).padStart(2, '0')}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  </>
-                  );
-                  })()}
-                </div>
+                <button type="button" onClick={handleBookSlot} disabled={submitting} style={{ padding: '12px 28px', background: theme.color.gold, border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 800, color: theme.color.charcoal900, cursor: submitting ? 'not-allowed' : 'pointer', opacity: submitting ? 0.7 : 1, fontFamily: F }}>
+                  {submitting ? 'Booking…' : 'Book Slot'}
+                </button>
               </div>
             </div>
-            )}
-            
-            {/* SPREAD MODAL */}
-            {spreadModal && (draft || selectedHours.length > 0) && (
-              <div className="qs" style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(10,10,10,0.6)", backdropFilter: "blur(12px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, animation: "fadeIn 0.2s ease-out" }}>
-                <div style={{ background: theme.color.surface, borderRadius: 24, width: "100%", maxWidth: 500, padding: "clamp(20px, 5vw, 32px)", position: "relative", boxShadow: "0 24px 60px rgba(0,0,0,0.2)", border: `1px solid ${theme.color.border2}` }}>
-                  <button onClick={() => setSpreadModal(false)} style={{ position: "absolute", top: 16, right: 16, background: theme.color.surface2, border: `1px solid ${theme.color.border}`, borderRadius: "50%", padding: 10, cursor: "pointer", color: theme.color.text1 }}>
-                    <X size={18} />
-                  </button>
-                  <div style={{ fontWeight: 800, fontSize: 24, marginBottom: 8, color: theme.color.text1 }}>Spread Booking</div>
-                  <div style={{ fontSize: 14, color: theme.color.text3, marginBottom: 24 }}>Select how you want to duplicate your {draft ? `${formatMin(draft.startMin)} slot` : `${selectedHours.length} selected hour(s)`}.</div>
-                  
-                  <div style={{ marginBottom: 20 }}>
-                    <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 8, color: theme.color.text2 }}>1. Duration (How long?)</label>
-                    <select value={spreadDuration} onChange={e => {
-                        setSpreadDuration(e.target.value);
-                        if (e.target.value === "1week") setSpreadReplicate(false);
-                    }} style={{ ...inputStyle, padding: "12px", fontSize: 15, fontWeight: 600 }}>
-                      <option value="1week">1 Week</option>
-                      <option value="4weeks">4 Weeks</option>
-                      <option value="3months">3 Months</option>
-                      <option value="6months">6 Months</option>
-                      <option value="1year">1 Year</option>
-                    </select>
-                  </div>
-                  
-                  {spreadDuration !== "1week" && (
-                    <div style={{ marginBottom: 20, display: "flex", alignItems: "center", gap: 10, background: theme.color.surface2, padding: "12px 16px", borderRadius: 12, border: `1px solid ${theme.color.border}` }}>
-                      <input type="checkbox" id="replicate" checked={spreadReplicate} onChange={e => setSpreadReplicate(e.target.checked)} style={{ width: 18, height: 18, accentColor: theme.color.goldDark }} />
-                      <label htmlFor="replicate" style={{ fontSize: 14, fontWeight: 700, color: theme.color.text1, cursor: "pointer", userSelect: "none" }}>
-                        Replicate first week's schedule across the entire {spreadDuration.replace('weeks', ' weeks').replace('months', ' months').replace('year', ' year')}?
-                      </label>
-                    </div>
-                  )}
+          </div>
 
-                  <div style={{ marginBottom: 20 }}>
-                    <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 8, color: theme.color.text2 }}>2. Pattern (Which days?)</label>
-                    <select value={spreadPattern} onChange={e => setSpreadPattern(e.target.value)} style={{ ...inputStyle, padding: "12px", fontSize: 15, fontWeight: 600 }}>
-                      <option value="daily">Every Day (Sun-Sat)</option>
-                      <option value="weekdays">Every Weekday (Mon-Fri)</option>
-                      <option value="weekends">Every Weekend (Sat-Sun)</option>
-                      <option value="alternate">Every Other Day</option>
-                      <option value="custom">Custom Days...</option>
-                    </select>
-                  </div>
-                  
-                  {spreadPattern === "custom" && (
-                    <div style={{ marginBottom: 24 }}>
-                       <label style={{ display: "block", fontSize: 13, fontWeight: 700, marginBottom: 8, color: theme.color.text2 }}>Select Days</label>
-                       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                         {[1, 2, 3, 4, 5, 6, 0].map(day => (
-                           <button key={day} onClick={() => {
-                             if (customDays.includes(day)) setCustomDays(prev => prev.filter(d => d !== day));
-                             else setCustomDays(prev => [...prev, day]);
-                           }} style={{ padding: "8px 12px", borderRadius: 8, border: `1px solid ${customDays.includes(day) ? theme.color.goldMid : theme.color.border}`, background: customDays.includes(day) ? theme.color.goldLight : theme.color.surface2, color: customDays.includes(day) ? theme.color.goldDark : theme.color.text1, fontWeight: 700, cursor: "pointer", fontSize: 13 }}>
-                             {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][day]}
-                           </button>
-                         ))}
-                       </div>
-                    </div>
-                  )}
-                  
-                  <div style={{ background: theme.color.surface2, padding: 16, borderRadius: 12, marginBottom: 24, fontSize: 13, color: theme.color.text2, border: `1px solid ${theme.color.border}` }}>
-                    <Info size={16} style={{ float: "left", marginRight: 8, color: theme.color.gold }} />
-                    If any future slots clash with existing bookings, we'll simply skip those blocked days and add the rest!
-                  </div>
-                  
-                  <AnimatedButton onClick={handleSpreadAdd} style={{ width: "100%", padding: "16px", borderRadius: 12, border: "none", background: theme.color.gold, color: theme.color.charcoal900, fontWeight: 800, fontSize: 16, cursor: "pointer", boxShadow: theme.shadow.gold }}>
-                    Continue to Edit
-                  </AnimatedButton>
-                </div>
+          {/* Right column — promo banner, matching the previous /book layout */}
+          <div style={{ width: 260, flexShrink: 0 }}>
+            <div style={{ background: theme.color.charcoal900, borderRadius: 16, padding: '20px 22px', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', bottom: -24, right: -24, width: 100, height: 100, background: 'rgba(224,165,38,0.12)', borderRadius: '50%', pointerEvents: 'none' }} />
+              <p style={{ margin: '0 0 14px', fontSize: 13, fontWeight: 600, color: '#FFFFFF', lineHeight: 1.5, position: 'relative' }}>
+                we are running Ad space promo, get a discount for more than 3months booking
+              </p>
+              <button type="button" onClick={() => router.push('/podcast/book')} style={{ background: theme.color.gold, color: theme.color.charcoal900, border: 'none', borderRadius: 8, padding: '9px 16px', fontSize: 11, fontWeight: 800, letterSpacing: '0.04em', textTransform: 'uppercase', cursor: 'pointer', position: 'relative' }}>
+                Book Podcast Session
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* ─── Billing / payment modals ─── */}
+        {step !== 'form' && (
+          <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(15,23,42,0.5)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+            <div style={{ width: '100%', maxWidth: 400, background: theme.color.surface, borderRadius: 20, boxShadow: '0 20px 40px rgba(0,0,0,0.2)', fontFamily: F }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px', borderBottom: `1px solid ${theme.color.surface2}` }}>
+                {step !== 'billing' && step !== 'success' ? (
+                  <button onClick={() => setStep('billing')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text2, display: 'flex' }}><ArrowLeft size={18} /></button>
+                ) : <span />}
+                <span style={{ fontSize: 15, fontWeight: 800, color: theme.color.text1 }}>
+                  {step === 'billing' ? 'Billing' : step === 'card' ? 'Pay with card' : step === 'wallet' ? 'Pay from wallet' : ''}
+                </span>
+                {step !== 'success' ? (
+                  <button onClick={() => setStep('form')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text3, display: 'flex' }}><X size={18} /></button>
+                ) : <span />}
               </div>
-            )}
-            {/* SUCCESS / MESSAGE MODAL */}
-            {message && (
-              <div className="qs" style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(10,10,10,0.6)", backdropFilter: "blur(12px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, animation: "fadeIn 0.2s ease-out" }}>
-                <div style={{ background: theme.color.surface, borderRadius: 24, width: "100%", maxWidth: 400, padding: "32px", textAlign: "center", position: "relative", boxShadow: "0 24px 60px rgba(0,0,0,0.2)", border: `1px solid ${theme.color.border2}` }}>
-                  <div style={{ width: 64, height: 64, borderRadius: "50%", background: theme.color.success + "20", color: theme.color.success, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
-                    <Check size={32} />
-                  </div>
-                  <div style={{ fontWeight: 800, fontSize: 22, marginBottom: 12, color: theme.color.text1 }}>Booking Spread Complete</div>
-                  <div style={{ fontSize: 15, color: theme.color.text2, marginBottom: 32, lineHeight: 1.5 }}>
-                    {message}
-                  </div>
-                  
-                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                    <AnimatedButton onClick={() => {
-                      setMessage("");
-                      setShowSlotModal(false);
-                      router.push('/cart');
-                    }} style={{ width: "100%", padding: "16px", borderRadius: 12, border: "none", background: theme.color.gold, color: theme.color.charcoal900, fontWeight: 800, fontSize: 16, cursor: "pointer", boxShadow: theme.shadow.gold, display: "flex", justifyContent: "center", alignItems: "center", gap: 8 }}>
-                      View Cart & Checkout <ChevronRight size={18} />
-                    </AnimatedButton>
-                    <button onClick={() => {
-                      setMessage("");
-                    }} style={{ width: "100%", padding: "14px", borderRadius: 12, border: `1px solid ${theme.color.border}`, background: "transparent", color: theme.color.text2, fontWeight: 700, fontSize: 15, cursor: "pointer", transition: "all 0.2s" }}>
-                      Continue Scheduling
+
+              <div style={{ padding: '24px 24px 26px' }}>
+                {step === 'billing' && (
+                  <>
+                    <p style={{ textAlign: 'center', fontSize: 13, fontWeight: 700, color: theme.color.text1, margin: '0 0 20px' }}>
+                      {durationLabel} Ad space at ₦{totalCost.toLocaleString()}
+                    </p>
+                    <div onClick={() => setStep('card')} style={{ padding: '14px 16px', border: `1px solid ${theme.color.border}`, borderRadius: 12, marginBottom: 12, cursor: 'pointer', fontSize: 14, fontWeight: 700, color: theme.color.text1 }}>
+                      Pay with card
+                    </div>
+                    <div onClick={() => setStep('wallet')} style={{ padding: '14px 16px', border: `1px solid ${theme.color.gold}`, borderRadius: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div>
+                        <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: theme.color.text1 }}>Pay from wallet</p>
+                        <p style={{ margin: '2px 0 0', fontSize: 12, color: theme.color.text3 }}>Balance: ₦{walletBalance.toLocaleString()}</p>
+                      </div>
+                      {walletBalance >= totalCost && <Check size={16} color={theme.color.success} />}
+                    </div>
+                  </>
+                )}
+
+                {step === 'card' && (
+                  <>
+                    <p style={{ textAlign: 'center', fontSize: 13, fontWeight: 700, color: theme.color.text1, margin: '0 0 20px' }}>
+                      {durationLabel} Ad space at ₦{totalCost.toLocaleString()}
+                    </p>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 20 }}>
+                      <input placeholder="Card holder's name" value={cardForm.name} onChange={(e) => setCardForm({ ...cardForm, name: e.target.value })} style={inputStyle} />
+                      <input placeholder="Card number" value={cardForm.number} onChange={(e) => setCardForm({ ...cardForm, number: e.target.value })} style={inputStyle} />
+                      <div style={{ display: 'flex', gap: 10 }}>
+                        <input placeholder="Expiry date (MM/YY)" value={cardForm.expiry} onChange={(e) => setCardForm({ ...cardForm, expiry: e.target.value })} style={inputStyle} />
+                        <input placeholder="CVV" value={cardForm.cvv} onChange={(e) => setCardForm({ ...cardForm, cvv: e.target.value })} style={inputStyle} />
+                      </div>
+                    </div>
+                    <button onClick={handlePayCard} disabled={paying} style={{ width: '100%', padding: 14, background: theme.color.gold, border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 800, color: theme.color.charcoal900, cursor: paying ? 'not-allowed' : 'pointer', opacity: paying ? 0.7 : 1 }}>
+                      {paying ? 'Redirecting…' : 'Pay'}
+                    </button>
+                    <p style={{ fontSize: 11, color: theme.color.text4, textAlign: 'center', margin: '10px 0 0' }}>You&apos;ll be redirected to a secure checkout to complete payment.</p>
+                  </>
+                )}
+
+                {step === 'wallet' && (
+                  <>
+                    <div style={{ background: theme.color.bg, border: `1px solid ${theme.color.border}`, borderRadius: 12, padding: '16px 18px', display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
+                      <span style={{ fontSize: 13, color: theme.color.text3, fontWeight: 600 }}>Total amount</span>
+                      <strong style={{ fontSize: 13, color: theme.color.text1 }}>NGN {totalCost.toLocaleString()}</strong>
+                    </div>
+                    <button onClick={handlePayWallet} disabled={paying || walletBalance < totalCost} style={{ width: '100%', padding: 14, background: theme.color.gold, border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 800, color: theme.color.charcoal900, cursor: (paying || walletBalance < totalCost) ? 'not-allowed' : 'pointer', opacity: (paying || walletBalance < totalCost) ? 0.7 : 1 }}>
+                      {paying ? 'Paying…' : walletBalance < totalCost ? 'Insufficient balance' : 'Pay'}
+                    </button>
+                  </>
+                )}
+
+                {step === 'success' && (
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ width: 64, height: 64, borderRadius: '50%', background: theme.color.gold, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                      <Check size={28} color="#fff" />
+                    </div>
+                    <p style={{ fontSize: 16, fontWeight: 800, color: theme.color.text1, margin: '0 0 24px' }}>Payment successful</p>
+                    <button onClick={() => router.push('/bookings')} style={{ width: '100%', padding: 14, background: theme.color.gold, border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 800, color: theme.color.charcoal900, cursor: 'pointer' }}>
+                      Finish
                     </button>
                   </div>
-                </div>
+                )}
               </div>
-            )}
-            
-            {/* EDIT CART ITEM MODAL */}
-            {editCartItem && (
-              <div className="qs" style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(10,10,10,0.6)", backdropFilter: "blur(12px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, animation: "fadeIn 0.2s ease-out" }}>
-                <div style={{ background: theme.color.surface, borderRadius: 24, width: "100%", maxWidth: 400, padding: "clamp(20px, 5vw, 32px)", position: "relative", boxShadow: "0 24px 60px rgba(0,0,0,0.2)", border: `1px solid ${theme.color.border2}` }}>
-                  <button onClick={() => setEditCartItem(null)} style={{ position: "absolute", top: 16, right: 16, background: theme.color.surface2, border: `1px solid ${theme.color.border}`, borderRadius: "50%", padding: 10, cursor: "pointer", color: theme.color.text1 }}>
-                    <X size={18} />
-                  </button>
-                  <div style={{ fontWeight: 800, fontSize: 22, marginBottom: 8, color: theme.color.text1 }}>Edit Slot Time</div>
-                  <div style={{ fontSize: 14, color: theme.color.text3, marginBottom: 24 }}>For {editCartItem.date.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })}</div>
-                  
-                  <div style={{ display: "flex", gap: 12, marginBottom: 32, alignItems: "center", justifyContent: "center" }}>
-                    <select 
-                      value={editHour % 12 === 0 ? 12 : editHour % 12} 
-                      onChange={e => {
-                        const val = Number(e.target.value);
-                        const isPM = editHour >= 12;
-                        setEditHour((val === 12 ? 0 : val) + (isPM ? 12 : 0));
-                      }} 
-                      style={{ ...inputStyle, padding: "12px", fontSize: 18, fontWeight: 800, textAlign: "center", width: 80 }}
-                    >
-                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(h => <option key={h} value={h}>{h}</option>)}
-                    </select>
-                    <span style={{ fontSize: 20, fontWeight: 800, color: theme.color.text2 }}>:</span>
-                    <select value={editMinute} onChange={e => setEditMinute(Number(e.target.value))} style={{ ...inputStyle, padding: "12px", fontSize: 18, fontWeight: 800, textAlign: "center", width: 80 }}>
-                      {Array.from({length: 60}).map((_, m) => <option key={m} value={m}>{pad(m)}</option>)}
-                    </select>
-                    <select 
-                      value={editHour < 12 ? 'AM' : 'PM'} 
-                      onChange={e => {
-                        if (e.target.value === 'PM' && editHour < 12) setEditHour(editHour + 12);
-                        if (e.target.value === 'AM' && editHour >= 12) setEditHour(editHour - 12);
-                      }} 
-                      style={{ ...inputStyle, padding: "12px", fontSize: 18, fontWeight: 800, textAlign: "center", width: 80, marginLeft: 8 }}
-                    >
-                      <option value="AM">AM</option>
-                      <option value="PM">PM</option>
-                    </select>
-                  </div>
-                  
-                  <AnimatedButton onClick={saveCartEdit} style={{ width: "100%", padding: "16px", borderRadius: 12, border: "none", background: theme.color.gold, color: theme.color.charcoal900, fontWeight: 800, fontSize: 16, cursor: "pointer", boxShadow: theme.shadow.gold }}>
-                    Save New Time
-                  </AnimatedButton>
-                </div>
-              </div>
-            )}
-          </Portal>
-
-          <RequestCreativeServiceModal open={showCreativeServiceModal} onClose={() => setShowCreativeServiceModal(false)} />
-
-        </div>
+            </div>
+          </div>
+        )}
       </PageTransition>
     </DashboardLayout>
   );
-}
-
-const inputStyle = { width: "100%", padding: "10px 12px", borderRadius: 10, border: `1px solid ${theme.color.border}`, fontSize: 14, boxSizing: "border-box" as const, background: theme.color.surface, color: theme.color.text1 };
-const iconBtnStyle = { background: "none", border: `1px solid ${theme.color.border}`, borderRadius: 10, padding: 6, cursor: "pointer", display: "flex" };
-const stepBtnStyle = { width: 30, height: 30, borderRadius: 8, border: `1px solid ${theme.color.border}`, background: theme.color.surface, color: theme.color.text1, fontSize: 18, lineHeight: 1, cursor: "pointer" };
-
-function Dot({ color }: { color: string }) {
-  return <span style={{ width: 6, height: 6, borderRadius: "50%", background: color, display: "inline-block" }} />;
 }

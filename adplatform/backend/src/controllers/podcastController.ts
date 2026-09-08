@@ -268,6 +268,11 @@ export const extendPodcastBooking = async (req: Request, res: Response) => {
     }
     const booking = bookingRes.rows[0];
 
+    if (new Date(booking.end_time).getTime() <= Date.now()) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ message: 'This session has already ended and can no longer be extended.' });
+    }
+
     const ratePerHour = PACKAGE_RATE_PER_HOUR[booking.package_type];
     if (!ratePerHour) {
       await client.query('ROLLBACK');

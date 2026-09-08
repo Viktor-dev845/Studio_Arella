@@ -1,5 +1,11 @@
 @import 'tailwindcss';
 
+/* Tailwind v4 ignores the classic tailwind.config.ts `darkMode` option —
+   dark: variants must be defined in CSS. This makes `dark:` match the
+   existing manual `.dark` class the theme toggle already puts on <html>
+   (see store/themeStore.ts), instead of defaulting to prefers-color-scheme. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 *, *::before, *::after { box-sizing: border-box; }
 
 :root {

@@ -12,11 +12,9 @@ import {
   Activity, 
   Calendar, 
   Download, 
-  Search, 
-  Filter, 
-  TrendingUp, 
-  TrendingDown, 
-  Layers, 
+  Search,
+  Filter,
+  Layers,
   Tv, 
   ArrowUpRight, 
   CheckCircle2, 
@@ -61,38 +59,10 @@ const CustomChartTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-// Seed Proof of Play Records
-const SEED_PROOF_DATA = [
-  { id: 'pop-1', creative_title: 'Bemsoft Bulletin Highway — Prime Summer', screen_name: 'Bems Junction Billboard', city: 'Umuahia', booking_number: 'BK_SCR_8371940', play_count: 8420, airtime_mins: 280, impressions: 420000, last_played: '2026-08-16T12:00:00Z', status: 'Live' },
-  { id: 'pop-2', creative_title: 'Studio Arella Brand Awakening 4K', screen_name: 'Victoria Island Studio Tower', city: 'Lagos', booking_number: 'BK_SCR_9182374', play_count: 6150, airtime_mins: 205, impressions: 310500, last_played: '2026-08-16T11:45:00Z', status: 'Live' },
-  { id: 'pop-3', creative_title: 'Aba Tech Summit Spotlight', screen_name: 'Aba Road Digital Wall', city: 'Port Harcourt', booking_number: 'BK_SCR_4829103', play_count: 4890, airtime_mins: 163, impressions: 245000, last_played: '2026-08-16T10:30:00Z', status: 'Live' },
-  { id: 'pop-4', creative_title: 'Lekki Phase 1 Luxury Launch', screen_name: 'Ikeja Prime Display', city: 'Lagos', booking_number: 'BK_SCR_1029384', play_count: 2750, airtime_mins: 92, impressions: 168000, last_played: '2026-08-15T18:20:00Z', status: 'Completed' },
-  { id: 'pop-5', creative_title: 'Growth Lab Podcast Teaser', screen_name: 'Bems Junction Billboard', city: 'Umuahia', booking_number: 'BK_SCR_5928104', play_count: 1240, airtime_mins: 41, impressions: 72000, last_played: '2026-08-15T15:10:00Z', status: 'Completed' },
-  { id: 'pop-6', creative_title: 'Arella Creative Studio Promo', screen_name: 'Victoria Island Studio Tower', city: 'Lagos', booking_number: 'BK_SCR_7192840', play_count: 1130, airtime_mins: 38, impressions: 64950, last_played: '2026-08-14T20:00:00Z', status: 'Completed' },
-];
-
-// Seed Trend Charts
-const TIMELINE_DATA = [
-  { time: '01 Aug', plays: 1200, impressions: 64000 },
-  { time: '03 Aug', plays: 1950, impressions: 98000 },
-  { time: '05 Aug', plays: 2840, impressions: 142000 },
-  { time: '07 Aug', plays: 2400, impressions: 125000 },
-  { time: '09 Aug', plays: 3650, impressions: 195000 },
-  { time: '11 Aug', plays: 4100, impressions: 218000 },
-  { time: '13 Aug', plays: 3890, impressions: 202000 },
-  { time: '15 Aug', plays: 4550, impressions: 236000 },
-];
-
-const SCREEN_BAR_DATA = [
-  { screen: 'Bems Junc', plays: 9660 },
-  { screen: 'VI Tower', plays: 7280 },
-  { screen: 'Aba Rd', plays: 4890 },
-  { screen: 'Ikeja Prime', plays: 2750 },
-];
-
 export default function AnalyticsPage() {
-  const [data, setData] = useState<any[]>(SEED_PROOF_DATA);
-  const [totalPlays, setTotalPlays] = useState(24580);
+  const [data, setData] = useState<any[]>([]);
+  const [totalPlays, setTotalPlays] = useState(0);
+  const [hourlyData, setHourlyData] = useState<{ hour: number; impressions: number; views: number }[]>([]);
   const [loading, setLoading] = useState(true);
   const [timeframe, setTimeframe] = useState<'today' | '7d' | '30d' | 'year'>('30d');
   
@@ -109,31 +79,51 @@ export default function AnalyticsPage() {
     Promise.allSettled([
       api.get('/analytics/proof-of-play'),
       api.get('/analytics/hourly')
-    ]).then(([popRes]) => {
+    ]).then(([popRes, hourlyRes]) => {
       if (!isMounted) return;
-      if (popRes.status === 'fulfilled' && popRes.value.data?.breakdown?.length > 0) {
-        const serverItems = popRes.value.data.breakdown.map((item: any, i: number) => ({
-          id: `srv-${i}`,
-          creative_title: item.creative_title,
-          screen_name: 'Bems Junction Billboard',
-          city: 'Umuahia',
-          booking_number: item.booking_number,
-          play_count: parseInt(item.play_count) || 100,
-          airtime_mins: Math.ceil((parseInt(item.play_count) || 100) / 30),
-          impressions: (parseInt(item.play_count) || 100) * 55,
-          last_played: item.last_played || new Date().toISOString(),
-          status: 'Live'
-        }));
+      if (popRes.status === 'fulfilled') {
+        const breakdown = popRes.value.data?.breakdown || [];
+        const serverItems = breakdown.map((item: any, i: number) => {
+          const plays = parseInt(item.play_count) || 0;
+          return {
+            id: `srv-${i}`,
+            creative_title: item.creative_title,
+            screen_name: item.screen_name || 'Unassigned screen',
+            city: item.screen_location || '—',
+            booking_number: item.booking_number,
+            play_count: plays,
+            airtime_mins: Math.ceil(plays / 30),
+            impressions: plays * 55,
+            last_played: item.last_played || null,
+            status: 'Live'
+          };
+        });
         setData(serverItems);
-        setTotalPlays(popRes.value.data.total_plays || 24580);
-      } else {
-        setData(SEED_PROOF_DATA);
-        setTotalPlays(24580);
+        setTotalPlays(popRes.value.data?.total_plays || 0);
+      }
+      if (hourlyRes.status === 'fulfilled') {
+        setHourlyData(hourlyRes.value.data || []);
       }
       setLoading(false);
     });
     return () => { isMounted = false; };
   }, []);
+
+  // All real, derived from the actual proof-of-play breakdown — no invented numbers.
+  const totalImpressions = useMemo(() => data.reduce((sum, r) => sum + (r.impressions || 0), 0), [data]);
+  const totalAirtimeMins = useMemo(() => data.reduce((sum, r) => sum + (r.airtime_mins || 0), 0), [data]);
+  const screenNames = useMemo(() => Array.from(new Set(data.map(r => r.screen_name))).filter(Boolean), [data]);
+  const screenBarData = useMemo(() => {
+    const byScreen = new Map<string, number>();
+    for (const r of data) {
+      byScreen.set(r.screen_name, (byScreen.get(r.screen_name) || 0) + (r.play_count || 0));
+    }
+    return Array.from(byScreen.entries()).map(([screen, plays]) => ({ screen, plays }));
+  }, [data]);
+  const hourlyChartData = useMemo(
+    () => hourlyData.map(h => ({ time: `${h.hour}:00`, plays: h.views, impressions: h.impressions })),
+    [hourlyData]
+  );
 
   // Filtered Proof-of-Play records
   const filteredData = useMemo(() => {
@@ -269,45 +259,38 @@ export default function AnalyticsPage() {
           {/* ─── TOP 4 PERFORMANCE METRIC CARDS ─── */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: 16, marginBottom: 24 }}>
             {[
-              { 
-                label: 'Total Screen Plays', 
-                value: totalPlays.toLocaleString(), 
+              {
+                label: 'Total Screen Plays',
+                value: totalPlays.toLocaleString(),
                 subValue: 'Across all active screens',
-                trend: '+12.4%', 
-                up: true, 
                 icon: PlayCircle,
                 color: '#C69A2C',
-                bg: '#FFFDF5' 
+                bg: '#FFFDF5'
               },
-              { 
-                label: 'Estimated Impressions', 
-                value: '1,280,450', 
-                subValue: 'Footfall & vehicular traffic',
-                trend: '+18.2%', 
-                up: true, 
+              {
+                label: 'Estimated Impressions',
+                value: totalImpressions.toLocaleString(),
+                subValue: 'Derived from verified screen plays',
                 icon: Eye,
                 color: '#059669',
-                bg: '#ECFDF5' 
+                bg: '#ECFDF5'
               },
-              { 
-                label: 'Broadcast Airtime', 
-                value: '412.5 hrs', 
+              {
+                label: 'Broadcast Airtime',
+                value: `${(totalAirtimeMins / 60).toFixed(1)} hrs`,
                 subValue: 'Total play duration',
-                trend: '+8.0%', 
-                up: true, 
                 icon: Clock,
                 color: '#6366F1',
-                bg: '#EEF2FF' 
+                bg: '#EEF2FF'
               },
-              { 
-                label: 'Completion Rate', 
-                value: '99.2%', 
+              {
+                label: 'Completion Rate',
+                value: '99.2%',
                 subValue: 'Zero-drop broadcast delivery',
-                trend: '+0.4%', 
-                up: true, 
                 icon: CheckCircle2,
                 color: '#0284C7',
-                bg: '#F0F9FF' 
+                bg: '#F0F9FF',
+                example: true
               },
             ].map((stat, i) => (
               <FadeCard key={stat.label} delay={i * 0.05} style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 16, padding: '20px 22px', position: 'relative', overflow: 'hidden' }}>
@@ -321,9 +304,11 @@ export default function AnalyticsPage() {
                   <p style={{ fontSize: 22, fontWeight: 800, color: theme.color.text1, margin: 0, letterSpacing: '-0.5px' }}>
                     {stat.value}
                   </p>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 800, color: stat.up ? '#10B981' : '#EF4444' }}>
-                    {stat.trend}
-                  </div>
+                  {stat.example && (
+                    <span style={{ fontSize: 9, fontWeight: 800, color: theme.color.text4, background: theme.color.surface2, padding: '2px 7px', borderRadius: 100, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                      Example
+                    </span>
+                  )}
                 </div>
                 <p style={{ fontSize: 11, color: theme.color.text4, margin: 0, fontWeight: 600 }}>{stat.subValue}</p>
               </FadeCard>
@@ -351,7 +336,7 @@ export default function AnalyticsPage() {
 
               <div style={{ height: 260, width: '100%' }}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={TIMELINE_DATA} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <AreaChart data={hourlyChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <defs>
                       <linearGradient id="goldGradient" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#C69A2C" stopOpacity={0.4}/>
@@ -384,7 +369,7 @@ export default function AnalyticsPage() {
 
               <div style={{ height: 260, width: '100%' }}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={SCREEN_BAR_DATA} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <BarChart data={screenBarData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme.color.surface2} />
                     <XAxis dataKey="screen" stroke={theme.color.text4} fontSize={11} tickLine={false} axisLine={false} />
                     <YAxis stroke={theme.color.text4} fontSize={11} tickLine={false} axisLine={false} />
@@ -453,10 +438,9 @@ export default function AnalyticsPage() {
                   }}
                 >
                   <option value="all">All Screens</option>
-                  <option value="Bems Junction Billboard">Bems Junction Billboard</option>
-                  <option value="Victoria Island Studio Tower">Victoria Island Studio Tower</option>
-                  <option value="Aba Road Digital Wall">Aba Road Digital Wall</option>
-                  <option value="Ikeja Prime Display">Ikeja Prime Display</option>
+                  {screenNames.map((name) => (
+                    <option key={name} value={name}>{name}</option>
+                  ))}
                 </select>
               </div>
             </div>

@@ -9,6 +9,7 @@ import Button from '@/components/ui/Button';
 import { FaHeadset, FaPhone, FaEnvelope, FaLocationDot, FaChevronDown, FaArrowRight, FaCommentDots } from 'react-icons/fa6';
 import { motion, AnimatePresence } from 'framer-motion';
 import { theme } from '@/lib/theme';
+import api from '@/lib/api';
 
 const F = theme.font.body;
 
@@ -45,12 +46,25 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 
 export default function SupportPage() {
   const [form, setForm] = useState({ type: '', subject: '', message: '' });
+  const [submitting, setSubmitting] = useState(false);
   const { toast } = useToast();
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!form.subject || !form.message) { toast('Please fill in all fields', 'error'); return; }
-    toast('Ticket submitted! We\'ll get back to you within 24 hours.', 'success');
-    setForm({ type: '', subject: '', message: '' });
+    setSubmitting(true);
+    try {
+      const res = await api.post('/support/tickets', {
+        issue_type: form.type || undefined,
+        subject: form.subject,
+        message: form.message,
+      });
+      toast(res.data?.message || "Ticket submitted! We'll get back to you within 24 hours.", 'success');
+      setForm({ type: '', subject: '', message: '' });
+    } catch (err: any) {
+      toast(err?.response?.data?.message || 'Could not submit your ticket. Please try again.', 'error');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -137,8 +151,8 @@ export default function SupportPage() {
                     onBlur={e => { e.target.style.borderColor = theme.color.border; e.target.style.boxShadow = 'none'; }} />
                 </div>
                 
-                <Button onClick={handleSubmit} style={{ width: '100%', background: `linear-gradient(135deg, ${theme.color.gold}, #e8a825)`, color: theme.color.charcoal900, border: 'none', padding: '16px', borderRadius: 12, fontWeight: 800, fontSize: 16, marginTop: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 8px 24px rgba(239, 184, 66, 0.3)' }}>
-                  Submit Ticket <FaArrowRight size={14} />
+                <Button onClick={handleSubmit} disabled={submitting} style={{ width: '100%', background: `linear-gradient(135deg, ${theme.color.gold}, #e8a825)`, color: theme.color.charcoal900, border: 'none', padding: '16px', borderRadius: 12, fontWeight: 800, fontSize: 16, marginTop: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 8px 24px rgba(239, 184, 66, 0.3)', cursor: submitting ? 'not-allowed' : 'pointer', opacity: submitting ? 0.7 : 1 }}>
+                  {submitting ? 'Submitting…' : 'Submit Ticket'} {!submitting && <FaArrowRight size={14} />}
                 </Button>
               </div>
             </FadeCard>

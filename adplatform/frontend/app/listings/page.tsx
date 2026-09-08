@@ -8,6 +8,7 @@ import { useToast } from '@/components/ui/ToastProvider';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import api from '@/lib/api';
+import { useAuthStore } from '@/store/authStore';
 import { Screen } from '@/types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaPlus, FaTrash, FaDisplay, FaLocationDot, FaArrowRight } from 'react-icons/fa6';
@@ -25,18 +26,36 @@ const typeColors: Record<string, { bg: string; text: string; border: string }> =
 };
 
 export default function ListingsPage() {
+  const { user, updateUser } = useAuthStore();
   const [screens, setScreens] = useState<Screen[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({ name: '', location: '', type: 'digital', size: '', price_per_sec: '', impressions_per_day: '' });
   const [saving, setSaving] = useState(false);
+  const [upgrading, setUpgrading] = useState(false);
   const { toast } = useToast();
+
+  const isScreenOwner = user?.role === 'screen_owner' || user?.role === 'admin';
 
   const fetchScreens = async () => {
     try { const r = await api.get('/screens?my=true'); setScreens(r.data.screens || []); }
     catch { setScreens([]); } finally { setLoading(false); }
   };
-  useEffect(() => { fetchScreens(); }, []);
+  useEffect(() => { if (isScreenOwner) fetchScreens(); else setLoading(false); }, [isScreenOwner]);
+
+  const handleBecomeScreenOwner = async () => {
+    setUpgrading(true);
+    try {
+      const res = await api.post('/auth/become-screen-owner');
+      if (res.data?.token) localStorage.setItem('token', res.data.token);
+      updateUser({ role: 'screen_owner' });
+      toast('You can now list and manage your own screens!', 'success');
+    } catch (err: any) {
+      toast(err?.response?.data?.message || 'Could not complete upgrade. Please try again.', 'error');
+    } finally {
+      setUpgrading(false);
+    }
+  };
 
   const handleCreate = async () => {
     if (!form.name.trim() || !form.location.trim()) { toast('Name and location are required', 'error'); return; }
@@ -69,15 +88,32 @@ export default function ListingsPage() {
                 <Monitor size={17} color={theme.color.gold} />
                 <h1 style={{ fontFamily: theme.font.display, fontSize: 24, fontWeight: 600, color: theme.color.text1, margin: 0 }}>My Listings</h1>
               </div>
-              <p style={{ fontSize: 13, color: theme.color.text3, margin: 0 }}>{screens.length} screen{screens.length !== 1 ? 's' : ''} listed</p>
+              <p style={{ fontSize: 13, color: theme.color.text3, margin: 0 }}>
+                {isScreenOwner ? `${screens.length} screen${screens.length !== 1 ? 's' : ''} listed` : 'List your own LED screens and earn when advertisers book them'}
+              </p>
             </div>
-            <Button onClick={() => setShowModal(true)} variant="primary">
-              <FaPlus size={13} /> Add Listing
-            </Button>
+            {isScreenOwner && (
+              <Button onClick={() => setShowModal(true)} variant="primary">
+                <FaPlus size={13} /> Add Listing
+              </Button>
+            )}
           </div>
 
-          {/* Grid */}
-          {loading ? (
+          {/* Gate: must become a screen owner before listing anything */}
+          {!isScreenOwner ? (
+            <FadeCard style={{ ...card, padding: '48px 20px', textAlign: 'center' }}>
+              <div style={{ width: 56, height: 56, borderRadius: 16, background: theme.color.goldLight, border: `1px solid ${theme.color.goldMid}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
+                <Monitor size={24} color={theme.color.gold} />
+              </div>
+              <p style={{ fontSize: 15, fontWeight: 700, color: theme.color.text2, margin: '0 0 6px' }}>Become a screen owner</p>
+              <p style={{ fontSize: 13, color: theme.color.text3, margin: '0 0 18px', lineHeight: 1.5, maxWidth: 420, marginInline: 'auto' }}>
+                Upgrade your account to list your own LED screens or billboards for advertisers to book. This won't affect your existing advertiser features.
+              </p>
+              <Button onClick={handleBecomeScreenOwner} loading={upgrading} loadingText="Upgrading..." variant="primary">
+                <FaArrowRight size={12} /> Become a Screen Owner
+              </Button>
+            </FadeCard>
+          ) : loading ? (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(min(100%, 280px),1fr))', gap: 14 }}>
               {Array.from({ length: 4 }).map((_, i) => <div key={i} style={{ ...card, padding: 20 }}><Skeleton height={42} width={42} radius={12} style={{ marginBottom: 14 }} /><Skeleton height={14} style={{ marginBottom: 8 }} /><Skeleton height={12} width="70%" /></div>)}
             </div>

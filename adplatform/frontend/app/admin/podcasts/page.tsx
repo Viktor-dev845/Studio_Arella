@@ -13,6 +13,7 @@ const F = theme.font.body;
 export default function AdminPodcastsPage() {
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -30,10 +31,15 @@ export default function AdminPodcastsPage() {
     }
   };
 
-  const handleUpdateStatus = async (id: string, newStatus: string) => {
-    // Note: We'd need an endpoint for this in reality, but for MVP let's assume it exists or we just show UI
-    toast(`Podcast booking status updated to ${newStatus}`, 'success');
-  };
+  const filteredBookings = bookings.filter((b) => {
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return (
+      (b.booking_number || '').toLowerCase().includes(q) ||
+      (b.user_name || '').toLowerCase().includes(q) ||
+      (b.user_email || '').toLowerCase().includes(q)
+    );
+  });
 
   return (
     <PageTransition>
@@ -47,9 +53,11 @@ export default function AdminPodcastsPage() {
         <div style={{ padding: '20px 24px', borderBottom: `1px solid ${theme.color.border}`, display: 'flex', gap: 16, alignItems: 'center' }}>
           <div style={{ flex: 1, position: 'relative' }}>
             <Search size={16} color={theme.color.text4} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)' }} />
-            <input 
-              type="text" 
-              placeholder="Search by booking #, name or email..." 
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by booking #, name or email..."
               style={{ width: '100%', padding: '10px 14px 10px 40px', borderRadius: theme.radius.sm, border: `1px solid ${theme.color.border}`, background: theme.color.bg, color: theme.color.text1, fontSize: 14 }}
             />
           </div>
@@ -57,8 +65,10 @@ export default function AdminPodcastsPage() {
 
         {loading ? (
           <div style={{ padding: 40, textAlign: 'center' }}><Loader2 size={24} className="animate-spin" color={theme.color.gold} /></div>
-        ) : bookings.length === 0 ? (
-          <div style={{ padding: 60, textAlign: 'center', color: theme.color.text3 }}>No podcast bookings found.</div>
+        ) : filteredBookings.length === 0 ? (
+          <div style={{ padding: 60, textAlign: 'center', color: theme.color.text3 }}>
+            {bookings.length === 0 ? 'No podcast bookings found.' : 'No bookings match your search.'}
+          </div>
         ) : (
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
@@ -72,7 +82,7 @@ export default function AdminPodcastsPage() {
                 </tr>
               </thead>
               <tbody>
-                {bookings.map((b) => (
+                {filteredBookings.map((b) => (
                   <tr key={b.id} style={{ borderBottom: `1px solid ${theme.color.border}` }}>
                     <td style={{ padding: '16px 24px', verticalAlign: 'top' }}>
                       <div className="mono" style={{ fontWeight: 800, color: theme.color.text1 }}>{b.booking_number}</div>

@@ -17,13 +17,24 @@ interface User {
   email_verified?: boolean;
   terms_accepted?: boolean;
   has_seen_tour?: boolean;
+  handle?: string;
+  location?: string;
+  bio?: string;
+  two_factor_enabled?: boolean;
+  notification_preferences?: Record<string, boolean>;
+}
+
+interface TwoFactorChallenge {
+  requires_2fa: true;
+  pending_token: string;
 }
 
 interface AuthState {
   user: User | null;
   token: string | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<User>;
+  login: (email: string, password: string) => Promise<User | TwoFactorChallenge>;
+  completeTwoFactorLogin: (pendingToken: string, code: string) => Promise<User>;
   register: (first_name: string, last_name: string, email: string, password: string, business_name?: string, phone?: string) => Promise<User>;
   logout: () => void;
   loadFromStorage: () => void;
@@ -50,6 +61,23 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true });
     try {
       const { data } = await api.post('/auth/login', { email, password });
+      if (data.requires_2fa) {
+        set({ isLoading: false });
+        return { requires_2fa: true, pending_token: data.pending_token };
+      }
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      set({ token: data.token, user: data.user, isLoading: false });
+      return data.user;
+    } catch (err) {
+      set({ isLoading: false });
+      throw err;
+    }
+  },
+  completeTwoFactorLogin: async (pendingToken, code) => {
+    set({ isLoading: true });
+    try {
+      const { data } = await api.post('/auth/2fa/login-verify', { pending_token: pendingToken, code });
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
       set({ token: data.token, user: data.user, isLoading: false });

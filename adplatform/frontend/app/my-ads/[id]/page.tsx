@@ -43,11 +43,11 @@ function slotStatus(b: AdDetail): { label: string; className: string } {
   const now = Date.now();
   const start = new Date(b.start_time).getTime();
   const end = new Date(b.end_time).getTime();
-  if (b.status === 'cancelled') return { label: 'Cancelled', className: 'bg-gray-100 text-gray-500' };
-  if (b.status === 'pending_payment') return { label: 'Pending', className: 'bg-amber-50 text-amber-600' };
-  if (end <= now) return { label: 'Ended', className: 'bg-gray-100 text-gray-500' };
-  if (start > now) return { label: `Goes live in ${formatRelative(start - now)}`, className: 'bg-amber-50 text-amber-600' };
-  return { label: `Ends in ${formatRelative(end - now)}`, className: 'bg-green-50 text-green-600' };
+  if (b.status === 'cancelled') return { label: 'Cancelled', className: 'bg-gray-100 dark:bg-white/[0.04] text-gray-500 dark:text-slate-400' };
+  if (b.status === 'pending_payment') return { label: 'Pending', className: 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400' };
+  if (end <= now) return { label: 'Ended', className: 'bg-gray-100 dark:bg-white/[0.04] text-gray-500 dark:text-slate-400' };
+  if (start > now) return { label: `Goes live in ${formatRelative(start - now)}`, className: 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400' };
+  return { label: `Ends in ${formatRelative(end - now)}`, className: 'bg-green-50 dark:bg-green-500/10 text-green-600 dark:text-green-400' };
 }
 
 const naira = (n: number) => `₦${Number(n || 0).toLocaleString('en-NG')}`;

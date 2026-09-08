@@ -1312,12 +1312,32 @@ export default function FinancesPage() {
                     </div>
 
                     <div style={{ display: 'flex', gap: 10 }}>
-                      <Button 
+                      <Button
                         onClick={() => {
+                          const lines = [
+                            'STUDIO ARELLA — TRANSACTION RECEIPT',
+                            '',
+                            `Amount: ₦${Number(selectedReceipt.amount).toLocaleString()}`,
+                            `Status: ${selectedReceipt.type === 'pending' ? 'Pending' : 'Successful'}`,
+                            `Description: ${selectedReceipt.source}`,
+                            `Payment Method: ${selectedReceipt.channel || 'Wallet Airtime'}`,
+                            `Transaction Ref: ${selectedReceipt.reference}`,
+                            `Date & Time: ${new Date(selectedReceipt.created_at).toLocaleDateString('en-GB')} ${new Date(selectedReceipt.created_at).toLocaleTimeString('en-GB')}`,
+                            `Service Fee: ₦0.00 (Free)`,
+                          ];
+                          const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = `studio-arella-receipt-${selectedReceipt.reference}.txt`;
+                          document.body.appendChild(a);
+                          a.click();
+                          document.body.removeChild(a);
+                          URL.revokeObjectURL(url);
                           toast('Receipt downloaded', 'success');
                           setSelectedReceipt(null);
-                        }} 
-                        variant="secondary" 
+                        }}
+                        variant="secondary"
                         style={{ flex: 1 }}
                       >
                         <Download size={13} /> Download

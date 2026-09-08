@@ -74,6 +74,26 @@ export const getAllShows: RequestHandler = async (req, res) => {
   }
 };
 
+// ── List the current user's own shows (all of them, regardless of episode
+// ── publish status — unlike getAllShows, this backs the creator's own
+// ── podcast management view, not the public/audience catalog) ────────────────
+export const getMyShows: RequestHandler = async (req, res) => {
+  const authReq = req as AuthRequest;
+  try {
+    const result = await pool.query(
+      `SELECT p.id, p.title, p.description, p.cover_url, p.created_at,
+         (SELECT COUNT(*) FROM podcast_episodes e WHERE e.podcast_id = p.id) as episode_count
+       FROM podcasts p
+       WHERE p.user_id = $1
+       ORDER BY p.created_at DESC`,
+      [authReq.user?.id]
+    );
+    res.json({ shows: result.rows });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 // ── Get a show + its episodes ────────────────────────────────────────────────
 export const getShow: RequestHandler = async (req, res) => {
   try {

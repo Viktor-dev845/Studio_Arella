@@ -175,34 +175,8 @@ export default function CreativeStudioPage() {
         setMyRequests([]);
       }
     } catch (err) {
-      // Fallback sample data if local development backend has no records yet
-      setMyRequests([
-        {
-          id: 'CR-84920',
-          business_name: 'Apex Luxury Lifestyle',
-          contact_phone: '08023456789',
-          ad_type: 'animated',
-          description: 'High-energy 15-second motion graphics spot announcing our new rooftop flagship lounge opening at Bems Junction. Clean gold neon typography, pulsating bassline, and high contrast.',
-          target_audience: 'Affluent urban professionals aged 24-45 in Port Harcourt and commuters on Stadium Road.',
-          preferred_dates: 'Live broadcast starting Friday next week',
-          budget_range: '₦30,000 – ₦60,000 (Motion Graphics Ad)',
-          status: 'in_progress',
-          admin_notes: 'Script approved by client. 3D bottle render and gold lighting animation in render queue.',
-          created_at: new Date(Date.now() - 86400000 * 2).toISOString(),
-        },
-        {
-          id: 'CR-71042',
-          business_name: 'Studio Prime Tech Store',
-          contact_phone: '08198765432',
-          ad_type: 'image',
-          description: 'Billboard poster flyer for Mega Gadget Trade-in festival. Big bold discounts: Swap your iPhone & get 40% value bonus.',
-          target_audience: 'Tech enthusiasts, smartphone users, University students.',
-          budget_range: '₦15,000 – ₦30,000 (Starter Flyer / Script)',
-          status: 'completed',
-          admin_notes: 'Final master pushed to VI Tower screen and Bems Junction terminal on Sept 1st.',
-          created_at: new Date(Date.now() - 86400000 * 6).toISOString(),
-        },
-      ]);
+      setMyRequests([]);
+      toast('Could not load your creative requests. Please refresh.', 'error');
     } finally {
       setLoadingOrders(false);
     }
@@ -263,16 +237,12 @@ export default function CreativeStudioPage() {
     setSubmitting(true);
     try {
       const res = await api.post('/creative-requests', payload);
-      const newId = res.data?.request?.id || `CR-${Math.floor(10000 + Math.random() * 90000)}`;
+      const newId = res.data?.request?.id;
       setLastSubmittedId(newId);
       setShowSuccessModal(true);
       toast('Creative brief submitted successfully!', 'success');
     } catch (err: any) {
-      // Mock fallback if offline so user flow remains seamless
-      const fakeId = `CR-${Math.floor(10000 + Math.random() * 90000)}`;
-      setLastSubmittedId(fakeId);
-      setShowSuccessModal(true);
-      toast('Creative request queued for our production team!', 'success');
+      toast(err?.response?.data?.message || 'Could not submit your request. Please try again.', 'error');
     } finally {
       setSubmitting(false);
     }

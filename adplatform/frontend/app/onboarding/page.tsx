@@ -6,22 +6,14 @@ import Link from 'next/link';
 import { useAuthStore } from '@/store/authStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Tv, 
-  Mic, 
-  Palette, 
-  CreditCard, 
-  ArrowRight, 
-  ArrowLeft, 
-  Check, 
-  Building2, 
-  Globe, 
-  Sparkles, 
-  ShieldCheck, 
-  Clock, 
-  Layers, 
-  Copy,
-  CheckCircle2,
-  HelpCircle
+  Tv,
+  Mic,
+  Palette,
+  ArrowRight,
+  Check,
+  Building2,
+  Globe,
+  Sparkles,
 } from 'lucide-react';
 import { theme } from '@/lib/theme';
 import { useToast } from '@/components/ui/ToastProvider';
@@ -60,7 +52,6 @@ export default function OnboardingPage() {
   const [objective, setObjective] = useState('Brand Awareness');
   const [budget, setBudget] = useState('₦50k – ₦200k');
   const [saving, setSaving] = useState(false);
-  const [copiedAcct, setCopiedAcct] = useState(false);
 
   useEffect(() => {
     loadFromStorage();
@@ -82,24 +73,17 @@ export default function OnboardingPage() {
     setSaving(true);
     try {
       if (campaignName.trim()) {
-        await api.post('/campaigns', { 
-          name: campaignName, 
-          budget: budget.includes('500k') ? 500000 : budget.includes('200k') ? 200000 : 50000 
+        await api.post('/campaigns', {
+          name: campaignName,
+          budget: budget.includes('500k') ? 500000 : budget.includes('200k') ? 200000 : 50000
         });
       }
-    } catch {
-      // Fallback continuation
+      setStep(3);
+    } catch (err: any) {
+      toast(err?.response?.data?.message || 'Could not create your campaign. Please try again or skip this step.', 'error');
     } finally {
       setSaving(false);
-      setStep(3);
     }
-  };
-
-  const handleCopyAccount = (acct: string) => {
-    navigator.clipboard.writeText(acct);
-    setCopiedAcct(true);
-    toast('Dedicated account number copied to clipboard', 'success');
-    setTimeout(() => setCopiedAcct(false), 3000);
   };
 
   const GOAL_CARDS = [
@@ -491,65 +475,42 @@ export default function OnboardingPage() {
                 transition={{ duration: 0.22 }}
               >
                 <span style={{ fontSize: 11, fontWeight: 800, color: '#C69A2C', letterSpacing: '0.08em', textTransform: 'uppercase', display: 'block', marginBottom: 6 }}>
-                  Step 3 of 4 · Instant Wallet
+                  Step 3 of 4 · Fund Your Wallet
                 </span>
                 <h2 style={{ fontFamily: theme.font.display, fontSize: 24, fontWeight: 800, color: theme.color.text1, margin: '0 0 6px', letterSpacing: '-0.3px' }}>
-                  Your dedicated wallet account
+                  Get your dedicated bank account
                 </h2>
                 <p style={{ fontSize: 13, color: theme.color.text3, margin: '0 0 24px', lineHeight: 1.5 }}>
-                  We've provisioned a permanent virtual bank account for your advertiser account. Direct transfers credit your airtime balance instantly.
+                  Studio Arella can provision a real, permanent virtual bank account in your name once you verify your BVN or NIN — direct transfers to it credit your airtime balance instantly. That verification step lives on your Wallet page.
                 </p>
 
-                {/* Virtual Account Panel */}
+                {/* Real-feature explainer panel (no fake account shown here) */}
                 <div style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 20, padding: '24px', marginBottom: 24, boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <div style={{ width: 36, height: 36, borderRadius: 10, background: '#FFFDF5', border: '1px solid #FDE68A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Building2 size={18} color="#C69A2C" />
-                      </div>
-                      <div>
-                        <p style={{ fontSize: 13, fontWeight: 800, color: theme.color.text1, margin: 0 }}>Wema Bank</p>
-                        <span style={{ fontSize: 11, color: theme.color.text3 }}>Zero Transfer Fee</span>
-                      </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: '#FFFDF5', border: '1px solid #FDE68A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Building2 size={18} color="#C69A2C" />
                     </div>
-                    <span style={{ fontSize: 11, fontWeight: 800, color: '#059669', background: '#ECFDF5', padding: '3px 10px', borderRadius: 20 }}>
-                      Active
-                    </span>
-                  </div>
-
-                  <div style={{ background: theme.color.bg, border: `1px solid ${theme.color.border}`, borderRadius: 12, padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
                     <div>
-                      <span style={{ fontSize: 10, color: theme.color.text4, fontWeight: 700, textTransform: 'uppercase' }}>Account Number</span>
-                      <p style={{ fontSize: 18, fontWeight: 900, color: theme.color.text1, margin: '2px 0 0', letterSpacing: '1px', fontFamily: 'monospace' }}>
-                        0129384756
-                      </p>
+                      <p style={{ fontSize: 13, fontWeight: 800, color: theme.color.text1, margin: 0 }}>Dedicated Virtual Account</p>
+                      <span style={{ fontSize: 11, color: theme.color.text3 }}>Requires one-time BVN/NIN verification</span>
                     </div>
-                    <button
-                      onClick={() => handleCopyAccount('0129384756')}
-                      style={{
-                        background: theme.color.surface,
-                        border: `1px solid ${theme.color.border}`,
-                        borderRadius: 8,
-                        padding: '6px 12px',
-                        fontSize: 12,
-                        fontWeight: 700,
-                        color: copiedAcct ? '#10B981' : '#C69A2C',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 4
-                      }}
-                    >
-                      {copiedAcct ? <Check size={12} /> : <Copy size={12} />}
-                      <span>{copiedAcct ? 'Copied' : 'Copy'}</span>
-                    </button>
                   </div>
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: theme.color.text3 }}>
-                    <span>Beneficiary Name:</span>
-                    <strong style={{ color: theme.color.text1 }}>Studio Arella / {user?.name || 'Creator'}</strong>
-                  </div>
+                  <p style={{ fontSize: 12, color: theme.color.text3, margin: 0, lineHeight: 1.6 }}>
+                    You can skip this for now and pay per-booking instead — or head to Wallet anytime to verify your ID and generate your account.
+                  </p>
                 </div>
+
+                <Link
+                  href="/finances"
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                    padding: '12px', marginBottom: 16, borderRadius: 10,
+                    border: `1px solid ${theme.color.border}`, background: theme.color.bg,
+                    color: theme.color.text1, fontSize: 13, fontWeight: 700, textDecoration: 'none',
+                  }}
+                >
+                  Go verify & generate my account <ArrowRight size={13} />
+                </Link>
 
                 <div style={{ display: 'flex', gap: 10 }}>
                   <button

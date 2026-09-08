@@ -25,14 +25,31 @@ export const getAds: RequestHandler = async (req, res) => {
   const authReq = req as AuthRequest;
   try {
     const result = await pool.query(
-      `SELECT a.*, c.name as campaign_name
+      `SELECT a.*, c.name as campaign_name,
+         COALESCE(pc.play_count, 0) as play_count,
+         COALESCE(pl.recent_logs, '[]'::json) as recent_logs
        FROM ads a
        LEFT JOIN campaigns c ON a.campaign_id = c.id
+       LEFT JOIN LATERAL (
+         SELECT COUNT(*) as play_count FROM playback_logs p WHERE p.creative_id = a.id
+       ) pc ON true
+       LEFT JOIN LATERAL (
+         SELECT json_agg(x) as recent_logs FROM (
+           SELECT s.name as screen_name, s.location as city, b.booking_number as booking_ref,
+                  p.actual_end as played_at, p.duration_played_seconds as duration
+           FROM playback_logs p
+           LEFT JOIN screens s ON p.screen_id = s.id
+           LEFT JOIN bookings b ON p.booking_id = b.id
+           WHERE p.creative_id = a.id
+           ORDER BY p.actual_end DESC NULLS LAST
+           LIMIT 5
+         ) x
+       ) pl ON true
        WHERE a.user_id = $1
        ORDER BY a.created_at DESC`,
       [authReq.user?.id]
     );
-    
+
     res.json({ ads: result.rows });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
@@ -43,7 +60,7 @@ export const getAds: RequestHandler = async (req, res) => {
 export const createAd: RequestHandler = async (req, res) => {
   const authReq = req as AuthRequest;
   try {
-    const { title, campaign_id, duration_seconds, media_type } = req.body;
+    const { title, campaign_id, duration_seconds, media_type, description } = req.body;
     if (!title) { res.status(400).json({ message: 'Ad title is required' }); return; }
 
     // Handle file upload if present
@@ -143,14 +160,15 @@ export const createAd: RequestHandler = async (req, res) => {
     const reviewedAt = autoApproved ? new Date() : null;
 
     const result = await pool.query(
-      `INSERT INTO ads (user_id, campaign_id, title, media_url, file_url, file_type, file_size,
+      `INSERT INTO ads (user_id, campaign_id, title, description, media_url, file_url, file_type, file_size,
                         duration_seconds, status, media_type, reviewed_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
        RETURNING *`,
       [
         authReq.user?.id,
         campaign_id || null,
         title,
+        description || null,
         file_url,
         file_url,
         file_type,

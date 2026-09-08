@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS users (
   email_verified BOOLEAN DEFAULT false,
   avatar VARCHAR(500),
   google_id VARCHAR(255),
-  role VARCHAR(50) DEFAULT 'advertiser', -- 'advertiser' | 'admin'
+  role VARCHAR(50) DEFAULT 'advertiser', -- 'advertiser' | 'screen_owner' | 'admin'
   credits DECIMAL(10,2) DEFAULT 0.00,
   language VARCHAR(10) DEFAULT 'en',
   terms_accepted BOOLEAN DEFAULT false,
@@ -75,6 +75,7 @@ CREATE TABLE IF NOT EXISTS ads (
   campaign_id UUID REFERENCES campaigns(id) ON DELETE CASCADE,
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   title VARCHAR(255) NOT NULL,
+  description TEXT,
   media_url VARCHAR(500),
   media_type VARCHAR(50) DEFAULT 'image', -- 'image' | 'video'
   duration_seconds INTEGER DEFAULT 30,
@@ -276,7 +277,11 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(50);
 ALTER TABLE users ADD COLUMN IF NOT EXISTS logo_url TEXT;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT false;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS suspended BOOLEAN DEFAULT false;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS language VARCHAR(10) DEFAULT 'en';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS handle VARCHAR(100);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS location VARCHAR(255);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS bio TEXT;
 
 -- ─── Update ads/creatives table ───────────────────────────────────────────────
 ALTER TABLE ads ADD COLUMN IF NOT EXISTS file_url TEXT;
@@ -471,3 +476,50 @@ CREATE TABLE IF NOT EXISTS page_favorites (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 CREATE UNIQUE INDEX IF NOT EXISTS idx_page_favorites_unique ON page_favorites(user_id, path);
+
+-- ─── Support Tickets ────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS support_tickets (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  issue_type VARCHAR(100),
+  subject VARCHAR(255) NOT NULL,
+  message TEXT NOT NULL,
+  status VARCHAR(50) DEFAULT 'open', -- open | in_progress | resolved
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_support_tickets_user_id ON support_tickets(user_id);
+
+-- ─── Two-Factor Auth, Notification Preferences ─────────────────────────────
+ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_secret VARCHAR(255);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_enabled BOOLEAN DEFAULT false;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS notification_preferences JSONB DEFAULT '{"emailBookings":true,"emailBroadcasts":true,"emailWallet":true,"emailWeekly":false,"smsAlerts":true,"smsSecurity":true}';
+
+-- ─── Sessions (real "Active Devices" list + per-request revocation) ────────
+CREATE TABLE IF NOT EXISTS sessions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  jti VARCHAR(64) NOT NULL UNIQUE,
+  user_agent TEXT,
+  ip_address VARCHAR(64),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  last_active_at TIMESTAMPTZ DEFAULT NOW(),
+  revoked_at TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id);
+CREATE INDEX IF NOT EXISTS idx_sessions_jti ON sessions(jti);
+
+-- ─── Saved Cards (real Paystack reusable authorizations) ───────────────────
+CREATE TABLE IF NOT EXISTS saved_cards (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  authorization_code VARCHAR(255) NOT NULL,
+  card_type VARCHAR(50),
+  last4 VARCHAR(4),
+  exp_month VARCHAR(4),
+  exp_year VARCHAR(4),
+  bank VARCHAR(100),
+  is_default BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_saved_cards_unique ON saved_cards(user_id, authorization_code);
