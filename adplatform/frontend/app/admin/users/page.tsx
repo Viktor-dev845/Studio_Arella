@@ -36,7 +36,7 @@ export default function AdminUsersPage() {
       await api.put(`/admin/users/${id}/role`, { role });
       setUsers(p => p.map(u => u.id === id ? { ...u, role } : u));
       toast(`Role updated to ${role.replace('_', ' ')}`, 'success');
-    } catch { toast('Failed to update role', 'error'); }
+    } catch (err: any) { toast(err?.response?.data?.message || 'Failed to update role', 'error'); }
     finally { setUpdating(null); }
   };
 

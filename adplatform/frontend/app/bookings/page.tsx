@@ -9,6 +9,9 @@ import { PageTransition } from '@/components/ui/Animations';
 import { useToast } from '@/components/ui/ToastProvider';
 import api from '@/lib/api';
 import BookingCalendar from '@/components/calendar/BookingCalendar';
+import { usePreferencesStore } from '@/store/preferencesStore';
+import { formatCurrency } from '@/lib/currency';
+import { formatDateInTz } from '@/lib/timezone';
 
 interface BookingRow {
   id: string;
@@ -21,12 +24,10 @@ interface BookingRow {
   status: string;
 }
 
-const naira = (n: number) => `₦${Number(n || 0).toLocaleString('en-NG')}`;
-
-function formatSchedule(iso: string) {
+function formatSchedule(iso: string, timezone?: string) {
   const d = new Date(iso);
   if (isNaN(d.getTime())) return '—';
-  return d.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+  return `${formatDateInTz(d, timezone)}, ${new Intl.DateTimeFormat('en-GB', { timeZone: timezone || 'Africa/Lagos', hour: 'numeric', minute: '2-digit' }).format(d)}`;
 }
 
 function formatDuration(startIso: string, endIso: string) {
@@ -74,6 +75,8 @@ export default function BookingsPage() {
 
 function BookingsPageContent() {
   const { toast } = useToast();
+  const { currency, timezone, rates } = usePreferencesStore();
+  const naira = (n: number) => formatCurrency(n, currency, rates);
   const router = useRouter();
   const searchParams = useSearchParams();
   const tabParam = searchParams.get('tab');
@@ -166,8 +169,12 @@ function BookingsPageContent() {
       const url = cancelTarget.type === 'ad'
         ? `/bookings/${cancelTarget.id}/cancel`
         : `/podcasts/${cancelTarget.id}/cancel`;
-      await api.put(url, {});
-      setCancelSuccessInfo(cancelTarget.info);
+      const res = await api.put(url, {});
+      // Show the real refund outcome the backend actually computed
+      // (whether the 48h window applied, exact amount credited) instead of
+      // a generic "cancelled" message that leaves the user to go check
+      // their wallet separately to find out what really happened.
+      setCancelSuccessInfo(res.data?.message || cancelTarget.info);
       setCancelTarget(null);
       fetchBookings();
     } catch (err: any) {
@@ -390,7 +397,7 @@ function BookingsPageContent() {
                         return (
                           <tr key={b.id} className="border-b border-gray-50 dark:border-white/10 last:border-0 hover:bg-gray-50 dark:hover:bg-white/[0.06] transition-colors">
                             <td className="px-6 py-4 text-[13px] font-bold text-gray-700 dark:text-slate-200">{b.info}</td>
-                            <td className="px-6 py-4 text-xs font-semibold text-gray-500 dark:text-slate-400">{formatSchedule(b.start_time)}</td>
+                            <td className="px-6 py-4 text-xs font-semibold text-gray-500 dark:text-slate-400">{formatSchedule(b.start_time, timezone)}</td>
                             <td className="px-6 py-4 text-[13px] font-bold text-gray-700 dark:text-slate-200">{naira(b.billing)}</td>
                             <td className="px-6 py-4 text-[13px] font-semibold text-gray-500 dark:text-slate-400">{b.duration}</td>
                             <td className="px-6 py-4">

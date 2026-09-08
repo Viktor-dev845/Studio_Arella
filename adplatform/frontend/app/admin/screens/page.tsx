@@ -23,6 +23,8 @@ export default function AdminScreensPage() {
   const [editing, setEditing] = useState<any | null>(null);
   const [form, setForm] = useState({ name: '', location: '', type: 'digital', size: '', price_per_sec: '', impressions_per_day: '', status: 'active' });
   const [saving, setSaving] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<any | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const { toast } = useToast();
 
   const fetchScreens = () => {
@@ -63,14 +65,18 @@ export default function AdminScreensPage() {
     }
   };
 
-  const handleDelete = async (s: any) => {
-    if (!confirm(`Remove "${s.name}"? This cannot be undone.`)) return;
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
     try {
-      await api.delete(`/screens/${s.id}`);
-      setScreens(p => p.filter(x => x.id !== s.id));
+      await api.delete(`/screens/${deleteTarget.id}`);
+      setScreens(p => p.filter(x => x.id !== deleteTarget.id));
       toast('Screen removed', 'info');
+      setDeleteTarget(null);
     } catch (err: any) {
       toast(err?.response?.data?.message || 'Failed to remove screen', 'error');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -148,7 +154,7 @@ export default function AdminScreensPage() {
                         onMouseOver={e => (e.currentTarget.style.color = theme.color.gold)} onMouseOut={e => (e.currentTarget.style.color = theme.color.text3)}>
                         <FaPen size={13} />
                       </button>
-                      <button onClick={() => handleDelete(s)} title="Delete screen"
+                      <button onClick={() => setDeleteTarget(s)} title="Delete screen"
                         style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text3, display: 'flex', padding: 4 }}
                         onMouseOver={e => (e.currentTarget.style.color = theme.color.error)} onMouseOut={e => (e.currentTarget.style.color = theme.color.text3)}>
                         <FaTrash size={13} />
@@ -210,6 +216,39 @@ export default function AdminScreensPage() {
                   <div style={{ display: 'flex', gap: 10, marginTop: 22 }}>
                     <Button onClick={() => setEditing(null)} variant="secondary" style={{ flex: 1 }}>Cancel</Button>
                     <Button onClick={handleSaveEdit} loading={saving} loadingText="Saving..." variant="primary" style={{ flex: 1 }}>Save Changes</Button>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Delete confirmation modal */}
+      <AnimatePresence>
+        {deleteTarget && (
+          <>
+            <motion.div key="del-bd" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setDeleteTarget(null)}
+              style={{ position: 'fixed', inset: 0, background: 'rgba(26,26,26,0.4)', zIndex: 200, backdropFilter: 'blur(3px)' }} />
+            <div style={{ position: 'fixed', inset: 0, zIndex: 201, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', padding: 16 }}>
+              <motion.div key="del-modal"
+                initial={{ opacity: 0, scale: 0.93, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 12 }} transition={{ duration: 0.22, ease: theme.motion.easing }}
+                style={{ width: '100%', maxWidth: 380, pointerEvents: 'auto' }}>
+                <div style={{ background: theme.color.surface, borderRadius: theme.radius.xl, padding: 28, boxShadow: theme.shadow.lg, fontFamily: F, textAlign: 'center' }}>
+                  <div style={{ width: 48, height: 48, borderRadius: 14, background: theme.color.errorLight, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                    <FaTrash size={18} color={theme.color.error} />
+                  </div>
+                  <h2 style={{ fontFamily: theme.font.display, fontSize: 18, fontWeight: 700, color: theme.color.text1, margin: '0 0 8px' }}>Remove this screen?</h2>
+                  <p style={{ fontSize: 13, color: theme.color.text3, margin: '0 0 22px', lineHeight: 1.5 }}>
+                    "{deleteTarget.name}" will be permanently removed. This cannot be undone.
+                  </p>
+                  <div style={{ display: 'flex', gap: 10 }}>
+                    <Button onClick={() => setDeleteTarget(null)} variant="secondary" style={{ flex: 1 }}>Cancel</Button>
+                    <button onClick={handleDelete} disabled={deleting} style={{ flex: 1, padding: '11px', borderRadius: 10, border: 'none', background: theme.color.error, color: '#fff', fontSize: 13, fontWeight: 800, cursor: deleting ? 'not-allowed' : 'pointer', opacity: deleting ? 0.7 : 1, fontFamily: F }}>
+                      {deleting ? 'Removing…' : 'Remove'}
+                    </button>
                   </div>
                 </div>
               </motion.div>

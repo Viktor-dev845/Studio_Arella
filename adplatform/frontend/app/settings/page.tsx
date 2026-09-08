@@ -5,6 +5,9 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import { PageTransition, FadeCard } from '@/components/ui/Animations';
 import { useToast } from '@/components/ui/ToastProvider';
 import { useAuthStore } from '@/store/authStore';
+import { usePreferencesStore } from '@/store/preferencesStore';
+import { SUPPORTED_CURRENCIES, CURRENCY_LABELS } from '@/lib/currency';
+import { SUPPORTED_TIMEZONES, TIMEZONE_LABELS } from '@/lib/timezone';
 import { useRouter } from 'next/navigation';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
@@ -80,13 +83,18 @@ export default function SettingsPage() {
   const [show2FADisable, setShow2FADisable] = useState(false);
   const [disable2FAPassword, setDisable2FAPassword] = useState('');
   const [disabling2FA, setDisabling2FA] = useState(false);
+  const [show2FAPasswordPrompt, setShow2FAPasswordPrompt] = useState(false);
+  const [start2FAPassword, setStart2FAPassword] = useState('');
 
   const handleStart2FASetup = async () => {
+    if (!start2FAPassword) { toast('Enter your password to confirm', 'error'); return; }
     setSetting2FA(true);
     try {
-      const res = await api.post('/auth/2fa/setup');
+      const res = await api.post('/auth/2fa/setup', { password: start2FAPassword });
       setQrCode(res.data.qr_code);
       setManualKey(res.data.manual_key);
+      setShow2FAPasswordPrompt(false);
+      setStart2FAPassword('');
       setShow2FASetup(true);
     } catch (err: any) {
       toast(err?.response?.data?.message || 'Could not start 2FA setup.', 'error');
@@ -129,6 +137,8 @@ export default function SettingsPage() {
 
   // Active Sessions
   const [sessions, setSessions] = useState<{ id: string; device: string; ip_address: string; last_active_at: string; is_current: boolean }[]>([]);
+  const [showAllSessions, setShowAllSessions] = useState(false);
+  const SESSIONS_PREVIEW_COUNT = 5;
   const [loadingSessions, setLoadingSessions] = useState(true);
 
   const fetchSessions = async () => {
@@ -204,11 +214,31 @@ export default function SettingsPage() {
   });
   const [savingNotification, setSavingNotification] = useState<string | null>(null);
 
-  // Preferences
-  const [currency, setCurrency] = useState('NGN');
-  const [timezone, setTimezone] = useState('Africa/Lagos');
-  const [soundEnabled, setSoundEnabled] = useState(true);
-  
+  // Preferences — real, persisted server-side (display-only: every actual
+  // charge/booking/timestamp stays NGN/UTC underneath).
+  const { currency, timezone, soundEnabled, setCurrency, setTimezone, setSoundEnabled } = usePreferencesStore();
+  const [savingPreference, setSavingPreference] = useState<string | null>(null);
+
+  const saveDisplayPreference = async (patch: { currency?: string; timezone?: string; sound_enabled?: boolean }, key: string) => {
+    setSavingPreference(key);
+    try {
+      const res = await api.put('/auth/display-preferences', patch);
+      // Keep the cached user object (and its localStorage copy) in sync —
+      // otherwise a reload re-hydrates the preferences store from the
+      // stale pre-save user object and silently reverts the UI even
+      // though the backend saved correctly.
+      updateUser({
+        display_currency: res.data?.display_currency,
+        display_timezone: res.data?.display_timezone,
+        sound_enabled: res.data?.sound_enabled,
+      });
+    } catch (err: any) {
+      toast(err?.response?.data?.message || 'Could not save this preference.', 'error');
+    } finally {
+      setSavingPreference(null);
+    }
+  };
+
   const { toast } = useToast();
 
   useEffect(() => {
@@ -325,7 +355,12 @@ export default function SettingsPage() {
     setNotifications(prev => ({ ...prev, [key]: newValue }));
     setSavingNotification(key);
     try {
-      await api.put('/auth/notification-preferences', { [key]: newValue });
+      const res = await api.put('/auth/notification-preferences', { [key]: newValue });
+      // Same staleness issue as display preferences — keep the cached user
+      // object in sync so a reload doesn't silently revert this toggle.
+      if (res.data?.notification_preferences) {
+        updateUser({ notification_preferences: res.data.notification_preferences });
+      }
       toast('Notification preference updated', 'success');
     } catch (err: any) {
       setNotifications(prev => ({ ...prev, [key]: !newValue }));
@@ -690,7 +725,7 @@ export default function SettingsPage() {
                       </div>
 
                       <button
-                        onClick={() => { if (twoFactorEnabled) setShow2FADisable(true); else handleStart2FASetup(); }}
+                        onClick={() => { if (twoFactorEnabled) setShow2FADisable(true); else setShow2FAPasswordPrompt(true); }}
                         disabled={setting2FA}
                         style={{
                           width: 48,
@@ -731,7 +766,7 @@ export default function SettingsPage() {
                       <p style={{ fontSize: 13, color: theme.color.text3 }}>No active sessions found.</p>
                     ) : (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                        {sessions.map((s) => (
+                        {(showAllSessions ? sessions : sessions.slice(0, SESSIONS_PREVIEW_COUNT)).map((s) => (
                           <div key={s.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', background: s.is_current ? theme.color.bg : theme.color.surface, borderRadius: 14, border: `1px solid ${theme.color.border}` }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                               {s.device.includes('iOS') || s.device.includes('Android') ? <Smartphone size={20} color={theme.color.text3} /> : <Laptop size={20} color={theme.color.text1} />}
@@ -758,6 +793,14 @@ export default function SettingsPage() {
                             )}
                           </div>
                         ))}
+                        {sessions.length > SESSIONS_PREVIEW_COUNT && (
+                          <button
+                            onClick={() => setShowAllSessions((v) => !v)}
+                            style={{ alignSelf: 'flex-start', background: 'none', border: 'none', color: theme.color.gold, fontSize: 12, fontWeight: 700, cursor: 'pointer', padding: '4px 0', fontFamily: F }}
+                          >
+                            {showAllSessions ? 'Show fewer devices' : `Show all ${sessions.length} devices`}
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>
@@ -1019,11 +1062,12 @@ export default function SettingsPage() {
                             Select the primary currency shown across dashboards and booking invoices.
                           </p>
                         </div>
-                        <div style={{ display: 'flex', gap: 8 }}>
-                          {['NGN', 'USD'].map(curr => (
+                        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                          {SUPPORTED_CURRENCIES.map(curr => (
                             <button
                               key={curr}
-                              onClick={() => { setCurrency(curr); toast(`Currency set to ${curr}`, 'success'); }}
+                              disabled={savingPreference === 'currency'}
+                              onClick={() => { setCurrency(curr); saveDisplayPreference({ currency: curr }, 'currency'); toast(`Currency set to ${curr}`, 'success'); }}
                               style={{
                                 padding: '8px 16px',
                                 borderRadius: 10,
@@ -1032,11 +1076,12 @@ export default function SettingsPage() {
                                 color: currency === curr ? '#C69A2C' : '#475569',
                                 fontSize: 12,
                                 fontWeight: 800,
-                                cursor: 'pointer',
+                                cursor: savingPreference === 'currency' ? 'not-allowed' : 'pointer',
+                                opacity: savingPreference === 'currency' ? 0.6 : 1,
                                 fontFamily: F
                               }}
                             >
-                              {curr === 'NGN' ? 'Nigerian Naira (₦)' : 'US Dollar ($)'}
+                              {CURRENCY_LABELS[curr]}
                             </button>
                           ))}
                         </div>
@@ -1046,15 +1091,16 @@ export default function SettingsPage() {
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 20, borderBottom: `1px solid ${theme.color.surface2}` }}>
                         <div>
                           <h4 style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1, margin: '0 0 3px' }}>
-                            Studio Timezone
+                            Display Timezone
                           </h4>
                           <p style={{ fontSize: 12, color: theme.color.text3, margin: 0 }}>
-                            All ad slots and podcast sessions are scheduled according to this zone.
+                            Dates and times shown to you use this zone. Ad slots and podcast sessions are still scheduled in real West Africa Time regardless of this setting.
                           </p>
                         </div>
                         <select
                           value={timezone}
-                          onChange={e => setTimezone(e.target.value)}
+                          disabled={savingPreference === 'timezone'}
+                          onChange={e => { setTimezone(e.target.value); saveDisplayPreference({ timezone: e.target.value }, 'timezone'); }}
                           style={{
                             padding: '8px 14px',
                             borderRadius: 10,
@@ -1067,10 +1113,9 @@ export default function SettingsPage() {
                             outline: 'none'
                           }}
                         >
-                          <option value="Africa/Lagos">Africa/Lagos (WAT, UTC+1)</option>
-                          <option value="UTC">UTC (GMT+0)</option>
-                          <option value="America/New_York">America/New_York (EST)</option>
-                          <option value="Europe/London">Europe/London (GMT/BST)</option>
+                          {SUPPORTED_TIMEZONES.map((tz) => (
+                            <option key={tz} value={tz}>{TIMEZONE_LABELS[tz]}</option>
+                          ))}
                         </select>
                       </div>
 
@@ -1085,12 +1130,14 @@ export default function SettingsPage() {
                           </p>
                         </div>
                         <button
-                          onClick={() => setSoundEnabled(!soundEnabled)}
+                          disabled={savingPreference === 'sound'}
+                          onClick={() => { const next = !soundEnabled; setSoundEnabled(next); saveDisplayPreference({ sound_enabled: next }, 'sound'); }}
                           style={{
                             width: 44,
                             height: 24,
                             borderRadius: 20,
                             background: soundEnabled ? '#C69A2C' : theme.color.border2,
+                            opacity: savingPreference === 'sound' ? 0.6 : 1,
                             position: 'relative',
                             border: 'none',
                             cursor: 'pointer',
@@ -1122,6 +1169,43 @@ export default function SettingsPage() {
           </div>
 
         </div>
+
+        {/* ─── MODAL: 2FA SETUP — PASSWORD CONFIRM ─── */}
+        <AnimatePresence>
+          {show2FAPasswordPrompt && (
+            <>
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                onClick={() => { setShow2FAPasswordPrompt(false); setStart2FAPassword(''); }}
+                style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.5)', zIndex: 200, backdropFilter: 'blur(4px)' }} />
+              <div style={{ position: 'fixed', inset: 0, zIndex: 201, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, pointerEvents: 'none' }}>
+                <motion.div initial={{ opacity: 0, scale: 0.94, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96, y: 10 }} transition={{ duration: 0.2 }}
+                  style={{ width: '100%', maxWidth: 380, pointerEvents: 'auto' }}>
+                  <div style={{ background: theme.color.surface, borderRadius: 24, padding: '32px 28px', textAlign: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.15)', fontFamily: F }}>
+                    <h3 style={{ fontSize: 18, fontWeight: 800, color: theme.color.text1, margin: '0 0 8px' }}>
+                      Confirm your password
+                    </h3>
+                    <p style={{ fontSize: 13, color: theme.color.text3, margin: '0 0 20px', lineHeight: 1.5 }}>
+                      Enter your password to start setting up two-factor authentication.
+                    </p>
+                    <input
+                      type="password"
+                      placeholder="Your password"
+                      value={start2FAPassword}
+                      onChange={(e) => setStart2FAPassword(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') handleStart2FASetup(); }}
+                      autoFocus
+                      style={{ width: '100%', padding: '12px 14px', marginBottom: 20, borderRadius: 10, border: `1.5px solid ${theme.color.border}`, fontSize: 13, fontFamily: F, color: theme.color.text1, background: theme.color.bg, outline: 'none', boxSizing: 'border-box' }}
+                    />
+                    <div style={{ display: 'flex', gap: 10 }}>
+                      <Button onClick={() => { setShow2FAPasswordPrompt(false); setStart2FAPassword(''); }} variant="secondary" style={{ flex: 1 }}>Cancel</Button>
+                      <Button onClick={handleStart2FASetup} loading={setting2FA} loadingText="Starting..." style={{ flex: 1 }}>Continue</Button>
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
+            </>
+          )}
+        </AnimatePresence>
 
         {/* ─── MODAL: 2FA SETUP ─── */}
         <AnimatePresence>

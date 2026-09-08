@@ -2,15 +2,18 @@
 
 import { Suspense, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Calendar, Clock, Upload, ChevronDown, Check, X, ArrowLeft } from 'lucide-react';
+import { Calendar, Clock, Upload, ChevronDown, Check, X, ArrowLeft, ShoppingCart } from 'lucide-react';
+import Link from 'next/link';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { PageTransition } from '@/components/ui/Animations';
 import { useToast } from '@/components/ui/ToastProvider';
 import api from '@/lib/api';
 import { theme } from '@/lib/theme';
+import { useCartStore } from '@/store/cartStore';
+import { usePreferencesStore } from '@/store/preferencesStore';
+import { formatCurrency } from '@/lib/currency';
 
 const F = theme.font.body;
-const SCREEN_ID = '00000000-0000-0000-0000-000000000001';
 const OPEN_HOUR = 7;
 const CLOSE_HOUR = 20;
 
@@ -63,8 +66,13 @@ function BookAdForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
+  const { cart, addToCart } = useCartStore();
+  const { currency, rates } = usePreferencesStore();
 
   const [description, setDescription] = useState('');
+  const [screens, setScreens] = useState<{ id: string; name: string; location: string; price_per_sec: number }[]>([]);
+  const [selectedScreenId, setSelectedScreenId] = useState('');
+  const [showScreenDropdown, setShowScreenDropdown] = useState(false);
   const [durationUnit, setDurationUnit] = useState<DurationUnit>('hourly');
   const [campaignType, setCampaignType] = useState<CampaignType>('one_time');
   const [durationCount, setDurationCount] = useState('1');
@@ -80,6 +88,7 @@ function BookAdForm() {
   const [scheduleTime, setScheduleTime] = useState('');
 
   const [submitting, setSubmitting] = useState(false);
+  const [addingToCart, setAddingToCart] = useState(false);
   const [step, setStep] = useState<Step>('form');
   const [bookingId, setBookingId] = useState<string | null>(null);
   const [totalCost, setTotalCost] = useState(0);
@@ -89,6 +98,11 @@ function BookAdForm() {
 
   useEffect(() => {
     api.get('/finances/balance').then((res) => setWalletBalance(Number(res.data?.credits ?? 0))).catch(() => {});
+    api.get('/screens?limit=100').then((res) => {
+      const list = (res.data?.screens || []).filter((s: any) => s.status === 'active');
+      setScreens(list);
+      if (list.length > 0) setSelectedScreenId((prev) => prev || list[0].id);
+    }).catch(() => {});
   }, []);
 
   const handleFile = (f: File | null) => {
@@ -104,27 +118,39 @@ function BookAdForm() {
   const durationLabel = { hourly: 'Hourly', weekly: 'Weekly', monthly: 'Monthly' }[durationUnit];
   const campaignLabel = { one_time: 'One time booking', recurring: 'Recurring booking' }[campaignType];
 
+  // Shared by both "Book Slot" and "Add to Cart" — uploads the creative for
+  // real (same AI moderation / Cloudinary pipeline as the Ads page) and
+  // returns its real id and ppm_rate, or throws.
+  const uploadCreative = async () => {
+    const formData = new FormData();
+    formData.append('file', file as File);
+    formData.append('title', description.slice(0, 60) || `Ad booked ${new Date().toLocaleDateString()}`);
+    formData.append('description', description);
+    formData.append('media_type', (file as File).type.startsWith('video') ? 'video' : 'image');
+    const adRes = await api.post('/ads', formData, { headers: { 'Content-Type': undefined } });
+    const ad = adRes.data?.ad;
+    if (!ad?.id) throw new Error('Could not create ad creative');
+    return ad;
+  };
+
+  const validateForm = () => {
+    if (!selectedScreenId) { toast('Please choose a screen to book', 'error'); return false; }
+    if (!file) { toast('Please upload your ad materials', 'error'); return false; }
+    if (!scheduleDate) { toast('Please choose a delivery date', 'error'); return false; }
+    return true;
+  };
+
   const handleBookSlot = async () => {
-    if (!file) { toast('Please upload your ad materials', 'error'); return; }
-    if (!scheduleDate) { toast('Please choose a delivery date', 'error'); return; }
+    if (!validateForm()) return;
     const count = parseInt(durationCount) || 1;
 
     setSubmitting(true);
     try {
-      // 1. Upload the creative for real (goes through the same AI moderation /
-      // Cloudinary pipeline as the Ads page).
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('title', description.slice(0, 60) || `Ad booked ${new Date().toLocaleDateString()}`);
-      formData.append('description', description);
-      formData.append('media_type', file.type.startsWith('video') ? 'video' : 'image');
-      const adRes = await api.post('/ads', formData, { headers: { 'Content-Type': undefined } });
-      const adId = adRes.data?.ad?.id;
-      if (!adId) throw new Error('Could not create ad creative');
+      const ad = await uploadCreative();
 
-      // 2. Reserve the real slot(s) computed from the form.
+      // Reserve the real slot(s) computed from the form.
       const slots = buildSlots(scheduleDate, scheduleTime, durationUnit, count, campaignType);
-      const reserveRes = await api.post('/bookings/reserve', { screen_id: SCREEN_ID, ad_id: adId, slots });
+      const reserveRes = await api.post('/bookings/reserve', { screen_id: selectedScreenId, ad_id: ad.id, slots });
       setBookingId(reserveRes.data.booking_id);
       setTotalCost(Number(reserveRes.data.total_cost || 0));
       setStep('billing');
@@ -132,6 +158,51 @@ function BookAdForm() {
       toast(err?.response?.data?.message || 'Could not book this slot. Please try again.', 'error');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  // Stages this ad + these slots as a real cart item — no reservation yet
+  // (that happens at actual checkout, so items don't tie up a 5-minute slot
+  // lock while the user keeps adding more). Lets an advertiser build up
+  // several different ad/screen bookings before paying for all of them
+  // together in one visit to /cart.
+  const handleAddToCart = async () => {
+    if (!validateForm()) return;
+    const count = parseInt(durationCount) || 1;
+
+    setAddingToCart(true);
+    try {
+      const ad = await uploadCreative();
+      const slots = buildSlots(scheduleDate, scheduleTime, durationUnit, count, campaignType);
+      const ppmRate = Number(ad.ppm_rate) || 1000;
+      const estimatedCost = slots.reduce((sum, s) => sum + Math.ceil(s.mins) * ppmRate, 0);
+      const screen = screens.find((s) => s.id === selectedScreenId);
+
+      addToCart({
+        id: crypto.randomUUID(),
+        adId: ad.id,
+        adTitle: ad.title || description.slice(0, 60) || 'Ad creative',
+        adPreviewUrl: filePreview || undefined,
+        screenId: selectedScreenId,
+        screenName: screen ? `${screen.name} — ${screen.location}` : 'Selected screen',
+        slots,
+        estimatedCost,
+      });
+
+      toast('Added to cart! You can add another ad or check out.', 'success');
+      // Reset the creative + schedule so the form is ready for another item;
+      // keep the chosen screen/duration settings since those often repeat.
+      // The file input is uncontrolled — clearing React state alone leaves
+      // its DOM value pointing at the old file, so re-selecting the exact
+      // same file for a second item wouldn't register as a change.
+      setFile(null);
+      setFilePreview(null);
+      setDescription('');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    } catch (err: any) {
+      toast(err?.response?.data?.message || 'Could not add this to your cart. Please try again.', 'error');
+    } finally {
+      setAddingToCart(false);
     }
   };
 
@@ -196,11 +267,40 @@ function BookAdForm() {
                 />
               </div>
 
+              <div style={{ position: 'relative' }}>
+                <label style={labelStyle}>Screen</label>
+                <button type="button" onClick={() => { setShowScreenDropdown((o) => !o); setShowDurationDropdown(false); setShowCampaignDropdown(false); }}
+                  style={{ ...inputStyle, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', textAlign: 'left' }}>
+                  <span>
+                    {screens.length === 0
+                      ? 'No screens available'
+                      : (() => {
+                          const s = screens.find((sc) => sc.id === selectedScreenId);
+                          return s ? `${s.name} — ${s.location}` : 'Select a screen';
+                        })()}
+                  </span>
+                  <ChevronDown size={15} color={theme.color.text4} />
+                </button>
+                {showScreenDropdown && screens.length > 0 && (
+                  <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 6, background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 10, boxShadow: '0 10px 30px rgba(0,0,0,0.12)', zIndex: 10, width: '100%', overflow: 'hidden', maxHeight: 260, overflowY: 'auto' }}>
+                    {screens.map((s) => (
+                      <div key={s.id} onClick={() => { setSelectedScreenId(s.id); setShowScreenDropdown(false); }}
+                        style={{ padding: '10px 16px', cursor: 'pointer' }}
+                        onMouseOver={(e) => (e.currentTarget.style.background = theme.color.surface2)}
+                        onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}>
+                        <div style={{ fontSize: 14, color: theme.color.text1, fontWeight: 600 }}>{s.name}</div>
+                        <div style={{ fontSize: 12, color: theme.color.text3 }}>{s.location} · {formatCurrency(Number(s.price_per_sec), currency, rates)}/sec</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                 {/* Duration dropdown */}
                 <div style={{ position: 'relative' }}>
                   <label style={labelStyle}>Duration</label>
-                  <button type="button" onClick={() => { setShowDurationDropdown((o) => !o); setShowCampaignDropdown(false); }}
+                  <button type="button" onClick={() => { setShowDurationDropdown((o) => !o); setShowCampaignDropdown(false); setShowScreenDropdown(false); }}
                     style={{ ...inputStyle, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', textAlign: 'left' }}>
                     <span>{durationLabel}</span>
                     <ChevronDown size={15} color={theme.color.text4} />
@@ -222,7 +322,7 @@ function BookAdForm() {
                 {/* Campaign type dropdown */}
                 <div style={{ position: 'relative' }}>
                   <label style={labelStyle}>How would you run your Ad campaign?</label>
-                  <button type="button" onClick={() => { setShowCampaignDropdown((o) => !o); setShowDurationDropdown(false); }}
+                  <button type="button" onClick={() => { setShowCampaignDropdown((o) => !o); setShowDurationDropdown(false); setShowScreenDropdown(false); }}
                     style={{ ...inputStyle, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', textAlign: 'left' }}>
                     <span>{campaignLabel}</span>
                     <ChevronDown size={15} color={theme.color.text4} />
@@ -311,13 +411,23 @@ function BookAdForm() {
                 </div>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 8 }}>
-                <button type="button" onClick={() => router.push('/dashboard')} style={{ padding: '12px 24px', background: 'transparent', border: `1px solid ${theme.color.border}`, borderRadius: 10, fontSize: 14, fontWeight: 700, color: theme.color.text2, cursor: 'pointer', fontFamily: F }}>
-                  Cancel
-                </button>
-                <button type="button" onClick={handleBookSlot} disabled={submitting} style={{ padding: '12px 28px', background: theme.color.gold, border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 800, color: theme.color.charcoal900, cursor: submitting ? 'not-allowed' : 'pointer', opacity: submitting ? 0.7 : 1, fontFamily: F }}>
-                  {submitting ? 'Booking…' : 'Book Slot'}
-                </button>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, marginTop: 8 }}>
+                {cart.length > 0 ? (
+                  <Link href="/cart" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 700, color: theme.color.gold, textDecoration: 'none' }}>
+                    <ShoppingCart size={15} /> {cart.length} item{cart.length !== 1 ? 's' : ''} in cart
+                  </Link>
+                ) : <span />}
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <button type="button" onClick={() => router.push('/dashboard')} style={{ padding: '12px 24px', background: 'transparent', border: `1px solid ${theme.color.border}`, borderRadius: 10, fontSize: 14, fontWeight: 700, color: theme.color.text2, cursor: 'pointer', fontFamily: F }}>
+                    Cancel
+                  </button>
+                  <button type="button" onClick={handleAddToCart} disabled={addingToCart || submitting} style={{ padding: '12px 24px', background: 'transparent', border: `1px solid ${theme.color.gold}`, borderRadius: 10, fontSize: 14, fontWeight: 800, color: theme.color.goldDark, cursor: (addingToCart || submitting) ? 'not-allowed' : 'pointer', opacity: addingToCart ? 0.7 : 1, fontFamily: F }}>
+                    {addingToCart ? 'Adding…' : 'Add to Cart'}
+                  </button>
+                  <button type="button" onClick={handleBookSlot} disabled={submitting || addingToCart} style={{ padding: '12px 28px', background: theme.color.gold, border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 800, color: theme.color.charcoal900, cursor: submitting ? 'not-allowed' : 'pointer', opacity: submitting ? 0.7 : 1, fontFamily: F }}>
+                    {submitting ? 'Booking…' : 'Book Slot'}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -356,7 +466,7 @@ function BookAdForm() {
                 {step === 'billing' && (
                   <>
                     <p style={{ textAlign: 'center', fontSize: 13, fontWeight: 700, color: theme.color.text1, margin: '0 0 20px' }}>
-                      {durationLabel} Ad space at ₦{totalCost.toLocaleString()}
+                      {durationLabel} Ad space at {formatCurrency(totalCost, currency, rates)}
                     </p>
                     <div onClick={() => setStep('card')} style={{ padding: '14px 16px', border: `1px solid ${theme.color.border}`, borderRadius: 12, marginBottom: 12, cursor: 'pointer', fontSize: 14, fontWeight: 700, color: theme.color.text1 }}>
                       Pay with card
@@ -364,7 +474,7 @@ function BookAdForm() {
                     <div onClick={() => setStep('wallet')} style={{ padding: '14px 16px', border: `1px solid ${theme.color.gold}`, borderRadius: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div>
                         <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: theme.color.text1 }}>Pay from wallet</p>
-                        <p style={{ margin: '2px 0 0', fontSize: 12, color: theme.color.text3 }}>Balance: ₦{walletBalance.toLocaleString()}</p>
+                        <p style={{ margin: '2px 0 0', fontSize: 12, color: theme.color.text3 }}>Balance: {formatCurrency(walletBalance, currency, rates)}</p>
                       </div>
                       {walletBalance >= totalCost && <Check size={16} color={theme.color.success} />}
                     </div>
@@ -374,7 +484,7 @@ function BookAdForm() {
                 {step === 'card' && (
                   <>
                     <p style={{ textAlign: 'center', fontSize: 13, fontWeight: 700, color: theme.color.text1, margin: '0 0 20px' }}>
-                      {durationLabel} Ad space at ₦{totalCost.toLocaleString()}
+                      {durationLabel} Ad space at {formatCurrency(totalCost, currency, rates)}
                     </p>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 20 }}>
                       <input placeholder="Card holder's name" value={cardForm.name} onChange={(e) => setCardForm({ ...cardForm, name: e.target.value })} style={inputStyle} />

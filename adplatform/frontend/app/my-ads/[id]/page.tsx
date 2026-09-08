@@ -6,11 +6,12 @@ import { useRouter, useParams } from 'next/navigation';
 import { ChevronLeft, Film, Image as ImageIcon, Loader2, X, ArrowLeft, Check } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { PageTransition } from '@/components/ui/Animations';
+import { useToast } from '@/components/ui/ToastProvider';
 import api from '@/lib/api';
 import { theme } from '@/lib/theme';
 
 const F = theme.font.body;
-const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api').replace('/api', '');
+const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7000/api').replace('/api', '');
 
 interface AdDetail {
   id: string;
@@ -58,6 +59,7 @@ const UNIT_MINUTES: Record<ExtendUnit, number> = { minutes: 1, hours: 60, days: 
 export default function MyAdDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
+  const { toast } = useToast();
   const [ad, setAd] = useState<AdDetail | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -98,12 +100,14 @@ export default function MyAdDetailPage() {
   const handleCancel = async () => {
     setCancelling(true);
     try {
-      await api.put(`/bookings/${params.id}/cancel`, {});
+      const res = await api.put(`/bookings/${params.id}/cancel`, {});
       setShowCancel(false);
-      setCancelSuccess(ad?.title || 'Your ad');
+      // Real refund outcome from the backend (whether the 48h window
+      // applied, exact amount credited) instead of just the ad's title.
+      setCancelSuccess(res.data?.message || ad?.title || 'Your ad');
       load();
     } catch (err: any) {
-      alert(err?.response?.data?.message || 'Could not cancel this ad. Please try again.');
+      toast(err?.response?.data?.message || 'Could not cancel this ad. Please try again.', 'error');
     } finally {
       setCancelling(false);
     }
@@ -229,7 +233,8 @@ export default function MyAdDetailPage() {
                   <X size={24} color="#fff" strokeWidth={3} />
                 </div>
               </div>
-              <h3 style={{ fontSize: 15, fontWeight: 800, color: theme.color.text1, margin: '0 0 20px' }}>Ad cancelled</h3>
+              <h3 style={{ fontSize: 15, fontWeight: 800, color: theme.color.text1, margin: '0 0 8px' }}>Ad cancelled</h3>
+              <p style={{ fontSize: 13, color: theme.color.text3, margin: '0 0 20px', lineHeight: 1.5 }}>{cancelSuccess}</p>
               <button onClick={() => setCancelSuccess(null)} style={{ width: '100%', padding: '11px', borderRadius: 10, border: 'none', background: theme.color.gold, color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer' }}>Finish</button>
             </div>
           </div>

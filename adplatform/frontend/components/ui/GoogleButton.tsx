@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { theme } from '@/lib/theme';
 
 const F = theme.font.body;
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7000/api';
 
 interface GoogleButtonProps { label?: string; style?: React.CSSProperties; }
 

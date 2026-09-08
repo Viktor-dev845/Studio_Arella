@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -11,39 +11,36 @@ import { theme } from '@/lib/theme';
 const F = "'Quicksand', sans-serif";
 
 export default function AuthCallbackPage() {
-  return (
-    <Suspense fallback={<div />}>
-      <AuthCallbackContent />
-    </Suspense>
-  );
-}
-
-function AuthCallbackContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { updateUser } = useAuthStore();
   const [status, setStatus] = useState<'loading' | 'error'>('loading');
   const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
-    const token = searchParams.get('token');
-    const error = searchParams.get('error');
+    // The backend carries the token in the URL *fragment*, not the query
+    // string, so it's never sent to any server (browser history/access-log
+    // exposure) — read it from location.hash instead of useSearchParams().
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    const token = hashParams.get('token');
+    const error = hashParams.get('error');
     if (error) { setErrorMsg('Google sign-in failed. Please try again.'); setStatus('error'); return; }
     if (!token) { setErrorMsg('No authentication token received.'); setStatus('error'); return; }
     const user = {
-      id: searchParams.get('id') || '',
-      name: searchParams.get('name') || '',
-      email: searchParams.get('email') || '',
-      role: (searchParams.get('role') || 'advertiser') as any,
-      credits: parseFloat(searchParams.get('credits') || '0'),
-      avatar: searchParams.get('avatar') || undefined,
+      id: hashParams.get('id') || '',
+      name: hashParams.get('name') || '',
+      email: hashParams.get('email') || '',
+      role: (hashParams.get('role') || 'advertiser') as any,
+      credits: parseFloat(hashParams.get('credits') || '0'),
+      avatar: hashParams.get('avatar') || undefined,
     };
-    const isNew = searchParams.get('new') === '1';
+    const isNew = hashParams.get('new') === '1';
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(user));
     updateUser(user);
+    // Scrub the token out of the visible URL/history before navigating away.
+    window.history.replaceState(null, '', window.location.pathname);
     router.replace(isNew ? '/onboarding' : user.role === 'admin' ? '/admin' : '/dashboard');
-  }, [searchParams, router, updateUser]);
+  }, [router, updateUser]);
 
   const btnStyle = (primary: boolean): React.CSSProperties => ({
     display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,

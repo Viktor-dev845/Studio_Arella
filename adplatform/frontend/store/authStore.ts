@@ -22,6 +22,9 @@ interface User {
   bio?: string;
   two_factor_enabled?: boolean;
   notification_preferences?: Record<string, boolean>;
+  display_currency?: string;
+  display_timezone?: string;
+  sound_enabled?: boolean;
 }
 
 interface TwoFactorChallenge {

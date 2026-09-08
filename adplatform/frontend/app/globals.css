@@ -224,10 +224,29 @@ a {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   margin-bottom: 24px;
+  position: relative;
 }
 
 .responsive-table-wrapper table {
   min-width: 600px;
+}
+
+/* A real visual cue that there's more table off to the right — the scroll
+   itself already works at this width, but nothing signaled it was there. */
+@media (max-width: 900px) {
+  .responsive-table-wrapper::after {
+    content: '';
+    position: sticky;
+    top: 0;
+    right: 0;
+    float: right;
+    height: 40px;
+    width: 28px;
+    margin-left: -28px;
+    margin-bottom: -40px;
+    background: linear-gradient(to right, transparent, var(--surface) 85%);
+    pointer-events: none;
+  }
 }
 
 @media (max-width: 900px) {

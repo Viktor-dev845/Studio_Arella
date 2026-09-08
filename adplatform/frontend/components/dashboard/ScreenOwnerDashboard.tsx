@@ -11,12 +11,15 @@ import { FaArrowRight, FaDisplay, FaMoneyBillWave, FaCalendarCheck } from 'react
 import { Monitor, DollarSign, CalendarCheck, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { theme } from '@/lib/theme';
+import { usePreferencesStore } from '@/store/preferencesStore';
+import { formatCurrency } from '@/lib/currency';
 
 const F = "var(--font-quicksand, 'Quicksand', sans-serif)";
 const card: React.CSSProperties = { background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 16 };
 
 export default function ScreenOwnerDashboard() {
   const { user } = useAuthStore();
+  const { currency, rates } = usePreferencesStore();
   const [screens, setScreens] = useState<any[]>([]);
   const [bookings, setBookings] = useState<any[]>([]);
   const [balance, setBalance] = useState<any>(null);
@@ -65,7 +68,7 @@ export default function ScreenOwnerDashboard() {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12 }}>
               {[
-                { label: 'Booking Value', value: `₦${bookings.reduce((s, b) => s + Number(b.total_cost || 0), 0).toLocaleString()}`, icon: DollarSign, color: theme.color.warning, bg: theme.color.warningLight, border: theme.color.warning },
+                { label: 'Booking Value', value: formatCurrency(bookings.reduce((s, b) => s + Number(b.total_cost || 0), 0), currency, rates), icon: DollarSign, color: theme.color.warning, bg: theme.color.warningLight, border: theme.color.warning },
                 { label: 'Active Screens', value: screens.filter(s => s.status === 'active').length, icon: Monitor, color: theme.color.info, bg: theme.color.infoLight, border: theme.color.infoBorder },
                 { label: 'Total Bookings', value: bookings.length, icon: CalendarCheck, color: theme.color.success, bg: theme.color.successLight, border: theme.color.success },
               ].map(({ label, value, icon: Icon, color, bg, border }, i) => (
@@ -131,7 +134,7 @@ export default function ScreenOwnerDashboard() {
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p style={{ fontSize: 13, fontWeight: 700, color: theme.color.text1, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.name}</p>
-                        <p style={{ fontSize: 11, color: theme.color.text3, margin: '1px 0 0' }}>{s.location} · ₦{s.price_per_sec}/sec</p>
+                        <p style={{ fontSize: 11, color: theme.color.text3, margin: '1px 0 0' }}>{s.location} · {formatCurrency(Number(s.price_per_sec), currency, rates)}/sec</p>
                       </div>
                       <StatusBadge status={s.status} />
                     </div>
@@ -145,7 +148,7 @@ export default function ScreenOwnerDashboard() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <FadeCard delay={0.08} style={{ background: theme.color.charcoal800, border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: '22px 20px', color: '#fff' }}>
               <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', margin: '0 0 6px' }}>Wallet Balance</p>
-              <p style={{ fontSize: 30, fontWeight: 900, margin: '0 0 2px', letterSpacing: '-0.5px', color: theme.color.ownerOrange }}>₦{(balance?.credits || 0).toLocaleString()}</p>
+              <p style={{ fontSize: 30, fontWeight: 900, margin: '0 0 2px', letterSpacing: '-0.5px', color: theme.color.ownerOrange }}>{formatCurrency(Number(balance?.credits || 0), currency, rates)}</p>
               <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: '0 0 16px' }}>Your available wallet credits</p>
               <Link href="/finances" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: theme.color.ownerOrange, color: '#fff', padding: '11px', borderRadius: 10, fontSize: 13, fontWeight: 800, textDecoration: 'none' }}>
                 View Transactions <FaArrowRight size={12} />

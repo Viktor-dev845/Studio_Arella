@@ -6,6 +6,7 @@ import { useAuthStore } from '@/store/authStore';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 import ThemeProvider from '@/components/ui/ThemeProvider';
+import PreferencesProvider from '@/components/ui/PreferencesProvider';
 import TermsModal from '@/components/ui/TermsModal';
 import { theme } from '@/lib/theme';
 
@@ -65,6 +66,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         useAuthStore.getState().checkAuth();
       }} />}
       <ThemeProvider />
+      <PreferencesProvider />
       <Sidebar mobileOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
       
       {/* We need margin-left on desktop to account for the fixed sidebar width (260px) */}

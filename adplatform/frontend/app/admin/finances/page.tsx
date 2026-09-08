@@ -40,7 +40,7 @@ export default function AdminFinancesPage() {
           <p style={{ fontSize: 13, color: theme.color.text3, margin: 0 }}>Financial overview of the entire Bems Screens ecosystem</p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 20 }}>
+        <div className="stats-grid" style={{ marginBottom: 20 }}>
           {summaryCards.map(({ label, value, icon: Icon, color, bg }, i) => (
             <FadeCard key={label} delay={i * 0.08} style={{ ...card }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>

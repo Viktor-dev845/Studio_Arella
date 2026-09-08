@@ -5,6 +5,7 @@ import api from '@/lib/api';
 import { PageTransition, Skeleton } from '@/components/ui/Animations';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell } from '@/components/ui/Table';
+import { useToast } from '@/components/ui/ToastProvider';
 import { PenTool, Search, Eye, X, Check } from 'lucide-react';
 import { theme } from '@/lib/theme';
 
@@ -12,6 +13,7 @@ const F = theme.font.body;
 const card = { background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: theme.radius.lg, overflow: 'hidden', boxShadow: theme.shadow.sm } as React.CSSProperties;
 
 export default function AdminCreativeRequestsPage() {
+  const { toast } = useToast();
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -37,9 +39,8 @@ export default function AdminCreativeRequestsPage() {
       if (selectedRequest && selectedRequest.id === id) {
         setSelectedRequest({ ...selectedRequest, status: newStatus });
       }
-    } catch (e) {
-      console.error(e);
-      alert('Failed to update status');
+    } catch (err: any) {
+      toast(err?.response?.data?.message || 'Failed to update status', 'error');
     } finally {
       setUpdating(false);
     }

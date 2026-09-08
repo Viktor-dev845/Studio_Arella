@@ -120,6 +120,28 @@ export default function CampaignsPage() {
     return matchesSearch && matchesStatus;
   });
 
+  // Real client-side CSV of whatever's currently filtered — all the data is
+  // already loaded, no backend export endpoint needed.
+  const handleExport = () => {
+    if (filtered.length === 0) { toast('No campaigns to export', 'error'); return; }
+    const headers = ['Name', 'Schedule', 'Budget (NGN)', 'Spent (NGN)', 'Impressions', 'Ad Slots', 'Status'];
+    const escape = (v: string | number) => `"${String(v).replace(/"/g, '""')}"`;
+    const rows = filtered.map(c => [
+      escape(c.name), escape(c.schedule), c.budget, c.spent, c.impressions, c.adsCount, escape(STATUS_LABELS[c.status] || c.status),
+    ].join(','));
+    const csv = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `campaigns-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast(`Exported ${filtered.length} campaign${filtered.length !== 1 ? 's' : ''}`, 'success');
+  };
+
   const getStatusStyle = (status: CampaignItem['status']) => {
     switch (status) {
       case 'active':
@@ -201,7 +223,7 @@ export default function CampaignsPage() {
 
                 {/* Export Button */}
                 <button
-                  onClick={() => toast('Exporting campaigns CSV...', 'info')}
+                  onClick={handleExport}
                   className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[10px] text-[12.5px] font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/[0.06] transition-colors shadow-sm"
                 >
                   <Download size={14} className="text-slate-500 dark:text-slate-400" />
@@ -266,12 +288,12 @@ export default function CampaignsPage() {
                         </td>
                         <td className="py-4 px-6 text-right">
                           <div className="flex items-center justify-end gap-3">
-                            <button 
-                              onClick={() => toast(`Viewing campaign: ${c.name}`, 'info')}
+                            <Link
+                              href={`/campaigns/${c.id}`}
                               className="text-[12px] font-bold text-[#C69A2C] hover:underline"
                             >
                               View
-                            </button>
+                            </Link>
                             <button
                               onClick={() => handleDeleteCampaign(c.id)}
                               className="text-slate-400 dark:text-slate-500 hover:text-rose-600 transition-colors p-1"

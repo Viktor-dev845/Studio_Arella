@@ -11,7 +11,7 @@ import api from '@/lib/api';
 import { theme } from '@/lib/theme';
 
 const F = theme.font.body;
-const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api').replace('/api', '');
+const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7000/api').replace('/api', '');
 
 interface AdCard {
   id: string;

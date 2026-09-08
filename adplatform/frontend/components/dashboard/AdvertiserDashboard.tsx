@@ -19,6 +19,8 @@ import api from '@/lib/api';
 import { ChevronDown, CreditCard, Globe } from 'lucide-react';
 import { FaArrowTrendUp, FaArrowTrendDown } from 'react-icons/fa6';
 import { theme } from '@/lib/theme';
+import { usePreferencesStore } from '@/store/preferencesStore';
+import { formatCurrency } from '@/lib/currency';
 
 const F = theme.font.body;
 
@@ -110,8 +112,12 @@ const ACTIVITIES = [
   },
 ];
 
+// Deliberately more visually prominent than the surrounding real-data
+// cards — a same-color badge was easy to skim past and mistake for a
+// normal label instead of a "this isn't your real data" disclosure.
 const EXAMPLE_BADGE: React.CSSProperties = {
-  fontSize: 9, fontWeight: 800, color: theme.color.text4, background: theme.color.surface2,
+  fontSize: 9, fontWeight: 800, color: theme.color.warning, background: theme.color.warningLight,
+  border: `1px solid ${theme.color.warning}`,
   padding: '2px 7px', borderRadius: 100, letterSpacing: '0.04em', textTransform: 'uppercase',
 };
 
@@ -134,6 +140,7 @@ function formatEventDay(iso: string) {
 
 export default function AdvertiserDashboard() {
   const { user } = useAuthStore();
+  const { currency, rates } = usePreferencesStore();
   const [balance, setBalance] = useState<any>(null);
   const [podcastBookings, setPodcastBookings] = useState<any[]>([]);
   const [adBookings, setAdBookings] = useState<any[]>([]);
@@ -475,7 +482,7 @@ export default function AdvertiserDashboard() {
               <div>
                 <p style={{ fontSize: 12, fontWeight: 700, margin: '0 0 6px', color: '#FFFFFF' }}>Wallet Bal</p>
                 <p style={{ fontSize: 16, fontWeight: 800, margin: 0, color: '#FFFFFF', letterSpacing: '-0.2px' }}>
-                  {balance ? `₦${Number(balance.credits || 0).toLocaleString()}` : '—'}
+                  {balance ? formatCurrency(Number(balance.credits || 0), currency, rates) : '—'}
                 </p>
               </div>
               <div style={{ position: 'relative', zIndex: 1 }}>

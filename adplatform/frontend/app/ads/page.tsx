@@ -41,7 +41,7 @@ import CampaignPicker from '@/components/ui/CampaignPicker';
 import { theme } from '@/lib/theme';
 
 const F = theme.font.body;
-const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api').replace('/api', '');
+const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7000/api').replace('/api', '');
 
 type AdStatus = 'pending' | 'approved' | 'rejected' | 'draft';
 
@@ -272,7 +272,7 @@ export default function AdsManagementPage() {
           }
         });
         xhr.addEventListener('error', () => reject(new Error('Network error during upload')));
-        xhr.open('POST', `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/ads`);
+        xhr.open('POST', `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7000/api'}/ads`);
         if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
         xhr.send(formData);
       });

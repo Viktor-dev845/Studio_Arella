@@ -46,7 +46,7 @@ export default function AdminPodcastsPage() {
       <div style={{ fontFamily: F }}>
         <div style={{ marginBottom: 32 }}>
         <h1 style={{ fontSize: 24, fontWeight: 800, margin: '0 0 8px', color: theme.color.text1 }}>All Podcast Bookings</h1>
-        <p style={{ color: theme.color.text3, margin: 0 }}>View and manage studio sessions</p>
+        <p style={{ color: theme.color.text3, margin: 0 }}>All podcast studio session bookings across the platform</p>
       </div>
 
       <div style={{ background: theme.color.surface, borderRadius: theme.radius.lg, border: `1px solid ${theme.color.border}`, overflow: 'hidden' }}>

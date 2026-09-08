@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Quicksand, Outfit } from 'next/font/google';
 import './globals.css';
 import { ToastProvider } from '@/components/ui/ToastProvider';
+import PublicThemeGuard from '@/components/ui/PublicThemeGuard';
 
 const quicksand = Quicksand({
   subsets: ['latin'],
@@ -37,6 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${quicksand.variable} ${outfit.variable}`}>
       <body>
+        <PublicThemeGuard />
         <ToastProvider>
           {children}
         </ToastProvider>

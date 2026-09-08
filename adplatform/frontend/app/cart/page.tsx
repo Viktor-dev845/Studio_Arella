@@ -1,26 +1,21 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { 
-  ChevronLeft, 
-  ChevronDown, 
-  ChevronUp, 
-  Trash2, 
-  Clock, 
-  Calendar, 
-  Edit2, 
-  X, 
-  Loader2, 
-  CreditCard, 
-  Wallet, 
+import {
+  ChevronLeft,
+  Trash2,
+  Clock,
+  Loader2,
+  CreditCard,
+  Wallet,
   ShieldCheck,
   Check,
-  ArrowRight, 
-  Globe, 
-  Plus, 
-  Sparkles,
-  Layers
+  ArrowRight,
+  Globe,
+  Layers,
+  Monitor,
+  Info,
 } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useToast } from '@/components/ui/ToastProvider';
@@ -29,179 +24,152 @@ import api from '@/lib/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PageTransition, FadeCard } from '@/components/ui/Animations';
 import { theme } from '@/lib/theme';
-import EditCartModal from '@/components/ui/EditCartModal';
 import CampaignPicker from '@/components/ui/CampaignPicker';
 import Link from 'next/link';
+import { usePreferencesStore } from '@/store/preferencesStore';
+import { formatCurrency } from '@/lib/currency';
 
 const F = theme.font.body;
-const SCREEN_ID = '00000000-0000-0000-0000-000000000001';
 
-function naira(n: number) { 
-  return `₦${Number(n || 0).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`; 
-}
-
-function pad(n: number) { 
-  return String(n).padStart(2, '0'); 
-}
-
-function formatMin(min: number) {
-  const totalSeconds = Math.round(min * 60);
-  const h = Math.floor(totalSeconds / 3600);
-  const m = Math.floor((totalSeconds % 3600) / 60);
-  const s = totalSeconds % 60;
-  const period = h < 12 ? 'AM' : 'PM';
-  const hh = h % 12 === 0 ? 12 : h % 12;
-  if (s > 0) return `${hh}:${pad(m)}:${pad(s)} ${period}`;
-  return `${hh}:${pad(m)} ${period}`;
+function dateRangeLabel(slots: CartItem['slots']) {
+  if (slots.length === 0) return '—';
+  const starts = slots.map((s) => new Date(s.start).getTime()).sort((a, b) => a - b);
+  const first = new Date(starts[0]);
+  const last = new Date(starts[starts.length - 1]);
+  const fmt = (d: Date) => d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  const time = new Date(slots[0].start).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  if (starts.length === 1) return `${fmt(first)} at ${time}`;
+  return `${fmt(first)} – ${fmt(last)} (${slots.length} days) at ${time}`;
 }
 
 export default function CartPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { cart, removeFromCart, getCartTotal, clearCart, addToCart } = useCartStore();
-  
-  // Checkout & Payment State
-  const [paymentMethod, setPaymentMethod] = useState<'wallet' | 'monnify'>('wallet');
-  const [reserving, setReserving] = useState(false);
+  const { cart, removeFromCart, getCartTotal, clearCart } = useCartStore();
+  const { currency, rates } = usePreferencesStore();
+  const naira = (n: number) => formatCurrency(n, currency, rates);
+
+  const [paymentMethod, setPaymentMethod] = useState<'wallet' | 'card'>('wallet');
+  const [checkingOut, setCheckingOut] = useState(false);
   const [paying, setPaying] = useState(false);
-  const [bookingId, setBookingId] = useState<string | null>(null);
+  const [reservedBookings, setReservedBookings] = useState<{ itemId: string; bookingId: string; cost: number }[] | null>(null);
+  const [realTotal, setRealTotal] = useState(0);
   const [campaignId, setCampaignId] = useState<string | null>(null);
-  
-  // Wallet Balance
-  const [walletBalance, setWalletBalance] = useState<number>(0);
 
-
-  // Modals
+  const [walletBalance, setWalletBalance] = useState(0);
   const [showWalletModal, setShowWalletModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [editingItem, setEditingItem] = useState<CartItem | null>(null);
-  const [initialTab, setInitialTab] = useState<'time' | 'period'>('time');
-  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
 
-  // Fetch live balance
   useEffect(() => {
     api.get('/finances/balance')
-      .then(res => {
-        setWalletBalance(Number(res.data?.credits ?? 0));
-      })
-      .catch(() => {
-        toast('Could not load your wallet balance.', 'error');
-      });
+      .then((res) => setWalletBalance(Number(res.data?.credits ?? 0)))
+      .catch(() => toast('Could not load your wallet balance.', 'error'));
   }, []);
 
-  // Group cart items by Creative/Ad
-  const groupedCart = useMemo(() => {
-    const groups: Record<string, { creative: any, totalCost: number, items: CartItem[], dates: Set<string> }> = {};
-    
-    cart.forEach(c => {
-      const cId = c.creative?.id || 'default-ad';
-      if (!groups[cId]) {
-        groups[cId] = { creative: c.creative, totalCost: 0, items: [], dates: new Set() };
+  const estimatedTotal = getCartTotal();
+  const totalSlots = cart.reduce((acc, c) => acc + c.slots.length, 0);
+  const hasSufficientBalance = walletBalance >= (reservedBookings ? realTotal : estimatedTotal);
+
+  // Step 1 of checkout: reserve every cart item for real. Each item is a
+  // separate real booking (different ads/screens can't share one), so this
+  // is sequential, not a single atomic call — the backend has no
+  // multi-booking endpoint. If any item fails (someone else took that slot
+  // while it sat in cart, etc.) we stop immediately and tell the user
+  // exactly which item and why; nothing has been charged yet at this point,
+  // and any earlier item that did reserve successfully will safely expire
+  // on its own 5-minute lock if not retried.
+  const handleReserveAll = async (): Promise<{ itemId: string; bookingId: string; cost: number }[] | null> => {
+    const results: { itemId: string; bookingId: string; cost: number }[] = [];
+    for (const item of cart) {
+      try {
+        const res = await api.post('/bookings/reserve', {
+          screen_id: item.screenId,
+          ad_id: item.adId,
+          slots: item.slots,
+          campaign_id: campaignId || undefined,
+        });
+        results.push({ itemId: item.id, bookingId: res.data.booking_id, cost: Number(res.data.total_cost || 0) });
+      } catch (err: any) {
+        toast(`"${item.adTitle}": ${err?.response?.data?.message || 'Could not reserve this slot.'}`, 'error');
+        return null;
       }
-      groups[cId].items.push(c);
-      groups[cId].totalCost += (c.priceInfo?.cost || 0);
-      groups[cId].dates.add(new Date(c.date).toDateString());
-    });
-
-    return Object.values(groups);
-  }, [cart]);
-
-  // Expand all groups by default when cart changes
-  useEffect(() => {
-    const expanded: Record<string, boolean> = {};
-    groupedCart.forEach(g => {
-      const id = g.creative?.id || 'default-ad';
-      expanded[id] = true;
-    });
-    setExpandedGroups(expanded);
-  }, [groupedCart.length]);
-
-  const toggleGroup = (id: string) => {
-    setExpandedGroups(prev => ({ ...prev, [id]: !prev[id] }));
+    }
+    return results;
   };
 
-  const removeCampaign = (creativeId: string) => {
-    const itemsToRemove = cart.filter(c => (c.creative?.id || 'default-ad') === creativeId);
-    itemsToRemove.forEach(item => removeFromCart(item.id));
-    toast('Campaign slots removed from cart', 'success');
-  };
-
-  // Calculations
-  const rawTotal = getCartTotal();
-  const finalTotal = rawTotal;
-  const totalMinutes = cart.reduce((acc, c) => acc + Math.ceil((c.durationSec || 60) / 60), 0);
-  const hasSufficientBalance = walletBalance >= finalTotal;
-
-  // Initiate Checkout — always reserves real slots first, regardless of payment method.
-  // No step here may silently treat a failure as success: a customer who sees
-  // "Payment successful" must have an actual paid or wallet-debited booking behind it.
   const handleProceedCheckout = async () => {
-    if (cart.length === 0) {
-      toast('Your cart is empty', 'error');
-      return;
-    }
-    if (paymentMethod === 'wallet' && !hasSufficientBalance) {
-      toast('Insufficient wallet balance. Please fund your wallet or pay via Card.', 'error');
+    if (cart.length === 0) { toast('Your cart is empty', 'error'); return; }
+    if (paymentMethod === 'card' && cart.length > 1) {
+      toast('Card checkout only supports one item at a time. Pay with wallet to check out multiple items together.', 'error');
       return;
     }
 
-    setReserving(true);
+    setCheckingOut(true);
     try {
-      const selectedCreative = cart[0]?.creative || { id: 'default-ad' };
-      const slots = cart.map(c => {
-        const d = new Date(c.date);
-        const startHour = Math.floor(c.startMin / 60);
-        const startMins = c.startMin % 60;
-        const startDt = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), startHour - 1, startMins));
-        const endDt = new Date(startDt.getTime() + (c.durationSec || 60) * 1000);
-        return { start: startDt.toISOString(), end: endDt.toISOString(), mins: (c.durationSec || 60) / 60 };
-      });
-
-      const res = await api.post('/bookings/reserve', {
-        screen_id: SCREEN_ID,
-        ad_id: selectedCreative.id,
-        slots: slots,
-        campaign_id: campaignId || undefined,
-      });
-
-      const bId = res.data.booking_id;
-      setBookingId(bId);
+      const results = await handleReserveAll();
+      if (!results) return;
+      const total = results.reduce((s, r) => s + r.cost, 0);
+      setReservedBookings(results);
+      setRealTotal(total);
 
       if (paymentMethod === 'wallet') {
-        // Slots are now reserved (5-minute lock) — open the wallet confirm modal.
+        if (walletBalance < total) {
+          toast(`Insufficient wallet balance. This order costs ${naira(total)}.`, 'error');
+          return;
+        }
         setShowWalletModal(true);
       } else {
-        const payRes = await api.post('/payments/initialize', { booking_id: bId });
+        const payRes = await api.post('/payments/initialize', { booking_id: results[0].bookingId });
         const checkoutUrl = payRes.data?.checkout_url || payRes.data?.authorization_url;
-        if (checkoutUrl) {
-          window.location.href = checkoutUrl;
-        } else {
-          toast('Could not start payment. Please try again.', 'error');
-        }
+        if (checkoutUrl) window.location.href = checkoutUrl;
+        else toast('Could not start payment. Please try again.', 'error');
       }
     } catch (err: any) {
-      toast(err?.response?.data?.message || 'Could not reserve your slots. Please try again.', 'error');
+      toast(err?.response?.data?.message || 'Could not start checkout. Please try again.', 'error');
     } finally {
-      setReserving(false);
+      setCheckingOut(false);
     }
   };
 
-  // Confirm Wallet Payment (Triggered from Frame 2121459611)
+  // Step 2 (wallet only): pay for every reserved booking. Real, sequential,
+  // per-booking debits — if one fails partway (balance changed mid-way,
+  // a booking's 5-minute lock expired before we got to it) we report
+  // exactly what succeeded and what didn't rather than claiming a single
+  // blanket "success" for the whole order.
   const handleConfirmWalletPayment = async () => {
-    if (!bookingId) {
+    if (!reservedBookings || reservedBookings.length === 0) {
       toast('Your reservation expired — please try checking out again.', 'error');
       setShowWalletModal(false);
+      setReservedBookings(null);
       return;
     }
     setPaying(true);
+    let paidCount = 0;
     try {
-      await api.post('/payments/wallet', { booking_id: bookingId });
-      setWalletBalance(prev => Math.max(0, prev - finalTotal));
+      for (const b of reservedBookings) {
+        await api.post('/payments/wallet', { booking_id: b.bookingId });
+        paidCount++;
+      }
+      setWalletBalance((prev) => Math.max(0, prev - realTotal));
       clearCart();
       setShowWalletModal(false);
       setShowSuccessModal(true);
     } catch (err: any) {
-      toast(err?.response?.data?.message || 'Payment failed. Please try again.', 'error');
+      const remaining = reservedBookings.length - paidCount;
+      toast(
+        paidCount > 0
+          ? `${paidCount} of ${reservedBookings.length} bookings paid. ${remaining} failed: ${err?.response?.data?.message || 'payment error'}. Check My Bookings — you can retry the rest from there.`
+          : err?.response?.data?.message || 'Payment failed. Please try again.',
+        'error'
+      );
+      // Whatever did get paid is real and already in My Bookings — only
+      // clear the items that are still genuinely unpaid.
+      if (paidCount > 0) {
+        const paidItemIds = new Set(reservedBookings.slice(0, paidCount).map((b) => b.itemId));
+        paidItemIds.forEach((id) => removeFromCart(id));
+      }
+      setShowWalletModal(false);
+      setReservedBookings(null);
     } finally {
       setPaying(false);
     }
@@ -211,27 +179,12 @@ export default function CartPage() {
     <DashboardLayout>
       <PageTransition>
         <div style={{ fontFamily: F, maxWidth: 1100, margin: '0 auto', paddingBottom: 60 }}>
-          
-          {/* ─── TOP NAVIGATION & TITLE ─── */}
+
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 14 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <button 
+              <button
                 onClick={() => router.push('/book')}
-                style={{ 
-                  background: theme.color.surface, 
-                  border: `1px solid ${theme.color.border}`, 
-                  color: theme.color.text2, 
-                  padding: '8px 16px', 
-                  borderRadius: 10, 
-                  cursor: 'pointer', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: 6, 
-                  fontSize: 13, 
-                  fontWeight: 700, 
-                  transition: 'all 0.2s',
-                  fontFamily: F
-                }}
+                style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, color: theme.color.text2, padding: '8px 16px', borderRadius: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 700, fontFamily: F }}
               >
                 <ChevronLeft size={16} /> Keep Browsing Slots
               </button>
@@ -243,523 +196,215 @@ export default function CartPage() {
             {cart.length > 0 && (
               <button
                 onClick={() => { clearCart(); toast('Cart cleared', 'success'); }}
-                style={{ background: 'none', border: 'none', color: '#EF4444', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
+                style={{ background: 'none', border: 'none', color: theme.color.error, fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontFamily: F }}
               >
                 <Trash2 size={14} /> Clear Cart
               </button>
             )}
           </div>
 
-          {/* ─── MAIN CART CONTENT ─── */}
           {cart.length === 0 ? (
-            /* Empty State */
             <FadeCard delay={0.1} style={{ background: theme.color.surface, borderRadius: 24, border: `1px dashed ${theme.color.border2}`, padding: '80px 24px', textAlign: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-              <div style={{ width: 72, height: 72, borderRadius: 24, background: '#FFFDF5', border: '1px solid #FDE68A', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 18 }}>
-                <Wallet size={32} color="#C69A2C" />
+              <div style={{ width: 72, height: 72, borderRadius: 24, background: theme.color.goldLight, border: `1px solid ${theme.color.goldMid}`, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 18 }}>
+                <Wallet size={32} color={theme.color.gold} />
               </div>
               <h2 style={{ fontSize: 20, fontWeight: 800, color: theme.color.text1, margin: '0 0 8px', letterSpacing: '-0.3px' }}>
                 Your cart is currently empty
               </h2>
               <p style={{ fontSize: 14, color: theme.color.text3, margin: '0 0 24px', maxWidth: 420, marginInline: 'auto', lineHeight: 1.5 }}>
-                Browse high-traffic digital billboards or podcast studio slots to schedule your campaign.
+                Add an ad from the Book Ad page — you can stage several bookings and pay for them together here.
               </p>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
-                <button
-                  onClick={() => router.push('/book')}
-                  style={{
-                    background: '#C69A2C',
-                    color: '#FFFFFF',
-                    border: 'none',
-                    borderRadius: 10,
-                    padding: '12px 24px',
-                    fontSize: 14,
-                    fontWeight: 800,
-                    cursor: 'pointer',
-                    boxShadow: '0 4px 14px rgba(198, 154, 44, 0.25)',
-                    fontFamily: F
-                  }}
-                >
-                  Go Schedule Slots
-                </button>
-              </div>
+              <button
+                onClick={() => router.push('/book')}
+                style={{ background: theme.color.gold, color: '#fff', border: 'none', borderRadius: 10, padding: '12px 24px', fontSize: 14, fontWeight: 800, cursor: 'pointer', boxShadow: theme.shadow.gold, fontFamily: F }}
+              >
+                Go Book a Slot
+              </button>
             </FadeCard>
           ) : (
-            /* 2-Column Checkout Layout */
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: 24, alignItems: 'flex-start' }}>
-              
-              {/* ─── LEFT COLUMN: CART ITEMS & PROMO ─── */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                
-                {/* Grouped Campaigns */}
-                {groupedCart.map((group) => {
-                  const creativeId = group.creative?.id || 'default-ad';
-                  const isExpanded = !!expandedGroups[creativeId];
-                  
-                  const itemsByDate: Record<string, CartItem[]> = {};
-                  group.items.forEach(c => {
-                    const dKey = new Date(c.date).toDateString();
-                    if (!itemsByDate[dKey]) itemsByDate[dKey] = [];
-                    itemsByDate[dKey].push(c);
-                  });
 
-                  const sortedDates = Object.keys(itemsByDate).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
-
-                  return (
-                    <div 
-                      key={creativeId} 
-                      style={{ 
-                        background: theme.color.surface, 
-                        borderRadius: 20, 
-                        border: isExpanded ? '1.5px solid #C69A2C' : `1px solid ${theme.color.border}`, 
-                        overflow: 'hidden', 
-                        boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
-                        transition: 'all 0.2s'
-                      }}
-                    >
-                      {/* Campaign Header */}
-                      <div 
-                        onClick={() => toggleGroup(creativeId)} 
-                        style={{ 
-                          padding: '18px 24px', 
-                          display: 'flex', 
-                          justifyContent: 'space-between', 
-                          alignItems: 'center', 
-                          cursor: 'pointer', 
-                          background: isExpanded ? '#FFFDF5' : '#FFFFFF',
-                          borderBottom: isExpanded ? '1px solid #FDE68A' : 'none',
-                          transition: 'all 0.2s'
-                        }}
-                      >
-                        <div>
-                          <div style={{ fontWeight: 800, fontSize: 16, color: theme.color.text1, marginBottom: 4 }}>
-                            {group.creative?.title || 'Screen Ad Campaign'}
-                          </div>
-                          <div style={{ color: theme.color.text3, fontSize: 12, fontWeight: 600, display: 'flex', gap: 8, alignItems: 'center' }}>
-                            <span>{group.dates.size} Scheduled Date(s)</span>
-                            <span>•</span>
-                            <span>{group.items.length} Airtime Block(s)</span>
-                          </div>
-                        </div>
-
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                          <span style={{ color: '#C69A2C', fontWeight: 900, fontSize: 17 }}>
-                            {naira(group.totalCost)}
-                          </span>
-                          <div style={{ 
-                            background: isExpanded ? '#C69A2C' : theme.color.bg, 
-                            border: isExpanded ? 'none' : `1px solid ${theme.color.border}`, 
-                            borderRadius: '50%', 
-                            padding: 6, 
-                            display: 'flex', 
-                            color: isExpanded ? '#FFFFFF' : theme.color.text3 
-                          }}>
-                            {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                          </div>
-                        </div>
+              {/* LEFT: cart items */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {cart.map((item) => (
+                  <div key={item.id} style={{ background: theme.color.surface, borderRadius: 18, border: `1px solid ${theme.color.border}`, padding: 18, display: 'flex', gap: 14, boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
+                    {item.adPreviewUrl ? (
+                      <img src={item.adPreviewUrl} alt={item.adTitle} style={{ width: 56, height: 56, borderRadius: 12, objectFit: 'cover', flexShrink: 0 }} />
+                    ) : (
+                      <div style={{ width: 56, height: 56, borderRadius: 12, background: theme.color.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Monitor size={22} color={theme.color.text4} />
                       </div>
-
-                      {/* Expanded Items */}
-                      {isExpanded && (
-                        <div style={{ padding: '16px 24px 24px', background: theme.color.surface }}>
-                          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 14 }}>
-                            <button 
-                              onClick={(e) => { e.stopPropagation(); removeCampaign(creativeId); }} 
-                              style={{ 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                gap: 6, 
-                                color: '#EF4444', 
-                                fontSize: 12, 
-                                fontWeight: 700, 
-                                background: '#FEF2F2', 
-                                border: '1px solid #FECACA', 
-                                cursor: 'pointer', 
-                                padding: '6px 12px', 
-                                borderRadius: 8 
-                              }}
-                            >
-                              <Trash2 size={13} /> Remove Campaign
-                            </button>
-                          </div>
-
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                            {sortedDates.map(dateKey => (
-                              <div key={dateKey}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, color: '#475569', fontWeight: 800, fontSize: 13 }}>
-                                  <Calendar size={15} color="#C69A2C" />
-                                  <span>{new Date(dateKey).toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })}</span>
-                                </div>
-
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                                  {itemsByDate[dateKey].map(item => (
-                                    <div 
-                                      key={item.id} 
-                                      style={{ 
-                                        background: theme.color.bg, 
-                                        borderRadius: 12, 
-                                        padding: '12px 16px', 
-                                        display: 'flex', 
-                                        justifyContent: 'space-between', 
-                                        alignItems: 'center', 
-                                        border: `1px solid ${theme.color.border}` 
-                                      }}
-                                    >
-                                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                        <Clock size={15} color={theme.color.text4} />
-                                        <div>
-                                          <p style={{ fontSize: 13, fontWeight: 700, color: theme.color.text1, margin: 0 }}>
-                                            {formatMin(item.startMin)} – {formatMin(item.startMin + Math.max(1, Math.ceil((item.durationSec || 60) / 60)))}
-                                          </p>
-                                          <span style={{ fontSize: 11, color: theme.color.text3, fontWeight: 600 }}>
-                                            {Math.ceil((item.durationSec || 60) / 60)} min slot ({item.durationSec || 60}s duration)
-                                          </span>
-                                        </div>
-                                      </div>
-
-                                      <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                                        <span style={{ color: theme.color.text1, fontWeight: 800, fontSize: 14 }}>
-                                          {naira(item.priceInfo?.cost || 0)}
-                                        </span>
-                                        <div style={{ display: 'flex', gap: 6 }}>
-                                          <button 
-                                            onClick={() => { setEditingItem(item); setInitialTab('time'); }} 
-                                            style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, cursor: 'pointer', padding: 6, borderRadius: 6, color: '#475569' }} 
-                                            title="Edit Slot"
-                                          >
-                                            <Edit2 size={13} />
-                                          </button>
-                                          <button 
-                                            onClick={() => { removeFromCart(item.id); toast('Slot removed', 'success'); }} 
-                                            style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, cursor: 'pointer', padding: 6, borderRadius: 6, color: '#EF4444' }} 
-                                            title="Remove Slot"
-                                          >
-                                            <Trash2 size={13} />
-                                          </button>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
+                    )}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1, margin: '0 0 4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.adTitle}</p>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                        <Monitor size={12} color={theme.color.text3} />
+                        <span style={{ fontSize: 12, color: theme.color.text3 }}>{item.screenName}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <Clock size={12} color={theme.color.text3} />
+                        <span style={{ fontSize: 12, color: theme.color.text3 }}>{dateRangeLabel(item.slots)} · {item.slots.length} slot{item.slots.length !== 1 ? 's' : ''}</span>
+                      </div>
                     </div>
-                  );
-                })}
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+                      <span style={{ color: theme.color.gold, fontWeight: 900, fontSize: 15 }}>{naira(item.estimatedCost)}</span>
+                      <button
+                        onClick={() => { removeFromCart(item.id); toast('Removed from cart', 'info'); }}
+                        style={{ background: theme.color.surface2, border: `1px solid ${theme.color.border}`, cursor: 'pointer', padding: 6, borderRadius: 8, color: theme.color.error, display: 'flex' }}
+                        title="Remove"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
 
-                {/* Campaign Picker Attachment */}
                 <div style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 18, padding: 20 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                    <Layers size={16} color="#C69A2C" />
-                    <span style={{ fontSize: 13, fontWeight: 800, color: theme.color.text1 }}>
-                      Attach to Campaign (Optional)
-                    </span>
+                    <Layers size={16} color={theme.color.gold} />
+                    <span style={{ fontSize: 13, fontWeight: 800, color: theme.color.text1 }}>Attach to Campaign (Optional)</span>
                   </div>
                   <CampaignPicker value={campaignId} onChange={setCampaignId} />
                 </div>
-
               </div>
 
-              {/* ─── RIGHT COLUMN: ORDER SUMMARY & PAYMENT ─── */}
+              {/* RIGHT: order summary */}
               <div style={{ position: 'sticky', top: 24, display: 'flex', flexDirection: 'column', gap: 20 }}>
-                
-                {/* Order Summary Card */}
                 <div style={{ background: theme.color.surface, borderRadius: 24, border: `1px solid ${theme.color.border}`, padding: '24px 26px', boxShadow: '0 4px 24px rgba(0,0,0,0.03)' }}>
-                  <h2 style={{ fontSize: 18, fontWeight: 800, color: theme.color.text1, margin: '0 0 16px', letterSpacing: '-0.3px' }}>
-                    Order Summary
-                  </h2>
+                  <h2 style={{ fontSize: 18, fontWeight: 800, color: theme.color.text1, margin: '0 0 16px', letterSpacing: '-0.3px' }}>Order Summary</h2>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 20 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: theme.color.text3 }}>
-                      <span>Airtime Slots</span>
-                      <strong style={{ color: theme.color.text1 }}>{cart.length} block(s)</strong>
+                      <span>Items</span>
+                      <strong style={{ color: theme.color.text1 }}>{cart.length}</strong>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: theme.color.text3 }}>
-                      <span>Total Broadcast Time</span>
-                      <strong style={{ color: theme.color.text1 }}>~{totalMinutes} minutes</strong>
+                      <span>Total Slots</span>
+                      <strong style={{ color: theme.color.text1 }}>{totalSlots}</strong>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: theme.color.text3 }}>
-                      <span>Subtotal</span>
-                      <strong style={{ color: theme.color.text1 }}>{naira(rawTotal)}</strong>
+                      <span>Estimated Subtotal</span>
+                      <strong style={{ color: theme.color.text1 }}>{naira(estimatedTotal)}</strong>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: theme.color.text3 }}>
-                      <span>Screen Billboard</span>
-                      <strong style={{ color: theme.color.text1, textAlign: 'right' }}>Bems Junction, Umuahia</strong>
-                    </div>
+                  </div>
+
+                  <div style={{ background: theme.color.infoLight, border: `1px solid ${theme.color.infoBorder}`, borderRadius: 10, padding: '8px 12px', marginBottom: 16, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                    <Info size={13} color={theme.color.info} style={{ flexShrink: 0, marginTop: 1 }} />
+                    <span style={{ fontSize: 11, color: theme.color.text2, lineHeight: 1.5 }}>Slots are reserved for real only when you check out — the total is confirmed at that point.</span>
                   </div>
 
                   <div style={{ borderTop: `1px dashed ${theme.color.border}`, margin: '16px 0', width: '100%' }} />
 
-                  {/* Total Due */}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 24 }}>
-                    <span style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      Total Due
-                    </span>
-                    <span style={{ fontSize: 24, fontWeight: 900, color: '#C69A2C', letterSpacing: '-0.5px' }}>
-                      {naira(finalTotal)}
-                    </span>
+                    <span style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Due</span>
+                    <span style={{ fontSize: 24, fontWeight: 900, color: theme.color.gold, letterSpacing: '-0.5px' }}>{naira(estimatedTotal)}</span>
                   </div>
 
-                  {/* Payment Method Selector */}
-                  <p style={{ fontSize: 12, fontWeight: 800, color: theme.color.text1, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 10px' }}>
-                    Select Payment Method
-                  </p>
+                  <p style={{ fontSize: 12, fontWeight: 800, color: theme.color.text1, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 10px' }}>Select Payment Method</p>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
-                    {/* Method 1: Wallet */}
-                    <div 
+                    <div
                       onClick={() => setPaymentMethod('wallet')}
-                      style={{ 
-                        border: paymentMethod === 'wallet' ? '1.5px solid #C69A2C' : `1px solid ${theme.color.border}`,
-                        background: paymentMethod === 'wallet' ? '#FFFDF5' : '#FFFFFF',
-                        borderRadius: 14,
-                        padding: '14px 16px',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        transition: 'all 0.15s'
-                      }}
+                      style={{ border: paymentMethod === 'wallet' ? `1.5px solid ${theme.color.gold}` : `1px solid ${theme.color.border}`, background: paymentMethod === 'wallet' ? theme.color.goldLight : theme.color.surface, borderRadius: 14, padding: '14px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <div style={{ width: 34, height: 34, borderRadius: 10, background: '#FFF7ED', border: '1px solid #FED7AA', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <Wallet size={16} color="#EA580C" />
+                        <div style={{ width: 34, height: 34, borderRadius: 10, background: theme.color.warningLight, border: `1px solid ${theme.color.warning}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Wallet size={16} color={theme.color.warning} />
                         </div>
                         <div>
-                          <p style={{ fontSize: 13, fontWeight: 800, color: theme.color.text1, margin: 0 }}>
-                            Pay from Wallet
-                          </p>
-                          <p style={{ fontSize: 11, color: theme.color.text3, margin: '2px 0 0', fontWeight: 600 }}>
-                            Bal: ₦{walletBalance.toLocaleString('en-NG', { maximumFractionDigits: 0 })} · Instant
-                          </p>
+                          <p style={{ fontSize: 13, fontWeight: 800, color: theme.color.text1, margin: 0 }}>Pay from Wallet</p>
+                          <p style={{ fontSize: 11, color: theme.color.text3, margin: '2px 0 0', fontWeight: 600 }}>Bal: ₦{walletBalance.toLocaleString('en-NG', { maximumFractionDigits: 0 })} · Instant</p>
                         </div>
                       </div>
-                      <div style={{ 
-                        width: 18, 
-                        height: 18, 
-                        borderRadius: '50%', 
-                        border: paymentMethod === 'wallet' ? '5px solid #C69A2C' : `2px solid ${theme.color.border2}`, 
-                        background: theme.color.surface 
-                      }} />
+                      <div style={{ width: 18, height: 18, borderRadius: '50%', border: paymentMethod === 'wallet' ? `5px solid ${theme.color.gold}` : `2px solid ${theme.color.border2}`, background: theme.color.surface }} />
                     </div>
 
-                    {/* Method 2: Card / Monnify */}
-                    <div 
-                      onClick={() => setPaymentMethod('monnify')}
-                      style={{ 
-                        border: paymentMethod === 'monnify' ? '1.5px solid #C69A2C' : `1px solid ${theme.color.border}`,
-                        background: paymentMethod === 'monnify' ? '#FFFDF5' : '#FFFFFF',
-                        borderRadius: 14,
-                        padding: '14px 16px',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        transition: 'all 0.15s'
-                      }}
+                    <div
+                      onClick={() => setPaymentMethod('card')}
+                      style={{ border: paymentMethod === 'card' ? `1.5px solid ${theme.color.gold}` : `1px solid ${theme.color.border}`, background: paymentMethod === 'card' ? theme.color.goldLight : theme.color.surface, borderRadius: 14, padding: '14px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', opacity: cart.length > 1 ? 0.5 : 1 }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <div style={{ width: 34, height: 34, borderRadius: 10, background: '#EFF6FF', border: '1px solid #BFDBFE', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <CreditCard size={16} color="#2563EB" />
+                        <div style={{ width: 34, height: 34, borderRadius: 10, background: theme.color.infoLight, border: `1px solid ${theme.color.infoBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <CreditCard size={16} color={theme.color.info} />
                         </div>
                         <div>
-                          <p style={{ fontSize: 13, fontWeight: 800, color: theme.color.text1, margin: 0 }}>
-                            Card / Bank Transfer
-                          </p>
+                          <p style={{ fontSize: 13, fontWeight: 800, color: theme.color.text1, margin: 0 }}>Card / Bank Transfer</p>
                           <p style={{ fontSize: 11, color: theme.color.text3, margin: '2px 0 0', fontWeight: 600 }}>
-                            Direct checkout via Monnify
+                            {cart.length > 1 ? 'Single item only — remove extras to use card' : 'Direct checkout via secure gateway'}
                           </p>
                         </div>
                       </div>
-                      <div style={{ 
-                        width: 18, 
-                        height: 18, 
-                        borderRadius: '50%', 
-                        border: paymentMethod === 'monnify' ? '5px solid #C69A2C' : `2px solid ${theme.color.border2}`, 
-                        background: theme.color.surface 
-                      }} />
+                      <div style={{ width: 18, height: 18, borderRadius: '50%', border: paymentMethod === 'card' ? `5px solid ${theme.color.gold}` : `2px solid ${theme.color.border2}`, background: theme.color.surface }} />
                     </div>
                   </div>
 
-                  {/* Wallet Balance Status Indicator */}
                   {paymentMethod === 'wallet' && (
-                    <div style={{ 
-                      background: hasSufficientBalance ? '#F0FDF4' : '#FEF2F2', 
-                      border: `1px solid ${hasSufficientBalance ? '#BBF7D0' : '#FECACA'}`, 
-                      borderRadius: 12, 
-                      padding: '10px 14px', 
-                      marginBottom: 20, 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      gap: 10 
-                    }}>
+                    <div style={{ background: hasSufficientBalance ? theme.color.successLight : theme.color.errorLight, border: `1px solid ${hasSufficientBalance ? theme.color.success : theme.color.error}`, borderRadius: 12, padding: '10px 14px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10 }}>
                       {hasSufficientBalance ? (
                         <>
-                          <Check size={16} color="#16A34A" />
-                          <span style={{ fontSize: 12, color: '#166534', fontWeight: 700 }}>
-                            Sufficient funds in wallet balance.
-                          </span>
+                          <Check size={16} color={theme.color.success} />
+                          <span style={{ fontSize: 12, color: theme.color.success, fontWeight: 700 }}>Sufficient funds in wallet balance.</span>
                         </>
                       ) : (
                         <>
-                          <X size={16} color="#DC2626" />
                           <div style={{ flex: 1 }}>
-                            <span style={{ fontSize: 12, color: '#991B1B', fontWeight: 700 }}>
-                              Insufficient funds. Need {naira(finalTotal - walletBalance)} more.
-                            </span>
-                            <Link href="/finances" style={{ display: 'block', fontSize: 11, color: '#C69A2C', fontWeight: 800, textDecoration: 'underline', marginTop: 2 }}>
-                              + Fund Wallet First
-                            </Link>
+                            <span style={{ fontSize: 12, color: theme.color.error, fontWeight: 700 }}>Insufficient funds. Need {naira(estimatedTotal - walletBalance)} more.</span>
+                            <Link href="/finances" style={{ display: 'block', fontSize: 11, color: theme.color.gold, fontWeight: 800, textDecoration: 'underline', marginTop: 2 }}>+ Fund Wallet First</Link>
                           </div>
                         </>
                       )}
                     </div>
                   )}
 
-                  {/* Primary Checkout Button */}
                   <button
                     onClick={handleProceedCheckout}
-                    disabled={reserving || (paymentMethod === 'wallet' && !hasSufficientBalance)}
-                    style={{
-                      width: '100%',
-                      padding: '14px 20px',
-                      background: (paymentMethod === 'wallet' && !hasSufficientBalance) ? theme.color.border2 : '#C69A2C',
-                      color: '#FFFFFF',
-                      border: 'none',
-                      borderRadius: 12,
-                      fontSize: 15,
-                      fontWeight: 800,
-                      cursor: (reserving || (paymentMethod === 'wallet' && !hasSufficientBalance)) ? 'not-allowed' : 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 8,
-                      boxShadow: '0 4px 16px rgba(198, 154, 44, 0.25)',
-                      transition: 'all 0.2s',
-                      fontFamily: F
-                    }}
+                    disabled={checkingOut || (paymentMethod === 'wallet' && !hasSufficientBalance) || (paymentMethod === 'card' && cart.length > 1)}
+                    style={{ width: '100%', padding: '14px 20px', background: (checkingOut || (paymentMethod === 'wallet' && !hasSufficientBalance) || (paymentMethod === 'card' && cart.length > 1)) ? theme.color.border2 : theme.color.gold, color: '#FFFFFF', border: 'none', borderRadius: 12, fontSize: 15, fontWeight: 800, cursor: (checkingOut || (paymentMethod === 'wallet' && !hasSufficientBalance)) ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: F }}
                   >
-                    {reserving ? (
-                      <>
-                        <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} />
-                        <span>Connecting to Gateway...</span>
-                      </>
+                    {checkingOut ? (
+                      <><Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /><span>Reserving your slots...</span></>
                     ) : (
-                      <>
-                        <span>Proceed to Pay {naira(finalTotal)}</span>
-                        <ArrowRight size={16} />
-                      </>
+                      <><span>Proceed to Pay {naira(estimatedTotal)}</span><ArrowRight size={16} /></>
                     )}
                   </button>
 
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 16, color: theme.color.text4, fontSize: 11, fontWeight: 600 }}>
-                    <ShieldCheck size={14} color="#10B981" />
+                    <ShieldCheck size={14} color={theme.color.success} />
                     <span>256-Bit SSL Encrypted Checkout</span>
                   </div>
-
                 </div>
               </div>
-
             </div>
           )}
-
         </div>
 
-        {/* ─── MODAL A: "PAY FROM WALLET" (Figma Frame 2121459611) ─── */}
+        {/* MODAL: Pay from wallet */}
         <AnimatePresence>
           {showWalletModal && (
             <>
-              <motion.div 
-                key="wallet-bd" 
-                initial={{ opacity: 0 }} 
-                animate={{ opacity: 1 }} 
-                exit={{ opacity: 0 }}
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 onClick={() => setShowWalletModal(false)}
-                style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.5)', zIndex: 200, backdropFilter: 'blur(4px)' }} 
-              />
+                style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', zIndex: 200, backdropFilter: 'blur(4px)' }} />
               <div style={{ position: 'fixed', inset: 0, zIndex: 201, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, pointerEvents: 'none' }}>
-                <motion.div 
-                  key="wallet-card"
-                  initial={{ opacity: 0, scale: 0.94, y: 16 }} 
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.96, y: 10 }} 
-                  transition={{ duration: 0.2 }}
-                  style={{ width: '100%', maxWidth: 440, pointerEvents: 'auto' }}
-                >
+                <motion.div initial={{ opacity: 0, scale: 0.94, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96, y: 10 }} transition={{ duration: 0.2 }}
+                  style={{ width: '100%', maxWidth: 440, pointerEvents: 'auto' }}>
                   <div style={{ background: theme.color.surface, borderRadius: 24, padding: '32px 28px', boxShadow: '0 20px 40px rgba(0,0,0,0.15)', fontFamily: F }}>
-                    
-                    {/* Header: Back Arrow, Title, Close Icon */}
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
-                      <button 
-                        onClick={() => setShowWalletModal(false)}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text1, padding: 4 }}
-                      >
-                        <ChevronLeft size={20} />
-                      </button>
-                      <h2 style={{ fontSize: 18, fontWeight: 800, color: theme.color.text1, margin: 0 }}>
-                        Pay from wallet
-                      </h2>
-                      <button 
-                        onClick={() => setShowWalletModal(false)}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text1, padding: 4 }}
-                      >
-                        <X size={18} />
-                      </button>
+                      <button onClick={() => setShowWalletModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text1, padding: 4 }}><ChevronLeft size={20} /></button>
+                      <h2 style={{ fontSize: 18, fontWeight: 800, color: theme.color.text1, margin: 0 }}>Pay from wallet</h2>
+                      <span style={{ width: 20 }} />
                     </div>
-
-                    {/* Gold Bordered Box */}
-                    <div style={{ 
-                      border: '1.5px solid #C69A2C', 
-                      borderRadius: 16, 
-                      padding: '20px 24px', 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'space-between',
-                      marginBottom: 28,
-                      background: theme.color.surface
-                    }}>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: theme.color.text2 }}>
-                        Total amount
-                      </span>
-                      <span style={{ fontSize: 15, fontWeight: 900, color: theme.color.text1, letterSpacing: '-0.2px' }}>
-                        NGN {Number(finalTotal).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </span>
+                    <div style={{ border: `1.5px solid ${theme.color.gold}`, borderRadius: 16, padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: theme.color.text2 }}>Total amount ({reservedBookings?.length || 0} booking{(reservedBookings?.length || 0) !== 1 ? 's' : ''})</span>
+                      <span style={{ fontSize: 15, fontWeight: 900, color: theme.color.text1 }}>{naira(realTotal)}</span>
                     </div>
-
-                    {/* Gold Pay Button */}
                     <button
                       onClick={handleConfirmWalletPayment}
                       disabled={paying}
-                      style={{
-                        width: '100%',
-                        padding: '14px',
-                        background: '#C69A2C',
-                        color: '#FFFFFF',
-                        border: 'none',
-                        borderRadius: 12,
-                        fontSize: 15,
-                        fontWeight: 800,
-                        cursor: paying ? 'not-allowed' : 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: 8,
-                        boxShadow: '0 4px 14px rgba(198, 154, 44, 0.25)',
-                        fontFamily: F
-                      }}
+                      style={{ width: '100%', padding: '14px', background: theme.color.gold, color: '#FFFFFF', border: 'none', borderRadius: 12, fontSize: 15, fontWeight: 800, cursor: paying ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: F }}
                     >
-                      {paying ? (
-                        <>
-                          <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} />
-                          <span>Processing Payment...</span>
-                        </>
-                      ) : (
-                        <span>Pay</span>
-                      )}
+                      {paying ? (<><Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /><span>Processing Payment...</span></>) : (<span>Pay</span>)}
                     </button>
-
                   </div>
                 </motion.div>
               </div>
@@ -767,90 +412,27 @@ export default function CartPage() {
           )}
         </AnimatePresence>
 
-        {/* ─── MODAL B: "PAYMENT SUCCESSFUL" (Figma Frame 2121459612) ─── */}
+        {/* MODAL: Payment successful */}
         <AnimatePresence>
           {showSuccessModal && (
             <>
-              <motion.div 
-                key="success-bd" 
-                initial={{ opacity: 0 }} 
-                animate={{ opacity: 1 }} 
-                exit={{ opacity: 0 }}
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 onClick={() => { setShowSuccessModal(false); router.push('/bookings'); }}
-                style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.5)', zIndex: 200, backdropFilter: 'blur(4px)' }} 
-              />
+                style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', zIndex: 200, backdropFilter: 'blur(4px)' }} />
               <div style={{ position: 'fixed', inset: 0, zIndex: 201, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, pointerEvents: 'none' }}>
-                <motion.div 
-                  key="success-card"
-                  initial={{ opacity: 0, scale: 0.94, y: 16 }} 
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.96, y: 10 }} 
-                  transition={{ duration: 0.2 }}
-                  style={{ width: '100%', maxWidth: 440, pointerEvents: 'auto' }}
-                >
+                <motion.div initial={{ opacity: 0, scale: 0.94, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96, y: 10 }} transition={{ duration: 0.2 }}
+                  style={{ width: '100%', maxWidth: 440, pointerEvents: 'auto' }}>
                   <div style={{ background: theme.color.surface, borderRadius: 24, padding: '36px 28px', textAlign: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.15)', fontFamily: F }}>
-                    
-                    {/* Header: Back Arrow, Title, Close Icon */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
-                      <button 
-                        onClick={() => { setShowSuccessModal(false); router.push('/bookings'); }}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text1, padding: 4 }}
-                      >
-                        <ChevronLeft size={20} />
-                      </button>
-                      <h2 style={{ fontSize: 18, fontWeight: 800, color: theme.color.text1, margin: 0 }}>
-                        Pay from wallet
-                      </h2>
-                      <button 
-                        onClick={() => { setShowSuccessModal(false); router.push('/bookings'); }}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text1, padding: 4 }}
-                      >
-                        <X size={18} />
-                      </button>
-                    </div>
-
-                    {/* Radiant Golden Circle with Checkmark */}
-                    <div style={{ 
-                      width: 72, 
-                      height: 72, 
-                      borderRadius: '50%', 
-                      background: 'radial-gradient(circle, #D4AF37 0%, #A47D1C 100%)', 
-                      boxShadow: '0 0 32px rgba(212, 175, 55, 0.45)',
-                      display: 'inline-flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center', 
-                      marginBottom: 20 
-                    }}>
+                    <div style={{ width: 72, height: 72, borderRadius: '50%', background: `radial-gradient(circle, ${theme.color.gold} 0%, ${theme.color.goldDark} 100%)`, boxShadow: theme.shadow.gold, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
                       <Check size={32} color="#FFFFFF" strokeWidth={3} />
                     </div>
-
-                    <h3 style={{ fontSize: 20, fontWeight: 800, color: theme.color.text1, margin: '0 0 28px', letterSpacing: '-0.3px' }}>
-                      Payment successful
-                    </h3>
-
-                    {/* Gold Finish Button */}
+                    <h3 style={{ fontSize: 20, fontWeight: 800, color: theme.color.text1, margin: '0 0 28px', letterSpacing: '-0.3px' }}>Payment successful</h3>
                     <button
-                      onClick={() => {
-                        setShowSuccessModal(false);
-                        router.push('/bookings');
-                      }}
-                      style={{
-                        width: '100%',
-                        padding: '14px',
-                        background: '#C69A2C',
-                        color: '#FFFFFF',
-                        border: 'none',
-                        borderRadius: 12,
-                        fontSize: 15,
-                        fontWeight: 800,
-                        cursor: 'pointer',
-                        boxShadow: '0 4px 14px rgba(198, 154, 44, 0.25)',
-                        fontFamily: F
-                      }}
+                      onClick={() => { setShowSuccessModal(false); router.push('/bookings'); }}
+                      style={{ width: '100%', padding: '14px', background: theme.color.gold, color: '#FFFFFF', border: 'none', borderRadius: 12, fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: F }}
                     >
                       Finish
                     </button>
-
                   </div>
                 </motion.div>
               </div>
@@ -858,36 +440,12 @@ export default function CartPage() {
           )}
         </AnimatePresence>
 
-        {/* ─── MODAL: EDIT CART ITEM ─── */}
-        {editingItem && (
-          <EditCartModal 
-            item={editingItem} 
-            onClose={() => setEditingItem(null)} 
-            initialTab={initialTab} 
-          />
-        )}
-
-        {/* ─── FLOATING "CHAT WITH ARELLA 🌐" WIDGET ─── */}
+        {/* Floating "Chat with Arella" widget */}
         <div className="chat-fab-widget" style={{ position: 'fixed', bottom: 32, right: 32, zIndex: 90 }}>
           <div style={{ position: 'relative' }}>
             <Link
               href="/chat"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 10,
-                padding: '12px 24px',
-                background: theme.color.surface,
-                border: `1px solid ${theme.color.border}`,
-                borderRadius: 24,
-                boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
-                textDecoration: 'none',
-                color: '#1E293B',
-                fontSize: 13,
-                fontWeight: 700,
-                transition: 'all 0.2s',
-                fontFamily: F
-              }}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '12px 24px', background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 24, boxShadow: '0 4px 20px rgba(0,0,0,0.06)', textDecoration: 'none', color: theme.color.text1, fontSize: 13, fontWeight: 700, fontFamily: F }}
             >
               <span className="chat-fab-label">Chat with Arella</span>
               <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'linear-gradient(135deg, #6366F1, #A855F7, #EC4899)', padding: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -896,22 +454,8 @@ export default function CartPage() {
                 </div>
               </div>
             </Link>
-            {/* Speech bubble tail */}
-            <div style={{
-              position: 'absolute',
-              bottom: -7,
-              right: 28,
-              width: 0,
-              height: 0,
-              borderLeft: '7px solid transparent',
-              borderRight: '7px solid transparent',
-              borderTop: '8px solid #FFFFFF',
-              filter: 'drop-shadow(0 2px 2px rgba(0,0,0,0.04))',
-              pointerEvents: 'none'
-            }} />
           </div>
         </div>
-
       </PageTransition>
     </DashboardLayout>
   );

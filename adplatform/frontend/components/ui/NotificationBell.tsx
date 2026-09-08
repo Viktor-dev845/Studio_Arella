@@ -6,6 +6,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FaBell, FaCheck, FaTrash, FaCircleCheck, FaCircleXmark, FaCalendarCheck, FaCreditCard, FaBullhorn, FaCalendarDays } from 'react-icons/fa6';
 import api from '@/lib/api';
 import { theme } from '@/lib/theme';
+import { usePreferencesStore } from '@/store/preferencesStore';
+import { playNotificationChime } from '@/lib/sound';
 
 const F = theme.font.body;
 const POLL_INTERVAL = 30_000; // 30 seconds
@@ -48,13 +50,23 @@ export default function NotificationBell() {
   const [loading, setLoading] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const { soundEnabled } = usePreferencesStore();
+  const prevUnreadRef = useRef<number | null>(null);
 
   const fetchUnread = useCallback(async () => {
     try {
       const r = await api.get('/notifications/unread');
-      setUnread(r.data.unread || 0);
+      const next = r.data.unread || 0;
+      // Only chime when the count genuinely rose from a known previous
+      // value — not on first load, so opening the app with 5 unread
+      // notifications doesn't blast a sound immediately.
+      if (soundEnabled && prevUnreadRef.current !== null && next > prevUnreadRef.current) {
+        playNotificationChime();
+      }
+      prevUnreadRef.current = next;
+      setUnread(next);
     } catch {}
-  }, []);
+  }, [soundEnabled]);
 
   const fetchAll = useCallback(async () => {
     setLoading(true);

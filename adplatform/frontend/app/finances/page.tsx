@@ -7,6 +7,8 @@ import { useToast } from '@/components/ui/ToastProvider';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import api from '@/lib/api';
+import { usePreferencesStore } from '@/store/preferencesStore';
+import { formatCurrency } from '@/lib/currency';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   CreditCard, 
@@ -74,6 +76,7 @@ export default function FinancesPage() {
   const [pageSize, setPageSize] = useState(10);
   
   const { toast } = useToast();
+  const { currency, rates } = usePreferencesStore();
 
   const fetchData = async () => {
     setLoadError(false);
@@ -309,15 +312,15 @@ export default function FinancesPage() {
             {[
               {
                 label: 'Available Balance',
-                value: `₦${walletCredits.toLocaleString()}`,
-                subValue: `$${(walletCredits / 1500).toFixed(0).toLocaleString()} USD`,
+                value: formatCurrency(walletCredits, currency, rates),
+                subValue: currency === 'NGN' ? 'Real wallet balance' : `₦${walletCredits.toLocaleString()} actual balance`,
                 icon: CreditCard,
                 color: '#C69A2C',
                 bg: '#FFFDF5'
               },
               {
                 label: 'Total Spent',
-                value: `₦${totalSpending.toLocaleString()}`,
+                value: formatCurrency(totalSpending, currency, rates),
                 subValue: 'Screen Ads & Studio',
                 icon: TrendingDown,
                 color: '#EF4444',
@@ -435,11 +438,13 @@ export default function FinancesPage() {
 
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
                   <p style={{ fontSize: 26, color: '#FFFFFF', fontWeight: 900, margin: 0, letterSpacing: '-0.5px' }}>
-                    $ {(walletCredits / 1500).toFixed(0).toLocaleString()}
+                    {formatCurrency(walletCredits, currency, rates)}
                   </p>
-                  <span style={{ fontSize: 15, color: 'rgba(255,255,255,0.9)', fontWeight: 700 }}>
-                    / ₦{walletCredits.toLocaleString()}
-                  </span>
+                  {currency !== 'NGN' && (
+                    <span style={{ fontSize: 15, color: 'rgba(255,255,255,0.9)', fontWeight: 700 }}>
+                      / ₦{walletCredits.toLocaleString()}
+                    </span>
+                  )}
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10 }}>
@@ -846,7 +851,7 @@ export default function FinancesPage() {
                               color: isPending ? '#D97706' : isCredit ? '#059669' : theme.color.text1,
                               letterSpacing: '-0.3px'
                             }}>
-                              {isPending ? '' : isCredit ? '+' : '-'}₦{Number(t.amount).toLocaleString()}
+                              {isPending ? '' : isCredit ? '+' : '-'}{formatCurrency(Number(t.amount), currency, rates)}
                             </span>
                           </td>
 
