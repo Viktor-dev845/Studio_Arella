@@ -101,7 +101,7 @@ export default function ChatPage() {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: 4,
-                color: '#475569',
+                color: theme.color.text2,
                 textDecoration: 'none',
                 fontSize: 13,
                 fontWeight: 600,
@@ -118,7 +118,7 @@ export default function ChatPage() {
           {/* Outer Chat Box Card (Matching Frame 2121459599) */}
           <div
             style={{
-              background: '#EAECEF',
+              background: theme.color.surface2,
               borderRadius: 24,
               border: `1px solid ${theme.color.border}`,
               padding: '32px 36px 24px',
@@ -133,7 +133,7 @@ export default function ChatPage() {
             <div style={{ maxWidth: 760, margin: '0 auto', width: '100%', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               
               {/* Centered 'Your response' subtitle */}
-              <p style={{ textAlign: 'center', fontSize: 12, fontWeight: 600, color: '#64748B', margin: '0 0 20px', letterSpacing: '0.02em' }}>
+              <p style={{ textAlign: 'center', fontSize: 12, fontWeight: 600, color: theme.color.text3, margin: '0 0 20px', letterSpacing: '0.02em' }}>
                 Your response
               </p>
 
@@ -148,15 +148,15 @@ export default function ChatPage() {
                             width: 34,
                             height: 34,
                             borderRadius: '50%',
-                            background: '#E5E7EB',
-                            border: '1px solid #D1D5DB',
+                            background: theme.color.surface2,
+                            border: `1px solid ${theme.color.border}`,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             flexShrink: 0,
                           }}
                         >
-                          <User size={18} color="#6B7280" />
+                          <User size={18} color={theme.color.text3} />
                         </div>
 
                         {/* User Input Bubble with Edit Pencil */}
@@ -172,7 +172,7 @@ export default function ChatPage() {
                             justifyContent: 'space-between',
                             fontSize: 13,
                             fontWeight: 600,
-                            color: '#1E293B',
+                            color: theme.color.text1,
                             boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
                           }}
                         >
@@ -299,16 +299,16 @@ export default function ChatPage() {
                     padding: '8px 22px',
                     fontSize: 12,
                     fontWeight: 700,
-                    color: '#475569',
+                    color: theme.color.text2,
                     cursor: 'pointer',
                     fontFamily: F,
                     boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
                     transition: 'all 0.2s',
                   }}
                   onMouseEnter={(e) => { e.currentTarget.style.background = theme.color.bg; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = '#FFFFFF'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = theme.color.surface; }}
                 >
-                  <RotateCcw size={13} color="#475569" />
+                  <RotateCcw size={13} color={theme.color.text2} />
                   <span>Regenerate response</span>
                 </button>
               </div>
@@ -337,7 +337,7 @@ export default function ChatPage() {
                     outline: 'none',
                     boxShadow: '0 1px 2px rgba(0,0,0,0.02)',
                   }}
-                  onFocus={(e) => { e.currentTarget.style.borderColor = '#C69A2C'; }}
+                  onFocus={(e) => { e.currentTarget.style.borderColor = theme.color.gold; }}
                   onBlur={(e) => { e.currentTarget.style.borderColor = theme.color.border2; }}
                 />
 
@@ -364,7 +364,7 @@ export default function ChatPage() {
                 </button>
               </form>
 
-              <p style={{ textAlign: 'center', fontSize: 11, color: '#94A3B8', fontWeight: 500, margin: '12px 0 0' }}>
+              <p style={{ textAlign: 'center', fontSize: 11, color: theme.color.text4, fontWeight: 500, margin: '12px 0 0' }}>
                 Free Research Preview. Arella AI may produce inaccurate information about people, places, or facts.
               </p>
             </div>
