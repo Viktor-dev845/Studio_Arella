@@ -172,10 +172,10 @@ export default function AdminCreativeRequestsPage() {
                       <StatusBadge status={selectedRequest.status} />
                     </div>
                     <div style={{ display: 'flex', gap: 10 }}>
-                      <button 
-                        disabled={updating || selectedRequest.status === 'contacted'}
-                        onClick={() => updateStatus(selectedRequest.id, 'contacted')}
-                        style={{ padding: '8px 16px', background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 8, fontSize: 13, fontWeight: 600, color: theme.color.text1, cursor: updating || selectedRequest.status === 'contacted' ? 'not-allowed' : 'pointer', opacity: selectedRequest.status === 'contacted' ? 0.5 : 1 }}
+                      <button
+                        disabled={updating || selectedRequest.status === 'in_progress'}
+                        onClick={() => updateStatus(selectedRequest.id, 'in_progress')}
+                        style={{ padding: '8px 16px', background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 8, fontSize: 13, fontWeight: 600, color: theme.color.text1, cursor: updating || selectedRequest.status === 'in_progress' ? 'not-allowed' : 'pointer', opacity: selectedRequest.status === 'in_progress' ? 0.5 : 1 }}
                       >
                         Mark Contacted
                       </button>

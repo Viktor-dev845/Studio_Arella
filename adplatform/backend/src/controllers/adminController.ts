@@ -22,8 +22,8 @@ export const getPlatformStats : RequestHandler = async (req, res) => {
       pool.query('SELECT COUNT(*) FROM bookings'),
       pool.query('SELECT COUNT(*) FROM podcast_bookings'),
       pool.query('SELECT COUNT(*) FROM screens'),
-      pool.query(`SELECT COALESCE(SUM(total_cost),0) as total FROM bookings WHERE status != 'cancelled'`),
-      pool.query(`SELECT COALESCE(SUM(total_cost),0) as total FROM podcast_bookings WHERE status != 'cancelled'`),
+      pool.query(`SELECT COALESCE(SUM(total_cost),0) as total FROM bookings WHERE status IN ('active','ended','completed')`),
+      pool.query(`SELECT COALESCE(SUM(total_cost),0) as total FROM podcast_bookings WHERE status IN ('confirmed','completed')`),
       pool.query(`SELECT id, name, email, role, COALESCE(credits, 0) as credits, created_at FROM users ORDER BY created_at DESC LIMIT 10`),
     ]);
 
@@ -141,7 +141,7 @@ export const updateUserRole : RequestHandler = async (req, res) => {
   if (!adminOnly(req, res)) return;
   try {
     const { role } = req.body;
-    const validRoles = ['advertiser', 'admin'];
+    const validRoles = ['advertiser', 'admin', 'screen_owner'];
     if (!validRoles.includes(role)) { res.status(400).json({ message: 'Invalid role' }); return; }
     const result = await pool.query(
       `UPDATE users SET role = $1 WHERE id = $2 RETURNING id, name, email, role`,

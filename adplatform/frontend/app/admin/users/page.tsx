@@ -13,8 +13,9 @@ const F = theme.font.body;
 const card: React.CSSProperties = { background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: theme.radius.lg, overflow: 'hidden' };
 
 const roleMeta: Record<string, { bg: string; text: string }> = {
-  admin:      { bg: theme.color.goldLight, text: theme.color.goldDark },
-  advertiser: { bg: theme.color.infoLight, text: theme.color.info },
+  admin:        { bg: theme.color.goldLight, text: theme.color.goldDark },
+  advertiser:   { bg: theme.color.infoLight, text: theme.color.info },
+  screen_owner: { bg: theme.color.successLight, text: theme.color.success },
 };
 
 export default function AdminUsersPage() {
@@ -64,7 +65,7 @@ export default function AdminUsersPage() {
               onFocus={e => { e.target.style.borderColor = theme.color.gold; }}
               onBlur={e => { e.target.style.borderColor = theme.color.border; }} />
           </div>
-          {['all', 'advertiser', 'admin'].map(r => (
+          {['all', 'advertiser', 'screen_owner', 'admin'].map(r => (
             <motion.button key={r} whileTap={{ scale: 0.96 }} onClick={() => setRoleFilter(r)}
               style={{ padding: '8px 14px', background: roleFilter === r ? theme.color.gold : theme.color.surface, border: `1.5px solid ${roleFilter === r ? theme.color.gold : theme.color.border}`, color: roleFilter === r ? theme.color.charcoal900 : theme.color.text2, borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: F, textTransform: 'capitalize' }}>
               {r === 'all' ? 'All Roles' : r.replace('_', ' ')}
@@ -108,6 +109,7 @@ export default function AdminUsersPage() {
                       <select value={u.role} onChange={e => updateRole(u.id, e.target.value)} disabled={updating === u.id}
                         style={{ background: theme.color.surface2, border: `1.5px solid ${theme.color.border}`, color: theme.color.text2, borderRadius: 7, padding: '5px 8px', fontSize: 12, cursor: 'pointer', fontFamily: F, outline: 'none' }}>
                         <option value="advertiser">Advertiser</option>
+                        <option value="screen_owner">Screen Owner</option>
                         <option value="admin">Admin</option>
                       </select>
                     </TableCell>

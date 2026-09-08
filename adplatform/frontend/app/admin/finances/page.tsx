@@ -25,7 +25,7 @@ export default function AdminFinancesPage() {
   const summaryCards = [
     { label: 'Total Platform Revenue', value: `₦${Number(stats?.revenue || 0).toLocaleString()}`, icon: DollarSign, color: theme.color.success, bg: theme.color.successLight },
     { label: 'Total Users', value: stats?.users || 0, icon: Users, color: theme.color.gold, bg: theme.color.goldLight },
-    { label: 'Active Bookings', value: stats?.bookings || 0, icon: CreditCard, color: theme.color.gold, bg: theme.color.goldLight },
+    { label: 'Total Bookings', value: stats?.bookings || 0, icon: CreditCard, color: theme.color.gold, bg: theme.color.goldLight },
     { label: 'Registered Screens', value: stats?.screens || 0, icon: TrendingUp, color: theme.color.gold, bg: '#F5F3FF' },
   ];
 

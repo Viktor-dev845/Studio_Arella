@@ -36,7 +36,7 @@ export default function AdminCampaignsPage() {
             <Megaphone size={18} color={theme.color.gold} />
             <h1 style={{ fontFamily: theme.font.display, fontSize: 24, fontWeight: 600, color: theme.color.text1, margin: 0 }}>All Campaigns</h1>
           </div>
-          <p style={{ fontSize: 13, color: theme.color.text3, margin: 0 }}>{campaigns.length} campaigns across the platform</p>
+          <p style={{ fontSize: 13, color: theme.color.text3, margin: 0 }}>{campaigns.length} campaign{campaigns.length !== 1 ? 's' : ''} across the platform</p>
         </div>
 
         <div style={{ position: 'relative', marginBottom: 16, maxWidth: 360 }}>
