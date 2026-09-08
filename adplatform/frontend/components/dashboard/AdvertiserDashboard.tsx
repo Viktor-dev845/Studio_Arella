@@ -179,7 +179,7 @@ export default function AdvertiserDashboard() {
         padding: '24px 28px 40px',
         minHeight: '100%',
         alignItems: 'flex-start',
-        background: '#FAFAFA',
+        background: theme.color.bg,
       }}
     >
       <style>{`
@@ -220,7 +220,7 @@ export default function AdvertiserDashboard() {
               gap: 6,
               background: 'none',
               border: 'none',
-              color: '#475569',
+              color: theme.color.text2,
               fontSize: 13,
               fontWeight: 700,
               cursor: 'pointer',
@@ -236,7 +236,7 @@ export default function AdvertiserDashboard() {
           {/* Card 1: Total Podcast */}
           <div
             style={{
-              background: '#F9FAEE',
+              background: theme.color.statMint,
               borderRadius: 16,
               padding: '20px',
               border: '1px solid rgba(212,175,55,0.06)',
@@ -248,7 +248,7 @@ export default function AdvertiserDashboard() {
             </div>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
               <span style={{ fontSize: 28, fontWeight: 800, color: theme.color.text1, lineHeight: 1 }}>7</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#10B981', fontSize: 11, fontWeight: 800 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: theme.color.success, fontSize: 11, fontWeight: 800 }}>
                 +11.01% <FaArrowTrendUp size={10} />
               </div>
             </div>
@@ -257,7 +257,7 @@ export default function AdvertiserDashboard() {
           {/* Card 2: Total Active Listeners */}
           <div
             style={{
-              background: '#FFFDF5',
+              background: theme.color.statVanilla,
               borderRadius: 16,
               padding: '20px',
               border: '1px solid rgba(212,175,55,0.06)',
@@ -278,7 +278,7 @@ export default function AdvertiserDashboard() {
           {/* Card 3: Followers */}
           <div
             style={{
-              background: '#F9FAEE',
+              background: theme.color.statMint,
               borderRadius: 16,
               padding: '20px',
               border: '1px solid rgba(212,175,55,0.06)',
@@ -290,7 +290,7 @@ export default function AdvertiserDashboard() {
             </div>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
               <span style={{ fontSize: 28, fontWeight: 800, color: theme.color.text1, lineHeight: 1 }}>3,671</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#10B981', fontSize: 11, fontWeight: 800 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: theme.color.success, fontSize: 11, fontWeight: 800 }}>
                 +15.03% <FaArrowTrendUp size={10} />
               </div>
             </div>
@@ -299,7 +299,7 @@ export default function AdvertiserDashboard() {
           {/* Card 4: Booked Podcast Slots */}
           <div
             style={{
-              background: '#FFFDF5',
+              background: theme.color.statVanilla,
               borderRadius: 16,
               padding: '20px',
               border: '1px solid rgba(212,175,55,0.06)',
@@ -323,10 +323,10 @@ export default function AdvertiserDashboard() {
                 <span style={EXAMPLE_BADGE}>Example</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#475569', fontWeight: 600 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: theme.color.text2, fontWeight: 600 }}>
                   <div style={{ width: 6, height: 6, borderRadius: '50%', background: theme.color.charcoal900 }} /> This year
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#475569', fontWeight: 600 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: theme.color.text2, fontWeight: 600 }}>
                   <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#818CF8' }} /> Last year
                 </div>
               </div>
@@ -554,7 +554,7 @@ export default function AdvertiserDashboard() {
           <p style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1, margin: '0 0 14px' }}>Recent Booking Calendar</p>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-            <span style={{ fontSize: 12, color: '#475569', fontWeight: 600 }}>{today}</span>
+            <span style={{ fontSize: 12, color: theme.color.text2, fontWeight: 600 }}>{today}</span>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 }}>
@@ -651,7 +651,7 @@ export default function AdvertiserDashboard() {
               borderRadius: 24,
               boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
               textDecoration: 'none',
-              color: '#1E293B',
+              color: theme.color.text1,
               fontSize: 13,
               fontWeight: 700,
               fontFamily: F,
@@ -696,7 +696,7 @@ export default function AdvertiserDashboard() {
                 height: 0,
                 borderLeft: '6px solid transparent',
                 borderRight: '6px solid transparent',
-                borderTop: '6px solid #FFFFFF',
+                borderTop: `6px solid ${theme.color.surface}`,
                 filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))',
               }}
             />

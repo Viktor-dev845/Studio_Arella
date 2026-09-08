@@ -41,6 +41,22 @@ export const theme = {
     info: 'var(--info)',
     infoLight: 'var(--info-light)',
     infoBorder: 'var(--info-border)',
+
+    statMint: 'var(--stat-mint)',
+    statVanilla: 'var(--stat-vanilla)',
+
+    ownerOrange: 'var(--owner-orange)',
+    ownerOrangeLight: 'var(--owner-orange-light)',
+    ownerOrangeBorder: 'var(--owner-orange-border)',
+    ownerBlue: 'var(--owner-blue)',
+    ownerBlueLight: 'var(--owner-blue-light)',
+    ownerBlueBorder: 'var(--owner-blue-border)',
+    ownerGreen: 'var(--owner-green)',
+    ownerGreenLight: 'var(--owner-green-light)',
+    ownerGreenBorder: 'var(--owner-green-border)',
+    ownerPurple: 'var(--owner-purple)',
+    ownerPurpleLight: 'var(--owner-purple-light)',
+    ownerPurpleBorder: 'var(--owner-purple-border)',
   },
   space: {
     1: 4, 2: 8, 3: 12, 4: 16, 5: 20, 6: 24, 7: 28, 8: 32, 10: 40, 12: 48,

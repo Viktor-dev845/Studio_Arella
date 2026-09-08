@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { FaArrowRightFromBracket } from 'react-icons/fa6';
 import { useAuthStore } from '@/store/authStore';
+import { useThemeStore } from '@/store/themeStore';
 import { theme } from '@/lib/theme';
 
 const F = theme.font.body;
@@ -45,6 +46,7 @@ const adminNav = [
 export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean; onClose?: () => void }) {
   const pathname = usePathname();
   const { user, logout } = useAuthStore();
+  const { theme: colorMode } = useThemeStore();
 
   const isAdmin = user?.role === 'admin';
   const isActive = (href: string) =>
@@ -106,7 +108,7 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
         {/* Logo */}
         <div style={{ padding: '24px 24px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Link href="/" style={{ textDecoration: 'none' }}>
-            <img src="/logo.png" alt="Studio Arella Logo" style={{ height: 44, objectFit: 'contain' }} />
+            <img src={colorMode === 'dark' ? '/logo-white.png' : '/logo.png'} alt="Studio Arella Logo" style={{ height: 44, objectFit: 'contain' }} />
           </Link>
           {mobileOpen && (
             <button onClick={onClose} style={{ background: theme.color.surface2, border: 'none', cursor: 'pointer', color: theme.color.text1, padding: 6, borderRadius: '50%' }}>

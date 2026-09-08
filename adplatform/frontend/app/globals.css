@@ -48,6 +48,24 @@
   --info-light:    #DFFAFD;
   --info-border:   #9CE9F2;
 
+  /* ── Dashboard KPI card tints (pastel in light mode, subtle in dark) ── */
+  --stat-mint:     #F9FAEE;
+  --stat-vanilla:  #FFFDF5;
+
+  /* ── Screen-owner dashboard accent + quick-action pill colors ── */
+  --owner-orange:        #F97316;
+  --owner-orange-light:  #FFF7ED;
+  --owner-orange-border: #FED7AA;
+  --owner-blue:          #1D4ED8;
+  --owner-blue-light:    #EFF6FF;
+  --owner-blue-border:   #BFDBFE;
+  --owner-green:         #15803D;
+  --owner-green-light:   #F0FDF4;
+  --owner-green-border:  #BBF7D0;
+  --owner-purple:        #6D28D9;
+  --owner-purple-light:  #F5F3FF;
+  --owner-purple-border: #DDD6FE;
+
   /* ── Fonts ── */
   --font-body:    var(--font-quicksand), 'Quicksand', sans-serif;
   --font-display: var(--font-outfit), 'Outfit', sans-serif;
@@ -82,6 +100,21 @@
   --info:          #00E5FF;
   --info-light:    rgba(0, 229, 255, 0.15);
   --info-border:   rgba(0, 229, 255, 0.3);
+
+  --stat-mint:     rgba(76, 154, 90, 0.08);
+  --stat-vanilla:  rgba(224, 165, 38, 0.08);
+
+  --owner-orange-light:  rgba(249, 115, 22, 0.12);
+  --owner-orange-border: rgba(249, 115, 22, 0.3);
+  --owner-blue:          #5B9BFF;
+  --owner-blue-light:    rgba(91, 155, 255, 0.12);
+  --owner-blue-border:   rgba(91, 155, 255, 0.3);
+  --owner-green:         #4ADE80;
+  --owner-green-light:   rgba(74, 222, 128, 0.12);
+  --owner-green-border:  rgba(74, 222, 128, 0.3);
+  --owner-purple:        #C084FC;
+  --owner-purple-light:  rgba(192, 132, 252, 0.12);
+  --owner-purple-border: rgba(192, 132, 252, 0.3);
   
   .glass-panel {
     background: rgba(255, 255, 255, 0.05);

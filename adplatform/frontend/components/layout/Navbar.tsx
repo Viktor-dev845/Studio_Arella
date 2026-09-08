@@ -236,9 +236,11 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
           </AnimatePresence>
         </div>
 
-        {/* Theme toggle */}
+        {/* Theme toggle — deliberately visible at every viewport width so a
+            user who ends up in dark mode (their own past toggle, persisted
+            via localStorage) always has a way back to light, not just on
+            desktop. */}
         <button
-          className="hide-on-mobile"
           onClick={toggleTheme}
           style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text3, display: 'flex', padding: 4 }}
           title={colorMode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}

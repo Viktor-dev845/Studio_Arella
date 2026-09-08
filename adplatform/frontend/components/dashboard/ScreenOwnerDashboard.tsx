@@ -91,11 +91,11 @@ export default function ScreenOwnerDashboard() {
               {bookings.length > 0 ? (
                 <ResponsiveContainer width="100%" height={160}>
                   <BarChart data={weeklyData} margin={{ top: 0, right: 4, left: -28, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="2 4" stroke="#F3F4F6" vertical={false} />
-                    <XAxis dataKey="day" tick={{ fontSize: 11, fill: '#D1D5DB' }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 11, fill: '#D1D5DB' }} axisLine={false} tickLine={false} allowDecimals={false} />
-                    <Tooltip contentStyle={{ background: '#0A0A0A', border: 'none', borderRadius: 10, color: '#fff', fontSize: 12 }} cursor={{ fill: '#FFF7ED' }} />
-                    <Bar dataKey="bookings" fill="#F97316" radius={[6,6,0,0]} />
+                    <CartesianGrid strokeDasharray="2 4" stroke={theme.color.surface2} vertical={false} />
+                    <XAxis dataKey="day" tick={{ fontSize: 11, fill: theme.color.text4 }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 11, fill: theme.color.text4 }} axisLine={false} tickLine={false} allowDecimals={false} />
+                    <Tooltip contentStyle={{ background: theme.color.charcoal900, border: 'none', borderRadius: 10, color: '#fff', fontSize: 12 }} cursor={{ fill: theme.color.ownerOrangeLight }} />
+                    <Bar dataKey="bookings" fill={theme.color.ownerOrange} radius={[6,6,0,0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -108,8 +108,8 @@ export default function ScreenOwnerDashboard() {
 
             <FadeCard delay={0.22} style={{ ...card, padding: 20 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                <p style={{ fontSize: 14, fontWeight: 700, color: '#0A0A0A', margin: 0 }}>My Screens</p>
-                <Link href="/listings" style={{ fontSize: 12, color: '#F97316', textDecoration: 'none', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
+                <p style={{ fontSize: 14, fontWeight: 700, color: theme.color.text1, margin: 0 }}>My Screens</p>
+                <Link href="/listings" style={{ fontSize: 12, color: theme.color.ownerOrange, textDecoration: 'none', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
                   Manage <FaArrowRight size={10} />
                 </Link>
               </div>
@@ -125,13 +125,13 @@ export default function ScreenOwnerDashboard() {
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {screens.slice(0,4).map(s => (
-                    <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 12, background: '#FAFAFA', borderRadius: 10, border: '1px solid #F3F4F6' }}>
-                      <div style={{ width: 36, height: 36, borderRadius: 9, background: '#FFF7ED', border: '1px solid #FED7AA', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <Monitor size={16} color="#F97316" />
+                    <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 12, background: theme.color.surface2, borderRadius: 10, border: `1px solid ${theme.color.border}` }}>
+                      <div style={{ width: 36, height: 36, borderRadius: 9, background: theme.color.ownerOrangeLight, border: `1px solid ${theme.color.ownerOrangeBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Monitor size={16} color={theme.color.ownerOrange} />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ fontSize: 13, fontWeight: 700, color: '#0A0A0A', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.name}</p>
-                        <p style={{ fontSize: 11, color: '#9CA3AF', margin: '1px 0 0' }}>{s.location} · ₦{s.price_per_sec}/sec</p>
+                        <p style={{ fontSize: 13, fontWeight: 700, color: theme.color.text1, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.name}</p>
+                        <p style={{ fontSize: 11, color: theme.color.text3, margin: '1px 0 0' }}>{s.location} · ₦{s.price_per_sec}/sec</p>
                       </div>
                       <StatusBadge status={s.status} />
                     </div>
@@ -143,23 +143,23 @@ export default function ScreenOwnerDashboard() {
 
           {/* Right */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <FadeCard delay={0.08} style={{ background: '#0A0A0A', borderRadius: 16, padding: '22px 20px', color: '#fff' }}>
+            <FadeCard delay={0.08} style={{ background: theme.color.charcoal800, border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: '22px 20px', color: '#fff' }}>
               <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', margin: '0 0 6px' }}>Wallet Balance</p>
-              <p style={{ fontSize: 30, fontWeight: 900, margin: '0 0 2px', letterSpacing: '-0.5px', color: '#F97316' }}>₦{(balance?.credits || 0).toLocaleString()}</p>
+              <p style={{ fontSize: 30, fontWeight: 900, margin: '0 0 2px', letterSpacing: '-0.5px', color: theme.color.ownerOrange }}>₦{(balance?.credits || 0).toLocaleString()}</p>
               <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: '0 0 16px' }}>Your available wallet credits</p>
-              <Link href="/finances" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: '#F97316', color: '#fff', padding: '11px', borderRadius: 10, fontSize: 13, fontWeight: 800, textDecoration: 'none' }}>
+              <Link href="/finances" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: theme.color.ownerOrange, color: '#fff', padding: '11px', borderRadius: 10, fontSize: 13, fontWeight: 800, textDecoration: 'none' }}>
                 View Transactions <FaArrowRight size={12} />
               </Link>
             </FadeCard>
 
             <FadeCard delay={0.14} style={{ ...card, padding: '18px 20px' }}>
-              <p style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 12px' }}>Quick Actions</p>
+              <p style={{ fontSize: 11, fontWeight: 700, color: theme.color.text4, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 12px' }}>Quick Actions</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
                 {[
-                  { label: 'Add New Screen', href: '/listings', bg: '#FFF7ED', color: '#C2410C', border: '#FED7AA' },
-                  { label: 'View Bookings', href: '/bookings', bg: '#EFF6FF', color: '#1D4ED8', border: '#BFDBFE' },
-                  { label: 'View Earnings', href: '/finances', bg: '#F0FDF4', color: '#15803D', border: '#BBF7D0' },
-                  { label: 'Schedule', href: '/calendar', bg: '#F5F3FF', color: '#6D28D9', border: '#DDD6FE' },
+                  { label: 'Add New Screen', href: '/listings', bg: theme.color.ownerOrangeLight, color: theme.color.ownerOrange, border: theme.color.ownerOrangeBorder },
+                  { label: 'View Bookings', href: '/bookings', bg: theme.color.ownerBlueLight, color: theme.color.ownerBlue, border: theme.color.ownerBlueBorder },
+                  { label: 'View Earnings', href: '/finances', bg: theme.color.ownerGreenLight, color: theme.color.ownerGreen, border: theme.color.ownerGreenBorder },
+                  { label: 'Schedule', href: '/calendar', bg: theme.color.ownerPurpleLight, color: theme.color.ownerPurple, border: theme.color.ownerPurpleBorder },
                 ].map(({ label, href, bg, color, border }) => (
                   <Link key={label} href={href} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 12px', background: bg, border: `1px solid ${border}`, borderRadius: 9, textDecoration: 'none', fontSize: 12, fontWeight: 700, color }}>
                     {label} <FaArrowRight size={10} color={color} />
