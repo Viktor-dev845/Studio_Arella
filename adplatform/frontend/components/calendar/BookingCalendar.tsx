@@ -18,9 +18,16 @@ const F = theme.font.body;
 const locales = { 'en-NG': require('date-fns/locale/en-GB') };
 const localizer = dateFnsLocalizer({
   format, parse,
-  startOfWeek: () => startOfWeek(new Date(), { weekStartsOn: 1 }),
+  startOfWeek: () => startOfWeek(new Date(), { weekStartsOn: 0 }),
   getDay, locales,
 });
+
+const CAL_FORMATS = {
+  monthHeaderFormat: (date: Date) => format(date, 'MMMM yyyy'),
+  dayRangeHeaderFormat: ({ start, end }: { start: Date; end: Date }) =>
+    `${format(start, 'dd MMM yyyy')} - ${format(end, 'dd MMM yyyy')}`,
+  dayHeaderFormat: (date: Date) => format(date, 'EEEE, dd MMM yyyy'),
+};
 
 interface CalEvent {
   id: string; title: string; start: Date; end: Date;
@@ -36,59 +43,80 @@ const statusColors: Record<string, string> = {
 // need to read as distinct from a confirmed session at a glance.
 const podcastColor = (status: string) => status === 'cancelled' ? theme.color.error : '#8B5CF6';
 
+const pillBtn: React.CSSProperties = {
+  padding: '8px 16px', background: 'transparent', color: theme.color.text1,
+  border: `1.5px solid ${theme.color.border2}`, borderRadius: 100, fontSize: 12.5,
+  fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s',
+};
+
 const CustomToolbar = (toolbar: any) => {
   const goToBack = () => toolbar.onNavigate('PREV');
   const goToNext = () => toolbar.onNavigate('NEXT');
   const goToCurrent = () => toolbar.onNavigate('TODAY');
-
-  const label = () => {
-    const date = format(toolbar.date, 'MMMM yyyy');
-    return <span style={{ fontSize: 16, fontWeight: 800, color: theme.color.text1, letterSpacing: '-0.3px' }}>{date}</span>;
+  const hover = (bg: string, color: string) => (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.currentTarget.style.background = bg; e.currentTarget.style.color = color; e.currentTarget.style.borderColor = bg === 'transparent' ? theme.color.border2 : bg;
   };
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 16 }}>
-      <div>
-        <button onClick={goToCurrent} style={{ padding: '8px 20px', background: 'transparent', color: theme.color.text1, border: `2px solid ${theme.color.border2}`, borderRadius: 100, fontSize: 13, fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}
-          onMouseOver={e => { e.currentTarget.style.background = theme.color.gold; e.currentTarget.style.color = '#111'; e.currentTarget.style.borderColor = theme.color.gold; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-          onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = theme.color.text1; e.currentTarget.style.borderColor = theme.color.border2; e.currentTarget.style.transform = 'translateY(0)'; }}>
+      {/* Today / Back / Next — grouped together on the left */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <button onClick={goToCurrent} style={pillBtn}
+          onMouseOver={hover(theme.color.gold, '#111')}
+          onMouseOut={hover('transparent', theme.color.text1)}>
           Today
         </button>
-      </div>
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: theme.color.surface2, border: `1px solid ${theme.color.border}`, borderRadius: 100, padding: 4, boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}>
-        <button onClick={goToBack} style={{ padding: '6px 12px', background: 'transparent', border: 'none', borderRadius: 100, cursor: 'pointer', display: 'flex', alignItems: 'center', color: theme.color.text2, transition: 'all 0.15s' }}
-          onMouseOver={e => { e.currentTarget.style.background = theme.color.surface; e.currentTarget.style.color = theme.color.text1; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)'; }}
-          onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = theme.color.text2; e.currentTarget.style.boxShadow = 'none'; }}>
-          <ChevronLeft size={16} strokeWidth={2.5} />
+        <button onClick={goToBack} style={{ ...pillBtn, padding: '8px 10px', display: 'flex' }}
+          onMouseOver={hover(theme.color.surface2, theme.color.text1)}
+          onMouseOut={hover('transparent', theme.color.text1)}>
+          <ChevronLeft size={15} strokeWidth={2.5} />
         </button>
-        
-        <div style={{ minWidth: 150, textAlign: 'center' }}>
-          {label()}
-        </div>
-
-        <button onClick={goToNext} style={{ padding: '6px 12px', background: 'transparent', border: 'none', borderRadius: 100, cursor: 'pointer', display: 'flex', alignItems: 'center', color: theme.color.text2, transition: 'all 0.15s' }}
-          onMouseOver={e => { e.currentTarget.style.background = theme.color.surface; e.currentTarget.style.color = theme.color.text1; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)'; }}
-          onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = theme.color.text2; e.currentTarget.style.boxShadow = 'none'; }}>
-          <ChevronRight size={16} strokeWidth={2.5} />
+        <button onClick={goToNext} style={{ ...pillBtn, padding: '8px 10px', display: 'flex' }}
+          onMouseOver={hover(theme.color.surface2, theme.color.text1)}
+          onMouseOut={hover('transparent', theme.color.text1)}>
+          <ChevronRight size={15} strokeWidth={2.5} />
         </button>
       </div>
 
+      {/* Current range — correctly formatted for whichever view is active */}
+      <span style={{ fontSize: 16, fontWeight: 800, color: theme.color.text1, letterSpacing: '-0.2px', textAlign: 'center', flex: '1 1 auto' }}>
+        {toolbar.label}
+      </span>
+
+      {/* Month / Week / Day */}
       <div style={{ display: 'flex', background: theme.color.surface2, border: `1px solid ${theme.color.border}`, borderRadius: 100, padding: 4, boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}>
-        {['month', 'week', 'day', 'agenda'].map(v => (
+        {['month', 'week', 'day'].map(v => (
           <button
             key={v}
             onClick={() => toolbar.onView(v)}
             style={{
-              padding: '6px 16px', background: toolbar.view === v ? theme.color.surface : 'transparent',
-              color: toolbar.view === v ? theme.color.text1 : theme.color.text3,
-              border: 'none', borderRadius: 100, fontSize: 12, fontWeight: 800, cursor: 'pointer',
-              boxShadow: toolbar.view === v ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
+              padding: '7px 18px', background: toolbar.view === v ? theme.color.gold : 'transparent',
+              color: toolbar.view === v ? '#111' : theme.color.text3,
+              border: 'none', borderRadius: 100, fontSize: 12.5, fontWeight: 800, cursor: 'pointer',
               textTransform: 'capitalize', transition: 'all 0.2s'
             }}>
             {v}
           </button>
         ))}
+      </div>
+    </div>
+  );
+};
+
+// Week/day column header — real per-day booking count, not the library's
+// bare day-of-week label, matching the mockup's "Sunday 08/10 · N booking(s)".
+const makeWeekHeader = (visibleEvents: CalEvent[]) => function WeekHeader({ date }: { date: Date }) {
+  const count = visibleEvents.filter(e => {
+    const d = new Date(e.start);
+    return d.getFullYear() === date.getFullYear() && d.getMonth() === date.getMonth() && d.getDate() === date.getDate();
+  }).length;
+  return (
+    <div style={{ padding: '4px 0' }}>
+      <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: theme.color.text3 }}>
+        {format(date, 'EEE dd/MM')}
+      </div>
+      <div style={{ fontSize: 10, fontWeight: 600, color: theme.color.text4, textTransform: 'none', letterSpacing: 'normal', marginTop: 2 }}>
+        {count} booking{count !== 1 ? 's' : ''}
       </div>
     </div>
   );
@@ -200,10 +228,14 @@ export default function BookingCalendar({ screenId }: { screenId?: string }) {
           startAccessor="start" endAccessor="end"
           style={{ height: 500 }}
           view={view} onView={setView} date={date} onNavigate={setDate}
+          views={['month', 'week', 'day']}
+          formats={CAL_FORMATS}
           selectable
           components={{
             toolbar: CustomToolbar,
-            event: CustomEvent
+            event: CustomEvent,
+            week: { header: makeWeekHeader(visibleEvents) },
+            day: { header: makeWeekHeader(visibleEvents) },
           }}
           onSelectSlot={(slotInfo) => {
             const dayEvents = visibleEvents.filter(e => {

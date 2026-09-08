@@ -17,8 +17,16 @@
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  padding: 16px 0;
+  padding: 10px 0;
   border-left: none;
+  height: auto;
+}
+
+/* The week/day custom header renders two lines (day + booking count) —
+   the library's default single-line row height clips the second line
+   unless it's allowed to grow. */
+.calendar :global(.rbc-time-header-content .rbc-header) {
+  min-height: 52px;
 }
 
 .calendar :global(.rbc-month-view),
