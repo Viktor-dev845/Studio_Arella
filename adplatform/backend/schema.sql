@@ -493,7 +493,18 @@ CREATE INDEX IF NOT EXISTS idx_support_tickets_user_id ON support_tickets(user_i
 -- ─── Two-Factor Auth, Notification Preferences ─────────────────────────────
 ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_secret VARCHAR(255);
 ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_enabled BOOLEAN DEFAULT false;
+-- Last TOTP code value a user was successfully verified with. A captured
+-- code is otherwise valid for reuse within its ~90s window (window: 1) at
+-- both /2fa/verify-setup and /2fa/login-verify; rejecting an immediate
+-- repeat of the same code closes that off.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_last_code VARCHAR(10);
 ALTER TABLE users ADD COLUMN IF NOT EXISTS notification_preferences JSONB DEFAULT '{"emailBookings":true,"emailBroadcasts":true,"emailWallet":true,"emailWeekly":false,"smsAlerts":true,"smsSecurity":true}';
+-- Real display preferences — currency is presentation-only (all actual
+-- charges/bookings stay in NGN, the only currency the payment gateways
+-- support here; this converts what's *shown* using live exchange rates).
+ALTER TABLE users ADD COLUMN IF NOT EXISTS display_currency VARCHAR(3) DEFAULT 'NGN';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS display_timezone VARCHAR(64) DEFAULT 'Africa/Lagos';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS sound_enabled BOOLEAN DEFAULT true;
 
 -- ─── Sessions (real "Active Devices" list + per-request revocation) ────────
 CREATE TABLE IF NOT EXISTS sessions (

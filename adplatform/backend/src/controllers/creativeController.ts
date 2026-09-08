@@ -2,6 +2,7 @@ import { Request, Response, NextFunction, RequestHandler } from 'express';
 import pool from '../db/pool';
 import { AuthRequest } from '../middleware/auth';
 import { sendCreativeRequestAdminAlert } from '../services/emailService';
+import { notifyAdmins } from '../services/notificationService';
 
 
 export const submitCreativeRequest : RequestHandler = async (req, res) => {
@@ -43,14 +44,20 @@ export const submitCreativeRequest : RequestHandler = async (req, res) => {
       ]
     );
 
-    const adminEmail = process.env.ADMIN_EMAIL || process.env.SMTP_USER || 'kaluvictor130@gmail.com';
-    await sendCreativeRequestAdminAlert(
-      adminEmail,
-      business_name,
-      ad_type || 'image',
-      description,
-      contact_phone
-    ).catch(e => console.error('Failed to send admin creative alert:', e));
+    // Client PII/business info should route to real admin accounts, not a
+    // hardcoded personal inbox — matches the pattern already used for new
+    // ad creative uploads (query real admins, email each one).
+    notifyAdmins({
+      type: 'new_creative_review',
+      title: 'New creative service request',
+      body: `${business_name} submitted a creative request. Contact: ${contact_phone}`,
+      link: '/admin/requests',
+    });
+    pool.query("SELECT email FROM users WHERE role = 'admin'").then(({ rows }) => {
+      rows.forEach(({ email }) => sendCreativeRequestAdminAlert(
+        email, business_name, ad_type || 'image', description, contact_phone
+      ).catch(e => console.error('Failed to send admin creative alert:', e)));
+    }).catch(console.error);
 
     res.status(201).json({
       message: 'Creative request submitted! The Bems team will contact you within 24 hours.',

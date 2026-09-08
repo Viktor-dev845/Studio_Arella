@@ -248,7 +248,7 @@ export const login: RequestHandler = async (req, res) => {
     }
 
     const token = await issueSessionToken({ id: user.id, email: user.email, role: user.role, name: user.name }, req);
-    const { password: _, ...safeUser } = user;
+    const { password: _, two_factor_secret: __, two_factor_last_code: ___, ...safeUser } = user;
     res.json({ token, user: safeUser });
   } catch (err) {
     res.status(500).json({ message: 'Login failed' });
@@ -262,7 +262,8 @@ export const getMe: RequestHandler = async (req, res) => {
     const result = await pool.query(
       `SELECT id, name, first_name, last_name, email, role, credits, business_name, phone, logo_url,
               avatar, email_verified, suspended, language, terms_accepted, has_seen_tour, created_at,
-              handle, location, bio, two_factor_enabled, notification_preferences
+              handle, location, bio, two_factor_enabled, notification_preferences,
+              display_currency, display_timezone, sound_enabled
        FROM users WHERE id = $1`,
       [authReq.user?.id]
     );
@@ -419,6 +420,11 @@ export const deleteAccount: RequestHandler = async (req, res) => {
     }
 
     await pool.query('UPDATE users SET suspended = true, deleted_at = NOW() WHERE id = $1', [authReq.user?.id]);
+    // Revoke every live session outright — otherwise a token issued before
+    // deletion keeps working for its full remaining lifetime (authenticate's
+    // suspended check is a backstop, this makes the account's own "Active
+    // Sessions" list honest immediately).
+    await pool.query('UPDATE sessions SET revoked_at = NOW() WHERE user_id = $1 AND revoked_at IS NULL', [authReq.user?.id]);
     res.json({ message: 'Your account has been deleted.' });
   } catch (err) {
     console.error('Delete account error:', err);
@@ -567,9 +573,19 @@ export const resetPassword: RequestHandler = async (req, res) => {
 export const setup2FA: RequestHandler = async (req, res) => {
   const authReq = req as AuthRequest;
   try {
-    const userRes = await pool.query('SELECT email FROM users WHERE id = $1', [authReq.user?.id]);
+    const { password } = req.body;
+    if (!password) { res.status(400).json({ message: 'Enter your password to confirm' }); return; }
+
+    const userRes = await pool.query('SELECT email, password FROM users WHERE id = $1', [authReq.user?.id]);
     const user = userRes.rows[0];
     if (!user) { res.status(404).json({ message: 'User not found' }); return; }
+    // A stolen/leaked bearer token alone must not be enough to plant a new
+    // 2FA device on someone else's account — require the password step-up,
+    // same as disabling 2FA already does.
+    if (!user.password || !(await bcrypt.compare(password, user.password))) {
+      res.status(401).json({ message: 'Incorrect password' });
+      return;
+    }
 
     const secret = speakeasy.generateSecret({ name: `Studio Arella (${user.email})` });
     await pool.query('UPDATE users SET two_factor_secret = $1 WHERE id = $2', [secret.base32, authReq.user?.id]);
@@ -588,14 +604,22 @@ export const verifySetup2FA: RequestHandler = async (req, res) => {
     const { code } = req.body;
     if (!code) { res.status(400).json({ message: 'Enter the 6-digit code from your authenticator app' }); return; }
 
-    const userRes = await pool.query('SELECT two_factor_secret FROM users WHERE id = $1', [authReq.user?.id]);
+    const userRes = await pool.query('SELECT two_factor_secret, two_factor_last_code FROM users WHERE id = $1', [authReq.user?.id]);
     const secret = userRes.rows[0]?.two_factor_secret;
     if (!secret) { res.status(400).json({ message: 'Start 2FA setup first' }); return; }
+
+    // A captured code stays valid for its ~90s window (window: 1) — reject
+    // an immediate repeat of the exact same code so a leaked/observed code
+    // can't be replayed.
+    if (code === userRes.rows[0]?.two_factor_last_code) {
+      res.status(400).json({ message: 'That code was already used. Wait for a new one.' });
+      return;
+    }
 
     const valid = speakeasy.totp.verify({ secret, encoding: 'base32', token: code, window: 1 });
     if (!valid) { res.status(400).json({ message: 'Incorrect code. Please try again.' }); return; }
 
-    await pool.query('UPDATE users SET two_factor_enabled = true WHERE id = $1', [authReq.user?.id]);
+    await pool.query('UPDATE users SET two_factor_enabled = true, two_factor_last_code = $2 WHERE id = $1', [authReq.user?.id, code]);
     res.json({ message: 'Two-factor authentication enabled!' });
   } catch (err) {
     res.status(500).json({ message: 'Could not verify code. Please try again.' });
@@ -643,11 +667,17 @@ export const verify2FALogin: RequestHandler = async (req, res) => {
     const user = userRes.rows[0];
     if (!user?.two_factor_secret) { res.status(400).json({ message: '2FA is not set up on this account' }); return; }
 
+    if (code === user.two_factor_last_code) {
+      res.status(400).json({ message: 'That code was already used. Wait for a new one.' });
+      return;
+    }
+
     const valid = speakeasy.totp.verify({ secret: user.two_factor_secret, encoding: 'base32', token: code, window: 1 });
     if (!valid) { res.status(400).json({ message: 'Incorrect code' }); return; }
 
+    await pool.query('UPDATE users SET two_factor_last_code = $2 WHERE id = $1', [user.id, code]);
     const token = await issueSessionToken({ id: user.id, email: user.email, role: user.role, name: user.name }, req);
-    const { password: _, two_factor_secret: __, ...safeUser } = user;
+    const { password: _, two_factor_secret: __, two_factor_last_code: ___, ...safeUser } = user;
     res.json({ token, user: safeUser });
   } catch (err) {
     res.status(500).json({ message: 'Verification failed. Please try again.' });
@@ -705,6 +735,47 @@ export const updateNotificationPreferences: RequestHandler = async (req, res) =>
       [JSON.stringify(prefs), authReq.user?.id]
     );
     res.json({ notification_preferences: result.rows[0].notification_preferences });
+  } catch (err) {
+    res.status(500).json({ message: 'Could not save preferences' });
+  }
+};
+
+const SUPPORTED_CURRENCIES = ['NGN', 'USD', 'GBP', 'EUR'];
+// A generous but real IANA timezone list — not exhaustive, but covers the
+// regions this platform's advertisers actually operate from.
+const SUPPORTED_TIMEZONES = new Set([
+  'Africa/Lagos', 'Africa/Cairo', 'Africa/Johannesburg', 'Africa/Nairobi',
+  'Europe/London', 'Europe/Paris', 'Europe/Berlin',
+  'America/New_York', 'America/Chicago', 'America/Los_Angeles', 'America/Toronto',
+  'Asia/Dubai', 'Asia/Kolkata', 'Asia/Shanghai', 'Asia/Tokyo', 'Asia/Singapore',
+  'Australia/Sydney', 'UTC',
+]);
+
+// Currency and timezone are presentation-only — every real charge, booking,
+// and stored timestamp stays in NGN / UTC underneath regardless of this
+// preference. This only changes what's displayed back to the user.
+export const updateDisplayPreferences: RequestHandler = async (req, res) => {
+  const authReq = req as AuthRequest;
+  try {
+    const { currency, timezone, sound_enabled } = req.body;
+    if (currency !== undefined && !SUPPORTED_CURRENCIES.includes(currency)) {
+      res.status(400).json({ message: `Unsupported currency. Choose one of: ${SUPPORTED_CURRENCIES.join(', ')}` });
+      return;
+    }
+    if (timezone !== undefined && !SUPPORTED_TIMEZONES.has(timezone)) {
+      res.status(400).json({ message: 'Unsupported timezone' });
+      return;
+    }
+    const result = await pool.query(
+      `UPDATE users SET
+         display_currency = COALESCE($1, display_currency),
+         display_timezone = COALESCE($2, display_timezone),
+         sound_enabled = COALESCE($3, sound_enabled)
+       WHERE id = $4
+       RETURNING display_currency, display_timezone, sound_enabled`,
+      [currency ?? null, timezone ?? null, typeof sound_enabled === 'boolean' ? sound_enabled : null, authReq.user?.id]
+    );
+    res.json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ message: 'Could not save preferences' });
   }

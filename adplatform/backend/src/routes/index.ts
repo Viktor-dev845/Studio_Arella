@@ -5,7 +5,8 @@ import { authenticate } from '../middleware/auth';
 import { otpGuessLimiter, otpRequestLimiter, authLimiter, chatLimiter } from '../middleware/rateLimit';
 
 // Auth
-import { register, login, getMe, updateProfile, uploadAvatar, changePassword, deleteAccount, becomeScreenOwner, verifyEmail, resendVerification, forgotPassword, resetPassword, acceptTerms, markTourSeen, setup2FA, verifySetup2FA, disable2FA, verify2FALogin, getSessions, revokeSession, updateNotificationPreferences } from '../controllers/authController';
+import { register, login, getMe, updateProfile, uploadAvatar, changePassword, deleteAccount, becomeScreenOwner, verifyEmail, resendVerification, forgotPassword, resetPassword, acceptTerms, markTourSeen, setup2FA, verifySetup2FA, disable2FA, verify2FALogin, getSessions, revokeSession, updateNotificationPreferences, updateDisplayPreferences } from '../controllers/authController';
+import { getExchangeRates } from '../controllers/exchangeRateController';
 import { googleCallback } from '../controllers/googleAuthController';
 
 // Features
@@ -97,6 +98,8 @@ router.get('/auth/sessions', authenticate, getSessions);
 router.delete('/auth/sessions/:id', authenticate, revokeSession);
 
 router.put('/auth/notification-preferences', authenticate, updateNotificationPreferences);
+router.put('/auth/display-preferences', authenticate, updateDisplayPreferences);
+router.get('/exchange-rates', authenticate, getExchangeRates);
 router.post('/auth/verify-email', authenticate, otpGuessLimiter, verifyEmail);
 router.post('/auth/resend-verification', otpRequestLimiter, resendVerification);
 router.post('/auth/forgot-password', otpRequestLimiter, forgotPassword);

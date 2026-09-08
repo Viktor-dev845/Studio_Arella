@@ -1,14 +1,17 @@
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import pool from '../db/pool';
-import jwt from 'jsonwebtoken';
 
-// Our Google strategy passes { user, token } through Passport's done().
-// We cast to `any` here because Passport's generic User type is set to
-// { id, email, role } (matching the authenticate middleware), but the
-// Google callback intentionally carries a richer payload that is read
-// immediately in googleCallback and never touches req.user generically.
-type GooglePayload = { user: any; token: string };
+// Our Google strategy resolves/creates the user and passes it through
+// Passport's done() — the actual session token is issued in googleCallback
+// (via the shared issueSessionToken helper, same as password login), since
+// that's a real Express handler with req access and can write a real
+// `sessions` row. Signing a token here directly would carry no jti, so it
+// would never show up in Active Sessions and could never be revoked.
+// We cast to `any` because Passport's generic User type is set to
+// { id, email, role } (matching the authenticate middleware), but this
+// payload intentionally carries a richer shape read immediately in
+// googleCallback and never touches req.user generically.
 
 passport.use(
   new GoogleStrategy(
@@ -57,17 +60,10 @@ passport.use(
           user.isNew = true;
         }
 
-        const token = jwt.sign(
-          { id: user.id, email: user.email, role: user.role, name: user.name },
-          process.env.JWT_SECRET as string,
-          { expiresIn: process.env.JWT_EXPIRES_IN || '7d' } as jwt.SignOptions
-        );
-
-        const payload: GooglePayload = { user, token };
-
         // Cast to any to satisfy Passport's strict Express.User typing.
-        // googleCallback reads this payload directly from req.user.
-        return done(null, payload as any);
+        // googleCallback reads this user directly from req.user and issues
+        // the real session token itself.
+        return done(null, user as any);
       } catch (err) {
         return done(err as Error, false);
       }

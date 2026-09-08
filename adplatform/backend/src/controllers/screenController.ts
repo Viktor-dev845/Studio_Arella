@@ -78,6 +78,20 @@ export const deleteScreen : RequestHandler = async (req, res) => {
   const role = authReq.user?.role;
   if (role !== 'admin' && role !== 'screen_owner') { res.status(403).json({ message: 'Not authorized to manage screens' }); return; }
   try {
+    // A screen's FK to bookings is ON DELETE SET NULL and to booking_slots
+    // is ON DELETE CASCADE — deleting a screen with an unpaid or active
+    // booking would silently null out that booking's screen and wipe its
+    // scheduled slots while leaving the money already paid in place. Block
+    // it instead; the owner needs to wait those out or cancel them first.
+    const liveBookings = await pool.query(
+      `SELECT id FROM bookings WHERE screen_id = $1 AND status IN ('pending_payment', 'active')`,
+      [req.params.id]
+    );
+    if (liveBookings.rows.length > 0) {
+      res.status(409).json({ message: `This screen has ${liveBookings.rows.length} pending or active booking(s). Cancel or wait for them to finish before deleting it.` });
+      return;
+    }
+
     const params: any[] = [req.params.id];
     let query = 'DELETE FROM screens WHERE id=$1';
     if (role !== 'admin') { params.push(authReq.user?.id); query += ` AND owner_id=$${params.length}`; }

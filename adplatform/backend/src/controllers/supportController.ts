@@ -2,6 +2,7 @@ import { RequestHandler } from 'express';
 import pool from '../db/pool';
 import { AuthRequest } from '../middleware/auth';
 import { sendSupportTicketAdminAlert } from '../services/emailService';
+import { notifyAdmins } from '../services/notificationService';
 
 export const submitTicket: RequestHandler = async (req, res) => {
   const authReq = req as AuthRequest;
@@ -20,10 +21,17 @@ export const submitTicket: RequestHandler = async (req, res) => {
 
     const userRes = await pool.query('SELECT name, email FROM users WHERE id = $1', [authReq.user?.id]);
     const user = userRes.rows[0];
-    const adminEmail = process.env.ADMIN_EMAIL || process.env.SMTP_USER || 'kaluvictor130@gmail.com';
     if (user) {
-      await sendSupportTicketAdminAlert(adminEmail, user.name, user.email, issue_type, subject.trim(), message.trim())
-        .catch((e) => console.error('Failed to send support ticket admin alert:', e));
+      notifyAdmins({
+        type: 'new_support_ticket',
+        title: 'New support ticket',
+        body: `${user.name} submitted: ${subject.trim()}`,
+        link: '/admin',
+      });
+      pool.query("SELECT email FROM users WHERE role = 'admin'").then(({ rows }) => {
+        rows.forEach(({ email }) => sendSupportTicketAdminAlert(email, user.name, user.email, issue_type, subject.trim(), message.trim())
+          .catch((e) => console.error('Failed to send support ticket admin alert:', e)));
+      }).catch(console.error);
     }
 
     res.status(201).json({

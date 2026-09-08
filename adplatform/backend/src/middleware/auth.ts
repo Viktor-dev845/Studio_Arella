@@ -38,16 +38,34 @@ export const authenticate: RequestHandler = async (
     // this deploys, so those fall back to the old trust-the-signature-alone
     // behavior until they naturally expire.
     if (decoded.jti) {
+      // Join to the session's own user_id (not the JWT's embedded id) so a
+      // suspended/deleted account is caught from the actual owning row.
       const sessionRes = await pool.query(
-        'SELECT id FROM sessions WHERE jti = $1 AND revoked_at IS NULL',
+        `SELECT s.id, u.suspended FROM sessions s
+         JOIN users u ON u.id = s.user_id
+         WHERE s.jti = $1 AND s.revoked_at IS NULL`,
         [decoded.jti]
       );
       if (sessionRes.rows.length === 0) {
         res.status(401).json({ message: 'Session has been revoked. Please sign in again.' });
         return;
       }
+      if (sessionRes.rows[0].suspended) {
+        res.status(403).json({ message: 'This account has been suspended.' });
+        return;
+      }
       // Fire-and-forget — activity tracking shouldn't add latency to every request.
       pool.query('UPDATE sessions SET last_active_at = NOW() WHERE jti = $1', [decoded.jti]).catch(() => {});
+    } else {
+      // Tokens issued before session tracking shipped have no jti and skip
+      // the block above entirely — they still need the suspension check,
+      // otherwise deleting/suspending an account that's mid-migration to the
+      // new token format is a no-op for as long as the old token is valid.
+      const userRes = await pool.query('SELECT suspended FROM users WHERE id = $1', [decoded.id]);
+      if (userRes.rows[0]?.suspended) {
+        res.status(403).json({ message: 'This account has been suspended.' });
+        return;
+      }
     }
 
     // Cast req to AuthRequest so we can attach our typed user object

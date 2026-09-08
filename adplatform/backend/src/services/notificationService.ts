@@ -8,8 +8,11 @@ export type NotificationType =
   | 'booking_cancelled'
   | 'booking_extended'
   | 'payment_received'
+  | 'payment_refunded'
   | 'new_creative_review'   // admin only
   | 'new_booking'           // admin only
+  | 'orphaned_payment'      // admin only
+  | 'new_support_ticket'    // admin only
   | 'account_suspended';
 
 interface CreateNotificationParams {

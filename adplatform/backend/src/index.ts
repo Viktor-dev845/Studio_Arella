@@ -209,7 +209,11 @@ app.listen(PORT, async () => {
     await pool.query(`
       ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_secret VARCHAR(255);
       ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_enabled BOOLEAN DEFAULT false;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_last_code VARCHAR(10);
       ALTER TABLE users ADD COLUMN IF NOT EXISTS notification_preferences JSONB DEFAULT '{"emailBookings":true,"emailBroadcasts":true,"emailWallet":true,"emailWeekly":false,"smsAlerts":true,"smsSecurity":true}';
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS display_currency VARCHAR(3) DEFAULT 'NGN';
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS display_timezone VARCHAR(64) DEFAULT 'Africa/Lagos';
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS sound_enabled BOOLEAN DEFAULT true;
 
       CREATE TABLE IF NOT EXISTS sessions (
         id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),

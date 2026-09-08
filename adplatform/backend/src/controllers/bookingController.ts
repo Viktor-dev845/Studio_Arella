@@ -8,7 +8,7 @@ import { createNotification, notifyAdmins } from '../services/notificationServic
 export const getBookings: RequestHandler = async (req, res) => {
   const authReq = req as AuthRequest;
   try {
-    const { limit = 20, page = 1, screen_id, status, owned_screens } = req.query;
+    const { limit = 20, page = 1, screen_id, status, owned_screens, campaign_id } = req.query;
     const offset = (Number(page) - 1) * Number(limit);
     const isAdmin = authReq.user?.role === 'admin';
     // Screen owners viewing their earnings dashboard want bookings placed ON
@@ -40,6 +40,7 @@ export const getBookings: RequestHandler = async (req, res) => {
     }
     if (screen_id) { params.push(screen_id); query += ` AND b.screen_id = $${params.length}`; }
     if (status && status !== 'all') { params.push(status); query += ` AND b.status = $${params.length}`; }
+    if (campaign_id) { params.push(campaign_id); query += ` AND b.campaign_id = $${params.length}`; }
     query += ` ORDER BY b.created_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
     params.push(Number(limit), offset);
 
@@ -80,7 +81,7 @@ export const reserveSlots: RequestHandler = async (req, res) => {
   const authReq = req as AuthRequest;
   const client = await pool.connect();
   try {
-    const { screen_id, ad_id, slots } = req.body;
+    const { screen_id, ad_id, slots, campaign_id } = req.body;
     // slots is now expected to be an array of blocks: { start: string, end: string, mins: number }
     if (!screen_id || !ad_id || !slots || !slots.length) {
       res.status(400).json({ message: 'Screen, ad, and time slots are required' }); return;
@@ -89,6 +90,13 @@ export const reserveSlots: RequestHandler = async (req, res) => {
     const initialAdRes = await client.query('SELECT duration_seconds, ppm_rate FROM ads WHERE id = $1 AND user_id = $2 AND (status = $3 OR status = $4)', [ad_id, authReq.user?.id, 'approved', 'pending']);
     if (initialAdRes.rows.length === 0) {
        res.status(400).json({ message: 'Valid creative not found' }); return;
+    }
+
+    if (campaign_id) {
+      const campaignRes = await client.query('SELECT id FROM campaigns WHERE id = $1 AND user_id = $2', [campaign_id, authReq.user?.id]);
+      if (campaignRes.rows.length === 0) {
+        res.status(400).json({ message: 'Campaign not found' }); return;
+      }
     }
     
     const adDuration = initialAdRes.rows[0].duration_seconds || 60;
@@ -138,10 +146,20 @@ export const reserveSlots: RequestHandler = async (req, res) => {
     // released at COMMIT/ROLLBACK.
     await client.query('SELECT pg_advisory_xact_lock(hashtext($1))', [screen_id]);
 
-    // Clear any previous unpaid bookings for this user to allow them to recreate their cart without waiting 10 minutes
+    // Clear this user's genuinely stale unpaid bookings — ones whose slot
+    // locks have already expired — so they can recreate an abandoned
+    // reservation without waiting out the lock. Scoped to actually-expired
+    // locks (not "any pending_payment booking regardless of age") because
+    // cart checkout calls this endpoint once per item in quick succession
+    // for the same user; an unscoped delete here would wipe out the very
+    // booking an earlier call in the same checkout just created, seconds
+    // before it gets paid.
     await client.query(`
-      DELETE FROM bookings
-      WHERE user_id = $1 AND status = 'pending_payment'
+      DELETE FROM bookings b
+      WHERE b.user_id = $1 AND b.status = 'pending_payment'
+        AND NOT EXISTS (
+          SELECT 1 FROM booking_slots bs WHERE bs.booking_id = b.id AND bs.locked_until > NOW()
+        )
     `, [authReq.user?.id]);
 
     for (const block of slots) {
@@ -170,10 +188,10 @@ export const reserveSlots: RequestHandler = async (req, res) => {
 
     const bookingNumber = `#SA-${Date.now().toString().slice(-8)}`;
     const bookingRes = await client.query(`
-      INSERT INTO bookings (booking_number, user_id, screen_id, ad_id, total_cost, status, start_time, end_time, interval_seconds, cost_per_sec)
-      VALUES ($1, $2, $3, $4, $5, 'pending_payment', $6, $7, $8, $9)
+      INSERT INTO bookings (booking_number, user_id, screen_id, ad_id, campaign_id, total_cost, status, start_time, end_time, interval_seconds, cost_per_sec)
+      VALUES ($1, $2, $3, $4, $5, $6, 'pending_payment', $7, $8, $9, $10)
       RETURNING id
-    `, [bookingNumber, authReq.user?.id, screen_id, ad_id, totalCost, minStart.toISOString(), maxEnd.toISOString(), adDuration, costPerSec]);
+    `, [bookingNumber, authReq.user?.id, screen_id, ad_id, campaign_id || null, totalCost, minStart.toISOString(), maxEnd.toISOString(), adDuration, costPerSec]);
     
     const bookingId = bookingRes.rows[0].id;
 
@@ -207,6 +225,7 @@ export const reserveSlots: RequestHandler = async (req, res) => {
 // ── Create booking (webhook will confirm it) ──────────────────────────────────
 export const createBooking: RequestHandler = async (req, res) => {
   const authReq = req as AuthRequest;
+  const client = await pool.connect();
   try {
     const { screen_id, campaign_id, ad_id, start_time, end_time, duration_minutes, total_cost, payment_reference } = req.body;
 
@@ -219,37 +238,12 @@ export const createBooking: RequestHandler = async (req, res) => {
     // (reserveSlots), not a flat platform-wide rate.
     let adPpmRate: number | null = null;
     if (ad_id) {
-      const ad = await pool.query('SELECT status, ppm_rate FROM ads WHERE id = $1 AND user_id = $2', [ad_id, authReq.user?.id]);
+      const ad = await client.query('SELECT status, ppm_rate FROM ads WHERE id = $1 AND user_id = $2', [ad_id, authReq.user?.id]);
       if (!ad.rows[0]) { res.status(404).json({ message: 'Creative not found' }); return; }
       if (ad.rows[0].status !== 'approved') {
         res.status(400).json({ message: 'Only approved creatives can be attached to a booking' }); return;
       }
       adPpmRate = Number(ad.rows[0].ppm_rate) || 1000;
-    }
-
-    // Check for double-booking
-    const conflict = await pool.query(
-      `SELECT id FROM bookings
-       WHERE screen_id = $1
-         AND status NOT IN ('cancelled', 'failed')
-         AND tstzrange(start_time, end_time) &&
-             tstzrange($2::timestamptz, $3::timestamptz)`,
-      [screen_id, start_time, end_time]
-    );
-    if (conflict.rows.length > 0) {
-      res.status(409).json({ message: 'This time slot is already booked. Please choose a different time.' }); return;
-    }
-
-    // Check for admin-blocked slots
-    const blocked = await pool.query(
-      `SELECT id FROM slot_blocks
-       WHERE screen_id = $1
-         AND tstzrange(start_time, end_time) &&
-             tstzrange($2::timestamptz, $3::timestamptz)`,
-      [screen_id, start_time, end_time]
-    );
-    if (blocked.rows.length > 0) {
-      res.status(409).json({ message: 'This time slot has been blocked by the admin.' }); return;
     }
 
     // Server-side price validation — never trust the client-supplied amount.
@@ -261,7 +255,7 @@ export const createBooking: RequestHandler = async (req, res) => {
     if (adPpmRate !== null) {
       expectedCost = mins * adPpmRate;
     } else {
-      const screen = await pool.query('SELECT price_per_sec FROM screens WHERE id = $1', [screen_id]);
+      const screen = await client.query('SELECT price_per_sec FROM screens WHERE id = $1', [screen_id]);
       if (!screen.rows[0]) { res.status(404).json({ message: 'Screen not found' }); return; }
       expectedCost = mins * 60 * Number(screen.rows[0].price_per_sec);
     }
@@ -269,8 +263,42 @@ export const createBooking: RequestHandler = async (req, res) => {
       res.status(400).json({ message: 'Cost mismatch. Please refresh and try again.' }); return;
     }
 
+    await client.query('BEGIN');
+
+    // Serialize all booking attempts for this screen so two concurrent
+    // requests can't both pass the conflict check before either has
+    // inserted its row — matches the locking already used by reserveSlots.
+    await client.query('SELECT pg_advisory_xact_lock(hashtext($1))', [screen_id]);
+
+    // Check for double-booking
+    const conflict = await client.query(
+      `SELECT id FROM bookings
+       WHERE screen_id = $1
+         AND status NOT IN ('cancelled', 'failed')
+         AND tstzrange(start_time, end_time) &&
+             tstzrange($2::timestamptz, $3::timestamptz)`,
+      [screen_id, start_time, end_time]
+    );
+    if (conflict.rows.length > 0) {
+      await client.query('ROLLBACK');
+      res.status(409).json({ message: 'This time slot is already booked. Please choose a different time.' }); return;
+    }
+
+    // Check for admin-blocked slots
+    const blocked = await client.query(
+      `SELECT id FROM slot_blocks
+       WHERE screen_id = $1
+         AND tstzrange(start_time, end_time) &&
+             tstzrange($2::timestamptz, $3::timestamptz)`,
+      [screen_id, start_time, end_time]
+    );
+    if (blocked.rows.length > 0) {
+      await client.query('ROLLBACK');
+      res.status(409).json({ message: 'This time slot has been blocked by the admin.' }); return;
+    }
+
     const bookingNumber = `#SA-${Date.now().toString(36).toUpperCase()}`;
-    const result = await pool.query(
+    const result = await client.query(
       `INSERT INTO bookings (booking_number, user_id, screen_id, campaign_id, ad_id,
         start_time, end_time, interval_seconds, total_cost, cost_per_sec, status, screen_count)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'pending_payment', 1)
@@ -282,6 +310,8 @@ export const createBooking: RequestHandler = async (req, res) => {
       ]
     );
 
+    await client.query('COMMIT');
+
     // Notify admins of new booking
     notifyAdmins({
       type: 'new_booking',
@@ -292,8 +322,11 @@ export const createBooking: RequestHandler = async (req, res) => {
 
     res.status(201).json({ booking: result.rows[0] });
   } catch (err) {
+    await client.query('ROLLBACK').catch(() => {});
     console.error('Create booking error:', err);
     res.status(500).json({ message: 'Booking creation failed' });
+  } finally {
+    client.release();
   }
 };
 
@@ -437,7 +470,20 @@ export const extendBooking: RequestHandler = async (req, res) => {
       return;
     }
 
-    const additionalCost = Math.round(additionalMinutes * Number(booking.cost_per_sec) * 60);
+    // Recompute the real rate rather than trusting the stored cost_per_sec —
+    // that column is total_cost/total_seconds rounded to 2 decimal places
+    // (e.g. 16.67 instead of the true 16.6̄7), and reusing it here made every
+    // extension overcharge by a small amount that compounds with each one.
+    let additionalCost: number;
+    if (booking.ad_id) {
+      const adRes = await client.query('SELECT ppm_rate FROM ads WHERE id = $1', [booking.ad_id]);
+      const ppmRate = Number(adRes.rows[0]?.ppm_rate) || 1000;
+      additionalCost = Math.ceil(additionalMinutes) * ppmRate;
+    } else {
+      const screenRes = await client.query('SELECT price_per_sec FROM screens WHERE id = $1', [booking.screen_id]);
+      const pricePerSec = Number(screenRes.rows[0]?.price_per_sec) || 0;
+      additionalCost = Math.round(additionalMinutes * 60 * pricePerSec);
+    }
 
     const userRes = await client.query('SELECT credits FROM users WHERE id = $1 FOR UPDATE', [authReq.user?.id]);
     const credits = parseFloat(userRes.rows[0].credits);

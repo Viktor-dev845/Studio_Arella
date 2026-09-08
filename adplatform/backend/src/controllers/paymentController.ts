@@ -523,6 +523,55 @@ async function processConfirmedPayment(reference: string, meta: any, amountPaid:
 
     const isPodcast = meta.type === 'podcast_booking';
 
+    // Lock and re-verify the booking is still actually awaiting this payment
+    // before mutating anything. Two independent confirmations for the same
+    // booking (two gateway references — a duplicate charge, a retried
+    // "stuck" checkout) must not both flip it active and both record a
+    // debit; only the first one that gets here should do real work.
+    const table = isPodcast ? 'podcast_bookings' : 'bookings';
+    const awaitingStatus = isPodcast ? 'pending' : 'pending_payment';
+    const current = await client.query(`SELECT status, user_id FROM ${table} WHERE id = $1 FOR UPDATE`, [bookingId]);
+
+    if (current.rows.length === 0) {
+      // The reservation's 5-minute lock expired and the lifecycle cron
+      // already deleted it before this (delayed) webhook arrived. The
+      // gateway has genuinely taken the customer's money for a booking that
+      // no longer exists to activate — refund it to their wallet instead of
+      // silently discarding the payment, and make sure a human sees it.
+      const refundUserId = meta.user_id;
+      if (refundUserId) {
+        await client.query('UPDATE users SET credits = credits + $1 WHERE id = $2', [amountPaid, refundUserId]);
+        await client.query(
+          `INSERT INTO transactions (user_id, type, source, amount, description, reference)
+           VALUES ($1, 'refund', 'expired_reservation', $2, $3, $4)`,
+          [refundUserId, amountPaid, `Reservation expired before payment confirmed — refunded to wallet`, reference]
+        );
+        createNotification({
+          user_id: refundUserId,
+          type: 'payment_refunded',
+          title: 'Booking could not be completed',
+          body: `Your reservation expired before payment was confirmed, so ₦${Number(amountPaid).toLocaleString()} has been credited to your wallet instead.`,
+          link: '/finances',
+        });
+      }
+      notifyAdmins({
+        type: 'orphaned_payment',
+        title: 'Payment received for an expired reservation',
+        body: `Reference ${reference} confirmed ₦${Number(amountPaid).toLocaleString()} for booking ${bookingId}, which no longer exists (reservation expired). ${refundUserId ? 'Auto-refunded to the user\'s wallet.' : 'No user_id on record — needs manual investigation.'}`,
+        link: '/admin/finances',
+      });
+      await client.query('COMMIT');
+      return;
+    }
+
+    if (current.rows[0].status !== awaitingStatus) {
+      // Already paid by an earlier confirmation for this same booking —
+      // this one is a duplicate (retry, or a second gateway reference for
+      // the same charge). Nothing left to do.
+      await client.query('COMMIT');
+      return;
+    }
+
     // 1. Mark booking as active
     if (isPodcast) {
       await client.query(
@@ -745,6 +794,30 @@ export const verifyPaystackPayment: RequestHandler = async (req, res) => {
 
     const txn = verifyRes.data;
     const meta = txn.metadata || {};
+
+    // Handle credit top-up — mirrors the real handling already in
+    // paystackWebhook; this client-verify path was falling through to the
+    // booking-only logic below and silently no-op'ing while still claiming
+    // success for any top-up that reached it.
+    if (meta.type === 'topup') {
+      const existing = await pool.query("SELECT id FROM transactions WHERE reference = $1 AND type = 'credit'", [reference]);
+      if (existing.rows.length > 0) { res.json({ already_confirmed: true, message: 'Credits already added.' }); return; }
+      await pool.query("UPDATE users SET credits = credits + $1 WHERE id = $2", [meta.amount, meta.user_id]);
+      await pool.query(
+        "INSERT INTO transactions (user_id, type, source, amount, description, reference) VALUES ($1, 'credit', 'topup', $2, 'Credit top-up via Paystack', $3)",
+        [meta.user_id, meta.amount, reference]
+      );
+      await saveCardFromAuthorization(meta.user_id, txn.authorization);
+      createNotification({
+        user_id: meta.user_id,
+        type: 'payment_received',
+        title: 'Credits added!',
+        body: `₦${Number(meta.amount).toLocaleString()} has been added to your Studio Arella balance.`,
+        link: '/finances',
+      });
+      res.json({ success: true, message: 'Credits added to your account successfully.' });
+      return;
+    }
 
     // Idempotency check
     if (meta.type === 'podcast_booking') {
