@@ -44,9 +44,9 @@ const statusColors: Record<string, string> = {
 const podcastColor = (status: string) => status === 'cancelled' ? theme.color.error : '#8B5CF6';
 
 const pillBtn: React.CSSProperties = {
-  padding: '8px 16px', background: 'transparent', color: theme.color.text1,
-  border: `1.5px solid ${theme.color.border2}`, borderRadius: 100, fontSize: 12.5,
-  fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s',
+  padding: '8px 16px', background: '#fff', color: theme.color.text1,
+  border: `1px solid ${theme.color.border}`, borderRadius: 8, fontSize: 13,
+  fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s',
 };
 
 const CustomToolbar = (toolbar: any) => {
@@ -84,15 +84,15 @@ const CustomToolbar = (toolbar: any) => {
       </span>
 
       {/* Month / Week / Day */}
-      <div style={{ display: 'flex', background: theme.color.surface2, border: `1px solid ${theme.color.border}`, borderRadius: 100, padding: 4, boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}>
+      <div style={{ display: 'flex', border: `1px solid ${theme.color.border}`, borderRadius: 8, padding: 2, background: '#fff' }}>
         {['month', 'week', 'day'].map(v => (
           <button
             key={v}
             onClick={() => toolbar.onView(v)}
             style={{
-              padding: '7px 18px', background: toolbar.view === v ? theme.color.gold : 'transparent',
-              color: toolbar.view === v ? '#111' : theme.color.text3,
-              border: 'none', borderRadius: 100, fontSize: 12.5, fontWeight: 800, cursor: 'pointer',
+              padding: '6px 20px', background: toolbar.view === v ? theme.color.gold : 'transparent',
+              color: toolbar.view === v ? '#fff' : theme.color.text2,
+              border: 'none', borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: 'pointer',
               textTransform: 'capitalize', transition: 'all 0.2s'
             }}>
             {v}
@@ -111,24 +111,24 @@ const makeWeekHeader = (visibleEvents: CalEvent[]) => function WeekHeader({ date
     return d.getFullYear() === date.getFullYear() && d.getMonth() === date.getMonth() && d.getDate() === date.getDate();
   }).length;
   return (
-    <div style={{ padding: '4px 0' }}>
-      <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: theme.color.text3 }}>
-        {format(date, 'EEE dd/MM')}
+    <div style={{ padding: '8px 0' }}>
+      <div style={{ fontSize: 13, fontWeight: 500, color: theme.color.text1 }}>
+        {format(date, 'EEEE MM/dd')}
       </div>
-      <div style={{ fontSize: 10, fontWeight: 600, color: theme.color.text4, textTransform: 'none', letterSpacing: 'normal', marginTop: 2 }}>
-        {count} booking{count !== 1 ? 's' : ''}
+      <div style={{ fontSize: 11, fontWeight: 400, color: theme.color.text3, marginTop: 4 }}>
+        {count} Tasks
       </div>
     </div>
   );
 };
 
 const CustomEvent = ({ event }: { event: CalEvent }) => {
-  const isPodcast = event.resource.type === 'podcast';
-  const Icon = isPodcast ? Mic : Monitor;
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '2px 4px', height: '100%' }}>
-      <Icon size={12} style={{ opacity: 0.85, flexShrink: 0 }} />
-      <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', letterSpacing: '-0.2px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 4, padding: '4px', height: '100%', overflow: 'hidden' }}>
+      <span style={{ fontSize: 10, fontWeight: 500, opacity: 0.9 }}>
+        {format(event.start, 'hh:mm a')} - {format(event.end, 'hh:mm a')}
+      </span>
+      <span style={{ fontSize: 11, fontWeight: 600, lineHeight: 1.2, whiteSpace: 'pre-wrap', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
         {event.title}
       </span>
     </div>
@@ -193,17 +193,9 @@ export default function BookingCalendar({ screenId }: { screenId?: string }) {
       `}</style>
       {/* Legend */}
       <div style={{ display: 'flex', gap: 14, marginBottom: 16, flexWrap: 'wrap' }}>
-        {Object.entries(statusColors).map(([s, c]) => (
-          <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-            <div style={{ width: 10, height: 10, borderRadius: 3, background: c }} />
-            <span style={{ fontSize: 11, color: theme.color.text3, fontWeight: 600, textTransform: 'capitalize' }}>Ad {s}</span>
-          </div>
-        ))}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-          <div style={{ width: 10, height: 10, borderRadius: 3, background: '#8B5CF6' }} />
-          <span style={{ fontSize: 11, color: theme.color.text3, fontWeight: 600 }}>Podcast Session</span>
-        </div>
-        <span style={{ fontSize: 11, color: theme.color.text4, marginLeft: 'auto' }}>{visibleEvents.length} bookings shown</span>
+        {/* We removed the explicit status-to-color mapping here to match the dynamic Figma colors, 
+            but kept the filter button and count. */}
+        <span style={{ fontSize: 13, color: theme.color.text2, fontWeight: 500 }}>{visibleEvents.length} Tasks shown</span>
         <button
           onClick={() => setFilterModalOpen(true)}
           style={{ display: 'flex', alignItems: 'center', gap: 6, background: theme.color.surface, border: `1px solid ${theme.color.border}`, color: theme.color.text2, padding: '5px 12px', borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: F }}
@@ -254,18 +246,16 @@ export default function BookingCalendar({ screenId }: { screenId?: string }) {
             setSelectedDayEvents({ date, events: dayEvents });
           }}
           eventPropGetter={e => {
-            const isPodcast = (e as CalEvent).resource.type === 'podcast';
-            const baseColor = isPodcast ? podcastColor((e as CalEvent).resource.status) : (statusColors[(e as CalEvent).resource.status] || theme.color.gold);
+            const figmaColors = ['#51A8F4', '#DF4FFF', '#02C897', '#D13131', '#FFA940', '#95E0FF'];
+            const colorIndex = (e as CalEvent).title.charCodeAt(0) % figmaColors.length;
+            const baseColor = figmaColors[colorIndex];
             return {
               style: { 
                 background: baseColor, 
-                border: '1px solid rgba(0,0,0,0.1)', 
-                borderRadius: 6, 
-                color: isPodcast ? '#fff' : theme.color.charcoal900, 
-                fontSize: 11, 
-                fontWeight: 800, 
+                border: 'none', 
+                borderRadius: 4, 
+                color: '#fff', 
                 opacity: (e as CalEvent).resource.status === 'cancelled' ? 0.4 : 1,
-                boxShadow: theme.shadow.sm,
               }
             };
           }}
