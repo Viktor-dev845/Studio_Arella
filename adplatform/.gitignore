@@ -5,3 +5,8 @@ dist/
 .next/
 *.log
 .DS_Store
+
+# Local disposable dev database (embedded-postgres) and its throwaway helper scripts
+backend/_tmp_pgdata/
+backend/_tmp_*.js
+backend/_tmp_*.mjs
