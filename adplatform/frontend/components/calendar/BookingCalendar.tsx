@@ -137,7 +137,7 @@ const CustomEvent = ({ event }: { event: CalEvent }) => {
 
 export default function BookingCalendar({ screenId }: { screenId?: string }) {
   const [events, setEvents] = useState<CalEvent[]>([]);
-  const [view, setView] = useState<View>('month');
+  const [view, setView] = useState<View>('week');
   const [date, setDate] = useState(new Date());
   const [selected, setSelected] = useState<CalEvent | null>(null);
   const [selectedDayEvents, setSelectedDayEvents] = useState<{ date: Date, events: CalEvent[] } | null>(null);
