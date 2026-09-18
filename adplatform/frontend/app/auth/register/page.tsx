@@ -215,7 +215,6 @@ export default function RegisterPage() {
 
           <GoogleButton label="Google" 
              style={{ background: '#FFFFFF', color: '#000000', border: '1px solid #D4AF37', borderRadius: 5, fontWeight: 500, height: 44, width: 126, margin: '0 auto', display: 'flex', justifyContent: 'center' }} 
-             iconStyle={{ width: 22, height: 22 }}
           />
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, margin: '32px 0 24px' }}>
