@@ -566,12 +566,12 @@ export default function CampaignsPage() {
             <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px] p-4">
               <div className="bg-white dark:bg-[#111111] rounded-[24px] w-full max-w-[460px] shadow-2xl relative animate-in fade-in zoom-in-95 duration-150 overflow-hidden max-h-[90vh] flex flex-col">
                 <div className="flex items-center justify-between px-7 pt-6 pb-2 flex-shrink-0">
-                  <h3 className="text-[16px] font-bold text-slate-900 dark:text-slate-50">Create campaign</h3>
-                  <button
-                    onClick={resetWizard}
-                    className="p-1 hover:bg-slate-100 dark:hover:bg-white/[0.06] rounded-full text-slate-500 dark:text-slate-400 transition-colors"
-                  >
-                    <X size={18} />
+                  <button onClick={resetWizard} className="p-1 hover:bg-slate-100 dark:hover:bg-white/[0.06] rounded-full text-slate-900 dark:text-slate-50 transition-colors">
+                    <ArrowLeft size={20} strokeWidth={2.5} />
+                  </button>
+                  <h3 className="text-[16px] font-bold text-slate-900 dark:text-slate-50 absolute left-1/2 -translate-x-1/2">Create campaign</h3>
+                  <button onClick={resetWizard} className="p-1 hover:bg-slate-100 dark:hover:bg-white/[0.06] rounded-full text-slate-900 dark:text-slate-50 transition-colors">
+                    <X size={20} strokeWidth={2.5} />
                   </button>
                 </div>
 
@@ -582,73 +582,75 @@ export default function CampaignsPage() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required
-                    className="w-full px-4 py-3 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[12px] text-[13px] font-semibold text-slate-900 dark:text-slate-50 focus:outline-none focus:border-[#C69A2C]"
+                    className="w-full px-4 py-3.5 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[12px] text-[13px] font-medium text-slate-900 dark:text-slate-50 placeholder:text-slate-300 focus:outline-none focus:border-[#C69A2C]"
                   />
 
                   <textarea
                     placeholder="Describe your campaign"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    rows={3}
-                    className="w-full px-4 py-3 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[12px] text-[13px] text-slate-900 dark:text-slate-50 focus:outline-none focus:border-[#C69A2C] resize-none"
+                    rows={4}
+                    className="w-full px-4 py-3.5 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[12px] text-[13px] font-medium text-slate-900 dark:text-slate-50 placeholder:text-slate-300 focus:outline-none focus:border-[#C69A2C] resize-none"
                   />
 
                   <input
-                    type="number"
+                    type="text"
                     placeholder="Budget (NGN) e.g 500,000"
                     value={budget}
                     onChange={(e) => setBudget(e.target.value)}
                     required
-                    className="w-full px-4 py-3 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[12px] text-[13px] font-semibold text-slate-900 dark:text-slate-50 focus:outline-none focus:border-[#C69A2C]"
+                    className="w-full px-4 py-3.5 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[12px] text-[13px] font-medium text-slate-900 dark:text-slate-50 placeholder:text-slate-300 focus:outline-none focus:border-[#C69A2C]"
                   />
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <input
-                      type="date"
-                      value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                      placeholder="Start date"
-                      className="w-full px-3 py-2.5 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[12px] text-[12px] font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:border-[#C69A2C]"
-                    />
-                    <input
-                      type="date"
-                      value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                      placeholder="End date"
-                      className="w-full px-3 py-2.5 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[12px] text-[12px] font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:border-[#C69A2C]"
-                    />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="relative">
+                      <input
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        className="w-full pl-4 pr-10 py-3.5 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[12px] text-[13px] font-medium text-slate-900 dark:text-slate-50 focus:outline-none focus:border-[#C69A2C] appearance-none"
+                      />
+                    </div>
+                    <div className="relative">
+                      <input
+                        type="date"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                        className="w-full pl-4 pr-10 py-3.5 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[12px] text-[13px] font-medium text-slate-900 dark:text-slate-50 focus:outline-none focus:border-[#C69A2C] appearance-none"
+                      />
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="block text-[12px] font-bold text-slate-700 dark:text-slate-200 mb-1.5">
-                      Upload campaign materials <span className="font-normal text-slate-400">(You can upload multiple files at once)</span>
+                  <div className="mt-2">
+                    <label className="block text-[13px] font-medium text-slate-900 dark:text-slate-50 mb-3">
+                      Upload campaign materials <span className="font-normal text-slate-500">(You can upload multiple files at once)</span>
                     </label>
                     <input
                       ref={materialsInputRef}
                       type="file"
                       multiple
-                      accept="image/jpeg,image/jpg,image/png,image/gif"
+                      accept="image/jpeg,image/jpg,image/png,application/pdf"
                       onChange={(e) => addMaterialFiles(e.target.files)}
                       className="hidden"
                       id="campaign-materials-input"
                     />
                     <label
                       htmlFor="campaign-materials-input"
-                      className="flex flex-col items-center justify-center gap-1.5 border-2 border-dashed border-slate-200 dark:border-white/10 rounded-[12px] py-5 cursor-pointer hover:border-[#C69A2C] transition-colors"
+                      className="flex flex-col items-center justify-center gap-2 border-[1.5px] border-dashed border-[#C69A2C]/50 rounded-[12px] py-8 cursor-pointer hover:border-[#C69A2C] transition-colors bg-white dark:bg-black/20"
                     >
-                      <div className="w-9 h-9 rounded-full bg-[#C69A2C] flex items-center justify-center">
-                        <Upload size={16} className="text-white" />
+                      <div className="w-10 h-10 rounded-[10px] bg-[#C69A2C] flex items-center justify-center mb-1">
+                        <Upload size={18} className="text-white" />
                       </div>
-                      <span className="text-[12.5px] font-bold text-slate-700 dark:text-slate-200">Drag & Drop or choose file to upload</span>
-                      <span className="text-[11px] text-slate-400">Supported formats: jpeg, png, gif</span>
+                      <span className="text-[13px] font-medium text-slate-900 dark:text-slate-200">Drag & Drop or choose file to upload</span>
+                      <span className="text-[11.5px] text-slate-400 font-medium">Supported formats .jpeg, png, pdf</span>
                     </label>
                     {materialFiles.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mt-2.5">
+                      <div className="flex flex-wrap gap-2 mt-3">
                         {materialFiles.map((f, i) => (
-                          <span key={i} className="flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 bg-slate-100 dark:bg-white/[0.06] rounded-full text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+                          <span key={i} className="flex items-center gap-1.5 pl-3 pr-2 py-1.5 bg-slate-100 dark:bg-white/[0.06] rounded-full text-[12px] font-semibold text-slate-700 dark:text-slate-300">
                             {f.name.length > 18 ? f.name.slice(0, 16) + '…' : f.name}
                             <button type="button" onClick={() => setMaterialFiles((prev) => prev.filter((_, idx) => idx !== i))} className="text-slate-400 hover:text-rose-600">
-                              <X size={12} />
+                              <X size={14} />
                             </button>
                           </span>
                         ))}
@@ -656,25 +658,25 @@ export default function CampaignsPage() {
                     )}
                   </div>
 
-                  <p className="text-[12px] text-slate-500 dark:text-slate-400 -mt-1">
+                  <p className="text-[13px] text-slate-900 dark:text-slate-50 mt-1">
                     Don&apos;t have campaign materials yet?{' '}
-                    <button type="button" onClick={() => setWizardStep('creative-service')} className="text-[#C69A2C] font-bold hover:underline">
+                    <button type="button" onClick={() => setWizardStep('creative-service')} className="text-[#C69A2C] font-medium hover:underline">
                       Request Ad creative services
                     </button>
                   </p>
 
-                  <div className="flex items-center justify-end gap-3 mt-2">
+                  <div className="flex items-center justify-end gap-3 mt-4">
                     <button
                       type="button"
                       onClick={resetWizard}
-                      className="px-5 py-2.5 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/[0.06] text-slate-700 dark:text-slate-200 text-[13px] font-bold rounded-[10px] transition-colors"
+                      className="px-6 py-3 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/[0.06] text-slate-700 dark:text-slate-200 text-[13px] font-bold rounded-[10px] transition-colors"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={creatingCampaign}
-                      className="px-6 py-2.5 bg-[#C69A2C] hover:bg-[#b58b24] text-white text-[13px] font-bold rounded-[10px] transition-all shadow-sm disabled:opacity-50"
+                      className="px-6 py-3 bg-[#C69A2C] hover:bg-[#b58b24] text-white text-[13px] font-bold rounded-[10px] transition-all shadow-sm disabled:opacity-50"
                     >
                       {creatingCampaign ? 'Creating…' : 'Create Campaign'}
                     </button>
