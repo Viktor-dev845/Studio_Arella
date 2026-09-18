@@ -25,22 +25,58 @@ function AuthCallbackContent() {
   const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
-    const token = searchParams.get('token');
-    const error = searchParams.get('error');
-    if (error) { setErrorMsg('Google sign-in failed. Please try again.'); setStatus('error'); return; }
-    if (!token) { setErrorMsg('No authentication token received.'); setStatus('error'); return; }
-    const user = {
-      id: searchParams.get('id') || '',
-      name: searchParams.get('name') || '',
-      email: searchParams.get('email') || '',
-      role: (searchParams.get('role') || 'advertiser') as any,
-      credits: parseFloat(searchParams.get('credits') || '0'),
-      avatar: searchParams.get('avatar') || undefined,
+    const getParam = (key: string) => {
+      let val = searchParams.get(key);
+      if (!val && typeof window !== 'undefined') {
+        const urlParams = new URLSearchParams(window.location.search);
+        val = urlParams.get(key);
+      }
+      return val;
     };
-    const isNew = searchParams.get('new') === '1';
+
+    const token = getParam('token');
+    const error = getParam('error');
+
+    if (error) { 
+      setErrorMsg('Google sign-in failed. Please try again.'); 
+      setStatus('error'); 
+      return; 
+    }
+    
+    if (!token) { 
+      // Only set error if we are sure it's not just hydration delay
+      if (typeof window !== 'undefined' && window.location.search.includes('token=')) {
+        // Just wait for Next.js to provide the params
+        return;
+      }
+      if (typeof window !== 'undefined' && !window.location.search) {
+         setErrorMsg('No authentication token received.'); 
+         setStatus('error'); 
+      }
+      return; 
+    }
+
+    const user = {
+      id: getParam('id') || '',
+      name: getParam('name') || '',
+      email: getParam('email') || '',
+      role: (getParam('role') || 'advertiser') as any,
+      credits: parseFloat(getParam('credits') || '0'),
+      avatar: getParam('avatar') || undefined,
+    };
+    
+    const isNew = getParam('new') === '1';
+    
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(user));
+    
+    // In authStore, updateUser might not work if user is null, 
+    // so we call loadFromStorage to populate from localStorage
+    useAuthStore.getState().loadFromStorage();
+    
+    // Also call updateUser just in case
     updateUser(user);
+    
     router.replace(isNew ? '/onboarding' : user.role === 'admin' ? '/admin' : '/dashboard');
   }, [searchParams, router, updateUser]);
 
