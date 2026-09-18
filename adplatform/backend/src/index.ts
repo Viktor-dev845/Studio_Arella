@@ -81,6 +81,173 @@ app.listen(PORT, async () => {
         ADD COLUMN IF NOT EXISTS reserved_account_bank VARCHAR(100);
     `);
     console.log('✅ users table reserved account columns verified');
+
+    // HOTFIX: Ensure podcast content + review tables exist in production database
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS podcasts (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        cover_url TEXT,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+      CREATE TABLE IF NOT EXISTS podcast_episodes (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        podcast_id UUID REFERENCES podcasts(id) ON DELETE CASCADE,
+        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        episode_number INTEGER,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        cover_url TEXT,
+        audio_url TEXT NOT NULL,
+        duration_seconds INTEGER,
+        content_rating VARCHAR(20) DEFAULT 'everyone',
+        scheduled_at TIMESTAMPTZ,
+        status VARCHAR(20) DEFAULT 'published',
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS idx_podcasts_user_id ON podcasts(user_id);
+      CREATE INDEX IF NOT EXISTS idx_podcast_episodes_podcast_id ON podcast_episodes(podcast_id);
+      CREATE TABLE IF NOT EXISTS booking_reviews (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        booking_type VARCHAR(20) NOT NULL,
+        booking_id UUID NOT NULL,
+        title VARCHAR(255),
+        body TEXT NOT NULL,
+        rating INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_booking_reviews_one_per_booking ON booking_reviews(booking_type, booking_id);
+      ALTER TABLE podcast_bookings ADD COLUMN IF NOT EXISTS notes TEXT;
+      ALTER TABLE podcast_bookings ADD COLUMN IF NOT EXISTS cancelled_at TIMESTAMPTZ;
+      ALTER TABLE podcast_bookings ADD COLUMN IF NOT EXISTS cancellation_reason TEXT;
+      ALTER TABLE podcast_bookings ADD COLUMN IF NOT EXISTS refund_amount DECIMAL(10,2);
+      ALTER TABLE podcast_bookings ADD COLUMN IF NOT EXISTS series_id UUID;
+      CREATE INDEX IF NOT EXISTS idx_podcast_bookings_series_id ON podcast_bookings(series_id);
+    `);
+    console.log('✅ podcast content + review tables verified');
+
+    // HOTFIX: podcast_bookings.start_time/end_time were originally created as
+    // TIMESTAMP (no time zone), which silently discards the 'Z'/offset on any
+    // ISO string sent from the client — causing stored times to drift by the
+    // server's local UTC offset. Convert to TIMESTAMPTZ once, interpreting the
+    // existing naive value as UTC (matching how it was already being read),
+    // so no existing booking's actual time shifts during the migration.
+    const podcastTimeColType = await pool.query(
+      `SELECT data_type FROM information_schema.columns WHERE table_name = 'podcast_bookings' AND column_name = 'start_time'`
+    );
+    if (podcastTimeColType.rows[0]?.data_type === 'timestamp without time zone') {
+      await pool.query(`
+        ALTER TABLE podcast_bookings
+          ALTER COLUMN start_time TYPE TIMESTAMPTZ USING start_time AT TIME ZONE 'UTC',
+          ALTER COLUMN end_time TYPE TIMESTAMPTZ USING end_time AT TIME ZONE 'UTC';
+      `);
+      console.log('✅ podcast_bookings start_time/end_time migrated to TIMESTAMPTZ');
+    }
+
+    // HOTFIX: track failed reset-code guesses per token so a reset code can
+    // be locked out after a handful of wrong attempts, independent of the
+    // IP-based rate limiter (defense in depth against a distributed attack).
+    await pool.query(`
+      ALTER TABLE password_reset_tokens ADD COLUMN IF NOT EXISTS attempts INTEGER DEFAULT 0;
+    `);
+
+    // HOTFIX: real "Favorites" (starred pages) — backs the navbar star icon
+    // and the sidebar's Favorites tab, previously both fake/static.
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS page_favorites (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        path VARCHAR(255) NOT NULL,
+        label VARCHAR(255) NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_page_favorites_unique ON page_favorites(user_id, path);
+    `);
+
+    // HOTFIX: real support tickets — the Support page's "Submit a Ticket" form
+    // previously discarded input and showed a fabricated success toast.
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS support_tickets (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        issue_type VARCHAR(100),
+        subject VARCHAR(255) NOT NULL,
+        message TEXT NOT NULL,
+        status VARCHAR(50) DEFAULT 'open',
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS idx_support_tickets_user_id ON support_tickets(user_id);
+    `);
+
+    // HOTFIX: real account deletion — Settings' "Delete Account" previously
+    // made no API call at all. Soft-deletes via the same `suspended` flag the
+    // login flow already gates on, plus a timestamp for when it happened.
+    await pool.query(`
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+    `);
+
+    // HOTFIX: Settings' profile form let users edit handle/location/bio, but
+    // none of those had a backing column — every edit was silently discarded
+    // and the fields were pre-filled with fake placeholder text instead of
+    // real (empty) values.
+    await pool.query(`
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS handle VARCHAR(100);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS location VARCHAR(255);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS bio TEXT;
+    `);
+
+    // HOTFIX: real 2FA, notification preferences, active sessions (with
+    // per-request revocation), and saved cards — Settings previously showed
+    // all four as fully interactive UI that was 100% local state, resetting
+    // on every reload and persisting nothing.
+    await pool.query(`
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_secret VARCHAR(255);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_enabled BOOLEAN DEFAULT false;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_last_code VARCHAR(10);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS notification_preferences JSONB DEFAULT '{"emailBookings":true,"emailBroadcasts":true,"emailWallet":true,"emailWeekly":false,"smsAlerts":true,"smsSecurity":true}';
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS display_currency VARCHAR(3) DEFAULT 'NGN';
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS display_timezone VARCHAR(64) DEFAULT 'Africa/Lagos';
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS sound_enabled BOOLEAN DEFAULT true;
+
+      CREATE TABLE IF NOT EXISTS sessions (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        jti VARCHAR(64) NOT NULL UNIQUE,
+        user_agent TEXT,
+        ip_address VARCHAR(64),
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        last_active_at TIMESTAMPTZ DEFAULT NOW(),
+        revoked_at TIMESTAMPTZ
+      );
+      CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id);
+      CREATE INDEX IF NOT EXISTS idx_sessions_jti ON sessions(jti);
+
+      CREATE TABLE IF NOT EXISTS saved_cards (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        authorization_code VARCHAR(255) NOT NULL,
+        card_type VARCHAR(50),
+        last4 VARCHAR(4),
+        exp_month VARCHAR(4),
+        exp_year VARCHAR(4),
+        bank VARCHAR(100),
+        is_default BOOLEAN DEFAULT false,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_saved_cards_unique ON saved_cards(user_id, authorization_code);
+    `);
+
+    // HOTFIX: the redesigned /book page has a real "Describe your Ad" field
+    // that needs somewhere to actually persist to, unlike before.
+    await pool.query(`
+      ALTER TABLE ads ADD COLUMN IF NOT EXISTS description TEXT;
+    `);
   } catch (err) {
     console.error('❌ Failed to run database migrations:', err);
   }

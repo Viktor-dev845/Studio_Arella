@@ -6,6 +6,7 @@ import { useAuthStore } from '@/store/authStore';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 import ThemeProvider from '@/components/ui/ThemeProvider';
+import PreferencesProvider from '@/components/ui/PreferencesProvider';
 import TermsModal from '@/components/ui/TermsModal';
 import { theme } from '@/lib/theme';
 
@@ -52,12 +53,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (!mounted) return null;
 
   return (
-    <div style={{ 
-      display: 'flex', 
-      height: '100vh', 
-      background: '#FFFFFF', // Clean white background as per Figma
-      fontFamily: F, 
-      overflow: 'hidden' 
+    <div style={{
+      display: 'flex',
+      height: '100vh',
+      background: theme.color.surface,
+      fontFamily: F,
+      overflow: 'hidden'
     }}>
       {showTerms && <TermsModal onAccept={() => {
         setShowTerms(false);
@@ -65,13 +66,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         useAuthStore.getState().checkAuth();
       }} />}
       <ThemeProvider />
+      <PreferencesProvider />
       <Sidebar mobileOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
       
       {/* We need margin-left on desktop to account for the fixed sidebar width (260px) */}
       <div className="main-wrapper" style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, marginLeft: mobileOpen ? 0 : 260, transition: 'margin-left 0.2s ease' }}>
         <Navbar onMenuClick={() => setMobileOpen(o => !o)} />
-        {/* Adjusted padding for the light mode interface */}
-        <main style={{ flex: 1, overflowY: 'auto', padding: '0', background: '#FAFAFA' }}>
+        <main style={{ flex: 1, overflowY: 'auto', padding: '0', background: theme.color.bg }}>
           {children}
         </main>
       </div>

@@ -25,7 +25,7 @@ export default function AdminFinancesPage() {
   const summaryCards = [
     { label: 'Total Platform Revenue', value: `₦${Number(stats?.revenue || 0).toLocaleString()}`, icon: DollarSign, color: theme.color.success, bg: theme.color.successLight },
     { label: 'Total Users', value: stats?.users || 0, icon: Users, color: theme.color.gold, bg: theme.color.goldLight },
-    { label: 'Active Bookings', value: stats?.bookings || 0, icon: CreditCard, color: theme.color.gold, bg: theme.color.goldLight },
+    { label: 'Total Bookings', value: stats?.bookings || 0, icon: CreditCard, color: theme.color.gold, bg: theme.color.goldLight },
     { label: 'Registered Screens', value: stats?.screens || 0, icon: TrendingUp, color: theme.color.gold, bg: '#F5F3FF' },
   ];
 
@@ -40,7 +40,7 @@ export default function AdminFinancesPage() {
           <p style={{ fontSize: 13, color: theme.color.text3, margin: 0 }}>Financial overview of the entire Bems Screens ecosystem</p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 20 }}>
+        <div className="stats-grid" style={{ marginBottom: 20 }}>
           {summaryCards.map(({ label, value, icon: Icon, color, bg }, i) => (
             <FadeCard key={label} delay={i * 0.08} style={{ ...card }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -73,21 +73,27 @@ export default function AdminFinancesPage() {
                 </tr>
               )) : txns.length === 0 ? (
                 <tr><td colSpan={5} style={{ padding: '40px', textAlign: 'center', color: theme.color.text3 }}>No transactions yet</td></tr>
-              ) : txns.map(t => (
-                <TableRow key={t.id}>
-                  <TableCell><span style={{ fontSize: 12 }}>{new Date(t.created_at).toLocaleDateString()}</span></TableCell>
-                  <TableCell>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: t.type === 'credit' ? theme.color.success : theme.color.error, background: t.type === 'credit' ? theme.color.successLight : theme.color.errorLight, padding: '2px 8px', borderRadius: 100 }}>{t.type}</span>
-                  </TableCell>
-                  <TableCell><span style={{ textTransform: 'capitalize' }}>{t.source}</span></TableCell>
-                  <TableCell>
-                    <span style={{ fontWeight: 700, color: t.type === 'credit' ? theme.color.success : theme.color.error }}>
-                      {t.type === 'credit' ? '+' : '-'}₦{Number(t.amount).toLocaleString()}
-                    </span>
-                  </TableCell>
-                  <TableCell><span style={{ fontSize: 11, fontFamily: 'monospace', color: theme.color.text3 }}>{t.reference || '—'}</span></TableCell>
-                </TableRow>
-              ))}
+              ) : txns.map(t => {
+                const isPending = t.type === 'pending';
+                const isCredit = t.type === 'credit' || t.type === 'refund';
+                const color = isPending ? '#D97706' : isCredit ? theme.color.success : theme.color.error;
+                const bg = isPending ? '#FFFBEB' : isCredit ? theme.color.successLight : theme.color.errorLight;
+                return (
+                  <TableRow key={t.id}>
+                    <TableCell><span style={{ fontSize: 12 }}>{new Date(t.created_at).toLocaleDateString()}</span></TableCell>
+                    <TableCell>
+                      <span style={{ fontSize: 11, fontWeight: 700, color, background: bg, padding: '2px 8px', borderRadius: 100 }}>{t.type}</span>
+                    </TableCell>
+                    <TableCell><span style={{ textTransform: 'capitalize' }}>{t.source}</span></TableCell>
+                    <TableCell>
+                      <span style={{ fontWeight: 700, color }}>
+                        {isPending ? '' : isCredit ? '+' : '-'}₦{Number(t.amount).toLocaleString()}
+                      </span>
+                    </TableCell>
+                    <TableCell><span style={{ fontSize: 11, fontFamily: 'monospace', color: theme.color.text3 }}>{t.reference || '—'}</span></TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </div>

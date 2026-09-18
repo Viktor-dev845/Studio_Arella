@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS users (
   email_verified BOOLEAN DEFAULT false,
   avatar VARCHAR(500),
   google_id VARCHAR(255),
-  role VARCHAR(50) DEFAULT 'advertiser', -- 'advertiser' | 'admin'
+  role VARCHAR(50) DEFAULT 'advertiser', -- 'advertiser' | 'screen_owner' | 'admin'
   credits DECIMAL(10,2) DEFAULT 0.00,
   language VARCHAR(10) DEFAULT 'en',
   terms_accepted BOOLEAN DEFAULT false,
@@ -75,6 +75,7 @@ CREATE TABLE IF NOT EXISTS ads (
   campaign_id UUID REFERENCES campaigns(id) ON DELETE CASCADE,
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   title VARCHAR(255) NOT NULL,
+  description TEXT,
   media_url VARCHAR(500),
   media_type VARCHAR(50) DEFAULT 'image', -- 'image' | 'video'
   duration_seconds INTEGER DEFAULT 30,
@@ -266,6 +267,7 @@ CREATE TABLE IF NOT EXISTS password_reset_tokens (
   token VARCHAR(64) NOT NULL UNIQUE,
   expires_at TIMESTAMPTZ NOT NULL,
   used BOOLEAN DEFAULT false,
+  attempts INTEGER DEFAULT 0,
   created_at TIMESTAMP DEFAULT NOW()
 );
 
@@ -275,7 +277,11 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(50);
 ALTER TABLE users ADD COLUMN IF NOT EXISTS logo_url TEXT;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT false;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS suspended BOOLEAN DEFAULT false;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS language VARCHAR(10) DEFAULT 'en';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS handle VARCHAR(100);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS location VARCHAR(255);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS bio TEXT;
 
 -- ─── Update ads/creatives table ───────────────────────────────────────────────
 ALTER TABLE ads ADD COLUMN IF NOT EXISTS file_url TEXT;
@@ -384,8 +390,8 @@ CREATE TABLE IF NOT EXISTS podcast_bookings (
   booking_number VARCHAR(50) UNIQUE NOT NULL,
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   package_type VARCHAR(50) NOT NULL,
-  start_time TIMESTAMP NOT NULL,
-  end_time TIMESTAMP NOT NULL,
+  start_time TIMESTAMPTZ NOT NULL,
+  end_time TIMESTAMPTZ NOT NULL,
   duration_minutes INTEGER NOT NULL,
   addons JSONB DEFAULT '[]'::jsonb,
   base_cost DECIMAL(10,2) DEFAULT 0.00,
@@ -400,3 +406,131 @@ CREATE TABLE IF NOT EXISTS podcast_bookings (
 CREATE INDEX IF NOT EXISTS podcast_bookings_user_idx ON podcast_bookings(user_id);
 CREATE INDEX IF NOT EXISTS podcast_bookings_status_idx ON podcast_bookings(status);
 CREATE INDEX IF NOT EXISTS podcast_bookings_date_idx ON podcast_bookings(start_time, end_time);
+
+-- ─── Podcast shows & episodes (content publishing — distinct from podcast_bookings,
+-- ─── which is studio *rental* time, not published content) ───────────────────
+CREATE TABLE IF NOT EXISTS podcasts (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  title VARCHAR(255) NOT NULL,
+  description TEXT,
+  cover_url TEXT,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS podcast_episodes (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  podcast_id UUID REFERENCES podcasts(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  episode_number INTEGER,
+  title VARCHAR(255) NOT NULL,
+  description TEXT,
+  cover_url TEXT,
+  audio_url TEXT NOT NULL,
+  duration_seconds INTEGER,
+  content_rating VARCHAR(20) DEFAULT 'everyone', -- 'everyone' | 'adult'
+  scheduled_at TIMESTAMPTZ,
+  status VARCHAR(20) DEFAULT 'published', -- 'scheduled' | 'published'
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_podcasts_user_id ON podcasts(user_id);
+CREATE INDEX IF NOT EXISTS idx_podcast_episodes_podcast_id ON podcast_episodes(podcast_id);
+
+-- ─── Booking reviews (polymorphic: covers both ad bookings and podcast studio
+-- ─── bookings, distinguished by booking_type — no FK since it can point at
+-- ─── either bookings or podcast_bookings) ─────────────────────────────────────
+CREATE TABLE IF NOT EXISTS booking_reviews (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  booking_type VARCHAR(20) NOT NULL, -- 'ad' | 'podcast'
+  booking_id UUID NOT NULL,
+  title VARCHAR(255),
+  body TEXT NOT NULL,
+  rating INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- One review per booking; this index also serves as the lookup index.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_booking_reviews_one_per_booking ON booking_reviews(booking_type, booking_id);
+
+-- ─── Optional session notes + cancellation tracking on podcast studio bookings ─
+ALTER TABLE podcast_bookings ADD COLUMN IF NOT EXISTS notes TEXT;
+ALTER TABLE podcast_bookings ADD COLUMN IF NOT EXISTS cancelled_at TIMESTAMPTZ;
+ALTER TABLE podcast_bookings ADD COLUMN IF NOT EXISTS cancellation_reason TEXT;
+ALTER TABLE podcast_bookings ADD COLUMN IF NOT EXISTS refund_amount DECIMAL(10,2);
+
+-- Links multiple podcast_bookings rows together as one recurring series,
+-- paid for once as a combined total rather than session-by-session.
+ALTER TABLE podcast_bookings ADD COLUMN IF NOT EXISTS series_id UUID;
+CREATE INDEX IF NOT EXISTS idx_podcast_bookings_series_id ON podcast_bookings(series_id);
+
+-- ─── Favorited pages (sidebar/navbar "Favorites") ─────────────────────────────
+CREATE TABLE IF NOT EXISTS page_favorites (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  path VARCHAR(255) NOT NULL,
+  label VARCHAR(255) NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_page_favorites_unique ON page_favorites(user_id, path);
+
+-- ─── Support Tickets ────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS support_tickets (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  issue_type VARCHAR(100),
+  subject VARCHAR(255) NOT NULL,
+  message TEXT NOT NULL,
+  status VARCHAR(50) DEFAULT 'open', -- open | in_progress | resolved
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_support_tickets_user_id ON support_tickets(user_id);
+
+-- ─── Two-Factor Auth, Notification Preferences ─────────────────────────────
+ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_secret VARCHAR(255);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_enabled BOOLEAN DEFAULT false;
+-- Last TOTP code value a user was successfully verified with. A captured
+-- code is otherwise valid for reuse within its ~90s window (window: 1) at
+-- both /2fa/verify-setup and /2fa/login-verify; rejecting an immediate
+-- repeat of the same code closes that off.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_last_code VARCHAR(10);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS notification_preferences JSONB DEFAULT '{"emailBookings":true,"emailBroadcasts":true,"emailWallet":true,"emailWeekly":false,"smsAlerts":true,"smsSecurity":true}';
+-- Real display preferences — currency is presentation-only (all actual
+-- charges/bookings stay in NGN, the only currency the payment gateways
+-- support here; this converts what's *shown* using live exchange rates).
+ALTER TABLE users ADD COLUMN IF NOT EXISTS display_currency VARCHAR(3) DEFAULT 'NGN';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS display_timezone VARCHAR(64) DEFAULT 'Africa/Lagos';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS sound_enabled BOOLEAN DEFAULT true;
+
+-- ─── Sessions (real "Active Devices" list + per-request revocation) ────────
+CREATE TABLE IF NOT EXISTS sessions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  jti VARCHAR(64) NOT NULL UNIQUE,
+  user_agent TEXT,
+  ip_address VARCHAR(64),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  last_active_at TIMESTAMPTZ DEFAULT NOW(),
+  revoked_at TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id);
+CREATE INDEX IF NOT EXISTS idx_sessions_jti ON sessions(jti);
+
+-- ─── Saved Cards (real Paystack reusable authorizations) ───────────────────
+CREATE TABLE IF NOT EXISTS saved_cards (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  authorization_code VARCHAR(255) NOT NULL,
+  card_type VARCHAR(50),
+  last4 VARCHAR(4),
+  exp_month VARCHAR(4),
+  exp_year VARCHAR(4),
+  bank VARCHAR(100),
+  is_default BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_saved_cards_unique ON saved_cards(user_id, authorization_code);

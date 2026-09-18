@@ -1,357 +1,354 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { Search, Filter, Monitor, Mic, X, ArrowLeft, UploadCloud, Copy, Check, Star, Calendar, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Search, Monitor, Mic, X, Calendar, Loader2, Download, Star, ArrowLeft, Check } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { PageTransition } from '@/components/ui/Animations';
+import { useToast } from '@/components/ui/ToastProvider';
+import api from '@/lib/api';
+import BookingCalendar from '@/components/calendar/BookingCalendar';
+import { usePreferencesStore } from '@/store/preferencesStore';
+import { formatCurrency } from '@/lib/currency';
+import { formatDateInTz } from '@/lib/timezone';
 
-// Mock data based on the screenshot provided
-const mockBookings = [
-  { id: 1, info: 'Bemsoft Bulletin Highway', date: '16-08-2026 12PM', reschedule: false, billing: '200,000', duration: '1 month', status: 'Active', action: 'Extend' },
-  { id: 2, info: 'Bemsoft Bulletin Highway', date: '18-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 month', status: 'Pending', action: 'Cancel' },
-  { id: 3, info: 'Bemsoft Bulletin Highway', date: '16-08-2026 12PM', reschedule: false, billing: '200,000', duration: '2 hours', status: 'Ended', action: 'Send a review' },
-  { id: 4, info: 'Bemsoft Bulletin Highway', date: '16-08-2026 12PM', reschedule: false, billing: '200,000', duration: '1 month', status: 'Cancelled', action: 'Book a slot' },
-  { id: 5, info: 'Bemsoft Bulletin Highway', date: '18-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 month', status: 'Pending', action: 'Extend' },
-  { id: 6, info: 'Bemsoft Bulletin Highway', date: '16-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 month', status: 'Pending', action: 'Extend' },
-  { id: 7, info: 'Bemsoft Bulletin Highway', date: '16-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 month', status: 'Pending', action: 'Extend' },
-  { id: 8, info: 'Bemsoft Bulletin Highway', date: '16-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 month', status: 'Pending', action: 'Extend' },
-  { id: 9, info: 'Bemsoft Bulletin Highway', date: '16-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 month', status: 'Pending', action: 'Extend' },
-];
-
-const mockPodcastBookings = [
-  { id: 101, info: 'Pop podcast studio session', date: '16-08-2026 12PM', reschedule: false, billing: '200,000', duration: '1 hour', status: 'Active', action: 'Extend' },
-  { id: 102, info: 'Pop podcast studio session', date: '18-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 hour', status: 'Pending', action: 'Cancel' },
-  { id: 103, info: 'Pop podcast studio session', date: '16-08-2026 12PM', reschedule: false, billing: '200,000', duration: '2 hours', status: 'Ended', action: 'Send a review' },
-  { id: 104, info: 'Pop podcast studio session', date: '16-08-2026 12PM', reschedule: false, billing: '200,000', duration: '1 hour', status: 'Cancelled', action: 'Book a slot' },
-  { id: 105, info: 'Pop podcast studio session', date: '18-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 hour', status: 'Pending', action: 'Extend' },
-  { id: 106, info: 'Pop podcast studio session', date: '16-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 hour', status: 'Pending', action: 'Extend' },
-  { id: 107, info: 'Pop podcast studio session', date: '16-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 hour', status: 'Pending', action: 'Extend' },
-  { id: 108, info: 'Pop podcast studio session', date: '16-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 hour', status: 'Pending', action: 'Extend' },
-  { id: 109, info: 'Pop podcast studio session', date: '16-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 hour', status: 'Pending', action: 'Extend' },
-  { id: 110, info: 'Pop podcast studio session', date: '18-08-2026 12PM', reschedule: true, billing: '200,000', duration: '1 hour', status: 'Pending', action: 'Extend' },
-];
-
-// ─── Calendar constants & mock data ───────────────────────────────────────────
-const HOUR_HEIGHT = 64;
-const CAL_START_HOUR = 6;
-const CAL_END_HOUR = 22;
-const CAL_HOURS = Array.from({ length: CAL_END_HOUR - CAL_START_HOUR }, (_, i) => i + CAL_START_HOUR);
-const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
-interface CalendarEvent {
+interface BookingRow {
   id: string;
-  title: string;
-  dateIndex: number; // 0 = Sun … 6 = Sat within the displayed week
-  startHour: number;
-  endHour: number;
-  color: string;
-  bgColor: string;
+  booking_number: string;
+  info: string;
+  start_time: string;
+  end_time: string;
+  billing: number;
+  duration: string;
+  status: string;
 }
 
-const mockCalendarEvents: CalendarEvent[] = [
-  { id: 'ce1',  title: 'Pack & Move podcast\nstudio session', dateIndex: 1, startHour: 6.0,  endHour: 8.0,  color: '#46B6E6', bgColor: '#46B6E6' },
-  { id: 'ce2',  title: 'Ad campaign',             dateIndex: 4, startHour: 12.0, endHour: 13.5, color: '#A92B2B', bgColor: '#A92B2B' },
-  { id: 'ce3',  title: 'Pack & Move podcast\nstudio session', dateIndex: 5, startHour: 6.0,  endHour: 8.0,  color: '#3475D6', bgColor: '#3475D6' },
-  { id: 'ce4',  title: 'Ad campaign',             dateIndex: 3, startHour: 12.0, endHour: 13.5, color: '#CD4FE6', bgColor: '#CD4FE6' },
-  { id: 'ce5',  title: 'Ad campaign',             dateIndex: 3, startHour: 8.0,  endHour: 9.5,  color: '#89CFF0', bgColor: '#89CFF0' },
-  { id: 'ce6',  title: 'Pack & Move podcast\nstudio session', dateIndex: 4, startHour: 8.0,  endHour: 10.0, color: '#13C78B', bgColor: '#13C78B' },
-  { id: 'ce7',  title: 'Ad campaign',             dateIndex: 1, startHour: 9.0,  endHour: 10.5, color: '#CD4FE6', bgColor: '#CD4FE6' },
-  { id: 'ce8',  title: 'Pack & Move podcast\nstudio session', dateIndex: 5, startHour: 9.0,  endHour: 11.0, color: '#3475D6', bgColor: '#3475D6' },
-  { id: 'ce9',  title: 'Pack & Move podcast\nstudio session', dateIndex: 1, startHour: 10.0, endHour: 11.5, color: '#A92B2B', bgColor: '#A92B2B' },
-  { id: 'ce10', title: 'Ad campaign',             dateIndex: 3, startHour: 10.0, endHour: 11.5, color: '#EF6666', bgColor: '#EF6666' },
-  { id: 'ce11', title: 'Pack & Move podcast\nstudio session', dateIndex: 2, startHour: 11.0, endHour: 12.5, color: '#F39C12', bgColor: '#F39C12' },
-  { id: 'ce12', title: 'Ad campaign',             dateIndex: 4, startHour: 11.0, endHour: 12.5, color: '#46B6E6', bgColor: '#46B6E6' },
-];
+function formatSchedule(iso: string, timezone?: string) {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '—';
+  return `${formatDateInTz(d, timezone)}, ${new Intl.DateTimeFormat('en-GB', { timeZone: timezone || 'Africa/Lagos', hour: 'numeric', minute: '2-digit' }).format(d)}`;
+}
+
+function formatDuration(startIso: string, endIso: string) {
+  const start = new Date(startIso).getTime();
+  const end = new Date(endIso).getTime();
+  if (!start || !end || end <= start) return '—';
+  const mins = Math.round((end - start) / 60000);
+  if (mins < 60) return `${mins} min`;
+  const hrs = mins / 60;
+  return `${hrs % 1 === 0 ? hrs : hrs.toFixed(1)} hour${hrs !== 1 ? 's' : ''}`;
+}
+
+const STATUS_LABEL: Record<string, { label: string; className: string }> = {
+  active:          { label: 'Active',    className: 'text-green-600 dark:text-green-400' },
+  confirmed:       { label: 'Confirmed', className: 'text-green-600 dark:text-green-400' },
+  pending_payment: { label: 'Pending',   className: 'text-gray-400 dark:text-slate-500' },
+  pending:         { label: 'Pending',   className: 'text-gray-400 dark:text-slate-500' },
+  completed:       { label: 'Ended',     className: 'text-gray-400 dark:text-slate-500' },
+  ended:           { label: 'Ended',     className: 'text-gray-400 dark:text-slate-500' },
+  cancelled:       { label: 'Cancelled', className: 'text-red-400' },
+  failed:          { label: 'Failed',    className: 'text-red-400' },
+};
+
+const CANCELLABLE_STATUSES: Record<'screen' | 'podcast', Set<string>> = {
+  screen: new Set(['active', 'pending_payment']),
+  podcast: new Set(['confirmed', 'pending']),
+};
+const EXTENDABLE_STATUSES: Record<'screen' | 'podcast', Set<string>> = {
+  screen: new Set(['active']),
+  podcast: new Set(['confirmed']),
+};
+
+type ExtendUnit = 'minutes' | 'hours' | 'days';
+const UNIT_MINUTES: Record<ExtendUnit, number> = { minutes: 1, hours: 60, days: 60 * 24 };
+
+const TAB_VALUES = ['screen', 'podcast', 'calendar'] as const;
 
 export default function BookingsPage() {
-  const [activeTab, setActiveTab] = useState('screen');
+  return (
+    <Suspense fallback={null}>
+      <BookingsPageContent />
+    </Suspense>
+  );
+}
+
+function BookingsPageContent() {
+  const { toast } = useToast();
+  const { currency, timezone, rates } = usePreferencesStore();
+  const naira = (n: number) => formatCurrency(n, currency, rates);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  const [activeTab, setActiveTabState] = useState<'screen' | 'podcast' | 'calendar'>(
+    (TAB_VALUES as readonly string[]).includes(tabParam || '') ? (tabParam as any) : 'screen'
+  );
+  // Keeps the URL in sync with the active tab so breadcrumbs, bookmarks, and
+  // back/forward navigation reflect which booking type is actually showing.
+  const setActiveTab = (tab: 'screen' | 'podcast' | 'calendar') => {
+    setActiveTabState(tab);
+    router.replace(`/bookings?tab=${tab}`, { scroll: false });
+  };
   const [search, setSearch] = useState('');
-  const [cancelModalOpen, setCancelModalOpen] = useState(false);
-  const [cancelSuccessOpen, setCancelSuccessOpen] = useState(false);
-  const [extendModalOpen, setExtendModalOpen] = useState(false);
-  const [extendBy, setExtendBy] = useState('');
-  const [additionalInfo, setAdditionalInfo] = useState('');
-  const [selectedAdId, setSelectedAdId] = useState<number | null>(null);
-  const [extendBillingModalOpen, setExtendBillingModalOpen] = useState(false);
-  const [modalStep, setModalStep] = useState<'billing' | 'pay_from_wallet' | 'pay_with_card' | 'success'>('billing');
-  const [paymentMethod, setPaymentMethod] = useState<'card' | 'wallet'>('wallet');
 
-  // Review Modal State
-  const [reviewModalOpen, setReviewModalOpen] = useState(false);
-  const [reviewSuccessOpen, setReviewSuccessOpen] = useState(false);
+  const [adBookings, setAdBookings] = useState<BookingRow[]>([]);
+  const [podcastBookings, setPodcastBookings] = useState<BookingRow[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const [cancelTarget, setCancelTarget] = useState<{ id: string; info: string; type: 'ad' | 'podcast' } | null>(null);
+  const [cancelling, setCancelling] = useState(false);
+  const [cancelSuccessInfo, setCancelSuccessInfo] = useState<string | null>(null);
+
+  // Extend
+  const [extendTarget, setExtendTarget] = useState<{ id: string; info: string; type: 'ad' | 'podcast' } | null>(null);
+  const [extendAmount, setExtendAmount] = useState('1');
+  const [extendUnit, setExtendUnit] = useState<ExtendUnit>('hours');
+  const [extending, setExtending] = useState(false);
+  const [extendSuccess, setExtendSuccess] = useState<{ info: string; cost: number } | null>(null);
+
+  // Review
+  const [reviewTarget, setReviewTarget] = useState<{ id: string; info: string; type: 'ad' | 'podcast' } | null>(null);
   const [reviewTitle, setReviewTitle] = useState('');
-  const [reviewText, setReviewText] = useState('');
-  const [rating, setRating] = useState(4); // default to 4
+  const [reviewBody, setReviewBody] = useState('');
+  const [reviewRating, setReviewRating] = useState(4);
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [reviewSuccess, setReviewSuccess] = useState(false);
 
-  // Book Slot Modal State
-  const [bookSlotModalOpen, setBookSlotModalOpen] = useState(false);
-  const [bookDate, setBookDate] = useState('');
-  const [bookFrom, setBookFrom] = useState('');
-  const [bookTo, setBookTo] = useState('');
-  const [bookSlots, setBookSlots] = useState('');
+  const fetchBookings = async () => {
+    setLoading(true);
+    try {
+      const [adsRes, podcastRes] = await Promise.all([
+        api.get('/bookings?limit=100').catch(() => ({ data: { bookings: [] } })),
+        api.get('/podcasts/my-bookings').catch(() => ({ data: { bookings: [] } })),
+      ]);
 
-  // Filter Modal State
-  const [filterModalOpen, setFilterModalOpen] = useState(false);
-  const [filterSearch, setFilterSearch] = useState('');
-  const [filterStatus, setFilterStatus] = useState(true);
-  const [filterDuration, setFilterDuration] = useState(false);
+      setAdBookings((adsRes.data.bookings || []).map((b: any): BookingRow => ({
+        id: b.id,
+        booking_number: b.booking_number,
+        info: b.creative_title || b.screen_name || 'Screen Ad Booking',
+        start_time: b.start_time,
+        end_time: b.end_time,
+        billing: Number(b.total_cost) || 0,
+        duration: formatDuration(b.start_time, b.end_time),
+        status: b.status,
+      })));
 
-  // ─── Calendar state ───────────────────────────────────────────────────────
-  const [calendarView, setCalendarView] = useState<'month' | 'week' | 'day'>('week');
-  const [currentDate, setCurrentDate] = useState(new Date(2026, 7, 10)); // Aug 10 2026
-
-  // Calendar helpers
-  const getWeekDates = (date: Date) => {
-    const start = new Date(date);
-    start.setDate(start.getDate() - start.getDay()); // snap to Sunday
-    return Array.from({ length: 7 }, (_, i) => {
-      const d = new Date(start);
-      d.setDate(start.getDate() + i);
-      return d;
-    });
+      setPodcastBookings((podcastRes.data.bookings || []).map((b: any): BookingRow => ({
+        id: b.id,
+        booking_number: b.booking_number,
+        info: b.package_type ? `${b.package_type} podcast session` : 'Podcast studio session',
+        start_time: b.start_time,
+        end_time: b.end_time,
+        billing: Number(b.total_cost) || 0,
+        duration: b.duration_minutes ? `${b.duration_minutes} min` : formatDuration(b.start_time, b.end_time),
+        status: b.status,
+      })));
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const formatWeekRange = (date: Date) => {
-    const dates = getWeekDates(date);
-    const m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    const s = dates[0], e = dates[6];
-    return `${s.getDate()} ${m[s.getMonth()]} ${s.getFullYear()} - ${e.getDate()} ${m[e.getMonth()]} ${e.getFullYear()}`;
+  useEffect(() => { fetchBookings(); }, []);
+
+  const rows = activeTab === 'podcast' ? podcastBookings : adBookings;
+  const filteredRows = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return rows;
+    return rows.filter(r =>
+      r.info.toLowerCase().includes(q) ||
+      (r.booking_number || '').toLowerCase().includes(q)
+    );
+  }, [rows, search]);
+
+  const canReview = (b: BookingRow) => b.status !== 'cancelled' && new Date(b.end_time).getTime() <= Date.now();
+
+  const handleCancel = async () => {
+    if (!cancelTarget) return;
+    setCancelling(true);
+    try {
+      const url = cancelTarget.type === 'ad'
+        ? `/bookings/${cancelTarget.id}/cancel`
+        : `/podcasts/${cancelTarget.id}/cancel`;
+      const res = await api.put(url, {});
+      // Show the real refund outcome the backend actually computed
+      // (whether the 48h window applied, exact amount credited) instead of
+      // a generic "cancelled" message that leaves the user to go check
+      // their wallet separately to find out what really happened.
+      setCancelSuccessInfo(res.data?.message || cancelTarget.info);
+      setCancelTarget(null);
+      fetchBookings();
+    } catch (err: any) {
+      toast(err?.response?.data?.message || 'Could not cancel this booking. Please try again.', 'error');
+    } finally {
+      setCancelling(false);
+    }
   };
 
-  const fmtHour = (h: number) => {
-    if (h === 0) return '12 AM';
-    if (h === 12) return '12 PM';
-    return h < 12 ? `${h} AM` : `${h - 12} PM`;
+  const handleExtend = async () => {
+    if (!extendTarget) return;
+    const amount = Number(extendAmount);
+    if (!amount || amount <= 0) {
+      toast('Please enter a valid amount of time', 'error');
+      return;
+    }
+    const additionalMinutes = Math.round(amount * UNIT_MINUTES[extendUnit]);
+    const url = extendTarget.type === 'ad'
+      ? `/bookings/${extendTarget.id}/extend`
+      : `/podcasts/${extendTarget.id}/extend`;
+
+    setExtending(true);
+    try {
+      const res = await api.put(url, { additional_minutes: additionalMinutes });
+      setExtendSuccess({ info: extendTarget.info, cost: res.data.additional_cost });
+      setExtendTarget(null);
+      fetchBookings();
+    } catch (err: any) {
+      toast(err?.response?.data?.message || 'Could not extend this booking. Please try again.', 'error');
+    } finally {
+      setExtending(false);
+    }
   };
 
-  const fmtTime = (h: number) => {
-    const hour = Math.floor(h), min = Math.round((h - hour) * 60);
-    const ampm = hour < 12 ? 'AM' : 'PM';
-    const dh = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-    return min > 0 ? `${String(dh).padStart(2, '0')}:${String(min).padStart(2, '0')} ${ampm}` : `${String(dh).padStart(2, '0')}:00 ${ampm}`;
+  const handleSubmitReview = async () => {
+    if (!reviewTarget) return;
+    if (!reviewBody.trim()) {
+      toast('Please write a few words about your experience', 'error');
+      return;
+    }
+    setSubmittingReview(true);
+    try {
+      await api.post('/reviews', {
+        booking_type: reviewTarget.type,
+        booking_id: reviewTarget.id,
+        title: reviewTitle.trim() || undefined,
+        body: reviewBody.trim(),
+        rating: reviewRating,
+      });
+      setReviewTarget(null);
+      setReviewTitle('');
+      setReviewBody('');
+      setReviewRating(4);
+      setReviewSuccess(true);
+    } catch (err: any) {
+      toast(err?.response?.data?.message || 'Could not submit your review. Please try again.', 'error');
+    } finally {
+      setSubmittingReview(false);
+    }
   };
 
-  const weekDates = getWeekDates(currentDate);
-  const eventsForDay = (dayIdx: number) => mockCalendarEvents.filter(e => e.dateIndex === dayIdx);
-  const goToToday  = () => setCurrentDate(new Date());
-  const goToPrev   = () => { const d = new Date(currentDate); d.setDate(d.getDate() - 7); setCurrentDate(d); };
-  const goToNext   = () => { const d = new Date(currentDate); d.setDate(d.getDate() + 7); setCurrentDate(d); };
+  const handleExport = () => {
+    if (filteredRows.length === 0) {
+      toast('Nothing to export', 'error');
+      return;
+    }
+    const header = ['Booking Number', 'Info', 'Start', 'End', 'Billing (NGN)', 'Duration', 'Status'];
+    const csvRows = filteredRows.map(r => [
+      r.booking_number, r.info, r.start_time, r.end_time, r.billing,
+      r.duration, STATUS_LABEL[r.status]?.label || r.status,
+    ]);
+    const csv = [header, ...csvRows]
+      .map(row => row.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${activeTab === 'podcast' ? 'podcast' : 'ad'}-bookings.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <DashboardLayout>
       <PageTransition>
         <div className="font-body max-w-7xl mx-auto">
-          {/* Header */}
+          {/* Page Title */}
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-[16px] font-bold text-gray-900 dark:text-slate-50">My bookings</h1>
+          </div>
+
+          {/* Header & Tabs */}
           <div className="mb-8">
-            {/* Tabs & Filter */}
-            <div className="flex items-center justify-between border-b border-gray-200 mb-8">
+            <div className="flex items-center justify-between border-b border-gray-200 dark:border-white/10 mb-8">
               <div className="flex items-center gap-8">
                 <button
                   onClick={() => setActiveTab('screen')}
                   className={`flex items-center gap-2 pb-3 text-[13px] font-bold transition-colors relative ${
-                    activeTab === 'screen' ? 'text-[#EAB308]' : 'text-gray-400 hover:text-gray-600'
+                    activeTab === 'screen' ? 'text-[#C69A2C]' : 'text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300'
                   }`}
                 >
                   <Monitor size={16} />
                   Screen Ads
                   {activeTab === 'screen' && (
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#EAB308] rounded-t-full" />
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#C69A2C] rounded-t-full" />
                   )}
                 </button>
-                
+
                 <button
                   onClick={() => setActiveTab('podcast')}
                   className={`flex items-center gap-2 pb-3 text-[13px] font-bold transition-colors relative ${
-                    activeTab === 'podcast' ? 'text-[#EAB308]' : 'text-gray-400 hover:text-gray-600'
+                    activeTab === 'podcast' ? 'text-[#C69A2C]' : 'text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300'
                   }`}
                 >
                   <Mic size={16} />
                   Podcast studio
                   {activeTab === 'podcast' && (
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#EAB308] rounded-t-full" />
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#C69A2C] rounded-t-full" />
                   )}
                 </button>
 
                 <button
                   onClick={() => setActiveTab('calendar')}
                   className={`flex items-center gap-2 pb-3 text-[13px] font-bold transition-colors relative ${
-                    activeTab === 'calendar' ? 'text-[#EAB308]' : 'text-gray-400 hover:text-gray-600'
+                    activeTab === 'calendar' ? 'text-[#C69A2C]' : 'text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300'
                   }`}
                 >
                   <Calendar size={16} />
                   Calendar
                   {activeTab === 'calendar' && (
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#EAB308] rounded-t-full" />
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#C69A2C] rounded-t-full" />
                   )}
                 </button>
               </div>
-
-              {/* Global Filter Button aligned to the right of tabs */}
-              <button
-                onClick={() => setFilterModalOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-600 hover:bg-gray-50 transition-colors mb-3"
-              >
-                <Filter size={14} />
-                Filter
-              </button>
             </div>
           </div>
 
           {activeTab === 'calendar' ? (
-            <>
-              {/* ── Calendar toolbar ─────────────────────────────────────── */}
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-5">
-                {/* Navigation */}
-                <div className="flex items-center rounded-lg border border-gray-200 overflow-hidden shadow-sm">
-                  <button
-                    onClick={goToToday}
-                    className="px-6 py-2.5 bg-white text-[13px] font-bold text-gray-700 hover:bg-gray-50 transition-colors border-r border-gray-200"
-                  >
-                    Today
-                  </button>
-                  <button
-                    onClick={goToPrev}
-                    className="px-6 py-2.5 bg-white text-[13px] font-bold text-gray-700 hover:bg-gray-50 transition-colors border-r border-gray-200"
-                  >
-                    Back
-                  </button>
-                  <button
-                    onClick={goToNext}
-                    className="px-6 py-2.5 bg-white text-[13px] font-bold text-gray-700 hover:bg-gray-50 transition-colors"
-                  >
-                    Next
-                  </button>
-                </div>
-
-                {/* Date range */}
-                <span className="text-[14px] font-bold text-gray-900">{formatWeekRange(currentDate)}</span>
-
-                {/* View toggle */}
-                <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-                  {(['Month', 'Week', 'Day'] as const).map((v) => (
-                    <button
-                      key={v}
-                      onClick={() => setCalendarView(v.toLowerCase() as 'month' | 'week' | 'day')}
-                      className={`px-6 py-2.5 text-[13px] font-bold transition-colors ${
-                        calendarView === v.toLowerCase()
-                          ? 'bg-[#EAB308] text-white'
-                          : 'bg-white text-gray-700 hover:bg-gray-50'
-                      } ${v !== 'Day' ? 'border-r border-gray-200' : ''}`}
-                    >
-                      {v}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* ── Calendar grid (week view) ─────────────────────────────── */}
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                {/* Day column headers */}
-                <div className="grid border-b border-gray-100" style={{ gridTemplateColumns: '100px repeat(7, 1fr)' }}>
-                  <div className="py-4 border-r border-gray-100" />
-                  {weekDates.map((date, i) => {
-                    return (
-                      <div key={i} className="py-4 px-2 text-center border-r border-gray-100 last:border-r-0">
-                        <p className="text-[12px] font-semibold text-gray-900 mb-0.5">
-                          {DAY_NAMES[i]} {String(date.getMonth()+1).padStart(2,'0')}/{String(date.getDate()).padStart(2,'0')}
-                        </p>
-                        <p className="text-[10px] text-gray-500 font-medium">0 Task(s)</p>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Scrollable time grid */}
-                <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 300px)' }}>
-                  <div className="grid" style={{ gridTemplateColumns: '100px repeat(7, 1fr)' }}>
-
-                    {/* Time labels */}
-                    <div>
-                      {CAL_HOURS.map(h => (
-                        <div
-                          key={h}
-                          style={{ height: HOUR_HEIGHT }}
-                          className="border-b border-gray-100 border-r border-gray-100 flex items-center justify-center px-2"
-                        >
-                          <span className="text-[11px] font-semibold text-gray-700 whitespace-nowrap">
-                            {h === 0 ? '12:00 AM' : h === 12 ? '12:00 PM' : h < 12 ? `${String(h).padStart(2, '0')}:00 AM` : `${String(h-12).padStart(2, '0')}:00 PM`}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* One column per day */}
-                    {weekDates.map((_, dayIdx) => (
-                      <div key={dayIdx} className="relative border-r border-gray-100 last:border-r-0">
-                        {/* Hour row backgrounds */}
-                        {CAL_HOURS.map(h => (
-                          <div
-                            key={h}
-                            style={{ height: HOUR_HEIGHT }}
-                            className="border-b border-gray-100"
-                          />
-                        ))}
-
-                        {/* Booking event blocks */}
-                        {eventsForDay(dayIdx).map(evt => (
-                          <div
-                            key={evt.id}
-                            style={{
-                              position: 'absolute',
-                              top: (evt.startHour - CAL_START_HOUR) * HOUR_HEIGHT + 2,
-                              height: Math.max((evt.endHour - evt.startHour) * HOUR_HEIGHT - 4, 24),
-                              left: 2,
-                              right: 2,
-                              backgroundColor: evt.bgColor,
-                              borderRadius: 0,
-                            }}
-                            className="px-2.5 py-1.5 overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
-                          >
-                            <p className="text-[9px] font-bold text-white truncate leading-tight">
-                              {fmtTime(evt.startHour)} - {fmtTime(evt.endHour)}
-                            </p>
-                            <p className="text-[10px] font-medium text-white leading-tight mt-0.5" style={{ whiteSpace: 'pre-wrap' }}>
-                              {evt.title}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </>
+            <BookingCalendar />
           ) : (
             <>
               {/* Controls */}
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-                <h2 className="text-sm font-bold text-gray-900">
-                  {activeTab === 'podcast' ? 'All podcast bookings' : 'All bookings'}
+                <h2 className="text-sm font-bold text-gray-900 dark:text-slate-50">
+                  {activeTab === 'podcast' ? 'All podcast bookings' : 'All Ad bookings'}
                 </h2>
 
                 <div className="flex items-center gap-3 w-full sm:w-auto">
                   {/* Search */}
                   <div className="relative flex-1 sm:w-72">
-                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" />
                     <input
                       type="text"
                       placeholder="Search"
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
-                      className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:ring-1 focus:ring-gray-200 focus:border-gray-300 transition-colors"
+                      className="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-[#111111] border border-gray-200 dark:border-white/10 rounded-lg text-xs font-bold text-gray-900 dark:text-slate-50 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:ring-1 focus:ring-gray-200 focus:border-gray-300 dark:focus:border-white/20 transition-colors"
                     />
                   </div>
 
                   {/* Export */}
-                  <button className="px-5 py-2.5 bg-white border border-[#EAB308] rounded-lg text-xs font-bold text-[#EAB308] hover:bg-[#FEFCE8] transition-colors">
+                  <button
+                    onClick={handleExport}
+                    className="flex items-center gap-1.5 px-5 py-2.5 bg-white dark:bg-[#111111] border border-[#C69A2C] rounded-lg text-xs font-bold text-[#C69A2C] hover:bg-[#C69A2C]/5 transition-colors"
+                  >
+                    <Download size={13} />
                     Export
                   </button>
 
                   {/* Book Ad Slot */}
                   <Link
-                    href={activeTab === 'podcast' ? "/podcast/new" : "/bookings/screen-ad"}
-                    className="flex items-center justify-center px-6 py-2.5 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 rounded-lg text-xs font-bold transition-colors whitespace-nowrap shadow-sm"
+                    href={activeTab === 'podcast' ? "/podcast/book" : "/book"}
+                    className="flex items-center justify-center px-6 py-2.5 bg-[#C69A2C] hover:bg-[#b58b24] text-white rounded-lg text-xs font-bold transition-colors whitespace-nowrap shadow-sm"
                   >
                     {activeTab === 'podcast' ? 'Book Podcast Slot' : 'Book Ad Slot'}
                   </Link>
@@ -359,193 +356,149 @@ export default function BookingsPage() {
               </div>
 
               {/* Table */}
-              <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
+              <div className="bg-white dark:bg-[#111111] rounded-2xl overflow-hidden shadow-sm border border-gray-100 dark:border-white/10">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-gray-100 bg-white">
+                      <tr className="border-b border-gray-100 dark:border-white/10 bg-white dark:bg-[#111111]">
                         {(activeTab === 'podcast'
                           ? ['SESSION INFO', 'SCHEDULE', 'BILLING (NGN)', 'DURATION', 'STATUS', 'ACTION']
                           : ['CAMPAIGN INFO', 'SCHEDULE', 'BILLING (NGN)', 'DURATION', 'STATUS', 'ACTION']
                         ).map((h) => (
-                          <th key={h} className="text-left px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">{h}</th>
+                          <th key={h} className="text-left px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
-                      {(activeTab === 'podcast' ? mockPodcastBookings : mockBookings).map((b, i) => (
-                        <tr key={i} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors">
-                          <td className="px-6 py-4 text-[13px] font-bold text-gray-700">{b.info}</td>
-                          <td className="px-6 py-4 text-xs font-semibold text-gray-500">
-                            <div className="flex items-center gap-2">
-                              {b.date}
-                              {b.reschedule && <span className="text-[10px] text-[#EAB308] font-bold italic">Reschedule</span>}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 text-[13px] font-bold text-gray-700">{b.billing}</td>
-                          <td className="px-6 py-4 text-[13px] font-semibold text-gray-500">{b.duration}</td>
-                          <td className="px-6 py-4">
-                            <span className={`text-xs font-bold ${
-                              b.status === 'Active'    ? 'text-green-600' :
-                              b.status === 'Pending'   ? 'text-gray-400'  :
-                              b.status === 'Ended'     ? 'text-gray-400'  :
-                              b.status === 'Cancelled' ? 'text-gray-400'  : 'text-gray-500'
-                            }`}>
-                              {b.status}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4">
-                            <button
-                              onClick={() => {
-                                if (b.action === 'Cancel') {
-                                  setSelectedAdId(b.id); setCancelModalOpen(true);
-                                } else if (b.action === 'Extend') {
-                                  setSelectedAdId(b.id); setExtendModalOpen(true);
-                                } else if (b.action === 'Send a review') {
-                                  setSelectedAdId(b.id); setReviewModalOpen(true);
-                                } else if (b.action === 'Book a slot') {
-                                  setSelectedAdId(b.id); setBookSlotModalOpen(true);
-                                }
-                              }}
-                              className={`text-xs font-bold transition-colors ${
-                                b.action === 'Extend'        ? 'text-[#EAB308] hover:text-[#CA8A04]' :
-                                b.action === 'Cancel'        ? 'text-red-500 hover:text-red-600'    :
-                                b.action === 'Send a review' ? 'text-blue-500 hover:text-blue-600'  :
-                                b.action === 'Book a slot'   ? 'text-green-600 hover:text-green-700': 'text-gray-600'
-                              }`}
-                            >
-                              {b.action}
-                            </button>
+                      {loading ? (
+                        <tr>
+                          <td colSpan={6} className="px-6 py-16 text-center text-gray-400 dark:text-slate-500">
+                            <Loader2 size={20} className="animate-spin inline-block mr-2" />
+                            Loading bookings…
                           </td>
                         </tr>
-                      ))}
+                      ) : filteredRows.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className="px-6 py-16 text-center text-gray-400 dark:text-slate-500 text-sm">
+                            {search
+                              ? 'No bookings match your search.'
+                              : activeTab === 'podcast'
+                                ? "You haven't booked a podcast studio session yet."
+                                : "You haven't booked any ad slots yet."}
+                          </td>
+                        </tr>
+                      ) : filteredRows.map((b) => {
+                        const statusInfo = STATUS_LABEL[b.status] || { label: b.status, className: 'text-gray-500 dark:text-slate-400' };
+                        const bookingType = activeTab === 'podcast' ? 'podcast' : 'ad';
+                        const showCancel = CANCELLABLE_STATUSES[bookingType === 'podcast' ? 'podcast' : 'screen'].has(b.status);
+                        const showExtend = EXTENDABLE_STATUSES[bookingType === 'podcast' ? 'podcast' : 'screen'].has(b.status)
+                          && new Date(b.end_time).getTime() > Date.now();
+                        const showReview = canReview(b);
+                        return (
+                          <tr key={b.id} className="border-b border-gray-50 dark:border-white/10 last:border-0 hover:bg-gray-50 dark:hover:bg-white/[0.06] transition-colors">
+                            <td className="px-6 py-4 text-[13px] font-bold text-gray-700 dark:text-slate-200">{b.info}</td>
+                            <td className="px-6 py-4 text-xs font-semibold text-gray-500 dark:text-slate-400">{formatSchedule(b.start_time, timezone)}</td>
+                            <td className="px-6 py-4 text-[13px] font-bold text-gray-700 dark:text-slate-200">{naira(b.billing)}</td>
+                            <td className="px-6 py-4 text-[13px] font-semibold text-gray-500 dark:text-slate-400">{b.duration}</td>
+                            <td className="px-6 py-4">
+                              <span className={`text-xs font-bold ${statusInfo.className}`}>{statusInfo.label}</span>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="flex items-center gap-3">
+                                {showExtend && (
+                                  <button
+                                    onClick={() => { setExtendTarget({ id: b.id, info: b.info, type: bookingType }); setExtendAmount('1'); setExtendUnit('hours'); }}
+                                    className="text-xs font-bold text-[#C69A2C] hover:text-[#b58b24] transition-colors"
+                                  >
+                                    Extend
+                                  </button>
+                                )}
+                                {showCancel && (
+                                  <button
+                                    onClick={() => setCancelTarget({ id: b.id, info: b.info, type: bookingType })}
+                                    className="text-xs font-bold text-red-500 dark:text-red-400 hover:text-red-600 transition-colors"
+                                  >
+                                    Cancel
+                                  </button>
+                                )}
+                                {showReview && (
+                                  <button
+                                    onClick={() => { setReviewTarget({ id: b.id, info: b.info, type: bookingType }); setReviewTitle(''); setReviewBody(''); setReviewRating(4); }}
+                                    className="text-xs font-bold text-[#7C5DFA] hover:text-[#6a4de0] transition-colors"
+                                  >
+                                    Send a review
+                                  </button>
+                                )}
+                                {!showExtend && !showCancel && !showReview && (
+                                  <span className="text-xs text-gray-300 dark:text-slate-500">—</span>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
               </div>
+
+              {/* Real count line (no fake pagination) */}
+              {!loading && filteredRows.length > 0 && (
+                <div className="mt-6 text-xs text-gray-500 dark:text-slate-400 font-medium">
+                  Showing {filteredRows.length} of {rows.length} booking{rows.length === 1 ? '' : 's'}
+                </div>
+              )}
             </>
           )}
         </div>
 
-        {/* Filter Modal */}
-        {filterModalOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
-            <div className="bg-white rounded-[24px] w-full max-w-[400px] shadow-2xl relative animate-in fade-in zoom-in duration-200">
-              {/* Header */}
-              <div className="flex items-center justify-between p-6 pb-4">
-                <h2 className="text-[15px] font-bold text-gray-900">
-                  Filter
-                </h2>
-                <button 
-                  onClick={() => setFilterModalOpen(false)} 
-                  className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-700"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              {/* Content */}
-              <div className="px-6 pb-8">
-                <div className="relative mb-6">
-                  <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Search Employee"
-                    value={filterSearch}
-                    onChange={(e) => setFilterSearch(e.target.value)}
-                    className="w-full pl-11 pr-4 py-3.5 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:ring-1 focus:ring-gray-200 focus:border-gray-300 transition-colors"
-                  />
-                </div>
-
-                <div className="mb-8">
-                  <p className="text-[12px] font-bold text-gray-900 mb-4">All podcast studio session bookings</p>
-                  <div className="flex items-center gap-8">
-                    {/* Status Checkbox */}
-                    <label className="flex items-center gap-2.5 cursor-pointer group">
-                      <div className={`w-[18px] h-[18px] rounded-[4px] border flex items-center justify-center transition-colors ${filterStatus ? 'bg-[#EAB308] border-[#EAB308]' : 'bg-white border-gray-300 group-hover:border-[#EAB308]'}`}>
-                        {filterStatus && <Check size={12} className="text-white" strokeWidth={4} />}
-                      </div>
-                      <input type="checkbox" checked={filterStatus} onChange={() => setFilterStatus(!filterStatus)} className="hidden" />
-                      <span className="text-[12px] font-semibold text-gray-700">Status</span>
-                    </label>
-
-                    {/* Duration Checkbox */}
-                    <label className="flex items-center gap-2.5 cursor-pointer group">
-                      <div className={`w-[18px] h-[18px] rounded-[4px] border flex items-center justify-center transition-colors ${filterDuration ? 'bg-[#EAB308] border-[#EAB308]' : 'bg-white border-gray-300 group-hover:border-[#EAB308]'}`}>
-                        {filterDuration && <Check size={12} className="text-white" strokeWidth={4} />}
-                      </div>
-                      <input type="checkbox" checked={filterDuration} onChange={() => setFilterDuration(!filterDuration)} className="hidden" />
-                      <span className="text-[12px] font-semibold text-gray-700">By duration</span>
-                    </label>
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="flex gap-4">
-                  <button 
-                    onClick={() => setFilterModalOpen(false)}
-                    className="flex-1 py-3.5 rounded-[12px] border border-gray-200 bg-white text-[13px] font-bold text-gray-900 hover:bg-gray-50 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button 
-                    onClick={() => setFilterModalOpen(false)}
-                    className="flex-1 py-3.5 rounded-[12px] bg-[#EAB308] hover:bg-[#CA8A04] text-[13px] font-bold text-gray-900 transition-colors shadow-sm"
-                  >
-                    Apply
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Cancel Modal */}
-        {cancelModalOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-[2px]">
-            <div className="bg-white rounded-[24px] pt-12 pb-10 px-8 max-w-[340px] w-full mx-4 shadow-2xl flex flex-col items-center text-center">
-              <h3 className="text-[14px] font-semibold text-gray-900 mb-8 leading-relaxed">
-                Are you sure you want to cancel<br/>this {activeTab === 'podcast' ? 'studio session' : 'Ad'}?
+        {/* Cancel confirm modal */}
+        {cancelTarget && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px]">
+            <div className="bg-white dark:bg-[#111111] rounded-[24px] pt-10 pb-8 px-8 max-w-[360px] w-full mx-4 shadow-2xl flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-150">
+              <h3 className="text-[15px] font-bold text-gray-900 dark:text-slate-50 mb-2 leading-snug">
+                Cancel this booking?
               </h3>
+              <p className="text-[12px] text-gray-500 dark:text-slate-400 mb-8">{cancelTarget.info}</p>
               <div className="flex items-center justify-center gap-3 w-full">
-                <button 
-                  onClick={() => setCancelModalOpen(false)}
-                  className="flex-1 py-2.5 rounded-[10px] border border-gray-200 bg-white text-[11px] font-bold text-gray-900 hover:bg-gray-50 transition-colors"
+                <button
+                  type="button"
+                  disabled={cancelling}
+                  onClick={() => setCancelTarget(null)}
+                  className="flex-1 py-2.5 rounded-[12px] border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111111] text-[13px] font-bold text-gray-800 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-white/[0.06] transition-colors disabled:opacity-50"
                 >
-                  No
+                  No, keep it
                 </button>
-                <button 
-                  onClick={() => {
-                    setCancelModalOpen(false);
-                    setCancelSuccessOpen(true);
-                  }}
-                  className="flex-1 py-2.5 rounded-[10px] bg-[#EAB308] hover:bg-[#CA8A04] text-[11px] font-bold text-gray-900 transition-colors shadow-sm"
+                <button
+                  type="button"
+                  disabled={cancelling}
+                  onClick={handleCancel}
+                  className="flex-1 py-2.5 rounded-[12px] bg-[#C69A2C] hover:bg-[#b58b24] text-[13px] font-bold text-white transition-colors shadow-sm disabled:opacity-60 flex items-center justify-center gap-2"
                 >
-                  Yes
+                  {cancelling ? <Loader2 size={14} className="animate-spin" /> : null}
+                  Yes, cancel
                 </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* Cancel Success Modal */}
-        {cancelSuccessOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-[2px]">
-            <div className="bg-white rounded-[24px] pt-12 pb-10 px-8 max-w-[340px] w-full mx-4 shadow-2xl flex flex-col items-center text-center">
-              <div className="w-full flex justify-center mb-6">
-                <div className="relative flex items-center justify-center w-40 h-40">
-                  <div className="absolute inset-0 bg-[#EAB308]/20 blur-2xl rounded-full"></div>
-                  <div className="relative w-[52px] h-[52px] bg-[#927116] rounded-full flex items-center justify-center shadow-[0_4px_14px_rgba(146,113,22,0.3)]">
-                    <X size={20} className="text-white" strokeWidth={3} />
-                  </div>
+        {/* Cancel success modal */}
+        {cancelSuccessInfo && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px]">
+            <div className="bg-white dark:bg-[#111111] rounded-[24px] pt-10 pb-8 px-8 max-w-[360px] w-full mx-4 shadow-2xl flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-150">
+              <div className="relative flex items-center justify-center w-36 h-36 mb-3">
+                <div className="absolute inset-0 bg-[#C69A2C]/25 blur-2xl rounded-full"></div>
+                <div className="relative w-[64px] h-[64px] bg-[#9E7B21] rounded-full flex items-center justify-center shadow-[0_4px_20px_rgba(158,123,33,0.35)]">
+                  <X size={28} className="text-white" strokeWidth={3} />
                 </div>
               </div>
-              <h3 className="text-[14px] font-semibold text-gray-900 mb-8">
-                {activeTab === 'podcast' ? 'Studio session cancelled' : 'Ad cancelled'}
-              </h3>
-              <button 
-                onClick={() => setCancelSuccessOpen(false)}
-                className="w-[160px] py-3 rounded-xl bg-[#EAB308] hover:bg-[#CA8A04] text-[13px] font-bold text-gray-900 transition-colors shadow-sm"
+              <h3 className="text-[16px] font-bold text-gray-900 dark:text-slate-50 mb-2">Booking cancelled</h3>
+              <p className="text-[12px] text-gray-500 dark:text-slate-400 mb-8">{cancelSuccessInfo}</p>
+              <button
+                type="button"
+                onClick={() => setCancelSuccessInfo(null)}
+                className="w-[140px] py-2.5 rounded-[12px] bg-[#C69A2C] hover:bg-[#b58b24] text-[13px] font-bold text-white transition-colors shadow-sm"
               >
                 Finish
               </button>
@@ -553,324 +506,149 @@ export default function BookingsPage() {
           </div>
         )}
 
-        {/* Extend Ad Booking Modal */}
-        {extendModalOpen && (
+        {/* Extend modal */}
+        {extendTarget && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-            <div className="bg-white rounded-[24px] w-full max-w-[500px] shadow-2xl relative animate-in fade-in zoom-in duration-200">
-              {/* Header */}
+            <div className="bg-white dark:bg-[#111111] rounded-[24px] w-full max-w-[440px] shadow-2xl relative animate-in fade-in zoom-in duration-200">
               <div className="flex items-center justify-between p-6 pb-2">
-                <button 
-                  onClick={() => setExtendModalOpen(false)} 
-                  className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-900"
-                >
-                  <ArrowLeft size={20} />
-                </button>
-                <h2 className="text-[15px] font-bold text-gray-900">
-                  Extend Ad Booking
-                </h2>
-                <button 
-                  onClick={() => setExtendModalOpen(false)} 
-                  className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-900"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-
-              {/* Content */}
-              <div className="px-8 pb-10 pt-6 space-y-6">
-                {/* Extend By Input */}
-                <input
-                  type="text"
-                  placeholder="Extend by? (e.g 2 hours, 2 weeks, 2 months)"
-                  value={extendBy}
-                  onChange={(e) => setExtendBy(e.target.value)}
-                  className="w-full px-4 py-4 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
-                />
-
-                {/* Additional Info Textarea */}
-                <textarea
-                  placeholder="Add any additional info"
-                  value={additionalInfo}
-                  onChange={(e) => setAdditionalInfo(e.target.value)}
-                  rows={4}
-                  className="w-full px-4 py-5 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors resize-none"
-                />
-
-                {/* Upload section */}
-                <div>
-                  <p className="text-[13px] font-semibold text-gray-800 mb-3 text-left">Or upload additional Ads materials</p>
-                  <div className="w-full border-2 border-dashed border-[#FDE047] bg-[#FEFCE8]/20 rounded-[16px] py-10 px-8 flex flex-col items-center justify-center cursor-pointer hover:bg-[#FEFCE8]/50 transition-colors">
-                    <div className="w-12 h-12 bg-[#FEF08A] rounded-full flex items-center justify-center mb-4 shadow-sm">
-                      <UploadCloud size={20} className="text-[#854D0E]" />
-                    </div>
-                    <p className="text-[13px] font-bold text-gray-800 mb-1.5">Drag & Drop or choose file to upload</p>
-                    <p className="text-[11px] font-semibold text-gray-400">Supported formats : jpeg, png, pdf</p>
-                  </div>
-                </div>
-
-                {/* Submit button */}
-                <div className="pt-2">
-                  <button 
-                    onClick={() => {
-                      setExtendModalOpen(false);
-                      setExtendBillingModalOpen(true);
-                      setModalStep('billing');
-                      setPaymentMethod('wallet');
-                    }}
-                    className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
-                  >
-                    Extend Ad space
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Extend Billing Modal */}
-        {extendBillingModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-            <div className="bg-white rounded-[24px] w-full max-w-[460px] overflow-hidden shadow-2xl relative animate-in fade-in zoom-in duration-200">
-              {/* Header */}
-              <div className="flex items-center justify-between p-6 pb-4 border-b border-gray-50">
-                <button 
-                  onClick={() => {
-                    if (modalStep === 'pay_from_wallet' || modalStep === 'pay_with_card' || modalStep === 'success') {
-                      setModalStep('billing');
-                    } else {
-                      setExtendBillingModalOpen(false);
-                      setModalStep('billing');
-                    }
-                  }} 
-                  className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-700"
-                >
+                <button onClick={() => setExtendTarget(null)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-white/[0.06] rounded-full transition-colors text-gray-900 dark:text-slate-50">
                   <ArrowLeft size={18} />
                 </button>
-                <h2 className="text-[15px] font-bold text-gray-900">
-                  {modalStep === 'billing' ? 'Billing' : paymentMethod === 'card' ? 'Pay with card' : 'Pay from wallet'}
-                </h2>
-                <button 
-                  onClick={() => {
-                    setExtendBillingModalOpen(false);
-                    setModalStep('billing');
-                  }} 
-                  className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-700"
-                >
+                <h2 className="text-[15px] font-bold text-gray-900 dark:text-slate-50">Extend booking</h2>
+                <button onClick={() => setExtendTarget(null)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-white/[0.06] rounded-full transition-colors text-gray-900 dark:text-slate-50">
                   <X size={18} />
                 </button>
               </div>
 
-              {/* Content */}
-              {modalStep === 'billing' ? (
-                <div className="px-10 pb-16 pt-8">
-                  <div className="text-center mb-10">
-                    <h3 className="text-[14px] font-bold text-gray-900 mb-1">{extendBy || '3 months'} Ad space</h3>
-                    <p className="text-[14px] font-bold text-gray-900">extension at #300,000</p>
-                  </div>
+              <div className="px-8 pb-8 pt-4 space-y-5">
+                <p className="text-[12.5px] text-gray-500 dark:text-slate-400">{extendTarget.info}</p>
 
-                  <div className="space-y-6">
-                    {/* Pay with card */}
-                    <div 
-                      onClick={() => setPaymentMethod('card')}
-                      className={`flex items-center gap-4 px-6 py-7 rounded-[16px] cursor-pointer border-[1.5px] transition-colors ${paymentMethod === 'card' ? 'border-[#EAB308] bg-[#FEFCE8]/40' : 'border-gray-200 hover:border-gray-300'}`}
-                    >
-                      <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'card' ? 'border-[#EAB308]' : 'border-gray-300'}`}>
-                        {paymentMethod === 'card' && <div className="w-2 h-2 rounded-full bg-[#EAB308]" />}
-                      </div>
-                      <span className="text-[13px] font-bold text-gray-900">Pay with card</span>
-                    </div>
-
-                    {/* Pay from wallet */}
-                    <div 
-                      onClick={() => setPaymentMethod('wallet')}
-                      className={`flex flex-col gap-2 px-6 py-6 rounded-[16px] cursor-pointer border-[1.5px] transition-colors ${paymentMethod === 'wallet' ? 'border-[#EAB308] bg-[#FEFCE8]/40' : 'border-gray-200 hover:border-gray-300'}`}
-                    >
-                      <div className="flex items-center justify-between w-full">
-                        <div className="flex items-center gap-4">
-                          <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'wallet' ? 'border-[#EAB308]' : 'border-gray-300'}`}>
-                            {paymentMethod === 'wallet' && <div className="w-2 h-2 rounded-full bg-[#EAB308]" />}
-                          </div>
-                          <span className="text-[13px] font-bold text-gray-900">Pay from wallet</span>
-                        </div>
-                        <span className="text-[11px] font-bold text-[#EAB308] hover:underline">Fund wallet</span>
-                      </div>
-                      
-                      <div className="flex items-center justify-between pl-8 mt-2">
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-[11px] font-semibold text-gray-500">Wallet ID: 23cvo_23759ryi</span>
-                          <button className="flex items-center gap-1 text-[10px] font-bold text-[#EAB308] hover:underline">
-                            Copy <Copy size={10} />
-                          </button>
-                        </div>
-                        <span className="text-[12px] font-bold text-gray-900">NGN 5,215,005.25</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Continue Button */}
-                  <div className="mt-10">
-                    <button 
-                      onClick={() => {
-                        if (paymentMethod === 'wallet') {
-                          setModalStep('pay_from_wallet');
-                        } else if (paymentMethod === 'card') {
-                          setModalStep('pay_with_card');
-                        }
-                      }}
-                      className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
-                    >
-                      Continue
-                    </button>
-                  </div>
-                </div>
-              ) : modalStep === 'pay_with_card' ? (
-                <div className="px-10 pb-16 pt-8">
-                  <div className="text-center mb-10">
-                    <h3 className="text-[14px] font-bold text-gray-900 mb-1">{extendBy || '3 months'} Ad space</h3>
-                    <p className="text-[14px] font-bold text-gray-900">extension at #300,000</p>
-                  </div>
-                  <div className="space-y-6">
-                    <input type="text" placeholder="Card holder's name" className="w-full px-5 py-5 text-[13px] font-bold bg-white border border-gray-200 rounded-[14px] focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
-                    <div className="relative">
-                      <input type="text" placeholder="Card number" className="w-full px-5 py-5 text-[13px] font-bold bg-white border border-gray-200 rounded-[14px] focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
-                      <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-                        <div className="w-[24px] h-[14px] bg-[#1434CB] rounded-[2px] text-[7px] font-bold flex items-center justify-center text-white italic tracking-tighter">VISA</div>
-                        <div className="w-[24px] h-[14px] flex items-center justify-center relative">
-                          <div className="w-[12px] h-[12px] rounded-full bg-[#EB001B] absolute left-0 mix-blend-multiply opacity-90"></div>
-                          <div className="w-[12px] h-[12px] rounded-full bg-[#F79E1B] absolute right-0 mix-blend-multiply opacity-90"></div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex gap-4">
-                      <input type="text" placeholder="Expiry date (MM/YY)" className="w-1/2 px-5 py-5 text-[13px] font-bold bg-white border border-gray-200 rounded-[14px] focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
-                      <input type="text" placeholder="CVV" className="w-1/2 px-5 py-5 text-[13px] font-bold bg-white border border-gray-200 rounded-[14px] focus:outline-none focus:border-[#EAB308] placeholder-gray-400" />
-                    </div>
-                  </div>
-                  <div className="mt-10">
-                    <button 
-                      onClick={() => setModalStep('success')}
-                      className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
-                    >
-                      Pay
-                    </button>
-                  </div>
-                </div>
-              ) : modalStep === 'pay_from_wallet' ? (
-                <div className="px-10 pb-16 pt-8">
-                  <div className="flex items-center justify-between px-6 py-10 rounded-[16px] border-[1.5px] border-[#EAB308] bg-white shadow-sm mb-8">
-                    <span className="text-[13px] font-bold text-gray-900">Total amount</span>
-                    <span className="text-[13px] font-bold text-gray-900">NGN 300,000.25</span>
-                  </div>
-                  <button 
-                    onClick={() => setModalStep('success')}
-                    className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
+                <div className="flex gap-3">
+                  <input
+                    type="number"
+                    min={1}
+                    value={extendAmount}
+                    onChange={(e) => setExtendAmount(e.target.value)}
+                    className="w-24 px-4 py-3 bg-white dark:bg-[#111111] border border-gray-200 dark:border-white/10 rounded-[12px] text-[14px] font-bold text-gray-900 dark:text-slate-50 text-center focus:outline-none focus:border-[#C69A2C]"
+                  />
+                  <select
+                    value={extendUnit}
+                    onChange={(e) => setExtendUnit(e.target.value as ExtendUnit)}
+                    className="flex-1 px-4 py-3 bg-white dark:bg-[#111111] border border-gray-200 dark:border-white/10 rounded-[12px] text-[13px] font-bold text-gray-900 dark:text-slate-50 focus:outline-none focus:border-[#C69A2C]"
                   >
-                    Pay
-                  </button>
+                    <option value="minutes">Minutes</option>
+                    <option value="hours">Hours</option>
+                    <option value="days">Days</option>
+                  </select>
                 </div>
-              ) : (
-                <div className="px-10 pb-12 pt-14 flex flex-col items-center">
-                  <div className="w-28 h-28 rounded-full bg-[#FEFCE8] flex items-center justify-center mb-8 relative">
-                    <div className="w-14 h-14 rounded-full bg-[#CA8A04] flex items-center justify-center relative z-10 shadow-lg">
-                      <Check size={28} className="text-white" strokeWidth={3} />
-                    </div>
-                    <div className="absolute inset-0 rounded-full bg-gradient-radial from-[#FDE047]/50 to-transparent blur-md"></div>
-                  </div>
-                  <h3 className="text-[16px] font-bold text-gray-900 mb-10">Payment successful</h3>
-                  <button 
-                    onClick={() => {
-                      setExtendBillingModalOpen(false);
-                      setModalStep('billing');
-                      setExtendBy('');
-                      setAdditionalInfo('');
-                    }}
-                    className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
-                  >
-                    Finish
-                  </button>
-                </div>
-              )}
+
+                <p className="text-[11.5px] text-gray-400 dark:text-slate-500 leading-relaxed">
+                  This adds time immediately after your current booking ends. You'll be charged from your wallet for the extra time — the exact cost is confirmed when you extend, based on your booking's real rate.
+                </p>
+
+                <button
+                  onClick={handleExtend}
+                  disabled={extending}
+                  className="w-full py-3.5 bg-[#C69A2C] hover:bg-[#b58b24] text-white text-[14px] font-bold rounded-[14px] transition-colors shadow-sm disabled:opacity-60 flex items-center justify-center gap-2"
+                >
+                  {extending && <Loader2 size={15} className="animate-spin" />}
+                  {extending ? 'Extending…' : 'Extend & pay from wallet'}
+                </button>
+              </div>
             </div>
           </div>
         )}
 
-        {/* Review Modal */}
-        {reviewModalOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-            <div className="bg-white rounded-[24px] w-full max-w-[500px] shadow-2xl relative animate-in fade-in zoom-in duration-200">
-              {/* Header */}
+        {/* Extend success modal */}
+        {extendSuccess && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px]">
+            <div className="bg-white dark:bg-[#111111] rounded-[24px] pt-10 pb-8 px-8 max-w-[360px] w-full mx-4 shadow-2xl flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-150">
+              <div className="relative flex items-center justify-center w-36 h-36 mb-3">
+                <div className="absolute inset-0 bg-[#C69A2C]/25 blur-2xl rounded-full"></div>
+                <div className="relative w-[64px] h-[64px] bg-[#9E7B21] rounded-full flex items-center justify-center shadow-[0_4px_20px_rgba(158,123,33,0.35)]">
+                  <Check size={28} className="text-white" strokeWidth={3} />
+                </div>
+              </div>
+              <h3 className="text-[16px] font-bold text-gray-900 dark:text-slate-50 mb-2">Booking extended</h3>
+              <p className="text-[12px] text-gray-500 dark:text-slate-400 mb-8">
+                {extendSuccess.info} — {naira(extendSuccess.cost)} charged from your wallet.
+              </p>
+              <button
+                type="button"
+                onClick={() => setExtendSuccess(null)}
+                className="w-[140px] py-2.5 rounded-[12px] bg-[#C69A2C] hover:bg-[#b58b24] text-[13px] font-bold text-white transition-colors shadow-sm"
+              >
+                Finish
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Review modal */}
+        {reviewTarget && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px] p-4">
+            <div className="bg-white dark:bg-[#111111] rounded-[24px] w-full max-w-[420px] shadow-2xl relative animate-in fade-in zoom-in duration-200">
               <div className="flex items-center justify-between p-6 pb-2">
-                <button 
-                  onClick={() => setReviewModalOpen(false)} 
-                  className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-900"
-                >
-                  <ArrowLeft size={20} />
+                <button onClick={() => setReviewTarget(null)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-white/[0.06] rounded-full transition-colors text-gray-900 dark:text-slate-50">
+                  <ArrowLeft size={18} />
                 </button>
-                <h2 className="text-[15px] font-bold text-gray-900">
-                  Send a review
-                </h2>
-                <button 
-                  onClick={() => setReviewModalOpen(false)} 
-                  className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-900"
-                >
-                  <X size={20} />
+                <h2 className="text-[15px] font-bold text-gray-900 dark:text-slate-50">Send a review</h2>
+                <button onClick={() => setReviewTarget(null)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-white/[0.06] rounded-full transition-colors text-gray-900 dark:text-slate-50">
+                  <X size={18} />
                 </button>
               </div>
 
-              {/* Content */}
-              <div className="px-10 pb-12 pt-6 space-y-6">
+              <div className="px-8 pb-10 pt-4 space-y-5">
+                <p className="text-[12.5px] text-gray-500 dark:text-slate-400">{reviewTarget.info}</p>
+
                 <input
                   type="text"
-                  placeholder="Title of your review"
+                  placeholder="Title of your review (optional)"
                   value={reviewTitle}
                   onChange={(e) => setReviewTitle(e.target.value)}
-                  className="w-full px-5 py-5 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
+                  className="w-full px-4 py-3.5 bg-white dark:bg-[#111111] border border-gray-200 dark:border-white/10 rounded-[12px] text-[13px] font-medium text-gray-900 dark:text-slate-50 placeholder:text-[#94A3B8] placeholder:font-normal focus:outline-none focus:border-[#C69A2C] transition-colors"
                 />
 
                 <textarea
                   placeholder="Type your review"
-                  value={reviewText}
-                  onChange={(e) => setReviewText(e.target.value)}
+                  value={reviewBody}
+                  onChange={(e) => setReviewBody(e.target.value)}
                   rows={4}
-                  className="w-full px-5 py-5 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors resize-none"
+                  className="w-full px-4 py-3.5 bg-white dark:bg-[#111111] border border-gray-200 dark:border-white/10 rounded-[12px] text-[13px] font-medium text-gray-900 dark:text-slate-50 placeholder:text-[#94A3B8] placeholder:font-normal focus:outline-none focus:border-[#C69A2C] transition-colors resize-none"
                 />
 
                 <div>
-                  <p className="text-[13px] font-semibold text-gray-800 mb-3 text-left">Rate our service</p>
-                  <div className="w-full border-2 border-dashed border-[#FDE047] bg-[#FEFCE8]/20 rounded-[16px] py-10 flex flex-col items-center justify-center transition-colors">
-                    <div className="flex gap-2 mb-3">
+                  <p className="text-[12px] font-semibold text-gray-800 dark:text-slate-200 mb-2.5 text-left">Rate your experience</p>
+                  <div className="w-full border border-dashed border-gray-300 dark:border-white/20 rounded-[12px] py-6 flex flex-col items-center justify-center bg-white dark:bg-[#111111] transition-colors">
+                    <div className="flex gap-2.5 mb-2">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <button
                           key={star}
-                          onClick={() => setRating(star)}
+                          onClick={() => setReviewRating(star)}
                           className="focus:outline-none transition-transform hover:scale-110 active:scale-95"
                         >
-                          <Star 
-                            size={24} 
-                            className={star <= rating ? "fill-[#EAB308] text-[#EAB308]" : "text-[#EAB308]"} 
+                          <Star
+                            size={22}
+                            className={star <= reviewRating ? "fill-[#C69A2C] text-[#C69A2C]" : "text-[#C69A2C]/30"}
                             strokeWidth={1.5}
                           />
                         </button>
                       ))}
                     </div>
-                    <p className="text-[11px] font-bold text-gray-800">
-                      {rating === 5 ? 'Excellent' : rating === 4 ? 'Good' : rating === 3 ? 'Average' : rating === 2 ? 'Poor' : 'Terrible'}
+                    <p className="text-[12px] font-medium text-gray-700 dark:text-slate-200">
+                      {['Terrible', 'Poor', 'Average', 'Good', 'Excellent'][reviewRating - 1]}
                     </p>
                   </div>
                 </div>
 
-                <div className="pt-4">
-                  <button 
-                    onClick={() => {
-                      setReviewModalOpen(false);
-                      setReviewTitle('');
-                      setReviewText('');
-                      setRating(4);
-                      setReviewSuccessOpen(true);
-                    }}
-                    className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
+                <div className="pt-2">
+                  <button
+                    onClick={handleSubmitReview}
+                    disabled={submittingReview}
+                    className="w-full py-3.5 bg-[#C69A2C] hover:bg-[#b58b24] text-white text-[13px] font-bold rounded-[12px] transition-colors shadow-sm disabled:opacity-60 flex items-center justify-center gap-2"
                   >
-                    Send review
+                    {submittingReview && <Loader2 size={14} className="animate-spin" />}
+                    {submittingReview ? 'Sending…' : 'Send review'}
                   </button>
                 </div>
               </div>
@@ -878,131 +656,23 @@ export default function BookingsPage() {
           </div>
         )}
 
-        {/* Review Success Modal */}
-        {reviewSuccessOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-            <div className="bg-white rounded-[24px] py-16 px-10 max-w-[380px] w-full mx-4 shadow-2xl flex flex-col items-center text-center animate-in fade-in zoom-in duration-200">
-              <div className="w-28 h-28 rounded-full bg-[#FEFCE8] flex items-center justify-center mb-8 relative">
-                <div className="w-14 h-14 rounded-full bg-[#CA8A04] flex items-center justify-center relative z-10 shadow-lg">
+        {/* Review success modal */}
+        {reviewSuccess && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px] p-4">
+            <div className="bg-white dark:bg-[#111111] rounded-[24px] pt-10 pb-8 px-8 max-w-[360px] w-full mx-4 shadow-2xl flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-150">
+              <div className="relative flex items-center justify-center w-36 h-36 mb-3">
+                <div className="absolute inset-0 bg-[#C69A2C]/25 blur-2xl rounded-full"></div>
+                <div className="relative w-[64px] h-[64px] bg-[#9E7B21] rounded-full flex items-center justify-center shadow-[0_4px_20px_rgba(158,123,33,0.35)]">
                   <Check size={28} className="text-white" strokeWidth={3} />
                 </div>
-                <div className="absolute inset-0 rounded-full bg-gradient-radial from-[#FDE047]/50 to-transparent blur-md"></div>
               </div>
-              <h3 className="text-[16px] font-bold text-gray-900 mb-10">
-                We received your feedback
-              </h3>
-              <button 
-                onClick={() => setReviewSuccessOpen(false)}
-                className="w-[140px] py-3.5 bg-[#EAB308] hover:bg-[#CA8A04] text-[13px] font-bold text-gray-900 rounded-[12px] transition-colors shadow-sm"
+              <h3 className="text-[15px] font-bold text-gray-900 dark:text-slate-50 mb-8">We received your feedback</h3>
+              <button
+                onClick={() => setReviewSuccess(false)}
+                className="w-[140px] py-2.5 rounded-[12px] bg-[#C69A2C] hover:bg-[#b58b24] text-[13px] font-bold text-white transition-colors shadow-sm"
               >
                 Finish
               </button>
-            </div>
-          </div>
-        )}
-
-        {/* Book a Slot Modal */}
-        {bookSlotModalOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-            <div className="bg-white rounded-[24px] w-full max-w-[500px] shadow-2xl relative animate-in fade-in zoom-in duration-200">
-              {/* Header */}
-              <div className="flex items-center justify-between p-6 pb-2">
-                <button 
-                  onClick={() => setBookSlotModalOpen(false)} 
-                  className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-900"
-                >
-                  <ArrowLeft size={20} />
-                </button>
-                <h2 className="text-[15px] font-bold text-gray-900">
-                  Book a slot
-                </h2>
-                <button 
-                  onClick={() => setBookSlotModalOpen(false)} 
-                  className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-900"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-
-              {/* Content */}
-              <div className="px-10 pb-12 pt-6 space-y-6">
-                <p className="text-[13px] font-bold text-gray-900">
-                  Please provide the details below
-                </p>
-
-                {/* Info Card */}
-                <div className="bg-[#F8FAFC] rounded-[16px] p-5 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[13px] font-semibold text-gray-500">Location</span>
-                    <span className="text-[13px] font-bold text-gray-900">Lekki toll gate</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-[13px] font-semibold text-gray-500">Size</span>
-                    <span className="text-[13px] font-bold text-gray-900">20m by 10m</span>
-                  </div>
-                </div>
-
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Select Dates"
-                    value={bookDate}
-                    onChange={(e) => setBookDate(e.target.value)}
-                    className="w-full px-5 py-4 pl-12 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
-                  />
-                  <Calendar size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400" />
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <div className="flex-1 space-y-1">
-                    <label className="text-[11px] font-bold text-gray-900">From</label>
-                    <input
-                      type="text"
-                      placeholder="10:00 AM"
-                      value={bookFrom}
-                      onChange={(e) => setBookFrom(e.target.value)}
-                      className="w-full px-5 py-4 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
-                    />
-                  </div>
-                  <div className="flex-1 space-y-1">
-                    <label className="text-[11px] font-bold text-gray-900">To</label>
-                    <input
-                      type="text"
-                      placeholder="05:00 PM"
-                      value={bookTo}
-                      onChange={(e) => setBookTo(e.target.value)}
-                      className="w-full px-5 py-4 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="relative">
-                    <input
-                      type="text"
-                      placeholder="Number of slots"
-                      value={bookSlots}
-                      onChange={(e) => setBookSlots(e.target.value)}
-                      className="w-full px-5 py-4 pr-12 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
-                    />
-                    <ChevronDown size={18} className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400" />
-                  </div>
-                  <p className="text-[11px] font-medium text-gray-500 leading-tight pr-4">
-                    Number of slots are the number of intervals you'd like your ads to be displayed per loop.
-                  </p>
-                </div>
-
-                <div className="pt-4">
-                  <button 
-                    onClick={() => {
-                      setBookSlotModalOpen(false);
-                    }}
-                    className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
-                  >
-                    Proceed to add creative
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
         )}

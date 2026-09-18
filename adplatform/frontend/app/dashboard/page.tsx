@@ -5,9 +5,10 @@ import { useAuthStore } from '@/store/authStore';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import AdvertiserDashboard from '@/components/dashboard/AdvertiserDashboard';
+import ScreenOwnerDashboard from '@/components/dashboard/ScreenOwnerDashboard';
 
 export default function DashboardPage() {
-  const { user, loadFromStorage } = useAuthStore();
+  const { user, loadFromStorage, checkAuth } = useAuthStore();
   const [ready, setReady] = useState(false);
   const router = useRouter();
 
@@ -17,10 +18,14 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
-    if (ready && user?.role === 'admin') {
-      router.push('/admin');
-    }
-  }, [ready, user, router]);
+    if (!ready) return;
+    if (!localStorage.getItem('token')) { router.push('/auth/login'); return; }
+    // A token can exist without a cached user (partial storage clear, a
+    // token set without the matching user record) — fetch it for real
+    // instead of spinning forever waiting for a value that will never arrive.
+    if (!user) { checkAuth(); return; }
+    if (user.role === 'admin') { router.push('/admin'); }
+  }, [ready, user, router, checkAuth]);
 
   if (!ready || !user) return (
     <DashboardLayout>
@@ -31,11 +36,10 @@ export default function DashboardPage() {
     </DashboardLayout>
   );
 
-  // All regular users are advertisers.
   // Admins are redirected to /admin on login — they don't use this page.
   return (
     <DashboardLayout>
-      <AdvertiserDashboard />
+      {user.role === 'screen_owner' ? <ScreenOwnerDashboard /> : <AdvertiserDashboard />}
     </DashboardLayout>
   );
 }

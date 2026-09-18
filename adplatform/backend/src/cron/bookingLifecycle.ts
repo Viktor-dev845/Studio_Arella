@@ -26,13 +26,13 @@ export const startBookingLifecycleCron = () => {
   cron.schedule('* * * * *', async () => {
     try {
       const result = await pool.query(
-        `DELETE FROM booking_slots 
+        `DELETE FROM booking_slots
          WHERE status = 'locked' AND locked_until < NOW()
          RETURNING id`
       );
       if (result.rows.length > 0) {
         console.log(`[CRON] Released ${result.rows.length} expired locked slots.`);
-        
+
         // Cleanup empty pending bookings
         await pool.query(
           `DELETE FROM bookings b
@@ -41,6 +41,21 @@ export const startBookingLifecycleCron = () => {
                SELECT 1 FROM booking_slots s WHERE s.booking_id = b.id
              )`
         );
+      }
+
+      // Podcast bookings have no separate slots table — a 'pending' row IS
+      // the hold, valid for 5 minutes (matching the window every reserve/
+      // conflict check in podcastController.ts uses). Unlike ad bookings,
+      // this had no cleanup at all, so stale unpaid holds stuck around
+      // indefinitely instead of being released like their ad-booking
+      // equivalent.
+      const staleReleased = await pool.query(
+        `DELETE FROM podcast_bookings
+         WHERE status = 'pending' AND created_at < NOW() - INTERVAL '5 minutes'
+         RETURNING id`
+      );
+      if (staleReleased.rows.length > 0) {
+        console.log(`[CRON] Released ${staleReleased.rows.length} expired podcast holds.`);
       }
     } catch (err) {
       console.error('[CRON] Error releasing expired slots:', err);

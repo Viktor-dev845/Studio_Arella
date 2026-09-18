@@ -8,9 +8,15 @@ export const getCampaigns : RequestHandler = async (req, res) => {
     const { status, page = 1, limit = 10 } = req.query;
     const offset = (Number(page) - 1) * Number(limit);
 
-    let query = `SELECT c.*, 
+    // "spent" is computed from real paid bookings, not the campaigns.spent
+    // column — nothing anywhere ever writes to that column, so it would
+    // otherwise always read 0 regardless of real activity. Uses a scalar
+    // subquery rather than another LEFT JOIN alongside bookings/ads so the
+    // sum isn't multiplied by the unrelated join's row count.
+    let query = `SELECT c.*,
       COUNT(DISTINCT b.id) as booking_count,
-      COUNT(DISTINCT a.id) as ad_count
+      COUNT(DISTINCT a.id) as ad_count,
+      COALESCE((SELECT SUM(b2.total_cost) FROM bookings b2 WHERE b2.campaign_id = c.id AND b2.status IN ('active','ended','completed')), 0) as spent
       FROM campaigns c
       LEFT JOIN bookings b ON b.campaign_id = c.id
       LEFT JOIN ads a ON a.campaign_id = c.id
@@ -46,7 +52,8 @@ export const getCampaign : RequestHandler = async (req, res) => {
     const authReq = req as AuthRequest;
   try {
     const result = await pool.query(
-      `SELECT c.*, COUNT(DISTINCT b.id) as booking_count, COUNT(DISTINCT a.id) as ad_count
+      `SELECT c.*, COUNT(DISTINCT b.id) as booking_count, COUNT(DISTINCT a.id) as ad_count,
+       COALESCE((SELECT SUM(b2.total_cost) FROM bookings b2 WHERE b2.campaign_id = c.id AND b2.status IN ('active','ended','completed')), 0) as spent
        FROM campaigns c
        LEFT JOIN bookings b ON b.campaign_id = c.id
        LEFT JOIN ads a ON a.campaign_id = c.id

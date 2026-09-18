@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { FaArrowLeft } from 'react-icons/fa6';
+import { theme } from '@/lib/theme';
 
 const F = "'Quicksand', sans-serif";
 
@@ -14,7 +15,7 @@ const Section = ({ title, children }: { title: string; children: React.ReactNode
 
 export default function PrivacyPage() {
   return (
-    <div style={{ fontFamily: F, minHeight: '100vh', background: '#F8FAFC' }}>
+    <div style={{ fontFamily: F, minHeight: '100vh', background: theme.color.bg }}>
       <header style={{ background: '#1A1A1A', padding: '0 24px', height: 60, display: 'flex', alignItems: 'center', gap: 16 }}>
         <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
           <div style={{ width: 32, height: 32, background: '#D4AF37', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: 15, color: '#111111' }}>B</div>
@@ -27,10 +28,10 @@ export default function PrivacyPage() {
           <FaArrowLeft size={12} /> Back to Login
         </Link>
 
-        <div style={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 16, padding: '40px 48px' }}>
+        <div style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 16, padding: '40px 48px' }}>
           <div style={{ marginBottom: 36, paddingBottom: 28, borderBottom: '1px solid #F3F4F6' }}>
             <h1 style={{ fontSize: 28, fontWeight: 900, color: '#1A1A1A', margin: '0 0 8px', letterSpacing: '-0.5px' }}>Privacy Policy</h1>
-            <p style={{ fontSize: 13, color: '#94A3B8', margin: 0 }}>Last updated: {new Date().toLocaleDateString('en-NG', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+            <p style={{ fontSize: 13, color: theme.color.text4, margin: 0 }}>Last updated: {new Date().toLocaleDateString('en-NG', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
           </div>
 
           <Section title="1. Information We Collect">

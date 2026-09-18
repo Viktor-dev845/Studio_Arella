@@ -7,7 +7,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import styles from './BookingCalendar.module.css';
 import api from '@/lib/api';
 import { FaArrowRight, FaCalendarDays, FaLocationDot } from 'react-icons/fa6';
-import { ChevronLeft, ChevronRight, Monitor, Mic } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Monitor, Mic, Filter, X, Check } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
@@ -18,9 +18,16 @@ const F = theme.font.body;
 const locales = { 'en-NG': require('date-fns/locale/en-GB') };
 const localizer = dateFnsLocalizer({
   format, parse,
-  startOfWeek: () => startOfWeek(new Date(), { weekStartsOn: 1 }),
+  startOfWeek: () => startOfWeek(new Date(), { weekStartsOn: 0 }),
   getDay, locales,
 });
+
+const CAL_FORMATS = {
+  monthHeaderFormat: (date: Date) => format(date, 'MMMM yyyy'),
+  dayRangeHeaderFormat: ({ start, end }: { start: Date; end: Date }) =>
+    `${format(start, 'dd MMM yyyy')} - ${format(end, 'dd MMM yyyy')}`,
+  dayHeaderFormat: (date: Date) => format(date, 'EEEE, dd MMM yyyy'),
+};
 
 interface CalEvent {
   id: string; title: string; start: Date; end: Date;
@@ -32,59 +39,84 @@ const statusColors: Record<string, string> = {
   ended: theme.color.text4, cancelled: theme.color.error,
 };
 
+// Podcast sessions use purple as their brand color, but cancelled ones still
+// need to read as distinct from a confirmed session at a glance.
+const podcastColor = (status: string) => status === 'cancelled' ? theme.color.error : '#8B5CF6';
+
+const pillBtn: React.CSSProperties = {
+  padding: '8px 16px', background: 'transparent', color: theme.color.text1,
+  border: `1.5px solid ${theme.color.border2}`, borderRadius: 100, fontSize: 12.5,
+  fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s',
+};
+
 const CustomToolbar = (toolbar: any) => {
   const goToBack = () => toolbar.onNavigate('PREV');
   const goToNext = () => toolbar.onNavigate('NEXT');
   const goToCurrent = () => toolbar.onNavigate('TODAY');
-
-  const label = () => {
-    const date = format(toolbar.date, 'MMMM yyyy');
-    return <span style={{ fontSize: 16, fontWeight: 800, color: theme.color.text1, letterSpacing: '-0.3px' }}>{date}</span>;
+  const hover = (bg: string, color: string) => (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.currentTarget.style.background = bg; e.currentTarget.style.color = color; e.currentTarget.style.borderColor = bg === 'transparent' ? theme.color.border2 : bg;
   };
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 16 }}>
-      <div>
-        <button onClick={goToCurrent} style={{ padding: '8px 20px', background: 'transparent', color: theme.color.text1, border: `2px solid ${theme.color.border2}`, borderRadius: 100, fontSize: 13, fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}
-          onMouseOver={e => { e.currentTarget.style.background = theme.color.gold; e.currentTarget.style.color = '#111'; e.currentTarget.style.borderColor = theme.color.gold; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-          onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = theme.color.text1; e.currentTarget.style.borderColor = theme.color.border2; e.currentTarget.style.transform = 'translateY(0)'; }}>
+      {/* Today / Back / Next — grouped together on the left */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <button onClick={goToCurrent} style={pillBtn}
+          onMouseOver={hover(theme.color.gold, '#111')}
+          onMouseOut={hover('transparent', theme.color.text1)}>
           Today
         </button>
-      </div>
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: theme.color.surface2, border: `1px solid ${theme.color.border}`, borderRadius: 100, padding: 4, boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}>
-        <button onClick={goToBack} style={{ padding: '6px 12px', background: 'transparent', border: 'none', borderRadius: 100, cursor: 'pointer', display: 'flex', alignItems: 'center', color: theme.color.text2, transition: 'all 0.15s' }}
-          onMouseOver={e => { e.currentTarget.style.background = theme.color.surface; e.currentTarget.style.color = theme.color.text1; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)'; }}
-          onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = theme.color.text2; e.currentTarget.style.boxShadow = 'none'; }}>
-          <ChevronLeft size={16} strokeWidth={2.5} />
+        <button onClick={goToBack} style={{ ...pillBtn, padding: '8px 10px', display: 'flex' }}
+          onMouseOver={hover(theme.color.surface2, theme.color.text1)}
+          onMouseOut={hover('transparent', theme.color.text1)}>
+          <ChevronLeft size={15} strokeWidth={2.5} />
         </button>
-        
-        <div style={{ minWidth: 150, textAlign: 'center' }}>
-          {label()}
-        </div>
-
-        <button onClick={goToNext} style={{ padding: '6px 12px', background: 'transparent', border: 'none', borderRadius: 100, cursor: 'pointer', display: 'flex', alignItems: 'center', color: theme.color.text2, transition: 'all 0.15s' }}
-          onMouseOver={e => { e.currentTarget.style.background = theme.color.surface; e.currentTarget.style.color = theme.color.text1; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)'; }}
-          onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = theme.color.text2; e.currentTarget.style.boxShadow = 'none'; }}>
-          <ChevronRight size={16} strokeWidth={2.5} />
+        <button onClick={goToNext} style={{ ...pillBtn, padding: '8px 10px', display: 'flex' }}
+          onMouseOver={hover(theme.color.surface2, theme.color.text1)}
+          onMouseOut={hover('transparent', theme.color.text1)}>
+          <ChevronRight size={15} strokeWidth={2.5} />
         </button>
       </div>
 
+      {/* Current range — correctly formatted for whichever view is active */}
+      <span style={{ fontSize: 16, fontWeight: 800, color: theme.color.text1, letterSpacing: '-0.2px', textAlign: 'center', flex: '1 1 auto' }}>
+        {toolbar.label}
+      </span>
+
+      {/* Month / Week / Day */}
       <div style={{ display: 'flex', background: theme.color.surface2, border: `1px solid ${theme.color.border}`, borderRadius: 100, padding: 4, boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}>
-        {['month', 'week', 'day', 'agenda'].map(v => (
+        {['month', 'week', 'day'].map(v => (
           <button
             key={v}
             onClick={() => toolbar.onView(v)}
             style={{
-              padding: '6px 16px', background: toolbar.view === v ? theme.color.surface : 'transparent',
-              color: toolbar.view === v ? theme.color.text1 : theme.color.text3,
-              border: 'none', borderRadius: 100, fontSize: 12, fontWeight: 800, cursor: 'pointer',
-              boxShadow: toolbar.view === v ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
+              padding: '7px 18px', background: toolbar.view === v ? theme.color.gold : 'transparent',
+              color: toolbar.view === v ? '#111' : theme.color.text3,
+              border: 'none', borderRadius: 100, fontSize: 12.5, fontWeight: 800, cursor: 'pointer',
               textTransform: 'capitalize', transition: 'all 0.2s'
             }}>
             {v}
           </button>
         ))}
+      </div>
+    </div>
+  );
+};
+
+// Week/day column header — real per-day booking count, not the library's
+// bare day-of-week label, matching the mockup's "Sunday 08/10 · N booking(s)".
+const makeWeekHeader = (visibleEvents: CalEvent[]) => function WeekHeader({ date }: { date: Date }) {
+  const count = visibleEvents.filter(e => {
+    const d = new Date(e.start);
+    return d.getFullYear() === date.getFullYear() && d.getMonth() === date.getMonth() && d.getDate() === date.getDate();
+  }).length;
+  return (
+    <div style={{ padding: '4px 0' }}>
+      <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: theme.color.text3 }}>
+        {format(date, 'EEE dd/MM')}
+      </div>
+      <div style={{ fontSize: 10, fontWeight: 600, color: theme.color.text4, textTransform: 'none', letterSpacing: 'normal', marginTop: 2 }}>
+        {count} booking{count !== 1 ? 's' : ''}
       </div>
     </div>
   );
@@ -111,6 +143,11 @@ export default function BookingCalendar({ screenId }: { screenId?: string }) {
   const [selectedDayEvents, setSelectedDayEvents] = useState<{ date: Date, events: CalEvent[] } | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+
+  const [filterModalOpen, setFilterModalOpen] = useState(false);
+  const [filterAds, setFilterAds] = useState(true);
+  const [filterPodcast, setFilterPodcast] = useState(true);
+  const visibleEvents = events.filter(e => (e.resource.type === 'podcast' ? filterPodcast : filterAds));
 
   const fetchBookings = useCallback(async () => {
     try {
@@ -149,6 +186,11 @@ export default function BookingCalendar({ screenId }: { screenId?: string }) {
 
   return (
     <div className={styles.calendar} style={{ fontFamily: F }}>
+      <style>{`
+        @media (max-width: 900px) {
+          .calendar-scroll-hint { display: block !important; }
+        }
+      `}</style>
       {/* Legend */}
       <div style={{ display: 'flex', gap: 14, marginBottom: 16, flexWrap: 'wrap' }}>
         {Object.entries(statusColors).map(([s, c]) => (
@@ -161,7 +203,13 @@ export default function BookingCalendar({ screenId }: { screenId?: string }) {
           <div style={{ width: 10, height: 10, borderRadius: 3, background: '#8B5CF6' }} />
           <span style={{ fontSize: 11, color: theme.color.text3, fontWeight: 600 }}>Podcast Session</span>
         </div>
-        <span style={{ fontSize: 11, color: theme.color.text4, marginLeft: 'auto' }}>{events.length} bookings shown</span>
+        <span style={{ fontSize: 11, color: theme.color.text4, marginLeft: 'auto' }}>{visibleEvents.length} bookings shown</span>
+        <button
+          onClick={() => setFilterModalOpen(true)}
+          style={{ display: 'flex', alignItems: 'center', gap: 6, background: theme.color.surface, border: `1px solid ${theme.color.border}`, color: theme.color.text2, padding: '5px 12px', borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: F }}
+        >
+          <Filter size={12} /> Filter
+        </button>
       </div>
 
       {loading ? (
@@ -169,18 +217,28 @@ export default function BookingCalendar({ screenId }: { screenId?: string }) {
           <div style={{ width: 28, height: 28, border: `2.5px solid ${theme.color.goldMid}`, borderTopColor: theme.color.gold, borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
         </div>
       ) : (
+      <>
+        <p className="calendar-scroll-hint" style={{ display: 'none', fontSize: 11, color: theme.color.text3, textAlign: 'center', margin: '0 0 8px', fontWeight: 600 }}>
+          ← Scroll to see the full week →
+        </p>
+        <div className="calendar-scroll-wrapper" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+        <div style={{ minWidth: 700 }}>
         <Calendar
-          localizer={localizer} events={events}
+          localizer={localizer} events={visibleEvents}
           startAccessor="start" endAccessor="end"
           style={{ height: 500 }}
           view={view} onView={setView} date={date} onNavigate={setDate}
+          views={['month', 'week', 'day']}
+          formats={CAL_FORMATS}
           selectable
           components={{
             toolbar: CustomToolbar,
-            event: CustomEvent
+            event: CustomEvent,
+            week: { header: makeWeekHeader(visibleEvents) },
+            day: { header: makeWeekHeader(visibleEvents) },
           }}
           onSelectSlot={(slotInfo) => {
-            const dayEvents = events.filter(e => {
+            const dayEvents = visibleEvents.filter(e => {
               const d1 = new Date(e.start);
               const d2 = new Date(slotInfo.start);
               return d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
@@ -188,7 +246,7 @@ export default function BookingCalendar({ screenId }: { screenId?: string }) {
             setSelectedDayEvents({ date: slotInfo.start, events: dayEvents });
           }}
           onDrillDown={(date) => {
-            const dayEvents = events.filter(e => {
+            const dayEvents = visibleEvents.filter(e => {
               const d1 = new Date(e.start);
               const d2 = new Date(date);
               return d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
@@ -197,7 +255,7 @@ export default function BookingCalendar({ screenId }: { screenId?: string }) {
           }}
           eventPropGetter={e => {
             const isPodcast = (e as CalEvent).resource.type === 'podcast';
-            const baseColor = isPodcast ? '#8B5CF6' : (statusColors[(e as CalEvent).resource.status] || theme.color.gold);
+            const baseColor = isPodcast ? podcastColor((e as CalEvent).resource.status) : (statusColors[(e as CalEvent).resource.status] || theme.color.gold);
             return {
               style: { 
                 background: baseColor, 
@@ -214,6 +272,9 @@ export default function BookingCalendar({ screenId }: { screenId?: string }) {
           onSelectEvent={e => setSelected(e as CalEvent)}
           popup
         />
+        </div>
+        </div>
+      </>
       )}
 
       {/* Event detail (bottom panel) */}
@@ -226,7 +287,7 @@ export default function BookingCalendar({ screenId }: { screenId?: string }) {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                   <FaCalendarDays size={14} color={theme.color.gold} />
                   <span style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1 }}>{selected.resource.bookingNumber}</span>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: '#fff', background: selected.resource.type === 'podcast' ? '#8B5CF6' : (statusColors[selected.resource.status] || theme.color.gold), padding: '2px 9px', borderRadius: 100, textTransform: 'capitalize' }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: '#fff', background: selected.resource.type === 'podcast' ? podcastColor(selected.resource.status) : (statusColors[selected.resource.status] || theme.color.gold), padding: '2px 9px', borderRadius: 100, textTransform: 'capitalize' }}>
                     {selected.resource.type === 'podcast' ? `Podcast ${selected.resource.status}` : selected.resource.status}
                   </span>
                 </div>
@@ -300,7 +361,7 @@ export default function BookingCalendar({ screenId }: { screenId?: string }) {
                       <div key={i} style={{ padding: 16, borderRadius: 12, border: `1px solid ${theme.color.border}`, background: theme.color.surface2, display: 'flex', flexDirection: 'column', gap: 8 }}>
                         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
                           <span style={{ fontSize: 14, fontWeight: 700, color: theme.color.text1 }}>{ev.title}</span>
-                          <span style={{ fontSize: 10, fontWeight: 800, color: '#fff', background: ev.resource.type === 'podcast' ? '#8B5CF6' : (statusColors[ev.resource.status] || theme.color.gold), padding: '4px 8px', borderRadius: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          <span style={{ fontSize: 10, fontWeight: 800, color: '#fff', background: ev.resource.type === 'podcast' ? podcastColor(ev.resource.status) : (statusColors[ev.resource.status] || theme.color.gold), padding: '4px 8px', borderRadius: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                             {ev.resource.status}
                           </span>
                         </div>
@@ -331,6 +392,53 @@ export default function BookingCalendar({ screenId }: { screenId?: string }) {
                 </button>
               </div>
 
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Filter modal */}
+      <AnimatePresence>
+        {filterModalOpen && (
+          <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(3px)' }}
+              onClick={() => setFilterModalOpen(false)}
+            />
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 10 }} transition={{ duration: 0.2 }}
+              style={{ position: 'relative', width: '100%', maxWidth: 360, background: theme.color.surface, borderRadius: 20, boxShadow: '0 20px 50px rgba(0,0,0,0.2)', padding: 24 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: theme.color.text1 }}>Filter</h3>
+                <button onClick={() => setFilterModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text3, display: 'flex' }}>
+                  <X size={18} />
+                </button>
+              </div>
+
+              <p style={{ fontSize: 11, fontWeight: 700, color: theme.color.text2, textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 12px' }}>
+                All calendar bookings
+              </p>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 20 }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+                  <div onClick={() => setFilterAds(v => !v)} style={{ width: 18, height: 18, borderRadius: 5, border: `1.5px solid ${filterAds ? theme.color.gold : theme.color.border}`, background: filterAds ? theme.color.gold : theme.color.surface, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    {filterAds && <Check size={12} color="#fff" strokeWidth={3} />}
+                  </div>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: theme.color.text1 }} onClick={() => setFilterAds(v => !v)}>By Ads bookings</span>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+                  <div onClick={() => setFilterPodcast(v => !v)} style={{ width: 18, height: 18, borderRadius: 5, border: `1.5px solid ${filterPodcast ? theme.color.gold : theme.color.border}`, background: filterPodcast ? theme.color.gold : theme.color.surface, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    {filterPodcast && <Check size={12} color="#fff" strokeWidth={3} />}
+                  </div>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: theme.color.text1 }} onClick={() => setFilterPodcast(v => !v)}>By podcast studio session</span>
+                </label>
+              </div>
+
+              <button
+                onClick={() => setFilterModalOpen(false)}
+                style={{ width: '100%', padding: '12px', borderRadius: 12, border: 'none', background: theme.color.gold, color: theme.color.charcoal900, fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: F }}
+              >
+                Apply
+              </button>
             </motion.div>
           </div>
         )}

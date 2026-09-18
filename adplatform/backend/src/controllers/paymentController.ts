@@ -197,7 +197,7 @@ export const payFromWallet: RequestHandler = async (req, res) => {
     // 1. Get booking
     let booking;
     if (booking_type === 'podcast') {
-      const resQuery = await client.query('SELECT * FROM podcast_bookings WHERE id = $1 AND user_id = $2 AND status = $3', [booking_id, authReq.user?.id, 'pending']);
+      const resQuery = await client.query('SELECT * FROM podcast_bookings WHERE id = $1 AND user_id = $2 AND status = $3 FOR UPDATE', [booking_id, authReq.user?.id, 'pending']);
       if (resQuery.rows.length === 0) {
         await client.query('ROLLBACK');
         res.status(404).json({ message: 'Booking not found or already paid' }); return;
@@ -208,7 +208,7 @@ export const payFromWallet: RequestHandler = async (req, res) => {
         res.status(400).json({ message: 'Reservation expired (5 min limit). Please re-book your slot.' }); return;
       }
     } else {
-      const bookingRes = await client.query('SELECT * FROM bookings WHERE id = $1 AND user_id = $2 AND status = $3', [booking_id, authReq.user?.id, 'pending_payment']);
+      const bookingRes = await client.query('SELECT * FROM bookings WHERE id = $1 AND user_id = $2 AND status = $3 FOR UPDATE', [booking_id, authReq.user?.id, 'pending_payment']);
       if (bookingRes.rows.length === 0) {
         await client.query('ROLLBACK');
         res.status(404).json({ message: 'Booking not found or already paid / expired' }); return;
@@ -226,7 +226,7 @@ export const payFromWallet: RequestHandler = async (req, res) => {
     }
 
     // 3. Check wallet balance
-    const userRes = await client.query('SELECT credits FROM users WHERE id = $1', [authReq.user?.id]);
+    const userRes = await client.query('SELECT credits FROM users WHERE id = $1 FOR UPDATE', [authReq.user?.id]);
     const credits = parseFloat(userRes.rows[0].credits);
     const totalCost = parseFloat(booking.total_cost);
     
@@ -510,8 +510,67 @@ async function processConfirmedPayment(reference: string, meta: any, amountPaid:
       await client.query('COMMIT');
       return;
     }
-    
+
+    // Idempotency guard — Monnify redelivers SUCCESSFUL_TRANSACTION webhooks
+    // on ordinary retry (e.g. if our ack didn't arrive in time), which is
+    // expected behavior, not an attack. Without this, a routine retry would
+    // record a second debit transaction for the same payment.
+    const alreadyProcessed = await client.query('SELECT id FROM transactions WHERE reference = $1', [reference]);
+    if (alreadyProcessed.rows.length > 0) {
+      await client.query('COMMIT');
+      return;
+    }
+
     const isPodcast = meta.type === 'podcast_booking';
+
+    // Lock and re-verify the booking is still actually awaiting this payment
+    // before mutating anything. Two independent confirmations for the same
+    // booking (two gateway references — a duplicate charge, a retried
+    // "stuck" checkout) must not both flip it active and both record a
+    // debit; only the first one that gets here should do real work.
+    const table = isPodcast ? 'podcast_bookings' : 'bookings';
+    const awaitingStatus = isPodcast ? 'pending' : 'pending_payment';
+    const current = await client.query(`SELECT status, user_id FROM ${table} WHERE id = $1 FOR UPDATE`, [bookingId]);
+
+    if (current.rows.length === 0) {
+      // The reservation's 5-minute lock expired and the lifecycle cron
+      // already deleted it before this (delayed) webhook arrived. The
+      // gateway has genuinely taken the customer's money for a booking that
+      // no longer exists to activate — refund it to their wallet instead of
+      // silently discarding the payment, and make sure a human sees it.
+      const refundUserId = meta.user_id;
+      if (refundUserId) {
+        await client.query('UPDATE users SET credits = credits + $1 WHERE id = $2', [amountPaid, refundUserId]);
+        await client.query(
+          `INSERT INTO transactions (user_id, type, source, amount, description, reference)
+           VALUES ($1, 'refund', 'expired_reservation', $2, $3, $4)`,
+          [refundUserId, amountPaid, `Reservation expired before payment confirmed — refunded to wallet`, reference]
+        );
+        createNotification({
+          user_id: refundUserId,
+          type: 'payment_refunded',
+          title: 'Booking could not be completed',
+          body: `Your reservation expired before payment was confirmed, so ₦${Number(amountPaid).toLocaleString()} has been credited to your wallet instead.`,
+          link: '/finances',
+        });
+      }
+      notifyAdmins({
+        type: 'orphaned_payment',
+        title: 'Payment received for an expired reservation',
+        body: `Reference ${reference} confirmed ₦${Number(amountPaid).toLocaleString()} for booking ${bookingId}, which no longer exists (reservation expired). ${refundUserId ? 'Auto-refunded to the user\'s wallet.' : 'No user_id on record — needs manual investigation.'}`,
+        link: '/admin/finances',
+      });
+      await client.query('COMMIT');
+      return;
+    }
+
+    if (current.rows[0].status !== awaitingStatus) {
+      // Already paid by an earlier confirmation for this same booking —
+      // this one is a duplicate (retry, or a second gateway reference for
+      // the same charge). Nothing left to do.
+      await client.query('COMMIT');
+      return;
+    }
 
     // 1. Mark booking as active
     if (isPodcast) {
@@ -694,6 +753,33 @@ export const initializePaystackPayment: RequestHandler = async (req, res) => {
   }
 };
 
+// Captures a real, reusable Paystack card authorization from a successful
+// charge so it can show up as a genuine "Saved Card" in Settings — opportunistic,
+// the same way most apps actually build this (from a real completed payment,
+// not a separate tokenize-only flow, which Paystack doesn't cleanly support
+// without charging something anyway).
+async function saveCardFromAuthorization(userId: string | undefined, authorization: any) {
+  if (!userId || !authorization?.reusable || !authorization?.authorization_code) return;
+  try {
+    await pool.query(
+      `INSERT INTO saved_cards (user_id, authorization_code, card_type, last4, exp_month, exp_year, bank)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       ON CONFLICT (user_id, authorization_code) DO NOTHING`,
+      [
+        userId,
+        authorization.authorization_code,
+        authorization.card_type || authorization.brand || null,
+        authorization.last4 || null,
+        authorization.exp_month || null,
+        authorization.exp_year || null,
+        authorization.bank || null,
+      ]
+    );
+  } catch (e) {
+    console.error('Failed to save card authorization:', e);
+  }
+}
+
 // ── Paystack: Verify payment (client-side callback) ───────────────────────────
 export const verifyPaystackPayment: RequestHandler = async (req, res) => {
   try {
@@ -708,6 +794,30 @@ export const verifyPaystackPayment: RequestHandler = async (req, res) => {
 
     const txn = verifyRes.data;
     const meta = txn.metadata || {};
+
+    // Handle credit top-up — mirrors the real handling already in
+    // paystackWebhook; this client-verify path was falling through to the
+    // booking-only logic below and silently no-op'ing while still claiming
+    // success for any top-up that reached it.
+    if (meta.type === 'topup') {
+      const existing = await pool.query("SELECT id FROM transactions WHERE reference = $1 AND type = 'credit'", [reference]);
+      if (existing.rows.length > 0) { res.json({ already_confirmed: true, message: 'Credits already added.' }); return; }
+      await pool.query("UPDATE users SET credits = credits + $1 WHERE id = $2", [meta.amount, meta.user_id]);
+      await pool.query(
+        "INSERT INTO transactions (user_id, type, source, amount, description, reference) VALUES ($1, 'credit', 'topup', $2, 'Credit top-up via Paystack', $3)",
+        [meta.user_id, meta.amount, reference]
+      );
+      await saveCardFromAuthorization(meta.user_id, txn.authorization);
+      createNotification({
+        user_id: meta.user_id,
+        type: 'payment_received',
+        title: 'Credits added!',
+        body: `₦${Number(meta.amount).toLocaleString()} has been added to your Studio Arella balance.`,
+        link: '/finances',
+      });
+      res.json({ success: true, message: 'Credits added to your account successfully.' });
+      return;
+    }
 
     // Idempotency check
     if (meta.type === 'podcast_booking') {
@@ -725,6 +835,7 @@ export const verifyPaystackPayment: RequestHandler = async (req, res) => {
     }
 
     await processConfirmedPayment(reference, meta, txn.amount / 100); // convert kobo → naira
+    await saveCardFromAuthorization(meta.user_id, txn.authorization);
     res.json({ success: true, message: 'Payment confirmed and booking activated.' });
   } catch (err) {
     console.error('Paystack verify error:', err);
@@ -779,6 +890,7 @@ export const paystackWebhook: RequestHandler = async (req, res) => {
       } else if (meta.booking_id) {
         await processConfirmedPayment(ref, meta, amountPaid);
       }
+      await saveCardFromAuthorization(meta.user_id, data.authorization);
     }
   } catch (err) {
     console.error('Paystack webhook error:', err);
@@ -909,5 +1021,43 @@ export const createReservedAccount: RequestHandler = async (req, res) => {
   } catch (err) {
     console.error('Reserved account creation error:', err);
     res.status(500).json({ message: 'An internal error occurred while creating your reserved account.' });
+  }
+};
+
+// ── Saved Cards ────────────────────────────────────────────────────────────────
+export const getSavedCards: RequestHandler = async (req, res) => {
+  const authReq = req as AuthRequest;
+  try {
+    const result = await pool.query(
+      `SELECT id, card_type, last4, exp_month, exp_year, bank, is_default, created_at
+       FROM saved_cards WHERE user_id = $1 ORDER BY is_default DESC, created_at DESC`,
+      [authReq.user?.id]
+    );
+    res.json({ cards: result.rows });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+export const deleteSavedCard: RequestHandler = async (req, res) => {
+  const authReq = req as AuthRequest;
+  try {
+    const cardRes = await pool.query(
+      'SELECT authorization_code FROM saved_cards WHERE id = $1 AND user_id = $2',
+      [req.params.id, authReq.user?.id]
+    );
+    const card = cardRes.rows[0];
+    if (!card) { res.status(404).json({ message: 'Card not found' }); return; }
+
+    // Best-effort: actually deactivate the authorization on Paystack's side
+    // too, not just remove our local record.
+    await paystackReq('POST', '/customer/deactivate_authorization', {
+      authorization_code: card.authorization_code,
+    }).catch((e) => console.error('Paystack deactivate authorization failed:', e));
+
+    await pool.query('DELETE FROM saved_cards WHERE id = $1', [req.params.id]);
+    res.json({ message: 'Card removed' });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
   }
 };

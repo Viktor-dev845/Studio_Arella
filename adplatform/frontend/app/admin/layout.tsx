@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import Sidebar from '@/components/layout/Sidebar';
 import Navbar from '@/components/layout/Navbar';
+import ThemeProvider from '@/components/ui/ThemeProvider';
+import PreferencesProvider from '@/components/ui/PreferencesProvider';
 import { FaShield } from 'react-icons/fa6';
 import { theme } from '@/lib/theme';
 
@@ -42,8 +44,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: theme.color.bg }}>
+      <ThemeProvider />
+      <PreferencesProvider />
       <Sidebar mobileOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, marginLeft: 240, overflow: 'hidden' }}>
+      <div className="main-wrapper" style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, marginLeft: 240, overflow: 'hidden' }}>
         <Navbar onMenuClick={() => setSidebarOpen(true)} />
         <main style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
           {/* Admin banner */}

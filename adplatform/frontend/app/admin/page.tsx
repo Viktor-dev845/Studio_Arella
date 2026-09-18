@@ -76,7 +76,7 @@ export default function AdminPage() {
             </div>
             {recentBookings.length === 0 ? (
               <div style={{ padding: '24px 0', textAlign: 'center', background: theme.color.surface2, borderRadius: 10, border: `1px dashed ${theme.color.border}` }}>
-                <FaCalendarCheck size={24} color={theme.color.border} style={{ display: 'block', margin: '0 auto 8px' }} />
+                <FaCalendarCheck size={24} color="#E2E8F0" style={{ display: 'block', margin: '0 auto 8px' }} />
                 <p style={{ fontSize: 13, color: theme.color.text4, margin: 0 }}>No bookings yet</p>
               </div>
             ) : (

@@ -1,387 +1,604 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, ChevronDown, Calendar, Clock, X, ArrowLeft, Copy, Check } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import {
+  ChevronLeft,
+  ChevronDown,
+  Camera,
+  UploadCloud,
+  Calendar,
+  Clock,
+  Check,
+  Loader2,
+} from 'lucide-react';
+import { theme } from '@/lib/theme';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { PageTransition } from '@/components/ui/Animations';
+import { useToast } from '@/components/ui/ToastProvider';
+import api from '@/lib/api';
+import PodcastRightPanel from '@/components/podcast/PodcastRightPanel';
 
-export default function BookPodcastSessionPage() {
-  const [description, setDescription] = useState('');
-  const [duration, setDuration] = useState('');
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
-  
-  const [sessionTypeOpen, setSessionTypeOpen] = useState(false);
-  const [sessionType, setSessionType] = useState('One time booking');
+const F = theme.font.body;
 
-  // Billing Modal State
-  const [billingModalOpen, setBillingModalOpen] = useState(false);
-  const [modalStep, setModalStep] = useState<'billing' | 'pay_from_wallet' | 'pay_with_card' | 'success'>('billing');
-  const [paymentMethod, setPaymentMethod] = useState<'card' | 'wallet'>('wallet');
+export default function AddPodcastPage() {
+  const router = useRouter();
+  const { toast } = useToast();
 
-  // Card Input State
-  const [cardName, setCardName] = useState('');
-  const [cardNumber, setCardNumber] = useState('');
-  const [expiryDate, setExpiryDate] = useState('');
-  const [cvv, setCvv] = useState('');
+  const [coverPhotoPreview, setCoverPhotoPreview] = useState<string | null>(null);
+  const [coverPhotoFile, setCoverPhotoFile] = useState<File | null>(null);
+  const [title, setTitle] = useState('');
+  const [titleDescription, setTitleDescription] = useState('');
 
-  const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, '');
-    const formattedValue = value.replace(/(.{4})/g, '$1 ').trim();
-    setCardNumber(formattedValue.substring(0, 19));
-  };
+  const [selectedEpisode, setSelectedEpisode] = useState('');
+  const [episodeDropdownOpen, setEpisodeDropdownOpen] = useState(false);
+  const [episodeTitle, setEpisodeTitle] = useState('');
+  const [episodeDescription, setEpisodeDescription] = useState('');
 
-  const handleExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value.replace(/\D/g, '');
-    if (value.length > 2) {
-      value = `${value.slice(0, 2)}/${value.slice(2, 4)}`;
+  const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [scheduleDate, setScheduleDate] = useState('');
+  const [timerTime, setTimerTime] = useState('');
+
+  const [contentRating, setContentRating] = useState('');
+  const [ratingDropdownOpen, setRatingDropdownOpen] = useState(false);
+
+  const [posting, setPosting] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [createdShowId, setCreatedShowId] = useState<string | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const audioInputRef = useRef<HTMLInputElement>(null);
+
+  const handleCoverPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setCoverPhotoFile(file);
+      setCoverPhotoPreview(URL.createObjectURL(file));
     }
-    setExpiryDate(value.substring(0, 5));
   };
 
-  const handleCvvChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCvv(e.target.value.replace(/\D/g, '').substring(0, 4));
+  const handleAudioUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setAudioFile(e.target.files[0]);
+    }
   };
 
-  const cardType = (() => {
-    const num = cardNumber.replace(/\D/g, '');
-    if (num.startsWith('4')) return 'visa';
-    if (/^5[1-5]/.test(num)) return 'mastercard';
-    if (/^50|^6/.test(num)) return 'verve';
-    return null;
-  })();
+  const handlePost = async () => {
+    if (!title.trim()) { toast('Please give your podcast a title', 'error'); return; }
+    if (!episodeTitle.trim()) { toast('Please give episode 1 a title', 'error'); return; }
+    if (!audioFile) { toast('Please upload an audio file for episode 1', 'error'); return; }
+
+    setPosting(true);
+    try {
+      const showForm = new FormData();
+      showForm.append('title', title.trim());
+      if (titleDescription.trim()) showForm.append('description', titleDescription.trim());
+      if (coverPhotoFile) showForm.append('cover', coverPhotoFile);
+
+      const showRes = await api.post('/shows', showForm, { headers: { 'Content-Type': undefined } });
+      const showId = showRes.data.podcast.id;
+
+      let scheduledAt: string | null = null;
+      if (scheduleDate) {
+        const dt = new Date(`${scheduleDate}T${timerTime || '00:00'}`);
+        if (!isNaN(dt.getTime())) scheduledAt = dt.toISOString();
+      }
+
+      const episodeForm = new FormData();
+      episodeForm.append('title', episodeTitle.trim());
+      if (episodeDescription.trim()) episodeForm.append('description', episodeDescription.trim());
+      if (selectedEpisode) episodeForm.append('episode_number', selectedEpisode);
+      episodeForm.append('content_rating', contentRating === 'Contain adult content' ? 'adult' : 'everyone');
+      if (scheduledAt) episodeForm.append('scheduled_at', scheduledAt);
+      episodeForm.append('audio', audioFile);
+      if (coverPhotoFile) episodeForm.append('cover', coverPhotoFile);
+
+      await api.post(`/shows/${showId}/episodes`, episodeForm, { headers: { 'Content-Type': undefined } });
+
+      setCreatedShowId(showId);
+      setShowSuccess(true);
+    } catch (err: any) {
+      toast(err?.response?.data?.message || 'Could not publish your podcast. Please try again.', 'error');
+    } finally {
+      setPosting(false);
+    }
+  };
+
+  const commonInputStyle: React.CSSProperties = {
+    width: '100%',
+    padding: '12px 16px',
+    borderRadius: 8,
+    border: `1px solid ${theme.color.border}`,
+    background: theme.color.surface,
+    fontSize: 13,
+    fontWeight: 500,
+    color: theme.color.text1,
+    fontFamily: F,
+    outline: 'none',
+    boxSizing: 'border-box',
+  };
 
   return (
     <DashboardLayout>
       <PageTransition>
-        <style>{`
-          textarea:focus, input:focus {
-            outline: none !important;
-            box-shadow: none !important;
-          }
-        `}</style>
-        <div className="font-body w-full flex gap-10 p-8">
-          
-          {/* Left Column (Form) */}
-          <div className="flex-1 min-w-0 bg-white rounded-[32px] p-10 shadow-sm border border-gray-50 flex flex-col gap-10">
-            
+        <div
+          style={{
+            fontFamily: F,
+            padding: '24px 32px 48px',
+            background: theme.color.surface,
+            minHeight: '100%',
+            display: 'flex',
+            gap: 36,
+            alignItems: 'flex-start',
+          }}
+        >
+          {/* ─── MAIN COLUMN ─── */}
+          <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 24 }}>
             {/* Header */}
-            <div className="flex items-center gap-3">
-              <Link href="/bookings" className="flex items-center gap-1.5 text-gray-500 hover:text-gray-900 font-semibold text-[13px] transition-colors">
-                <ChevronLeft size={16} /> Back
-              </Link>
-              <h1 className="text-[16px] font-bold text-gray-900 ml-2">Book podcast slot</h1>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+                <Link
+                  href="/podcast"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: theme.color.text1,
+                    textDecoration: 'none',
+                  }}
+                >
+                  <ChevronLeft size={16} />
+                  <span>Back</span>
+                </Link>
+
+                <h1 style={{ fontSize: 14, fontWeight: 700, color: theme.color.text1, margin: 0 }}>
+                  Add podcast
+                </h1>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
+                <span style={{ fontSize: 12, fontWeight: 600, color: theme.color.text3 }}>Today</span>
+                <ChevronDown size={14} color={theme.color.text3} />
+              </div>
             </div>
 
-            {/* Form Fields */}
-            <div className="flex flex-col gap-6">
-              <textarea
-                placeholder="Describe your session"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="w-full px-5 py-5 bg-white border border-gray-200 rounded-[16px] text-[13px] font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors min-h-[160px] resize-y"
+            {/* Cover photo section */}
+            <div>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleCoverPhotoUpload}
+                accept="image/*"
+                style={{ display: 'none' }}
               />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                style={{
+                  width: 76,
+                  height: 76,
+                  borderRadius: 12,
+                  border: `1px solid ${theme.color.border}`,
+                  background: theme.color.bg,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  overflow: 'hidden',
+                  padding: 0,
+                }}
+              >
+                {coverPhotoPreview ? (
+                  <img src={coverPhotoPreview} alt="Cover Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <Camera size={22} color={theme.color.text4} strokeWidth={1.75} />
+                )}
+              </button>
+              <p style={{ fontSize: 13, fontWeight: 700, color: theme.color.text1, margin: '10px 0 0' }}>
+                Add cover photo
+              </p>
+            </div>
 
-              <div className="flex flex-col sm:flex-row gap-6">
-                <div className="flex-1">
-                  <input
-                    type="text"
-                    placeholder="Enter studio duration (e.g 2 hours)"
-                    value={duration}
-                    onChange={(e) => setDuration(e.target.value)}
-                    className="w-full px-5 py-4 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
-                  />
+            {/* Title Input */}
+            <div>
+              <input
+                type="text"
+                placeholder="Title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                style={commonInputStyle}
+              />
+            </div>
+
+            {/* Title description Textarea */}
+            <div>
+              <textarea
+                placeholder="Title description"
+                value={titleDescription}
+                onChange={(e) => setTitleDescription(e.target.value)}
+                style={{
+                  ...commonInputStyle,
+                  minHeight: 110,
+                  resize: 'vertical',
+                }}
+              />
+            </div>
+
+            {/* Episode Selector & Episode Title Row */}
+            <div style={{ display: 'flex', gap: 16 }}>
+              {/* Select episode (optional) Dropdown */}
+              <div style={{ flex: 1, position: 'relative' }}>
+                <div
+                  onClick={() => setEpisodeDropdownOpen(!episodeDropdownOpen)}
+                  style={{
+                    ...commonInputStyle,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                    color: selectedEpisode ? theme.color.text1 : theme.color.text4,
+                  }}
+                >
+                  <span>{selectedEpisode ? `Episode ${selectedEpisode}` : 'Select episode (optional)'}</span>
+                  <ChevronDown size={15} color={theme.color.text4} />
                 </div>
-                
-                <div className="flex-1 relative">
-                  <button 
-                    onClick={() => setSessionTypeOpen(!sessionTypeOpen)}
-                    className="w-full px-5 py-4 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 text-left flex items-center justify-between focus:outline-none focus:border-gray-400 transition-colors"
+
+                {episodeDropdownOpen && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '100%',
+                      left: 0,
+                      marginTop: 4,
+                      width: 140,
+                      background: theme.color.surface,
+                      border: `1px solid ${theme.color.border}`,
+                      borderRadius: 8,
+                      boxShadow: '0 10px 25px rgba(0,0,0,0.08)',
+                      zIndex: 20,
+                      overflow: 'hidden',
+                      display: 'flex',
+                    }}
                   >
-                    <span className={sessionType ? 'text-gray-900' : 'text-[#94A3B8] font-medium'}>
-                      {sessionType || 'How would you run your studio session?'}
-                    </span>
-                    <ChevronDown size={18} className="text-gray-400" />
-                  </button>
-                  
-                  {sessionTypeOpen && (
-                    <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-100 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] rounded-[16px] py-3 z-20 animate-in fade-in zoom-in-95 duration-100">
-                      {['One time booking', 'Recurring booking'].map((option) => (
-                        <button
-                          key={option}
-                          onClick={() => { setSessionType(option); setSessionTypeOpen(false); }}
-                          className="w-full px-6 py-3 text-left text-[13px] font-bold text-gray-900 hover:bg-gray-50 flex items-center justify-between transition-colors"
+                    <div style={{ flex: 1, padding: '4px 0' }}>
+                      {['1', '2', '3'].map((ep) => (
+                        <div
+                          key={ep}
+                          onClick={() => {
+                            setSelectedEpisode(ep);
+                            setEpisodeDropdownOpen(false);
+                          }}
+                          style={{
+                            padding: '8px 16px',
+                            fontSize: 13,
+                            fontWeight: 600,
+                            color: theme.color.text1,
+                            cursor: 'pointer',
+                          }}
+                          onMouseOver={(e) => (e.currentTarget.style.background = theme.color.bg)}
+                          onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
                         >
-                          {option}
-                          {sessionType === option && (
-                            <div className="h-4 w-[3px] bg-[#EAB308] rounded-full"></div>
-                          )}
-                        </button>
+                          {ep}
+                        </div>
                       ))}
                     </div>
-                  )}
-                </div>
+                    {/* Gold indicator bar matching screenshot */}
+                    <div style={{ width: 4, background: theme.color.bg, position: 'relative' }}>
+                      <div
+                        style={{
+                          width: 3,
+                          height: 16,
+                          background: '#CCA336',
+                          borderRadius: 2,
+                          position: 'absolute',
+                          top: 8,
+                          right: 1,
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-6">
-                <div className="flex-1 relative">
-                  <input
-                    type="text"
-                    placeholder="Schedule a date"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    onFocus={(e) => (e.target.type = 'date')}
-                    onBlur={(e) => {
-                      if (!e.target.value) e.target.type = 'text';
-                    }}
-                    className="w-full px-5 py-4 pr-12 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
-                  />
-                  <Calendar size={18} className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                </div>
-                
-                <div className="flex-1 relative">
-                  <input
-                    type="text"
-                    placeholder="Select time"
-                    value={time}
-                    onChange={(e) => setTime(e.target.value)}
-                    onFocus={(e) => (e.target.type = 'time')}
-                    onBlur={(e) => {
-                      if (!e.target.value) e.target.type = 'text';
-                    }}
-                    className="w-full px-5 py-4 pr-12 bg-white border border-gray-200 rounded-[14px] text-[13px] font-bold text-gray-900 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:border-gray-400 focus:ring-0 transition-colors"
-                  />
-                  <Clock size={18} className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                </div>
+              {/* Episode Title Input */}
+              <div style={{ flex: 1 }}>
+                <input
+                  type="text"
+                  placeholder="Episode title"
+                  value={episodeTitle}
+                  onChange={(e) => setEpisodeTitle(e.target.value)}
+                  style={commonInputStyle}
+                />
               </div>
             </div>
 
-            {/* Actions */}
-            <div className="flex items-center justify-end gap-4 mt-6">
-              <button 
-                className="px-8 py-3.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-900 text-[13px] font-bold rounded-[12px] transition-colors"
-              >
-                Cancel
-              </button>
-              <button 
-                onClick={() => setBillingModalOpen(true)}
-                className="px-8 py-3.5 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-[13px] font-bold rounded-[12px] transition-colors shadow-sm"
-              >
-                Book Slot
-              </button>
+            {/* Episode description Textarea */}
+            <div>
+              <textarea
+                placeholder="Episode description"
+                value={episodeDescription}
+                onChange={(e) => setEpisodeDescription(e.target.value)}
+                style={{
+                  ...commonInputStyle,
+                  minHeight: 110,
+                  resize: 'vertical',
+                }}
+              />
             </div>
-            
+
+            {/* Upload podcast box */}
+            <div>
+              <p style={{ fontSize: 13, fontWeight: 700, color: theme.color.text1, margin: '0 0 10px' }}>
+                Upload podcast
+              </p>
+
+              <input
+                type="file"
+                ref={audioInputRef}
+                onChange={handleAudioUpload}
+                accept="audio/*"
+                style={{ display: 'none' }}
+              />
+
+              <div
+                onClick={() => audioInputRef.current?.click()}
+                style={{
+                  border: '1.5px dashed #CCA336',
+                  borderRadius: 12,
+                  padding: '30px 20px',
+                  background: '#FFFDF9',
+                  textAlign: 'center',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'background 0.15s ease',
+                }}
+                onMouseOver={(e) => (e.currentTarget.style.background = '#FFFBEB')}
+                onMouseOut={(e) => (e.currentTarget.style.background = '#FFFDF9')}
+              >
+                <div
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: '50%',
+                    background: '#CCA336',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: 10,
+                  }}
+                >
+                  <UploadCloud size={16} color="#FFFFFF" strokeWidth={2.5} />
+                </div>
+
+                <p style={{ fontSize: 13, fontWeight: 700, color: theme.color.text1, margin: '0 0 4px' }}>
+                  {audioFile ? audioFile.name : 'Drag & Drop or choose file to upload'}
+                </p>
+                <p style={{ fontSize: 11, color: theme.color.text4, margin: 0, fontWeight: 500 }}>
+                  Supported formats : mp3
+                </p>
+              </div>
+            </div>
+
+            {/* Schedule podcast post & Set timer row */}
+            <div style={{ display: 'flex', gap: 16 }}>
+              {/* Schedule post */}
+              <div style={{ flex: 1, position: 'relative' }}>
+                <input
+                  type="text"
+                  placeholder="Schedule podcast post (optional)"
+                  value={scheduleDate}
+                  onChange={(e) => setScheduleDate(e.target.value)}
+                  style={{ ...commonInputStyle, paddingRight: 40 }}
+                />
+                <Calendar
+                  size={16}
+                  color={theme.color.text4}
+                  style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)' }}
+                />
+              </div>
+
+              {/* Set timer */}
+              <div style={{ flex: 1, position: 'relative' }}>
+                <input
+                  type="text"
+                  placeholder="Set timer (optional)"
+                  value={timerTime}
+                  onChange={(e) => setTimerTime(e.target.value)}
+                  style={{ ...commonInputStyle, paddingRight: 40 }}
+                />
+                <Clock
+                  size={16}
+                  color={theme.color.text4}
+                  style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)' }}
+                />
+              </div>
+            </div>
+
+            {/* Bottom Row: Content rating and Actions */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginTop: 4,
+                position: 'relative',
+              }}
+            >
+              {/* Content rating Dropdown */}
+              <div style={{ width: '48%', position: 'relative' }}>
+                <div
+                  onClick={() => setRatingDropdownOpen(!ratingDropdownOpen)}
+                  style={{
+                    ...commonInputStyle,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                    color: contentRating ? theme.color.text1 : theme.color.text4,
+                  }}
+                >
+                  <span>{contentRating || 'Content rating'}</span>
+                  <ChevronDown size={15} color={theme.color.text4} />
+                </div>
+
+                {ratingDropdownOpen && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      bottom: '100%',
+                      left: 0,
+                      marginBottom: 4,
+                      width: '100%',
+                      background: theme.color.surface,
+                      border: `1px solid ${theme.color.border}`,
+                      borderRadius: 8,
+                      boxShadow: '0 10px 25px rgba(0,0,0,0.08)',
+                      zIndex: 20,
+                      overflow: 'hidden',
+                      display: 'flex',
+                    }}
+                  >
+                    <div style={{ flex: 1, padding: '4px 0' }}>
+                      {['Suitable for everyone', 'Contain adult content'].map((item) => (
+                        <div
+                          key={item}
+                          onClick={() => {
+                            setContentRating(item);
+                            setRatingDropdownOpen(false);
+                          }}
+                          style={{
+                            padding: '9px 16px',
+                            fontSize: 12.5,
+                            fontWeight: 600,
+                            color: theme.color.text1,
+                            cursor: 'pointer',
+                          }}
+                          onMouseOver={(e) => (e.currentTarget.style.background = theme.color.bg)}
+                          onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
+                        >
+                          {item}
+                        </div>
+                      ))}
+                    </div>
+                    {/* Gold indicator bar */}
+                    <div style={{ width: 4, background: theme.color.bg, position: 'relative' }}>
+                      <div
+                        style={{
+                          width: 3,
+                          height: 16,
+                          background: '#CCA336',
+                          borderRadius: 2,
+                          position: 'absolute',
+                          top: 8,
+                          right: 1,
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <button
+                  type="button"
+                  onClick={() => router.push('/podcast')}
+                  style={{
+                    padding: '10px 24px',
+                    borderRadius: 8,
+                    border: `1px solid ${theme.color.border}`,
+                    background: theme.color.surface,
+                    fontSize: 12.5,
+                    fontWeight: 700,
+                    color: theme.color.text1,
+                    cursor: 'pointer',
+                    fontFamily: F,
+                  }}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handlePost}
+                  disabled={posting}
+                  style={{
+                    padding: '10px 32px',
+                    borderRadius: 8,
+                    border: 'none',
+                    background: '#CCA336',
+                    fontSize: 12.5,
+                    fontWeight: 700,
+                    color: '#FFFFFF',
+                    cursor: posting ? 'not-allowed' : 'pointer',
+                    opacity: posting ? 0.7 : 1,
+                    fontFamily: F,
+                    boxShadow: '0 2px 6px rgba(204,163,54,0.3)',
+                    display: 'flex', alignItems: 'center', gap: 8,
+                  }}
+                >
+                  {posting && <Loader2 size={14} className="animate-spin" />}
+                  {posting ? 'Posting…' : 'Post'}
+                </button>
+              </div>
+            </div>
           </div>
 
-          {/* Right Column (Promo) */}
-          <div className="w-[320px] flex-shrink-0 pt-[72px]">
-            <div className="bg-[#1A1A1A] rounded-[24px] p-8 shadow-xl">
-              <h3 className="text-[15px] font-bold text-white leading-[1.6] mb-8">
-                we are running Ad space promo. get a discount for more than 3months booking
-              </h3>
-              <button className="bg-[#F4F860] hover:bg-[#e4ec30] text-[#0F172A] text-[10px] font-extrabold tracking-wider uppercase rounded-lg py-3 px-6 transition-colors w-fit">
-                BOOK PODCAST SESSION
-              </button>
-            </div>
-          </div>
-
+          {/* ─── RIGHT COLUMN (Promos) ─── */}
+          <PodcastRightPanel variant="promos" />
         </div>
 
-        {/* Billing Modal */}
-        {billingModalOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-            <div className="bg-white rounded-[24px] w-full max-w-[500px] shadow-2xl relative animate-in fade-in zoom-in duration-200">
-              {/* Header */}
-              <div className="flex items-center justify-between p-6 pb-2">
-                <button 
-                  onClick={() => {
-                    if (modalStep !== 'billing' && modalStep !== 'success') {
-                      setModalStep('billing');
-                    } else {
-                      setBillingModalOpen(false);
-                      setModalStep('billing');
-                    }
-                  }} 
-                  className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-700"
+        {/* Posted successfully modal */}
+        {showSuccess && (
+          <div
+            style={{
+              position: 'fixed', inset: 0, zIndex: 200, display: 'flex',
+              alignItems: 'center', justifyContent: 'center',
+              background: 'rgba(15,23,42,0.45)', backdropFilter: 'blur(2px)',
+            }}
+          >
+            <div
+              style={{
+                background: theme.color.surface, borderRadius: 24, padding: '40px 32px 32px',
+                textAlign: 'center', maxWidth: 340, width: '100%', margin: 16,
+                boxShadow: '0 20px 60px rgba(0,0,0,0.18)',
+              }}
+            >
+              <div style={{ position: 'relative', width: 88, height: 88, margin: '0 auto 24px' }}>
+                <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: '#CCA336', opacity: 0.25, filter: 'blur(18px)' }} />
+                <div
+                  style={{
+                    position: 'relative', width: 64, height: 64, margin: '12px auto 0',
+                    borderRadius: '50%', background: '#9E7B21',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    boxShadow: '0 4px 20px rgba(158,123,33,0.35)',
+                  }}
                 >
-                  <ArrowLeft size={18} />
-                </button>
-                <h2 className="text-[15px] font-bold text-gray-900">
-                  {modalStep === 'billing' ? 'Billing' : paymentMethod === 'card' ? 'Pay with card' : 'Pay from wallet'}
-                </h2>
-                <button 
-                  onClick={() => {
-                    setBillingModalOpen(false);
-                    setModalStep('billing');
-                  }} 
-                  className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-700"
-                >
-                  <X size={18} />
-                </button>
+                  <Check size={28} color="#FFFFFF" strokeWidth={3} />
+                </div>
               </div>
-
-              {/* Content */}
-              {modalStep === 'billing' ? (
-                <div className="px-10 pb-16 pt-8">
-                  <div className="text-center mb-10">
-                    <h3 className="text-[14px] font-bold text-gray-900 mb-1">3 hours studio session at</h3>
-                    <p className="text-[14px] font-bold text-gray-900">₦300,000</p>
-                  </div>
-
-                  <div className="space-y-6">
-                    {/* Pay with card */}
-                    <div 
-                      onClick={() => setPaymentMethod('card')}
-                      className={`flex items-center gap-4 px-6 py-7 rounded-[16px] cursor-pointer border-[1.5px] transition-colors ${paymentMethod === 'card' ? 'border-[#EAB308] bg-[#FEFCE8]/40' : 'border-gray-200 hover:border-gray-300'}`}
-                    >
-                      <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'card' ? 'border-[#EAB308]' : 'border-gray-300'}`}>
-                        {paymentMethod === 'card' && <div className="w-2 h-2 rounded-full bg-[#EAB308]" />}
-                      </div>
-                      <span className="text-[13px] font-bold text-gray-900">Pay with card</span>
-                    </div>
-
-                    {/* Pay from wallet */}
-                    <div 
-                      onClick={() => setPaymentMethod('wallet')}
-                      className={`flex flex-col gap-2 px-6 py-6 rounded-[16px] cursor-pointer border-[1.5px] transition-colors ${paymentMethod === 'wallet' ? 'border-[#EAB308] bg-[#FEFCE8]/40' : 'border-gray-200 hover:border-gray-300'}`}
-                    >
-                      <div className="flex items-center justify-between w-full">
-                        <div className="flex items-center gap-4">
-                          <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'wallet' ? 'border-[#EAB308]' : 'border-gray-300'}`}>
-                            {paymentMethod === 'wallet' && <div className="w-2 h-2 rounded-full bg-[#EAB308]" />}
-                          </div>
-                          <span className="text-[13px] font-bold text-gray-900">Pay from wallet</span>
-                        </div>
-                        <span className="text-[11px] font-bold text-[#EAB308] hover:underline">Fund wallet</span>
-                      </div>
-                      
-                      <div className="flex items-center justify-between pl-8 mt-2">
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-[11px] font-semibold text-gray-500">Wallet ID: 234_22100A</span>
-                          <button className="flex items-center gap-1 text-[10px] font-bold text-[#EAB308] hover:underline">
-                            Copy <Copy size={10} />
-                          </button>
-                        </div>
-                        <span className="text-[12px] font-bold text-gray-900">NGN 5,215,000.23</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Continue Button */}
-                  <div className="mt-10">
-                    <button 
-                      onClick={() => {
-                        if (paymentMethod === 'wallet') {
-                          setModalStep('pay_from_wallet');
-                        } else if (paymentMethod === 'card') {
-                          setModalStep('pay_with_card');
-                        }
-                      }}
-                      className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
-                    >
-                      Continue
-                    </button>
-                  </div>
-                </div>
-              ) : modalStep === 'pay_with_card' ? (
-                <div className="px-10 pb-16 pt-8">
-                  <div className="text-center mb-10">
-                    <h3 className="text-[14px] font-bold text-gray-900 mb-1">3 hours studio session at</h3>
-                    <p className="text-[14px] font-bold text-gray-900">₦300,000</p>
-                  </div>
-                  <div className="space-y-6">
-                    <input 
-                      type="text" 
-                      placeholder="Card holder's name" 
-                      value={cardName}
-                      onChange={(e) => setCardName(e.target.value)}
-                      className="w-full px-5 py-5 text-[13px] font-bold text-gray-900 bg-white border border-gray-200 rounded-[14px] focus:outline-none focus:border-[#EAB308] placeholder-gray-400" 
-                    />
-                    <div className="relative">
-                      <input 
-                        type="text" 
-                        placeholder="Card number" 
-                        value={cardNumber}
-                        onChange={handleCardNumberChange}
-                        className="w-full px-5 py-5 text-[13px] font-bold text-gray-900 bg-white border border-gray-200 rounded-[14px] focus:outline-none focus:border-[#EAB308] placeholder-gray-400" 
-                      />
-                      <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
-                        {cardType === 'visa' || !cardType ? (
-                          <div className="w-[24px] h-[14px] bg-[#1434CB] rounded-[2px] text-[7px] font-bold flex items-center justify-center text-white italic tracking-tighter">VISA</div>
-                        ) : null}
-                        {cardType === 'mastercard' || !cardType ? (
-                          <div className="w-[24px] h-[14px] flex items-center justify-center relative">
-                            <div className="w-[12px] h-[12px] rounded-full bg-[#EB001B] absolute left-0 mix-blend-multiply opacity-90"></div>
-                            <div className="w-[12px] h-[12px] rounded-full bg-[#F79E1B] absolute right-0 mix-blend-multiply opacity-90"></div>
-                          </div>
-                        ) : null}
-                        {cardType === 'verve' && (
-                          <div className="w-[30px] h-[14px] bg-red-600 rounded-[2px] text-[8px] font-bold flex items-center justify-center text-white italic tracking-tighter">Verve</div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex gap-4">
-                      <input 
-                        type="text" 
-                        placeholder="Expiry date (MM/YY)" 
-                        value={expiryDate}
-                        onChange={handleExpiryChange}
-                        className="w-1/2 px-5 py-5 text-[13px] font-bold text-gray-900 bg-white border border-gray-200 rounded-[14px] focus:outline-none focus:border-[#EAB308] placeholder-gray-400" 
-                      />
-                      <input 
-                        type="text" 
-                        placeholder="CVV" 
-                        value={cvv}
-                        onChange={handleCvvChange}
-                        className="w-1/2 px-5 py-5 text-[13px] font-bold text-gray-900 bg-white border border-gray-200 rounded-[14px] focus:outline-none focus:border-[#EAB308] placeholder-gray-400" 
-                      />
-                    </div>
-                  </div>
-                  <div className="mt-10">
-                    <button 
-                      onClick={() => setModalStep('success')}
-                      className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
-                    >
-                      Pay
-                    </button>
-                  </div>
-                </div>
-              ) : modalStep === 'pay_from_wallet' ? (
-                <div className="px-10 pb-16 pt-8">
-                  <div className="flex items-center justify-between px-6 py-10 rounded-[16px] border-[1.5px] border-[#EAB308] bg-white shadow-sm mb-8">
-                    <span className="text-[13px] font-bold text-gray-900">Total amount</span>
-                    <span className="text-[13px] font-bold text-gray-900">NGN 300,000.25</span>
-                  </div>
-                  <button 
-                    onClick={() => setModalStep('success')}
-                    className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
-                  >
-                    Pay
-                  </button>
-                </div>
-              ) : (
-                <div className="px-10 pb-12 pt-14 flex flex-col items-center">
-                  <div className="w-full flex justify-center mb-6">
-                    <div className="relative flex items-center justify-center w-40 h-40">
-                      <div className="absolute inset-0 bg-[#EAB308]/20 blur-2xl rounded-full"></div>
-                      <div className="relative w-[52px] h-[52px] bg-[#927116] rounded-full flex items-center justify-center shadow-[0_4px_14px_rgba(146,113,22,0.3)]">
-                        <Check size={24} className="text-white" strokeWidth={3} />
-                      </div>
-                    </div>
-                  </div>
-                  <h3 className="text-[16px] font-bold text-gray-900 mb-10">Payment successful</h3>
-                  <button 
-                    onClick={() => {
-                      setBillingModalOpen(false);
-                      setModalStep('billing');
-                    }}
-                    className="w-full py-4 bg-[#EAB308] hover:bg-[#CA8A04] text-gray-900 text-[14px] font-bold rounded-[14px] transition-colors shadow-sm"
-                  >
-                    Finish
-                  </button>
-                </div>
-              )}
+              <h3 style={{ fontSize: 16, fontWeight: 800, color: theme.color.text1, margin: '0 0 24px' }}>
+                Your podcast was a success
+              </h3>
+              <button
+                type="button"
+                onClick={() => createdShowId && router.push(`/podcast/${createdShowId}`)}
+                style={{
+                  width: '100%', padding: '12px', borderRadius: 12, border: 'none',
+                  background: '#CCA336', color: '#FFFFFF', fontSize: 13, fontWeight: 800,
+                  cursor: 'pointer', fontFamily: F, boxShadow: '0 2px 6px rgba(204,163,54,0.3)',
+                }}
+              >
+                Finish
+              </button>
             </div>
           </div>
         )}

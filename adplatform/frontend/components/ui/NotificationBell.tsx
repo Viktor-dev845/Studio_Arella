@@ -6,6 +6,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FaBell, FaCheck, FaTrash, FaCircleCheck, FaCircleXmark, FaCalendarCheck, FaCreditCard, FaBullhorn, FaCalendarDays } from 'react-icons/fa6';
 import api from '@/lib/api';
 import { theme } from '@/lib/theme';
+import { usePreferencesStore } from '@/store/preferencesStore';
+import { playNotificationChime } from '@/lib/sound';
 
 const F = theme.font.body;
 const POLL_INTERVAL = 30_000; // 30 seconds
@@ -48,13 +50,23 @@ export default function NotificationBell() {
   const [loading, setLoading] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const { soundEnabled } = usePreferencesStore();
+  const prevUnreadRef = useRef<number | null>(null);
 
   const fetchUnread = useCallback(async () => {
     try {
       const r = await api.get('/notifications/unread');
-      setUnread(r.data.unread || 0);
+      const next = r.data.unread || 0;
+      // Only chime when the count genuinely rose from a known previous
+      // value — not on first load, so opening the app with 5 unread
+      // notifications doesn't blast a sound immediately.
+      if (soundEnabled && prevUnreadRef.current !== null && next > prevUnreadRef.current) {
+        playNotificationChime();
+      }
+      prevUnreadRef.current = next;
+      setUnread(next);
     } catch {}
-  }, []);
+  }, [soundEnabled]);
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
@@ -183,7 +195,7 @@ export default function NotificationBell() {
               ) : notifications.length === 0 ? (
                 <div style={{ padding: '40px 20px', textAlign: 'center' }}>
                   <div style={{ width: 48, height: 48, borderRadius: 14, background: theme.color.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
-                    <FaBell size={20} color={theme.color.border} />
+                    <FaBell size={20} color="#E2E8F0" />
                   </div>
                   <p style={{ fontSize: 13, fontWeight: 700, color: theme.color.text2, margin: '0 0 4px' }}>All caught up</p>
                   <p style={{ fontSize: 12, color: theme.color.text3, margin: 0, fontWeight: 500 }}>No notifications yet</p>
@@ -222,9 +234,9 @@ export default function NotificationBell() {
 
                       {/* Delete */}
                       <button onClick={e => handleDelete(e, n.id)}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.color.border, padding: '2px', flexShrink: 0, display: 'flex', alignItems: 'flex-start', marginTop: 2, opacity: 0, transition: 'opacity 0.15s' }}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#E2E8F0', padding: '2px', flexShrink: 0, display: 'flex', alignItems: 'flex-start', marginTop: 2, opacity: 0, transition: 'opacity 0.15s' }}
                         onMouseOver={e => { (e.currentTarget as HTMLElement).style.opacity = '1'; (e.currentTarget as HTMLElement).style.color = theme.color.error; }}
-                        onMouseOut={e => { (e.currentTarget as HTMLElement).style.opacity = '0'; (e.currentTarget as HTMLElement).style.color = theme.color.border; }}>
+                        onMouseOut={e => { (e.currentTarget as HTMLElement).style.opacity = '0'; (e.currentTarget as HTMLElement).style.color = '#E2E8F0'; }}>
                         <FaTrash size={11} />
                       </button>
                     </motion.div>

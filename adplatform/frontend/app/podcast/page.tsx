@@ -1,172 +1,590 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Search, LayoutGrid, List } from 'lucide-react';
+import { LayoutGrid, List, Mic, Plus } from 'lucide-react';
 import { theme } from '@/lib/theme';
 import DashboardLayout from '@/components/layout/DashboardLayout';
+import { PageTransition } from '@/components/ui/Animations';
+import PodcastRightPanel from '@/components/podcast/PodcastRightPanel';
+import api from '@/lib/api';
 
 const F = theme.font.body;
 
-// Dummy data matching the Figma mockups
-const TRENDING_PODCASTS = [
-  { id: '1', title: 'Undressed', listeners: '2M active listeners', episodes: '135 episodes', img: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=400&q=80' },
-  { id: '2', title: 'Weak in Your Light', listeners: '200k active listeners', episodes: '135 episodes', img: 'https://images.unsplash.com/photo-1516280440502-628d02166668?w=400&q=80' },
+interface MyShow {
+  id: string;
+  title: string;
+  cover_url: string | null;
+  episode_count: string;
+}
+
+interface PodcastItem {
+  id: string;
+  title: string;
+  listeners: string;
+  episodes: string;
+  img: string;
+  overlayBadge?: string;
+  overlayColor?: string;
+}
+
+const PODCAST_ITEMS: PodcastItem[] = [
+  {
+    id: '1',
+    title: 'Undressed',
+    listeners: '2M active listeners',
+    episodes: '135 episodes',
+    img: 'https://images.unsplash.com/photo-1509967419530-da38b4704bc6?w=500&auto=format&fit=crop&q=80',
+  },
+  {
+    id: '2',
+    title: 'Weak In Your Light',
+    listeners: '200K active listeners',
+    episodes: '135 episodes',
+    img: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=500&auto=format&fit=crop&q=80',
+    overlayBadge: 'WEAK IN YOUR LIGHT',
+    overlayColor: '#D97706',
+  },
+  {
+    id: '3',
+    title: 'Sober Reflection',
+    listeners: '20K active listeners',
+    episodes: '135 episodes',
+    img: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80',
+    overlayBadge: 'pink SOBER',
+    overlayColor: '#DC2626',
+  },
+  {
+    id: '4',
+    title: 'Father And Son',
+    listeners: '2K active listeners',
+    episodes: '135 episodes',
+    img: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=500&auto=format&fit=crop&q=80',
+    overlayBadge: 'DELUXE EDITION',
+    overlayColor: '#2563EB',
+  },
+  {
+    id: '5',
+    title: 'Business On',
+    listeners: 'Liked Songs',
+    episodes: '135 episodes',
+    img: 'https://images.unsplash.com/photo-1507499739999-097706ad8914?w=500&auto=format&fit=crop&q=80',
+    overlayBadge: 'sphere',
+    overlayColor: '#7C3AED',
+  },
 ];
 
-const ALL_PODCASTS = [
-  { id: '1', title: 'Undressed', listeners: '2M active listeners', episodes: '135 episodes', img: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=400&q=80' },
-  { id: '2', title: 'Weak in Your Light', listeners: '200k active listeners', episodes: '135 episodes', img: 'https://images.unsplash.com/photo-1516280440502-628d02166668?w=400&q=80' },
-  { id: '3', title: 'Sober Reflection', listeners: '20k active listeners', episodes: '135 episodes', img: 'https://images.unsplash.com/photo-1524678606370-a47ad25cb82a?w=400&q=80' },
-  { id: '4', title: 'Father And Son', listeners: '2k active listeners', episodes: '135 episodes', img: 'https://images.unsplash.com/photo-1583335513577-224b11f385ce?w=400&q=80' },
-  { id: '5', title: 'Business On', listeners: 'Liked Songs', episodes: '135 episodes', img: 'https://images.unsplash.com/photo-1493225457124-a1a2a5f5f922?w=400&q=80' },
-];
-
-const TOP_PERFORMING = [
-  { title: 'Family life podcast', listeners: '2M active listeners', img: 'https://i.pravatar.cc/100?img=1' },
-  { title: 'Growth Lab podcast', listeners: '24 active listeners', img: 'https://i.pravatar.cc/100?img=2' },
-  { title: 'Growth Lab', listeners: '34 active listeners', img: 'https://i.pravatar.cc/100?img=3' },
-  { title: 'Positioning podcast', listeners: '500k active listeners', img: 'https://i.pravatar.cc/100?img=4' },
-  { title: 'Business On', listeners: '200k active listeners', img: 'https://i.pravatar.cc/100?img=5' },
-];
-
-const CALENDAR_EVENTS = [
-  { title: 'Podcast session', time: '16:00', border: '#10B981' },
-  { title: 'Podcast booking', time: '14:00', border: '#F59E0B' },
-  { title: 'Podcast booking', time: '13:00', border: '#3B82F6' },
+// All 10 items (repeating the 5 cards for the 2 rows)
+const ALL_PODCAST_ITEMS: PodcastItem[] = [
+  ...PODCAST_ITEMS,
+  ...PODCAST_ITEMS.map((item, idx) => ({ ...item, id: `${idx + 6}` })),
 ];
 
 export default function PodcastsPage() {
-  const [viewMode, setViewMode] = useState<'board'|'list'>('board');
+  const [trendingView, setTrendingView] = useState<'board' | 'list'>('board');
+  const [allView, setAllView] = useState<'board' | 'list'>('board');
+  const [myShows, setMyShows] = useState<MyShow[]>([]);
+  const [loadingMyShows, setLoadingMyShows] = useState(true);
 
-  const PodcastCard = ({ pod }: { pod: any }) => (
-    <Link href={`/podcast/${pod.id}`} style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <div style={{ width: '100%', aspectRatio: '1/1', borderRadius: 16, overflow: 'hidden', background: '#F1F5F9' }}>
-        <img src={pod.img} alt={pod.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+  useEffect(() => {
+    api.get('/shows/mine')
+      .then((res) => setMyShows(res.data?.shows || []))
+      .catch(() => setMyShows([]))
+      .finally(() => setLoadingMyShows(false));
+  }, []);
+
+  const renderCard = (pod: PodcastItem) => (
+    <Link
+      key={pod.id}
+      href={`/podcast/${pod.id}`}
+      style={{
+        textDecoration: 'none',
+        display: 'flex',
+        flexDirection: 'column',
+        minWidth: 0,
+        transition: 'transform 0.15s ease',
+      }}
+      className="podcast-card-hover"
+    >
+      <div
+        style={{
+          width: '100%',
+          aspectRatio: '1 / 1',
+          borderRadius: 14,
+          overflow: 'hidden',
+          background: theme.color.surface2,
+          position: 'relative',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+        }}
+      >
+        <img
+          src={pod.img}
+          alt={pod.title}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            display: 'block',
+          }}
+        />
+
+        {/* Artistic styled badge simulating Figma artwork overlay if present */}
+        {pod.overlayBadge && (
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              pointerEvents: 'none',
+            }}
+          >
+            {pod.id === '2' || pod.id === '7' ? (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 10,
+                  left: 10,
+                  fontSize: 8,
+                  fontWeight: 900,
+                  color: '#B45309',
+                  background: 'rgba(254, 243, 199, 0.9)',
+                  padding: '2px 5px',
+                  borderRadius: 3,
+                  letterSpacing: '0.05em',
+                }}
+              >
+                WEAK IN YOUR LIGHT
+              </div>
+            ) : null}
+
+            {pod.id === '3' || pod.id === '8' ? (
+              <div
+                style={{
+                  fontSize: 18,
+                  fontWeight: 900,
+                  color: '#EF4444',
+                  textShadow: '0 2px 8px rgba(0,0,0,0.5)',
+                  transform: 'rotate(-12deg)',
+                  letterSpacing: '0.08em',
+                }}
+              >
+                pink SOBER
+              </div>
+            ) : null}
+
+            {pod.id === '4' || pod.id === '9' ? (
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: 8,
+                  left: 8,
+                  right: 8,
+                  background: 'rgba(255, 255, 255, 0.85)',
+                  backdropFilter: 'blur(4px)',
+                  textAlign: 'center',
+                  fontSize: 8,
+                  fontWeight: 900,
+                  color: '#1E3A8A',
+                  padding: '3px 0',
+                  borderRadius: 4,
+                  letterSpacing: '0.1em',
+                }}
+              >
+                DELUXE EDITION
+              </div>
+            ) : null}
+
+            {pod.id === '5' || pod.id === '10' ? (
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: 12,
+                  textAlign: 'center',
+                  fontSize: 11,
+                  fontWeight: 800,
+                  color: 'rgba(255,255,255,0.9)',
+                  letterSpacing: '0.12em',
+                }}
+              >
+                sphere
+              </div>
+            ) : null}
+          </div>
+        )}
       </div>
-      <div>
-        <p style={{ fontSize: 14, fontWeight: 800, color: '#0F172A', margin: '0 0 4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{pod.title}</p>
-        <p style={{ fontSize: 11, color: '#334155', margin: '0 0 4px' }}>{pod.listeners}</p>
-        <p style={{ fontSize: 11, fontWeight: 700, color: '#D4AF37', margin: 0 }}>{pod.episodes}</p>
+
+      <div style={{ marginTop: 10 }}>
+        <p
+          style={{
+            fontSize: 13,
+            fontWeight: 700,
+            color: theme.color.text1,
+            margin: '0 0 3px',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
+          {pod.title}
+        </p>
+        <p
+          style={{
+            fontSize: 11,
+            color: theme.color.text4,
+            fontWeight: 500,
+            margin: '0 0 3px',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
+          {pod.listeners}
+        </p>
+        <p
+          style={{
+            fontSize: 11,
+            color: '#CCA336',
+            fontWeight: 700,
+            margin: 0,
+          }}
+        >
+          {pod.episodes}
+        </p>
       </div>
     </Link>
   );
 
   return (
     <DashboardLayout>
-      <div style={{ fontFamily: F, display: 'flex', gap: 32, padding: '32px 32px 32px 40px', minHeight: '100%', alignItems: 'flex-start' }}>
-      
-      {/* ─── LEFT COLUMN (Main Content) ─── */}
-      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 40 }}>
-        
-        {/* Trending Topics */}
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-            <h2 style={{ fontSize: 15, fontWeight: 800, color: '#0F172A', margin: 0 }}>Your trending topics (2)</h2>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <button onClick={() => setViewMode('board')} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', color: viewMode === 'board' ? '#0F172A' : '#94A3B8', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
-                <LayoutGrid size={14} /> Board View
-              </button>
-              <button onClick={() => setViewMode('list')} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', color: viewMode === 'list' ? '#0F172A' : '#94A3B8', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
-                <List size={14} /> List View
-              </button>
-            </div>
-          </div>
-          
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 20 }}>
-            {TRENDING_PODCASTS.map((pod, i) => <PodcastCard key={`trend-${i}`} pod={pod} />)}
-          </div>
-        </div>
+      <PageTransition>
+        <style>{`
+          .podcast-card-hover:hover {
+            transform: translateY(-2px);
+          }
+          @media (max-width: 960px) {
+            .podcast-page-layout {
+              flex-direction: column !important;
+            }
+            .podcast-page-layout > * {
+              width: 100% !important;
+            }
+          }
+          @media (max-width: 640px) {
+            .podcast-grid-5 {
+              grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+            }
+          }
+          @media (max-width: 420px) {
+            .podcast-grid-5 {
+              grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            }
+          }
+        `}</style>
+        <div
+          className="podcast-page-layout"
+          style={{
+            fontFamily: F,
+            padding: '24px 32px 48px',
+            background: theme.color.surface,
+            minHeight: '100%',
+            display: 'flex',
+            gap: 36,
+            alignItems: 'flex-start',
+          }}
+        >
+          {/* ─── MAIN COLUMN ─── */}
+          <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 36 }}>
+            {/* 0. My Podcasts — real, backed by /shows/mine */}
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
+                <h2 style={{ fontSize: 14, fontWeight: 700, color: theme.color.text1, margin: 0 }}>
+                  My Podcasts {!loadingMyShows && `(${myShows.length})`}
+                </h2>
+                <Link href="/podcast/new" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: theme.color.gold, textDecoration: 'none' }}>
+                  <Plus size={13} /> New podcast
+                </Link>
+              </div>
 
-        {/* All Podcasts */}
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-            <h2 style={{ fontSize: 15, fontWeight: 800, color: '#0F172A', margin: 0 }}>All podcasts (10)</h2>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <button style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', color: '#0F172A', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
-                <LayoutGrid size={14} /> Board View
-              </button>
-              <button style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', color: '#64748B', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
-                <List size={14} /> List View
-              </button>
-            </div>
-          </div>
-          
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 20, rowGap: 32 }}>
-            {ALL_PODCASTS.map((pod, i) => <PodcastCard key={`all-${i}`} pod={pod} />)}
-            {/* Repeating to match the visual 10 count from Figma */}
-            {ALL_PODCASTS.map((pod, i) => <PodcastCard key={`all2-${i}`} pod={pod} />)}
-          </div>
-        </div>
-
-      </div>
-
-      {/* ─── RIGHT COLUMN ─── */}
-      <div style={{ width: 340, display: 'flex', flexDirection: 'column', gap: 32, flexShrink: 0 }}>
-        
-        {/* Add a podcast button */}
-        <Link href="/podcast/new" style={{ 
-          display: 'flex', alignItems: 'center', justifyContent: 'center', 
-          padding: '16px', background: '#F1F5F9', border: '1px solid #E2E8F0', borderRadius: 12, 
-          color: '#0F172A', fontSize: 15, fontWeight: 800, textDecoration: 'none', textAlign: 'center',
-          transition: 'all 0.2s ease'
-        }}>
-          Add a podcast
-        </Link>
-
-        {/* Top Performing Topics */}
-        <div>
-          <p style={{ fontSize: 15, fontWeight: 800, color: '#334155', margin: '0 0 16px' }}>Your top performing topics</p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {TOP_PERFORMING.map((topic, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#E2E8F0', overflow: 'hidden' }}>
-                  <img src={topic.img} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Avatar" />
+              {loadingMyShows ? (
+                <p style={{ fontSize: 13, color: theme.color.text3 }}>Loading your podcasts…</p>
+              ) : myShows.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '32px 20px', background: theme.color.surface2, borderRadius: 16, border: `1px dashed ${theme.color.border}` }}>
+                  <Mic size={24} color={theme.color.text4} style={{ marginBottom: 8 }} />
+                  <p style={{ fontSize: 13, color: theme.color.text3, margin: 0 }}>You haven't created a podcast yet.</p>
                 </div>
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 13, color: '#0F172A', fontWeight: 700, margin: '0 0 2px' }}>{topic.title}</p>
-                  <p style={{ fontSize: 10, color: '#64748B', margin: 0 }}>{topic.listeners}</p>
+              ) : (
+                <div className="podcast-grid-5" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: 18 }}>
+                  {myShows.map((show) => (
+                    <Link key={show.id} href={`/podcast/${show.id}`} style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', minWidth: 0 }} className="podcast-card-hover">
+                      <div style={{ width: '100%', aspectRatio: '1 / 1', borderRadius: 14, overflow: 'hidden', background: theme.color.surface2, boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                        {show.cover_url ? (
+                          <img src={show.cover_url} alt={show.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                        ) : (
+                          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Mic size={26} color={theme.color.text4} />
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ marginTop: 10 }}>
+                        <p style={{ fontSize: 13, fontWeight: 700, color: theme.color.text1, margin: '0 0 3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {show.title}
+                        </p>
+                        <p style={{ fontSize: 11, color: theme.color.text4, fontWeight: 500, margin: 0 }}>
+                          {show.episode_count} episode{show.episode_count === '1' ? '' : 's'}
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* 1. Your trending topics (2) */}
+            <div>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: 18,
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <h2 style={{ fontSize: 14, fontWeight: 700, color: theme.color.text1, margin: 0 }}>
+                    Your trending topics ({PODCAST_ITEMS.length})
+                  </h2>
+                  <span style={{ fontSize: 9, fontWeight: 800, color: theme.color.text4, background: theme.color.surface2, padding: '2px 7px', borderRadius: 100, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                    Example
+                  </span>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <button
+                    type="button"
+                    onClick={() => setTrendingView('board')}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      fontSize: 12,
+                      fontWeight: trendingView === 'board' ? 700 : 500,
+                      color: trendingView === 'board' ? theme.color.text1 : theme.color.text3,
+                      background: theme.color.surface,
+                      border: trendingView === 'board' ? '1px solid #E2E8F0' : '1px solid transparent',
+                      borderRadius: 8,
+                      padding: '5px 12px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <LayoutGrid size={13} />
+                    <span>Board View</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setTrendingView('list')}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      fontSize: 12,
+                      fontWeight: trendingView === 'list' ? 700 : 500,
+                      color: trendingView === 'list' ? theme.color.text1 : theme.color.text3,
+                      background: theme.color.surface,
+                      border: trendingView === 'list' ? '1px solid #E2E8F0' : '1px solid transparent',
+                      borderRadius: 8,
+                      padding: '5px 12px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <List size={13} />
+                    <span>List View</span>
+                  </button>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
 
-        {/* Recent Booking Calendar */}
-        <div>
-          <p style={{ fontSize: 15, fontWeight: 800, color: '#334155', margin: '0 0 16px' }}>Recent Podcast Booking Calendar</p>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 13, color: '#334155', fontWeight: 600 }}>Aug 15, Sat</span>
-              <span style={{ fontSize: 9, background: '#0F172A', color: '#FFFFFF', padding: '2px 8px', borderRadius: 100, fontWeight: 800 }}>TODAY</span>
+              {trendingView === 'board' ? (
+                <div
+                  className="podcast-grid-5"
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
+                    gap: 18,
+                  }}
+                >
+                  {PODCAST_ITEMS.map(renderCard)}
+                </div>
+              ) : (
+                /* List View matching podcast-listview mockup */
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {[PODCAST_ITEMS[0], PODCAST_ITEMS[0]].map((pod, i) => (
+                    <Link
+                      key={i}
+                      href={`/podcast/${pod.id}`}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 14,
+                        textDecoration: 'none',
+                        padding: '6px 0',
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: 44,
+                          height: 44,
+                          borderRadius: 8,
+                          overflow: 'hidden',
+                          background: theme.color.surface2,
+                          flexShrink: 0,
+                        }}
+                      >
+                        <img
+                          src={pod.img}
+                          alt={pod.title}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                      </div>
+                      <div>
+                        <p style={{ fontSize: 13, fontWeight: 700, color: theme.color.text1, margin: '0 0 2px' }}>
+                          {pod.title}
+                        </p>
+                        <p style={{ fontSize: 11.5, color: theme.color.text4, fontWeight: 500, margin: 0 }}>
+                          {pod.listeners} • {pod.episodes}
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
-            <div style={{ display: 'flex', gap: 4 }}>
-              <button style={{ width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 4, color: '#334155', cursor: 'pointer' }}>{'<'}</button>
-              <button style={{ width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 4, color: '#334155', cursor: 'pointer' }}>{'>'}</button>
-            </div>
-          </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}>
-            {CALENDAR_EVENTS.map((ev, i) => (
-              <div key={i} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderLeft: `3px solid ${ev.border}`, borderRadius: 8, padding: '12px 16px' }}>
-                <p style={{ fontSize: 13, color: '#0F172A', fontWeight: 700, margin: '0 0 4px' }}>{ev.title}</p>
-                <p style={{ fontSize: 11, color: '#64748B', margin: 0, fontWeight: 600 }}>{ev.time}</p>
+            {/* 2. All podcasts (10) */}
+            <div>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: 18,
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <h2 style={{ fontSize: 14, fontWeight: 700, color: theme.color.text1, margin: 0 }}>
+                    All podcasts (10)
+                  </h2>
+                  <span style={{ fontSize: 9, fontWeight: 800, color: theme.color.text4, background: theme.color.surface2, padding: '2px 7px', borderRadius: 100, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                    Example
+                  </span>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <button
+                    type="button"
+                    onClick={() => setAllView('board')}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      fontSize: 12,
+                      fontWeight: allView === 'board' ? 700 : 500,
+                      color: allView === 'board' ? theme.color.text1 : theme.color.text3,
+                      background: theme.color.surface,
+                      border: allView === 'board' ? '1px solid #E2E8F0' : '1px solid transparent',
+                      borderRadius: 8,
+                      padding: '5px 12px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <LayoutGrid size={13} />
+                    <span>Board View</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setAllView('list')}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      fontSize: 12,
+                      fontWeight: allView === 'list' ? 700 : 500,
+                      color: allView === 'list' ? theme.color.text1 : theme.color.text3,
+                      background: theme.color.surface,
+                      border: allView === 'list' ? '1px solid #E2E8F0' : '1px solid transparent',
+                      borderRadius: 8,
+                      padding: '5px 12px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <List size={13} />
+                    <span>List View</span>
+                  </button>
+                </div>
               </div>
-            ))}
+
+              {allView === 'board' ? (
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
+                    gap: 18,
+                    rowGap: 24,
+                  }}
+                >
+                  {ALL_PODCAST_ITEMS.map(renderCard)}
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {ALL_PODCAST_ITEMS.map((pod, i) => (
+                    <Link
+                      key={i}
+                      href={`/podcast/${pod.id}`}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 14,
+                        textDecoration: 'none',
+                        padding: '6px 0',
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: 44,
+                          height: 44,
+                          borderRadius: 8,
+                          overflow: 'hidden',
+                          background: theme.color.surface2,
+                          flexShrink: 0,
+                        }}
+                      >
+                        <img
+                          src={pod.img}
+                          alt={pod.title}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                      </div>
+                      <div>
+                        <p style={{ fontSize: 13, fontWeight: 700, color: theme.color.text1, margin: '0 0 2px' }}>
+                          {pod.title}
+                        </p>
+                        <p style={{ fontSize: 11.5, color: theme.color.text4, fontWeight: 500, margin: 0 }}>
+                          {pod.listeners} • {pod.episodes}
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
-          <Link href="/book" style={{ display: 'block', padding: '12px', background: '#FFFDF5', border: '1px solid #E2E8F0', color: '#0F172A', borderRadius: 8, fontSize: 13, fontWeight: 800, textDecoration: 'none', textAlign: 'center' }}>
-            Book podcast slot
-          </Link>
-          <div style={{ textAlign: 'center', marginTop: 16 }}>
-            <Link href="/calendar" style={{ fontSize: 11, color: '#D4AF37', fontWeight: 700, textDecoration: 'none' }}>
-              See full calendar &gt;
-            </Link>
-          </div>
+          {/* ─── RIGHT COLUMN ─── */}
+          <PodcastRightPanel variant="calendar" />
         </div>
-
-      </div>
-    </div>
+      </PageTransition>
     </DashboardLayout>
   );
 }

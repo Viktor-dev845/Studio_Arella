@@ -2,201 +2,379 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { AreaChart, Area, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  Cell,
+} from 'recharts';
 import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/api';
-import { ChevronDown, CreditCard, Megaphone } from 'lucide-react';
+import { ChevronDown, CreditCard, Globe } from 'lucide-react';
 import { FaArrowTrendUp, FaArrowTrendDown } from 'react-icons/fa6';
 import { theme } from '@/lib/theme';
+import { usePreferencesStore } from '@/store/preferencesStore';
+import { formatCurrency } from '@/lib/currency';
 
 const F = theme.font.body;
 
 const CustomTooltip = ({ active, payload, label }: any) => {
-  if (active && payload?.length) return (
-    <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 8, padding: '10px 14px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-      <p style={{ fontSize: 11, color: '#334155', margin: '0 0 3px', fontFamily: F }}>{label}</p>
-      {payload.map((entry: any, index: number) => (
-        <p key={index} style={{ fontSize: 14, fontWeight: 800, color: entry.color, margin: index > 0 ? '4px 0 0' : 0, fontFamily: F }}>
-          {entry.value}
-        </p>
-      ))}
-    </div>
-  );
+  if (active && payload?.length) {
+    return (
+      <div
+        style={{
+          background: theme.color.surface,
+          border: `1px solid ${theme.color.border}`,
+          borderRadius: 8,
+          padding: '8px 12px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
+          fontFamily: F,
+        }}
+      >
+        <p style={{ fontSize: 11, color: theme.color.text3, margin: '0 0 4px', fontWeight: 600 }}>{label}</p>
+        {payload.map((entry: any, index: number) => (
+          <p key={index} style={{ fontSize: 13, fontWeight: 800, color: entry.color, margin: 0 }}>
+            {entry.name}: {entry.value?.toLocaleString()}
+          </p>
+        ))}
+      </div>
+    );
+  }
   return null;
 };
 
-// Dummy data for the line chart (matching the Figma visual)
-const PERFORMANCE_DATA = [
-  { name: 'Jan', thisYear: 12000, lastYear: 5000 },
-  { name: 'Feb', thisYear: 8000, lastYear: 13000 },
-  { name: 'Mar', thisYear: 14000, lastYear: 21000 },
-  { name: 'Apr', thisYear: 25000, lastYear: 8000 },
-  { name: 'May', thisYear: 29000, lastYear: 15000 },
-  { name: 'Jun', thisYear: 22000, lastYear: 13000 },
-  { name: 'Jul', thisYear: 19000, lastYear: 25000 },
-  { name: 'Aug', thisYear: 24000, lastYear: 31000 },
+// Line chart spline data matching screenshot
+const VIEWS_DATA = [
+  { name: 'Jan', thisYear: 10000, lastYear: 14000 },
+  { name: 'Feb', thisYear: 14000, lastYear: 15000 },
+  { name: 'Mar', thisYear: 17000, lastYear: 20000 },
+  { name: 'Apr', thisYear: 25000, lastYear: 12000 },
+  { name: 'May', thisYear: 29000, lastYear: 16000 },
+  { name: 'Jun', thisYear: 22000, lastYear: 21000 },
+  { name: 'Jul', thisYear: 24000, lastYear: 27000 },
 ];
 
-// Dummy data to match Figma visual for "Traffic by Podcast"
-const TRAFFIC_DATA = [
-  { name: 'Growth Lab', value: 80 },
-  { name: 'Love is all', value: 65 },
-  { name: 'Positioning', value: 75 },
-  { name: 'Business on', value: 40 },
-  { name: 'Family life', value: 55 }
+// Traffic by podcast data matching screenshot
+const TRAFFIC_BY_PODCAST = [
+  { name: 'Growth Lab', filled: 75 },
+  { name: 'Love is all', filled: 55 },
+  { name: 'Growth Lab', filled: 65 },
+  { name: 'Positioning', filled: 80 },
+  { name: 'Business on', filled: 45 },
+  { name: 'Family life', filled: 60 },
 ];
 
-// Dummy data for bar chart
-const BAR_DATA = [
-  { name: 'Jan', val1: 18, val2: 0, val3: 0 },
-  { name: 'Feb', val1: 0, val2: 0, val3: 30 },
-  { name: 'Mar', val1: 0, val2: 22, val3: 0 },
-  { name: 'Apr', val1: 0, val2: 0, val3: 32 },
-  { name: 'May', val1: 14, val2: 0, val3: 0 },
-  { name: 'Jun', val1: 0, val2: 0, val3: 26 },
-  { name: 'Jul', val1: 18, val2: 0, val3: 0 },
-  { name: 'Aug', val1: 0, val2: 0, val3: 30 },
-  { name: 'Sep', val1: 0, val2: 22, val3: 0 },
-  { name: 'Oct', val1: 36, val2: 0, val3: 0 },
-  { name: 'Nov', val1: 0, val2: 0, val3: 14 },
-  { name: 'Dec', val1: 0, val2: 0, val3: 26 },
-];
+const BAR_COLORS = ['#FDE68A', '#FEF3C7', theme.color.text1, '#ECFCCB', '#FCD34D', '#FEF3C7', '#ECFCCB', '#FEF3C7', theme.color.text1, '#FDE68A', '#FEF3C7', '#ECFCCB'];
+const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-// Dummy activities
+function podcastBookingsByMonth(bookings: any[]) {
+  const year = new Date().getFullYear();
+  const counts = new Array(12).fill(0);
+  bookings.forEach((b) => {
+    const d = new Date(b.start_time);
+    if (d.getFullYear() === year) counts[d.getMonth()] += 1;
+  });
+  return MONTH_NAMES.map((name, i) => ({ name, val: counts[i], color: BAR_COLORS[i] }));
+}
+
+// Activities matching screenshot exactly
 const ACTIVITIES = [
-  { avatar: '/user1.jpg', text: 'Family life podcast hit 2M views', time: 'Just now' },
-  { avatar: '/user2.jpg', text: 'Growth Lab podcast is trending', time: '59 minutes ago' },
-  { avatar: '/user3.jpg', text: 'Growth Lab hit 15M conversations', time: '12 hours ago' },
-  { avatar: '/user4.jpg', text: 'Positioning podcast is trending', time: 'Today, 11:59 AM' },
-  { avatar: '/user5.jpg', text: 'Business On hit 2M views', time: 'Feb 2, 2026' }
+  {
+    bg: 'linear-gradient(135deg, #C084FC 0%, #EC4899 100%)',
+    title: 'Family life podcast hit 2M vie...',
+    time: 'Just now',
+  },
+  {
+    bg: 'linear-gradient(135deg, #FB923C 0%, #EA580C 100%)',
+    title: 'Growth Lab podcast is trendi...',
+    time: '59 minutes ago',
+  },
+  {
+    bg: 'linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%)',
+    title: 'Growth Lab hit 15M conversat...',
+    time: '12 hours ago',
+  },
+  {
+    bg: 'linear-gradient(135deg, #A16207 0%, #CA8A04 100%)',
+    title: 'Positioning podcast is trendin...',
+    time: 'Today, 11:59 AM',
+  },
+  {
+    bg: 'linear-gradient(135deg, #2DD4BF 0%, #0D9488 100%)',
+    title: 'Business On hit 2M views',
+    time: 'Feb 2, 2026',
+  },
 ];
+
+// Deliberately more visually prominent than the surrounding real-data
+// cards — a same-color badge was easy to skim past and mistake for a
+// normal label instead of a "this isn't your real data" disclosure.
+const EXAMPLE_BADGE: React.CSSProperties = {
+  fontSize: 9, fontWeight: 800, color: theme.color.warning, background: theme.color.warningLight,
+  border: `1px solid ${theme.color.warning}`,
+  padding: '2px 7px', borderRadius: 100, letterSpacing: '0.04em', textTransform: 'uppercase',
+};
+
+function formatEventTime(iso: string) {
+  return new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+}
+
+function isSameDay(a: Date, b: Date) {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+
+function formatEventDay(iso: string) {
+  const d = new Date(iso);
+  const now = new Date();
+  if (isSameDay(d, now)) return 'Today';
+  const tomorrow = new Date(now); tomorrow.setDate(now.getDate() + 1);
+  if (isSameDay(d, tomorrow)) return 'Tomorrow';
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+}
 
 export default function AdvertiserDashboard() {
   const { user } = useAuthStore();
-  const [stats, setStats] = useState<any>(null);
-  const [chartData, setChartData] = useState<any[]>([]);
-  const [bookings, setBookings] = useState<any[]>([]);
+  const { currency, rates } = usePreferencesStore();
   const [balance, setBalance] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [podcastBookings, setPodcastBookings] = useState<any[]>([]);
+  const [adBookings, setAdBookings] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
-    Promise.allSettled([
-      api.get('/dashboard/stats').then(res => { if (isMounted) setStats((prev: any) => ({ ...prev, ...res.data })) }),
-      api.get('/analytics/hourly').then(res => { if (isMounted) setChartData(res.data) }),
-      Promise.all([
-        api.get('/bookings?limit=6').catch(() => ({ data: { bookings: [] } })),
-        api.get('/podcasts/my-bookings').catch(() => ({ data: { bookings: [] } }))
-      ]).then(([ads, pods]) => {
-        if (isMounted) {
-          const adB = ads.data.bookings || [];
-          const podB = pods.data.bookings || [];
-          const combined = [
-            ...adB.map((b: any) => ({ ...b, _type: 'ad' })),
-            ...podB.map((b: any) => ({ ...b, _type: 'podcast' }))
-          ];
-          combined.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-          setBookings(combined.slice(0, 6));
-        }
-      }),
-      api.get('/finances/balance').then(res => { if (isMounted) setBalance(res.data) }),
-      api.get('/finances/revenue').then(res => {
-        if (isMounted) setStats((prev: any) => ({ ...prev, total_revenue: res.data.total_revenue || 0 }));
-      })
-    ]).then(() => {
-      if (isMounted) setLoading(false);
-    });
-    return () => { isMounted = false; };
+    api.get('/finances/balance').then((res) => { if (isMounted) setBalance(res.data); }).catch(() => {});
+    api.get('/podcasts/my-bookings').then((res) => { if (isMounted) setPodcastBookings(res.data.bookings || []); }).catch(() => {});
+    api.get('/bookings?limit=50').then((res) => { if (isMounted) setAdBookings(res.data.bookings || []); }).catch(() => {});
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  const hourLabels = Array.from({ length: 24 }, (_, i) => `${i % 12 || 12}${i >= 12 ? 'pm' : 'am'}`);
-  const lineChartData = chartData.map((d: any, i: number) => ({ ...d, label: hourLabels[d.hour ?? i] }));
-  
-  if (loading) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 300 }}>
-      <div style={{ width: 24, height: 24, border: `2.5px solid #F1F5F9`, borderTopColor: '#0F172A', borderRadius: '50%', animation: 'spin 0.7s linear infinite', margin: '0 auto' }} />
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-    </div>
-  );
+  const bookedPodcastSlots = podcastBookings.filter((b) => b.status !== 'cancelled').length;
+
+  const upcomingEvents = [
+    ...podcastBookings
+      .filter((b) => b.status !== 'cancelled' && new Date(b.start_time).getTime() >= Date.now())
+      .map((b) => ({ title: 'Podcast session', time: b.start_time, border: '#22C55E' })),
+    ...adBookings
+      .filter((b) => !['cancelled', 'failed'].includes(b.status) && new Date(b.start_time).getTime() >= Date.now())
+      .map((b) => ({ title: 'Ad screen booking', time: b.start_time, border: '#F59E0B' })),
+  ]
+    .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())
+    .slice(0, 3)
+    .map((ev) => ({ ...ev, isToday: isSameDay(new Date(ev.time), new Date()) }));
+
+  const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', weekday: 'short' });
+
+  const podcastBookingsMonthly = podcastBookingsByMonth(podcastBookings);
+  const monthlyMax = Math.max(4, ...podcastBookingsMonthly.map((m) => m.val));
+  const yAxisTicks = [0, Math.round(monthlyMax / 2), monthlyMax];
 
   return (
-    <div style={{ fontFamily: F, display: 'flex', gap: 32, padding: '32px 32px 32px 40px', minHeight: '100%', alignItems: 'flex-start' }}>
-      
+    <div
+      className="advertiser-dashboard-layout"
+      style={{
+        fontFamily: F,
+        display: 'flex',
+        gap: 28,
+        padding: '24px 28px 40px',
+        minHeight: '100%',
+        alignItems: 'flex-start',
+        background: theme.color.bg,
+      }}
+    >
+      <style>{`
+        @media (max-width: 960px) {
+          .advertiser-dashboard-layout {
+            flex-direction: column !important;
+          }
+          .advertiser-dashboard-layout > * {
+            width: 100% !important;
+          }
+          .dash-chart-split {
+            grid-template-columns: 1fr !important;
+          }
+          .dash-stat-cards {
+            grid-template-columns: repeat(2, 1fr) !important;
+          }
+        }
+        @media (max-width: 480px) {
+          .dash-stat-cards {
+            grid-template-columns: 1fr !important;
+          }
+          .dash-2col {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
       {/* ─── LEFT COLUMN (Main Content) ─── */}
-      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 24 }}>
-        
-        {/* Header */}
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 20 }}>
+        {/* Header: Overview and Today dropdown */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <h1 style={{ fontSize: 20, fontWeight: 800, color: '#0F172A', margin: 0, letterSpacing: '-0.3px' }}>Overview</h1>
-          <button style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', color: '#334155', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>
-            Today <ChevronDown size={14} />
+          <h1 style={{ fontFamily: theme.font.display, fontSize: 20, fontWeight: 800, color: theme.color.text1, margin: 0, letterSpacing: '-0.3px' }}>
+            Overview
+          </h1>
+          <button
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              background: 'none',
+              border: 'none',
+              color: theme.color.text2,
+              fontSize: 13,
+              fontWeight: 700,
+              cursor: 'pointer',
+              fontFamily: F,
+            }}
+          >
+            Today <ChevronDown size={14} color={theme.color.text3} />
           </button>
         </div>
 
         {/* 4 Stat Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
-          {[
-            { label: 'Total Podcast', value: 7, trend: '+11.01%', up: true, bg: '#F9FAEF' },
-            { label: 'Total Active Listeners', value: '3,671', trend: '-0.03%', up: false, bg: '#FFFDF5' },
-            { label: 'Followers', value: '3,671', trend: '+15.03%', up: true, bg: '#F9FAEF' },
-            { label: 'Booked Podcast Slots', value: 2, trend: '', up: true, bg: '#FFFDF5' },
-          ].map((stat, i) => (
-            <div key={i} style={{ background: stat.bg, borderRadius: 16, padding: '24px 20px', border: '1px solid rgba(212,175,55,0.05)' }}>
-              <p style={{ fontSize: 14, color: '#0F172A', margin: '0 0 16px', fontWeight: 700 }}>{stat.label}</p>
-              <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 28, fontWeight: 800, color: '#0F172A', lineHeight: 1 }}>{stat.value}</span>
-                {stat.trend && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: stat.up ? '#10B981' : '#EF4444', fontSize: 11, fontWeight: 800 }}>
-                    {stat.trend} {stat.up ? <FaArrowTrendUp size={10} /> : <FaArrowTrendDown size={10} />}
-                  </div>
-                )}
+        <div className="dash-stat-cards" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
+          {/* Card 1: Total Podcast */}
+          <div
+            style={{
+              background: theme.color.statMint,
+              borderRadius: 16,
+              padding: '20px',
+              border: '1px solid rgba(212,175,55,0.06)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 16px' }}>
+              <p style={{ fontSize: 13, color: theme.color.text1, margin: 0, fontWeight: 700 }}>Total Podcast</p>
+              <span style={EXAMPLE_BADGE}>Example</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: 28, fontWeight: 800, color: theme.color.text1, lineHeight: 1 }}>7</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: theme.color.success, fontSize: 11, fontWeight: 800 }}>
+                +11.01% <FaArrowTrendUp size={10} />
               </div>
             </div>
-          ))}
+          </div>
+
+          {/* Card 2: Total Active Listeners */}
+          <div
+            style={{
+              background: theme.color.statVanilla,
+              borderRadius: 16,
+              padding: '20px',
+              border: '1px solid rgba(212,175,55,0.06)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 16px' }}>
+              <p style={{ fontSize: 13, color: theme.color.text1, margin: 0, fontWeight: 700 }}>Total Active Listeners</p>
+              <span style={EXAMPLE_BADGE}>Example</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: 28, fontWeight: 800, color: theme.color.text1, lineHeight: 1 }}>3,671</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: theme.color.text3, fontSize: 11, fontWeight: 800 }}>
+                -0.03% <FaArrowTrendDown size={10} />
+              </div>
+            </div>
+          </div>
+
+          {/* Card 3: Followers */}
+          <div
+            style={{
+              background: theme.color.statMint,
+              borderRadius: 16,
+              padding: '20px',
+              border: '1px solid rgba(212,175,55,0.06)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 16px' }}>
+              <p style={{ fontSize: 13, color: theme.color.text1, margin: 0, fontWeight: 700 }}>Followers</p>
+              <span style={EXAMPLE_BADGE}>Example</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: 28, fontWeight: 800, color: theme.color.text1, lineHeight: 1 }}>3,671</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: theme.color.success, fontSize: 11, fontWeight: 800 }}>
+                +15.03% <FaArrowTrendUp size={10} />
+              </div>
+            </div>
+          </div>
+
+          {/* Card 4: Booked Podcast Slots */}
+          <div
+            style={{
+              background: theme.color.statVanilla,
+              borderRadius: 16,
+              padding: '20px',
+              border: '1px solid rgba(212,175,55,0.06)',
+            }}
+          >
+            <p style={{ fontSize: 13, color: theme.color.text1, margin: '0 0 16px', fontWeight: 700 }}>Booked Podcast Slots</p>
+            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: 28, fontWeight: 800, color: theme.color.text1, lineHeight: 1 }}>{bookedPodcastSlots}</span>
+            </div>
+          </div>
         </div>
 
-        {/* Middle Row: Line Chart & Traffic */}
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 24 }}>
-          {/* Line Chart */}
-          <div style={{ background: '#FFFFFF', borderRadius: 20, padding: '24px', border: '1px solid #F1F5F9' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 24, marginBottom: 24 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <span style={{ fontSize: 15, fontWeight: 800, color: '#0F172A' }}>Total Podcast Views</span>
-                <span style={{ fontSize: 14, fontWeight: 500, color: '#94A3B8' }}>Total Followers</span>
+        {/* Row 2: Line Chart & Traffic by Podcast */}
+        <div className="dash-chart-split" style={{ display: 'grid', gridTemplateColumns: '2fr 1.15fr', gap: 16 }}>
+          {/* Left Chart Card */}
+          <div style={{ background: theme.color.surface, borderRadius: 20, padding: '22px 24px', border: `1px solid ${theme.color.surface2}` }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <span style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1 }}>Total Podcast Views</span>
+                <span style={{ fontSize: 13, fontWeight: 500, color: theme.color.text4, cursor: 'pointer' }}>Total Followers</span>
+                <span style={EXAMPLE_BADGE}>Example</span>
               </div>
-              <div style={{ width: 1, height: 16, background: '#E2E8F0' }} />
-              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#334155', fontWeight: 600 }}>
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#0F172A' }} /> This year
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: theme.color.text2, fontWeight: 600 }}>
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: theme.color.charcoal900 }} /> This year
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#334155', fontWeight: 600 }}>
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#93C5FD' }} /> Last year
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: theme.color.text2, fontWeight: 600 }}>
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#818CF8' }} /> Last year
                 </div>
               </div>
             </div>
-            <div style={{ height: 240, width: '100%' }}>
+
+            <div style={{ height: 210, width: '100%' }}>
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={PERFORMANCE_DATA} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94A3B8' }} dy={10} minTickGap={20} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94A3B8' }} tickFormatter={(val) => val === 0 ? '0' : `${val / 1000}K`} />
+                <LineChart data={VIEWS_DATA} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
+                  <CartesianGrid vertical={false} stroke={theme.color.bg} />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: theme.color.text4 }} dy={8} />
+                  <YAxis
+                    domain={[0, 32000]}
+                    ticks={[0, 10000, 20000, 30000]}
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 11, fill: theme.color.text4 }}
+                    tickFormatter={(val) => (val === 0 ? '0' : `${val / 1000}K`)}
+                  />
                   <Tooltip content={<CustomTooltip />} />
-                  <Line type="monotone" dataKey="thisYear" stroke="#0F172A" strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} />
-                  <Line type="monotone" dataKey="lastYear" stroke="#93C5FD" strokeWidth={1.5} strokeDasharray="4 4" dot={false} activeDot={{ r: 4 }} />
+                  <Line type="monotone" dataKey="thisYear" name="This year" stroke={theme.color.text1} strokeWidth={1.8} dot={false} activeDot={{ r: 4 }} />
+                  <Line type="monotone" dataKey="lastYear" name="Last year" stroke="#818CF8" strokeWidth={1.8} strokeDasharray="3 3" dot={false} activeDot={{ r: 4 }} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
           </div>
 
-          {/* Traffic by Podcast */}
-          <div style={{ background: '#FFFFFF', borderRadius: 20, padding: '24px', border: '1px solid #F1F5F9' }}>
-            <p style={{ fontSize: 15, fontWeight: 800, color: '#0F172A', margin: '0 0 24px' }}>Traffic by Campaign</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              {TRAFFIC_DATA.map(t => (
-                <div key={t.name} style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                  <span style={{ fontSize: 13, color: '#334155', fontWeight: 600, width: 80 }}>{t.name}</span>
+          {/* Right Card: Traffic by Podcast */}
+          <div style={{ background: theme.color.surface, borderRadius: 20, padding: '22px 24px', border: `1px solid ${theme.color.surface2}` }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 20px' }}>
+              <p style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1, margin: 0 }}>Traffic by Podcast</p>
+              <span style={EXAMPLE_BADGE}>Example</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {TRAFFIC_BY_PODCAST.map((t, idx) => (
+                <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14 }}>
+                  <span style={{ fontSize: 12, color: theme.color.text2, fontWeight: 600, width: 85, whiteSpace: 'nowrap' }}>
+                    {t.name}
+                  </span>
                   <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <div style={{ height: 4, width: `${t.value}%`, background: '#0F172A', borderRadius: 4 }} />
-                    <div style={{ height: 4, width: `${100 - t.value}%`, background: '#F1F5F9', borderRadius: 4 }} />
+                    <div style={{ height: 4, width: `${t.filled}%`, background: theme.color.charcoal900, borderRadius: 2 }} />
+                    <div style={{ height: 4, width: `${100 - t.filled}%`, background: theme.color.surface2, borderRadius: 2 }} />
                   </div>
                 </div>
               ))}
@@ -204,123 +382,333 @@ export default function AdvertiserDashboard() {
           </div>
         </div>
 
-        {/* Bottom Row: Bar Chart */}
-        <div style={{ background: '#FFFFFF', borderRadius: 20, padding: '24px', border: '1px solid #F1F5F9' }}>
-          <p style={{ fontSize: 15, fontWeight: 800, color: '#0F172A', margin: '0 0 24px' }}>Booking Trends</p>
-          <div style={{ height: 200, width: '100%' }}>
+        {/* Row 3: Podcast Bookings (12 Months Bar Chart) */}
+        <div style={{ background: theme.color.surface, borderRadius: 20, padding: '22px 24px', border: `1px solid ${theme.color.surface2}` }}>
+          <p style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1, margin: '0 0 16px' }}>Podcast Bookings ({new Date().getFullYear()})</p>
+          <div style={{ height: 190, width: '100%' }}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={BAR_DATA} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94A3B8' }} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94A3B8' }} />
+              <BarChart data={podcastBookingsMonthly} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
+                <CartesianGrid vertical={false} stroke={theme.color.bg} />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: theme.color.text4 }} dy={8} />
+                <YAxis domain={[0, monthlyMax]} ticks={yAxisTicks} allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: theme.color.text4 }} />
                 <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }} />
-                <Bar dataKey="val1" fill="#FDE68A" radius={[4, 4, 4, 4]} barSize={16} />
-                <Bar dataKey="val2" fill="#0F172A" radius={[4, 4, 4, 4]} barSize={16} />
-                <Bar dataKey="val3" fill="#ECFCCB" radius={[4, 4, 4, 4]} barSize={16} />
+                <Bar dataKey="val" name="Bookings" radius={[10, 10, 10, 10]} barSize={18}>
+                  {podcastBookingsMonthly.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
-
       </div>
 
-      {/* ─── RIGHT COLUMN (My Balance & Calendar) ─── */}
-      <div style={{ width: 340, display: 'flex', flexDirection: 'column', gap: 32, flexShrink: 0 }}>
-        
+      {/* ─── RIGHT COLUMN (My Balance, Activities, Recent Booking Calendar, Chat Widget) ─── */}
+      <div style={{ width: 330, display: 'flex', flexDirection: 'column', gap: 28, flexShrink: 0 }}>
         {/* My Balance Section */}
         <div>
-          <p style={{ fontSize: 15, fontWeight: 800, color: '#334155', margin: '0 0 16px' }}>My Balance</p>
-          <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
+          <p style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1, margin: '0 0 14px' }}>My Balance</p>
+          <div className="dash-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
             {/* Ad Slot Card */}
-            <div style={{ flex: 1, background: 'linear-gradient(145deg, #4A401A 0%, #2A240E 100%)', borderRadius: 16, padding: '16px', position: 'relative', overflow: 'hidden' }}>
-              <div style={{ position: 'absolute', bottom: -20, right: -20, width: 80, height: 80, background: 'rgba(212,175,55,0.2)', borderRadius: '50%' }} />
-              <p style={{ fontSize: 13, color: '#FFFFFF', fontWeight: 700, margin: '0 0 16px', lineHeight: 1.4 }}>Book Ad slot<br/>from ₦1,000/<br/>min</p>
-              <div style={{ borderTop: '1px dashed rgba(255,255,255,0.2)', paddingTop: 16 }}>
-                {/* Dots */}
-                <div style={{ display: 'flex', gap: 4 }}>
-                  <div style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(255,255,255,0.3)' }} />
-                  <div style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(255,255,255,0.3)' }} />
-                  <div style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(255,255,255,0.3)' }} />
-                </div>
+            <div
+              style={{
+                background: 'linear-gradient(145deg, #3F3512 0%, #28220A 100%)',
+                borderRadius: 16,
+                padding: '14px 14px',
+                position: 'relative',
+                overflow: 'hidden',
+                color: '#fff',
+                minHeight: 118,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+              }}
+            >
+              {/* Decorative corner curve */}
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: -15,
+                  right: -15,
+                  width: 60,
+                  height: 60,
+                  borderRadius: '50%',
+                  background: 'rgba(212,175,55,0.25)',
+                }}
+              />
+              <div>
+                <p style={{ fontSize: 12, fontWeight: 700, margin: '0 0 4px', lineHeight: 1.3 }}>
+                  Book Ad slot
+                </p>
+                <span style={{ fontSize: 11, color: '#E2E8F0', opacity: 0.9 }}>
+                  from ₦1,000/<br />min
+                </span>
+              </div>
+              <div style={{ display: 'flex', gap: 3, position: 'relative', zIndex: 1 }}>
+                <div style={{ width: 3, height: 3, borderRadius: '50%', background: 'rgba(255,255,255,0.4)' }} />
+                <div style={{ width: 3, height: 3, borderRadius: '50%', background: 'rgba(255,255,255,0.4)' }} />
+                <div style={{ width: 3, height: 3, borderRadius: '50%', background: 'rgba(255,255,255,0.4)' }} />
               </div>
             </div>
 
             {/* Wallet Bal Card */}
-            <div style={{ flex: 1, background: 'linear-gradient(145deg, #D4AF37 0%, #B49020 100%)', borderRadius: 16, padding: '16px', position: 'relative', overflow: 'hidden' }}>
-              <div style={{ position: 'absolute', bottom: -20, right: -20, width: 80, height: 80, background: '#FDE68A', borderRadius: '50%', opacity: 0.9 }} />
-              <p style={{ fontSize: 13, color: '#FFFFFF', fontWeight: 700, margin: '0 0 8px' }}>Wallet Bal</p>
-              <div style={{ borderTop: '1px dashed rgba(255,255,255,0.4)', margin: '8px 0', width: '100%' }} />
-              <p style={{ fontSize: 16, color: '#FFFFFF', fontWeight: 800, margin: '0 0 16px' }}>₦ {(balance?.credits || 0).toLocaleString()}</p>
+            <div
+              style={{
+                background: 'linear-gradient(145deg, #CFA335 0%, #B88E20 100%)',
+                borderRadius: 16,
+                padding: '14px 14px',
+                position: 'relative',
+                overflow: 'hidden',
+                color: '#fff',
+                minHeight: 118,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+              }}
+            >
+              {/* Decorative circle at bottom right */}
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: -20,
+                  right: -20,
+                  width: 70,
+                  height: 70,
+                  borderRadius: '50%',
+                  background: '#FDE68A',
+                  opacity: 0.85,
+                }}
+              />
+              <div>
+                <p style={{ fontSize: 12, fontWeight: 700, margin: '0 0 6px', color: '#FFFFFF' }}>Wallet Bal</p>
+                <p style={{ fontSize: 16, fontWeight: 800, margin: 0, color: '#FFFFFF', letterSpacing: '-0.2px' }}>
+                  {balance ? formatCurrency(Number(balance.credits || 0), currency, rates) : '—'}
+                </p>
+              </div>
               <div style={{ position: 'relative', zIndex: 1 }}>
-                <CreditCard size={18} color="#FFFFFF" />
+                <CreditCard size={17} color="#FFFFFF" />
               </div>
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: 12 }}>
-            <Link href="/book" style={{ flex: 1, padding: '10px', background: '#F1F5F9', color: '#0F172A', borderRadius: 8, fontSize: 13, fontWeight: 800, textDecoration: 'none', textAlign: 'center' }}>
+          <div className="dash-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <Link
+              href="/book"
+              style={{
+                padding: '9px 12px',
+                background: theme.color.surface2,
+                color: theme.color.text1,
+                borderRadius: 8,
+                fontSize: 12,
+                fontWeight: 700,
+                textDecoration: 'none',
+                textAlign: 'center',
+              }}
+            >
               Book Ad slot
             </Link>
-            <Link href="/finances" style={{ flex: 1, padding: '10px', background: '#FFFFFF', border: '1px solid #E2E8F0', color: '#D4AF37', borderRadius: 8, fontSize: 13, fontWeight: 800, textDecoration: 'none', textAlign: 'center' }}>
+            <Link
+              href="/finances"
+              style={{
+                padding: '9px 12px',
+                background: theme.color.surface,
+                border: `1px solid ${theme.color.border}`,
+                color: '#C69A2C',
+                borderRadius: 8,
+                fontSize: 12,
+                fontWeight: 700,
+                textDecoration: 'none',
+                textAlign: 'center',
+              }}
+            >
               Fund wallet
             </Link>
           </div>
         </div>
 
-        {/* Activities */}
+        {/* Activities Section */}
         <div>
-          <p style={{ fontSize: 15, fontWeight: 800, color: '#334155', margin: '0 0 16px' }}>Activities</p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 14px' }}>
+            <p style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1, margin: 0 }}>Activities</p>
+            <span style={EXAMPLE_BADGE}>Example</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {ACTIVITIES.map((act, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#E2E8F0', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <img src={`https://i.pravatar.cc/100?img=${i+1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Avatar" />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 13, color: '#0F172A', fontWeight: 700, margin: '0 0 2px' }}>{act.text}</p>
-                  <p style={{ fontSize: 10, color: '#64748B', margin: 0 }}>{act.time}</p>
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: '50%',
+                    background: act.bg,
+                    flexShrink: 0,
+                    boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
+                  }}
+                />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: 12, color: theme.color.text1, fontWeight: 700, margin: '0 0 1px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {act.title}
+                  </p>
+                  <p style={{ fontSize: 11, color: theme.color.text4, margin: 0 }}>{act.time}</p>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Recent Booking Calendar */}
+        {/* Recent Booking Calendar Section */}
         <div>
-          <p style={{ fontSize: 15, fontWeight: 800, color: '#334155', margin: '0 0 16px' }}>Recent Booking Calendar</p>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 13, color: '#334155', fontWeight: 600 }}>Aug 15, Sat</span>
-              <span style={{ fontSize: 9, background: '#0F172A', color: '#FFFFFF', padding: '2px 8px', borderRadius: 100, fontWeight: 800 }}>TODAY</span>
-            </div>
-            <div style={{ display: 'flex', gap: 4 }}>
-              <button style={{ width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 4, color: '#334155', cursor: 'pointer' }}>{'<'}</button>
-              <button style={{ width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 4, color: '#334155', cursor: 'pointer' }}>{'>'}</button>
-            </div>
+          <p style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1, margin: '0 0 14px' }}>Recent Booking Calendar</p>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+            <span style={{ fontSize: 12, color: theme.color.text2, fontWeight: 600 }}>{today}</span>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}>
-            {[
-              { title: 'Podcast session', time: '16:00', border: '#10B981' },
-              { title: 'Ad screen booking', time: '14:00', border: '#F59E0B' },
-              { title: 'Ad screen booking', time: '13:00', border: '#3B82F6' },
-            ].map((ev, i) => (
-              <div key={i} style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderLeft: `3px solid ${ev.border}`, borderRadius: 8, padding: '12px 16px' }}>
-                <p style={{ fontSize: 13, color: '#0F172A', fontWeight: 700, margin: '0 0 4px' }}>{ev.title}</p>
-                <p style={{ fontSize: 11, color: '#64748B', margin: 0, fontWeight: 600 }}>{ev.time}</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 }}>
+            {upcomingEvents.length === 0 ? (
+              <p style={{ fontSize: 12, color: theme.color.text4, fontWeight: 600 }}>No upcoming bookings.</p>
+            ) : upcomingEvents.map((ev, i) => (
+              <div
+                key={i}
+                style={{
+                  background: theme.color.surface,
+                  border: `1px solid ${theme.color.border}`,
+                  borderLeft: `3px solid ${ev.border}`,
+                  borderRadius: 8,
+                  padding: '10px 14px',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                  <p style={{ fontSize: 12, color: theme.color.text1, fontWeight: 700, margin: 0 }}>{ev.title}</p>
+                  {ev.isToday && (
+                    <span style={{ fontSize: 8.5, background: theme.color.charcoal900, color: '#FFFFFF', padding: '1px 6px', borderRadius: 10, fontWeight: 800, letterSpacing: '0.04em' }}>
+                      TODAY
+                    </span>
+                  )}
+                </div>
+                <p style={{ fontSize: 11, color: theme.color.text3, margin: 0, fontWeight: 600 }}>{formatEventDay(ev.time)} · {formatEventTime(ev.time)}</p>
               </div>
             ))}
           </div>
 
-          <div style={{ display: 'flex', gap: 12 }}>
-            <Link href="/book" style={{ flex: 1, padding: '10px', background: '#F1F5F9', color: '#0F172A', borderRadius: 8, fontSize: 13, fontWeight: 800, textDecoration: 'none', textAlign: 'center' }}>
+          <div className="dash-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
+            <Link
+              href="/book"
+              style={{
+                padding: '8px 12px',
+                background: theme.color.surface2,
+                color: theme.color.text1,
+                borderRadius: 8,
+                fontSize: 12,
+                fontWeight: 700,
+                textDecoration: 'none',
+                textAlign: 'center',
+              }}
+            >
               Book Ad slot
             </Link>
-            <Link href="/podcast" style={{ flex: 1, padding: '10px', background: '#FFFFFF', border: '1px solid #E2E8F0', color: '#D4AF37', borderRadius: 8, fontSize: 13, fontWeight: 800, textDecoration: 'none', textAlign: 'center' }}>
+            <Link
+              href="/podcast/book"
+              style={{
+                padding: '8px 12px',
+                background: theme.color.surface,
+                border: `1px solid ${theme.color.border}`,
+                color: '#C69A2C',
+                borderRadius: 8,
+                fontSize: 12,
+                fontWeight: 700,
+                textDecoration: 'none',
+                textAlign: 'center',
+              }}
+            >
               Book podcast
             </Link>
           </div>
+
+          <div style={{ textAlign: 'center' }}>
+            <Link
+              href="/calendar"
+              style={{
+                fontSize: 12,
+                fontWeight: 700,
+                color: '#C69A2C',
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 4,
+              }}
+            >
+              See full calendar &gt;
+            </Link>
+          </div>
         </div>
 
+        {/* Chat with Arella Speech Bubble Widget at bottom right */}
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: 6, position: 'relative' }}>
+          <Link
+            href="/chat"
+            style={{
+              position: 'relative',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '10px 18px',
+              background: theme.color.surface,
+              border: `1px solid ${theme.color.border}`,
+              borderRadius: 24,
+              boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
+              textDecoration: 'none',
+              color: theme.color.text1,
+              fontSize: 13,
+              fontWeight: 700,
+              fontFamily: F,
+              transition: 'all 0.2s',
+            }}
+          >
+            <span>Chat with Arella</span>
+            <div
+              style={{
+                width: 20,
+                height: 20,
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #6366F1, #A855F7, #EC4899)',
+                padding: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <div
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  background: theme.color.surface,
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Globe size={11} color="#4F46E5" />
+              </div>
+            </div>
+
+            {/* Speech bubble small triangle pointer */}
+            <div
+              style={{
+                position: 'absolute',
+                bottom: -6,
+                left: 36,
+                width: 0,
+                height: 0,
+                borderLeft: '6px solid transparent',
+                borderRight: '6px solid transparent',
+                borderTop: `6px solid ${theme.color.surface}`,
+                filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))',
+              }}
+            />
+          </Link>
+        </div>
       </div>
     </div>
   );

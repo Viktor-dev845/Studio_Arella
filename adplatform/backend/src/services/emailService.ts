@@ -88,7 +88,7 @@ export async function sendVerificationEmail(to: string, name: string, code: stri
     subject: 'Verification Code — Studio Arella',
     html: wrap(`
       ${h1('Verify Your Email')}
-      ${p(`Welcome to the future of digital advertising, ${name}. Please use the secure 6-digit code below to authenticate your account.`, false, true)}
+      ${p(`Welcome to the future of digital advertising, ${name}. Please use the secure 4-digit code below to authenticate your account.`, false, true)}
       
       <!-- OTP Box -->
       <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin:36px 0;">
@@ -131,7 +131,7 @@ export async function sendPasswordResetEmail(to: string, name: string, code: str
     subject: 'Reset your password — Studio Arella',
     html: wrap(`
       ${h1('Reset your password')}
-      ${p(`Hi ${name}, we received a request to reset your Studio Arella password. Please use the 6-digit code below to set a new password:`)}
+      ${p(`Hi ${name}, we received a request to reset your Studio Arella password. Please use the 4-digit code below to set a new password:`)}
       <div style="background:#F9F7F5;border:1px dashed #E5E7EB;padding:24px;border-radius:12px;text-align:center;margin:24px 0">
         <span style="font-size:32px;font-weight:900;letter-spacing:6px;color:#0A0A0A">${code}</span>
       </div>
@@ -283,7 +283,6 @@ export async function sendBookingReminderEmail(to: string, name: string, booking
 export async function sendCancellationEmail(to: string, name: string, booking: {
   booking_number: string;
   refund_amount: number;
-  refund_reference?: string;
 }) {
   const hasRefund = booking.refund_amount > 0;
   await sendEmail({
@@ -293,9 +292,9 @@ export async function sendCancellationEmail(to: string, name: string, booking: {
       ${h1('Booking cancelled')}
       ${p(`Hi ${name}, your booking <strong>${booking.booking_number}</strong> has been cancelled.`)}
       ${hasRefund
-        ? `${table(row('Refund Amount', `₦${Number(booking.refund_amount).toLocaleString()}`) + row('Refund Reference', booking.refund_reference || 'Processing'))}
+        ? `${table(row('Refund Amount', `₦${Number(booking.refund_amount).toLocaleString()}`))}
            <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:14px 18px;margin:16px 0">
-             <p style="font-size:13px;color:#15803D;font-weight:700;margin:0">A refund of ₦${Number(booking.refund_amount).toLocaleString()} has been initiated to your original payment method. Allow 3–5 business days.</p>
+             <p style="font-size:13px;color:#15803D;font-weight:700;margin:0">₦${Number(booking.refund_amount).toLocaleString()} has been credited to your Studio Arella wallet.</p>
            </div>`
         : `<div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:10px;padding:14px 18px;margin:16px 0">
              <p style="font-size:13px;color:#C2410C;font-weight:700;margin:0">This cancellation was within 48 hours of the scheduled slot. No refund is applicable per our cancellation policy.</p>
@@ -346,6 +345,34 @@ export async function sendCreativeRequestAdminAlert(
       </div>
       ${p('Please review this request and contact the client within 24 hours to proceed with the design process.')}
       ${btn('View requests in dashboard', `${process.env.FRONTEND_URL}/admin/requests`)}
+    `),
+  });
+}
+
+export async function sendSupportTicketAdminAlert(
+  to: string,
+  userName: string,
+  userEmail: string,
+  issueType: string,
+  subject: string,
+  message: string
+) {
+  await sendEmail({
+    to,
+    subject: `New Support Ticket: ${subject}`,
+    html: wrap(`
+      ${h1('New support ticket received')}
+      ${p(`Hello Admin,`)}
+      ${p(`<strong>${userName}</strong> (${userEmail}) just submitted a support ticket.`)}
+      ${table(
+        row('Issue Type', issueType || 'Not specified') +
+        row('Subject', subject)
+      )}
+      <div style="background:#F9F7F5;border:1px solid #E5E7EB;border-radius:10px;padding:16px;margin:16px 0">
+        <p style="font-size:12px;color:#9CA3AF;margin:0 0 6px;text-transform:uppercase;letter-spacing:0.05em;font-weight:700">Message</p>
+        <p style="font-size:14px;color:#374151;margin:0;line-height:1.6">${message}</p>
+      </div>
+      ${p(`Please reply directly to ${userEmail} within 24 hours.`)}
     `),
   });
 }

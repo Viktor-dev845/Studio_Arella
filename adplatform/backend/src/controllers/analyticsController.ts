@@ -8,8 +8,8 @@ export const getDashboardStats : RequestHandler = async (req, res) => {
     const userId = authReq.user?.id;
 
     const [revenueRes, podcastRes, campaignRes, screenRes, analyticsRes] = await Promise.all([
-      pool.query(`SELECT COALESCE(SUM(total_cost), 0) as total FROM bookings WHERE user_id = $1 AND status != 'cancelled'`, [userId]),
-      pool.query(`SELECT COALESCE(SUM(total_cost), 0) as total FROM podcast_bookings WHERE user_id = $1 AND status != 'cancelled'`, [userId]),
+      pool.query(`SELECT COALESCE(SUM(total_cost), 0) as total FROM bookings WHERE user_id = $1 AND status IN ('active','ended','completed')`, [userId]),
+      pool.query(`SELECT COALESCE(SUM(total_cost), 0) as total FROM podcast_bookings WHERE user_id = $1 AND status IN ('confirmed','completed')`, [userId]),
       pool.query(`SELECT COUNT(*) FROM campaigns WHERE user_id = $1 AND status = 'active'`, [userId]),
       pool.query(`SELECT COUNT(*) FROM screens WHERE owner_id = $1 AND status = 'active'`, [userId]),
       pool.query(
@@ -62,23 +62,26 @@ export const getAdvertiserProofOfPlay: RequestHandler = async (req, res) => {
   const authReq = req as AuthRequest;
   try {
     const result = await pool.query(
-      `SELECT 
+      `SELECT
          c.title AS creative_title,
          b.booking_number,
+         s.name AS screen_name,
+         s.location AS screen_location,
          COUNT(p.id) AS play_count,
-         MAX(p.end_timestamp) AS last_played
-       FROM proof_of_play_logs p
+         MAX(p.actual_end) AS last_played
+       FROM playback_logs p
        JOIN ads c ON p.creative_id = c.id
        JOIN bookings b ON p.booking_id = b.id
+       LEFT JOIN screens s ON b.screen_id = s.id
        WHERE c.user_id = $1
-       GROUP BY c.id, b.id, c.title, b.booking_number
-       ORDER BY MAX(p.end_timestamp) DESC`,
+       GROUP BY c.id, b.id, c.title, b.booking_number, s.name, s.location
+       ORDER BY MAX(p.actual_end) DESC`,
       [authReq.user?.id]
     );
 
     const totalsRes = await pool.query(
       `SELECT COUNT(p.id) AS total_plays
-       FROM proof_of_play_logs p
+       FROM playback_logs p
        JOIN ads c ON p.creative_id = c.id
        WHERE c.user_id = $1`,
       [authReq.user?.id]

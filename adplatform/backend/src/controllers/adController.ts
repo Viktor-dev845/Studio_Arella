@@ -25,14 +25,31 @@ export const getAds: RequestHandler = async (req, res) => {
   const authReq = req as AuthRequest;
   try {
     const result = await pool.query(
-      `SELECT a.*, c.name as campaign_name
+      `SELECT a.*, c.name as campaign_name,
+         COALESCE(pc.play_count, 0) as play_count,
+         COALESCE(pl.recent_logs, '[]'::json) as recent_logs
        FROM ads a
        LEFT JOIN campaigns c ON a.campaign_id = c.id
+       LEFT JOIN LATERAL (
+         SELECT COUNT(*) as play_count FROM playback_logs p WHERE p.creative_id = a.id
+       ) pc ON true
+       LEFT JOIN LATERAL (
+         SELECT json_agg(x) as recent_logs FROM (
+           SELECT s.name as screen_name, s.location as city, b.booking_number as booking_ref,
+                  p.actual_end as played_at, p.duration_played_seconds as duration
+           FROM playback_logs p
+           LEFT JOIN screens s ON p.screen_id = s.id
+           LEFT JOIN bookings b ON p.booking_id = b.id
+           WHERE p.creative_id = a.id
+           ORDER BY p.actual_end DESC NULLS LAST
+           LIMIT 5
+         ) x
+       ) pl ON true
        WHERE a.user_id = $1
        ORDER BY a.created_at DESC`,
       [authReq.user?.id]
     );
-    
+
     res.json({ ads: result.rows });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
@@ -43,13 +60,19 @@ export const getAds: RequestHandler = async (req, res) => {
 export const createAd: RequestHandler = async (req, res) => {
   const authReq = req as AuthRequest;
   try {
-    const { title, campaign_id, duration_seconds, media_type } = req.body;
+    const { title, campaign_id, duration_seconds, media_type, description } = req.body;
     if (!title) { res.status(400).json({ message: 'Ad title is required' }); return; }
 
     // Handle file upload if present
     let file_url = req.body.media_url || null;
     let file_type = media_type || 'image';
     let file_size = null;
+    // Whether this creative can skip the human review queue — only true when
+    // a file was actually uploaded AND (for video) the AI moderator explicitly
+    // approved it. Images always need a human to look at them; an ambiguous
+    // or missing verdict from video moderation also falls to manual review
+    // rather than defaulting to live.
+    let autoApproved = false;
 
     if ((req as any).file) {
       const file = (req as any).file;
@@ -96,13 +119,13 @@ export const createAd: RequestHandler = async (req, res) => {
           }
 
           const uploadedUrl = n8nResult.cloudinary_url || n8nResult.url || n8nResult.media_url || n8nResult.file_url;
-          if ((n8nResult.status === 'approved' || n8nResult.status === 'success' || !n8nResult.status) && uploadedUrl) {
-             file_url = uploadedUrl;
-             file_type = 'video';
-             file_size = file.size; 
-          } else {
+          if (!uploadedUrl) {
              throw new Error('n8n response missing Cloudinary URL');
           }
+          file_url = uploadedUrl;
+          file_type = 'video';
+          file_size = file.size;
+          autoApproved = n8nResult.status === 'approved' || n8nResult.status === 'success';
         } else {
           // Images bypass n8n and go directly to Cloudinary
           const folder = `bems-screens/${authReq.user?.id}`;
@@ -133,19 +156,19 @@ export const createAd: RequestHandler = async (req, res) => {
       }
     }
 
-    const isVideoFile = file_type === 'video';
-    const initialStatus = 'approved'; // Instantly approved since n8n acts as gatekeeper
-    const reviewedAt = new Date();
+    const initialStatus = autoApproved ? 'approved' : 'pending';
+    const reviewedAt = autoApproved ? new Date() : null;
 
     const result = await pool.query(
-      `INSERT INTO ads (user_id, campaign_id, title, media_url, file_url, file_type, file_size,
+      `INSERT INTO ads (user_id, campaign_id, title, description, media_url, file_url, file_type, file_size,
                         duration_seconds, status, media_type, reviewed_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
        RETURNING *`,
       [
         authReq.user?.id,
         campaign_id || null,
         title,
+        description || null,
         file_url,
         file_url,
         file_type,
@@ -159,11 +182,23 @@ export const createAd: RequestHandler = async (req, res) => {
 
     const createdAd = result.rows[0];
 
-    // No need to trigger async webhook since n8n processed it synchronously.
+    if (!autoApproved) {
+      notifyAdmins({
+        type: 'new_creative_review',
+        title: 'New creative awaiting review',
+        body: `"${title}" was uploaded by ${authReq.user?.name || 'an advertiser'} and needs approval before it can be booked.`,
+        link: '/admin/review',
+      });
+      pool.query("SELECT email FROM users WHERE role = 'admin'").then(({ rows }) => {
+        rows.forEach(({ email }) => sendAdminNewCreativeAlert(email, authReq.user?.name || 'An advertiser', title).catch(console.error));
+      }).catch(console.error);
+    }
 
     res.status(201).json({
       ad: createdAd,
-      message: 'Your creative has been uploaded successfully! It is now approved and ready to be used in your bookings.',
+      message: autoApproved
+        ? 'Your creative has been uploaded successfully! It is now approved and ready to be used in your bookings.'
+        : 'Your creative has been uploaded and is now in the review queue. You\'ll be notified once it\'s approved.',
     });
   } catch (err) {
     console.error('Upload error:', err);
@@ -218,7 +253,8 @@ export const getAdminReviewQueue: RequestHandler = async (req, res) => {
       `SELECT a.*, u.name as advertiser_name, u.email as advertiser_email
        FROM ads a
        LEFT JOIN users u ON a.user_id = u.id
-       ORDER BY CASE WHEN a.status = 'pending' THEN 0 ELSE 1 END, a.created_at DESC`
+       WHERE a.status = 'pending'
+       ORDER BY a.created_at ASC`
     );
     res.json({ queue: result.rows, count: result.rows.length });
   } catch (err) {

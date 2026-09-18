@@ -10,6 +10,7 @@ const configs: Record<string, { bg: string; text: string; dot: string }> = {
   live:            { bg: theme.color.infoLight, text: theme.color.info, dot: theme.color.glitchCyan },
   pending:         { bg: theme.color.warningLight, text: theme.color.warning, dot: theme.color.warning },
   pending_payment: { bg: theme.color.warningLight, text: theme.color.warning, dot: theme.color.warning },
+  in_progress:     { bg: theme.color.infoLight, text: theme.color.info, dot: theme.color.info },
   paused:          { bg: theme.color.warningLight, text: theme.color.warning, dot: theme.color.warning },
   draft:           neutral,
   completed:       { bg: theme.color.goldLight, text: theme.color.goldDark, dot: theme.color.gold },

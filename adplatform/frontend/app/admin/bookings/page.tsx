@@ -38,21 +38,8 @@ export default function AdminBookingsPage() {
               <CalendarCheck size={20} color={theme.color.goldDark} />
             </div>
             <h1 style={{ fontFamily: theme.font.display, fontSize: 26, fontWeight: 700, color: theme.color.text1, margin: 0, letterSpacing: '-0.02em' }}>All Bookings</h1>
-            <button 
-              onClick={() => {
-                if(confirm('Are you absolutely sure you want to completely clear the database of all bookings and transactions?')) {
-                  api.get('/nuke-db').then(() => {
-                    alert('Database cleared successfully!');
-                    window.location.reload();
-                  }).catch((err: any) => alert('Error clearing database: ' + err.message));
-                }
-              }}
-              style={{ marginLeft: 'auto', background: '#ef4444', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: 6, cursor: 'pointer', fontWeight: 600, fontSize: 13, boxShadow: '0 2px 4px rgba(239, 68, 68, 0.2)' }}
-            >
-              ⚠️ Clear Entire Database
-            </button>
           </div>
-          <p style={{ fontSize: 14, color: theme.color.text3, margin: 0 }}>{bookings.length} total bookings on the platform</p>
+          <p style={{ fontSize: 14, color: theme.color.text3, margin: 0 }}>{bookings.length} total bookings on the platform (screen ads + podcast studio)</p>
         </div>
 
         <div style={{ position: 'relative', marginBottom: 24, maxWidth: 400 }}>
@@ -70,22 +57,31 @@ export default function AdminBookingsPage() {
         <div style={card}>
           <Table>
             <TableHead>
-              {['Booking #', 'Advertiser', 'Screen', 'Total Cost', 'Start', 'Status'].map(h => (
+              {['Booking #', 'Type', 'Advertiser', 'Screen / Package', 'Total Cost', 'Start', 'Status'].map(h => (
                 <TableHeaderCell key={h}>{h}</TableHeaderCell>
               ))}
             </TableHead>
             <TableBody>
               {loading ? Array.from({ length: 5 }).map((_, i) => (
                 <tr key={i}>
-                  {Array.from({ length: 6 }).map((_, j) => <td key={j} style={{ padding: '14px 16px' }}><Skeleton height={12} width={80} /></td>)}
+                  {Array.from({ length: 7 }).map((_, j) => <td key={j} style={{ padding: '14px 16px' }}><Skeleton height={12} width={80} /></td>)}
                 </tr>
               )) : filtered.length === 0 ? (
-                <tr><td colSpan={6} style={{ padding: '48px', textAlign: 'center', color: theme.color.text3 }}>No bookings found</td></tr>
+                <tr><td colSpan={7} style={{ padding: '48px', textAlign: 'center', color: theme.color.text3 }}>No bookings found</td></tr>
               ) : filtered.map(b => (
                 <TableRow key={b.id}>
                   <TableCell><span style={{ fontWeight: 700, color: theme.color.text1 }}>{b.booking_number}</span></TableCell>
+                  <TableCell>
+                    <span style={{
+                      fontSize: 11, fontWeight: 700, padding: '3px 8px', borderRadius: 999,
+                      background: b.booking_type === 'podcast' ? theme.color.goldLight : '#EFF6FF',
+                      color: b.booking_type === 'podcast' ? theme.color.goldDark : '#1D4ED8',
+                    }}>
+                      {b.booking_type === 'podcast' ? 'Podcast' : 'Screen Ad'}
+                    </span>
+                  </TableCell>
                   <TableCell>{b.user_name || b.user_email || '—'}</TableCell>
-                  <TableCell>{b.screen_name || '—'}</TableCell>
+                  <TableCell>{b.screen_name || b.campaign_name || '—'}</TableCell>
                   <TableCell><span style={{ color: theme.color.success, fontWeight: 700 }}>₦{Number(b.total_cost || 0).toLocaleString()}</span></TableCell>
                   <TableCell><span style={{ fontSize: 12 }}>{b.start_time ? new Date(b.start_time).toLocaleDateString() : '—'}</span></TableCell>
                   <TableCell><StatusBadge status={b.status} /></TableCell>

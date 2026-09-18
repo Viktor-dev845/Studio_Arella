@@ -1,10 +1,12 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import passport from '../middleware/passport';
-import { upload } from '../middleware/upload';
+import { upload, avatarUpload } from '../middleware/upload';
 import { authenticate } from '../middleware/auth';
+import { otpGuessLimiter, otpRequestLimiter, authLimiter, chatLimiter } from '../middleware/rateLimit';
 
 // Auth
-import { register, login, getMe, updateProfile, changePassword, verifyEmail, resendVerification, forgotPassword, resetPassword, acceptTerms, markTourSeen } from '../controllers/authController';
+import { register, login, getMe, updateProfile, uploadAvatar, changePassword, deleteAccount, becomeScreenOwner, verifyEmail, resendVerification, forgotPassword, resetPassword, acceptTerms, markTourSeen, setup2FA, verifySetup2FA, disable2FA, verify2FALogin, getSessions, revokeSession, updateNotificationPreferences, updateDisplayPreferences } from '../controllers/authController';
+import { getExchangeRates } from '../controllers/exchangeRateController';
 import { googleCallback } from '../controllers/googleAuthController';
 
 // Features
@@ -13,74 +15,95 @@ import {
   getBookings,
   getBookingSlots,
   createBooking,
-  confirmBooking,
   cancelBooking,
-  updateBookingStatus,
+  extendBooking,
   reserveSlots
 } from '../controllers/bookingController';
 import { getAds, createAd, updateAd, deleteAd, getAdminReviewQueue, reviewAd } from '../controllers/adController';
 import { getScreens, createScreen, updateScreen, deleteScreen } from '../controllers/screenController';
-import { getBalance, getTransactions, addCredits, getTotalRevenue } from '../controllers/financeController';
+import { getBalance, getTransactions, getTotalRevenue } from '../controllers/financeController';
 import { getDashboardStats, getHourlyAnalytics, getAdvertiserProofOfPlay } from '../controllers/analyticsController';
 import { getPlatformStats, getAllUsers, getAllBookings, getAllCampaigns, getAllScreens, updateUserRole, getAllTransactions, getAllPodcastBookings } from '../controllers/adminController';
 import { getPlans, getBaseRate } from '../controllers/pricingController';
-import { initializePayment, initializeCreditPayment, verifyPayment, monnifyWebhook, devBypassPayment, payFromWallet, initializePaystackPayment, verifyPaystackPayment, paystackWebhook, initializePaystackCreditPayment, createReservedAccount } from '../controllers/paymentController';
+import { initializePayment, initializeCreditPayment, verifyPayment, monnifyWebhook, devBypassPayment, payFromWallet, initializePaystackPayment, verifyPaystackPayment, paystackWebhook, initializePaystackCreditPayment, createReservedAccount, getSavedCards, deleteSavedCard } from '../controllers/paymentController';
 import { getNotifications, markRead, markAllRead, deleteNotification, getUnreadCount } from '../controllers/notificationController';
 import { submitCreativeRequest, getMyCreativeRequests, getAllCreativeRequests, updateCreativeRequestStatus } from '../controllers/creativeController';
-import { getAvailability, reserveSlot, getMyBookings } from '../controllers/podcastController';
+import { submitTicket, getMyTickets } from '../controllers/supportController';
+import { getAvailability, reserveSlot, reserveSeries, paySeriesFromWallet, getMyBookings, extendPodcastBooking, cancelPodcastBooking } from '../controllers/podcastController';
+import { createShow, getShow, getAllShows, getMyShows, createEpisode } from '../controllers/podcastShowController';
+import { sendChatMessage } from '../controllers/chatController';
+import { createReview } from '../controllers/reviewController';
+import { getFavorites, addFavorite, removeFavorite } from '../controllers/favoriteController';
+import { globalSearch } from '../controllers/searchController';
 
 import pool from '../db/pool';
 
 const router = Router();
 
-// TEMPORARY: Clear database
-router.get('/nuke-db', async (req: Request, res: Response) => {
-  try {
-    const tables = ['booking_slots', 'proof_of_play_logs', 'analytics', 'invoices', 'podcast_bookings', 'bookings'];
-    for (const table of tables) {
-      try {
-        await pool.query(`DELETE FROM ${table};`);
-      } catch (e) {
-        // Ignore if table doesn't exist
-        console.log(`Skipped ${table} or error:`, e);
-      }
-    }
-    res.json({ message: 'Successfully cleared all bookings and related logs!' });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// TEMPORARY: Delete specific user
-router.get('/dev-delete-user', async (req: Request, res: Response) => {
-  const email = req.query.email as string;
-  if (!email) {
-    res.send('Need email query param');
-    return;
-  }
-  try {
-    await pool.query('DELETE FROM users WHERE email = $1', [email]);
-    res.json({ message: `Deleted user ${email}` });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// ── Podcasts ──────────────────────────────────────────────────────────────────
+// ── Podcast studio bookings (renting the physical studio) ─────────────────────
 router.get('/podcasts/availability', getAvailability);
 router.post('/podcasts/reserve', authenticate, reserveSlot);
+router.post('/podcasts/reserve-series', authenticate, reserveSeries);
+router.put('/podcasts/series/:seriesId/pay', authenticate, paySeriesFromWallet);
 router.get('/podcasts/my-bookings', authenticate, getMyBookings);
+router.put('/podcasts/:id/extend', authenticate, extendPodcastBooking);
+router.put('/podcasts/:id/cancel', authenticate, cancelPodcastBooking);
+
+// ── Reviews ───────────────────────────────────────────────────────────────────
+router.post('/reviews', authenticate, createReview);
+
+// ── Podcast content (shows a creator publishes + their episodes) ──────────────
+router.post('/shows', authenticate, upload.fields([{ name: 'cover', maxCount: 1 }]), createShow);
+router.get('/shows', getAllShows);
+router.get('/shows/mine', authenticate, getMyShows);
+router.get('/shows/:id', getShow);
+router.post('/shows/:id/episodes', authenticate, upload.fields([{ name: 'cover', maxCount: 1 }, { name: 'audio', maxCount: 1 }]), createEpisode);
+
+// ── Favorites (starred pages) ──────────────────────────────────────────────────
+router.get('/favorites', authenticate, getFavorites);
+router.post('/favorites', authenticate, addFavorite);
+router.delete('/favorites', authenticate, removeFavorite);
+
+// ── Global search ────────────────────────────────────────────────────────────
+router.get('/search', authenticate, globalSearch);
+
+// ── Arella AI chat ──────────────────────────────────────────────────────────
+router.post('/chat', authenticate, chatLimiter, sendChatMessage);
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
-router.post('/auth/register', register);
-router.post('/auth/login', login);
+router.post('/auth/register', authLimiter, register);
+router.post('/auth/login', authLimiter, login);
 router.get('/auth/me', authenticate, getMe);
 router.put('/auth/profile', authenticate, updateProfile);
+router.put('/auth/avatar', authenticate, (req, res, next) => {
+  // Multer throws outside the normal Express flow — no global error handler
+  // exists in this app, so without catching it here a bad file (too large,
+  // wrong type) would fall through to Express's default HTML error page
+  // instead of the clean JSON error the frontend expects.
+  avatarUpload.single('avatar')(req, res, (err: any) => {
+    if (err) { res.status(400).json({ message: err.message || 'Upload failed' }); return; }
+    next();
+  });
+}, uploadAvatar);
 router.put('/auth/password', authenticate, changePassword);
-router.post('/auth/verify-email', authenticate, verifyEmail);
-router.post('/auth/resend-verification', resendVerification);
-router.post('/auth/forgot-password', forgotPassword);
-router.post('/auth/reset-password', resetPassword);
+router.delete('/auth/account', authenticate, deleteAccount);
+router.post('/auth/become-screen-owner', authenticate, becomeScreenOwner);
+
+router.post('/auth/2fa/setup', authenticate, setup2FA);
+router.post('/auth/2fa/verify-setup', authenticate, verifySetup2FA);
+router.post('/auth/2fa/disable', authenticate, disable2FA);
+router.post('/auth/2fa/login-verify', verify2FALogin);
+
+router.get('/auth/sessions', authenticate, getSessions);
+router.delete('/auth/sessions/:id', authenticate, revokeSession);
+
+router.put('/auth/notification-preferences', authenticate, updateNotificationPreferences);
+router.put('/auth/display-preferences', authenticate, updateDisplayPreferences);
+router.get('/exchange-rates', authenticate, getExchangeRates);
+router.post('/auth/verify-email', authenticate, otpGuessLimiter, verifyEmail);
+router.post('/auth/resend-verification', otpRequestLimiter, resendVerification);
+router.post('/auth/forgot-password', otpRequestLimiter, forgotPassword);
+router.post('/auth/reset-password', otpGuessLimiter, resetPassword);
 router.post('/auth/accept-terms', authenticate, acceptTerms);
 router.post('/auth/tour-seen', authenticate, markTourSeen);
 
@@ -108,9 +131,8 @@ router.get('/bookings/slots', getBookingSlots);
 router.post('/bookings/reserve', authenticate, reserveSlots);
 router.get('/bookings', authenticate, getBookings);
 router.post('/bookings', authenticate, createBooking);
-router.post('/bookings/confirm', authenticate, confirmBooking);
 router.put('/bookings/:id/cancel', authenticate, cancelBooking);
-router.put('/bookings/:id/status', authenticate, updateBookingStatus);
+router.put('/bookings/:id/extend', authenticate, extendBooking);
 
 // ── Ads / Creatives ───────────────────────────────────────────────────────────
 router.get('/ads', authenticate, getAds);
@@ -131,7 +153,6 @@ router.delete('/screens/:id', authenticate, deleteScreen);
 // ── Finances ──────────────────────────────────────────────────────────────────
 router.get('/finances/balance', authenticate, getBalance);
 router.get('/finances/transactions', authenticate, getTransactions);
-router.post('/finances/add-credits', authenticate, addCredits);
 router.get('/finances/revenue', authenticate, getTotalRevenue);
 
 // ── Plans ─────────────────────────────────────────────────────────────────────
@@ -146,6 +167,8 @@ router.post('/payments/initialize-credits', authenticate, initializeCreditPaymen
 router.get('/payments/verify/:reference', authenticate, verifyPayment);
 router.post('/payments/webhook/monnify', monnifyWebhook); // No auth — Monnify signs with HMAC
 router.post('/payments/reserved-account', authenticate, createReservedAccount);
+router.get('/payments/cards', authenticate, getSavedCards);
+router.delete('/payments/cards/:id', authenticate, deleteSavedCard);
 
 // Paystack (alternative gateway)
 router.post('/payments/paystack/initialize', authenticate, initializePaystackPayment);
@@ -158,6 +181,9 @@ router.post('/creative-requests', authenticate, submitCreativeRequest);
 router.get('/creative-requests/mine', authenticate, getMyCreativeRequests);
 router.get('/creative-requests/all', authenticate, getAllCreativeRequests);
 router.put('/creative-requests/:id/status', authenticate, updateCreativeRequestStatus);
+
+router.post('/support/tickets', authenticate, submitTicket);
+router.get('/support/tickets/mine', authenticate, getMyTickets);
 
 // ── Notifications ────────────────────────────────────────────────────────────
 router.get('/notifications', authenticate, getNotifications);
