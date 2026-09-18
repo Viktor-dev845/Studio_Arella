@@ -163,13 +163,13 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
               <div style={{ display: 'flex', gap: 16, padding: '0 14px', marginBottom: 12, marginTop: 8 }}>
                 <button
                   onClick={() => setFavTab('favorites')}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: F, fontSize: 13, fontWeight: favTab === 'favorites' ? 700 : 600, color: favTab === 'favorites' ? theme.color.text1 : theme.color.text4 }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: F, fontSize: 13, fontWeight: favTab === 'favorites' ? 500 : 400, color: favTab === 'favorites' ? theme.color.text1 : theme.color.text4 }}
                 >
                   Favorites
                 </button>
                 <button
                   onClick={() => setFavTab('recently')}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: F, fontSize: 13, fontWeight: favTab === 'recently' ? 700 : 600, color: favTab === 'recently' ? theme.color.text1 : theme.color.text4 }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: F, fontSize: 13, fontWeight: favTab === 'recently' ? 500 : 400, color: favTab === 'recently' ? theme.color.text1 : theme.color.text4 }}
                 >
                   Recently
                 </button>
@@ -182,8 +182,8 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                     </li>
                   ) : favorites.map((f) => (
                     <li key={f.path} style={{ padding: '4px 14px', display: 'flex', alignItems: 'center', gap: 10, borderRadius: 8 }}>
-                      <div style={{ width: 5, height: 5, borderRadius: '50%', background: theme.color.text3, flexShrink: 0 }} />
-                      <Link href={f.path} onClick={onClose} style={{ fontSize: 14, color: theme.color.text1, textDecoration: 'none', fontWeight: 600, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#D4D4D8', flexShrink: 0 }} />
+                      <Link href={f.path} onClick={onClose} style={{ fontSize: 14, color: theme.color.text1, textDecoration: 'none', fontWeight: 500, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {f.label}
                       </Link>
                     </li>
@@ -195,8 +195,8 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                     </li>
                   ) : recentPages.map((p) => (
                     <li key={p.path} style={{ padding: '4px 14px', display: 'flex', alignItems: 'center', gap: 10, borderRadius: 8 }}>
-                      <div style={{ width: 5, height: 5, borderRadius: '50%', background: theme.color.text3, flexShrink: 0 }} />
-                      <Link href={p.path} onClick={onClose} style={{ fontSize: 14, color: theme.color.text1, textDecoration: 'none', fontWeight: 600, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#D4D4D8', flexShrink: 0 }} />
+                      <Link href={p.path} onClick={onClose} style={{ fontSize: 14, color: theme.color.text1, textDecoration: 'none', fontWeight: 500, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {p.label}
                       </Link>
                     </li>
@@ -206,7 +206,7 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
 
               {/* Dashboards Category */}
               <div style={{ marginBottom: 24 }}>
-                <p style={{ fontSize: 11, fontWeight: 600, color: theme.color.text4, padding: '0 14px', marginBottom: 8, letterSpacing: '0.04em' }}>
+                <p style={{ fontSize: 13, fontWeight: 400, color: theme.color.text3, padding: '0 14px', marginBottom: 8 }}>
                   Dashboards
                 </p>
                 <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -288,7 +288,7 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
 
               {/* Pages Category */}
               <div style={{ marginBottom: 24 }}>
-                <p style={{ fontSize: 11, fontWeight: 600, color: theme.color.text4, padding: '0 14px', marginBottom: 8, letterSpacing: '0.04em' }}>
+                <p style={{ fontSize: 13, fontWeight: 400, color: theme.color.text3, padding: '0 14px', marginBottom: 8 }}>
                   Pages
                 </p>
                 <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
