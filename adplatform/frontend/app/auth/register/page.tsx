@@ -50,8 +50,8 @@ function PasswordStrength({ password }: { password: string }) {
 
 export default function RegisterPage() {
   const [form, setForm] = useState({
-    first_name: '', last_name: '', email: '', password: '', confirm_password: '',
-    business_name: '', phone: '',
+    fullname: '', email: '', password: '', confirm_password: '',
+    agreeToTerms: false
   });
   const [showPw, setShowPw] = useState(false);
   const [showConfirmPw, setShowConfirmPw] = useState(false);
@@ -68,29 +68,39 @@ export default function RegisterPage() {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const inputStyle: React.CSSProperties = {
-    width: '100%', padding: '13px 14px', background: theme.color.surface,
-    border: `1px solid ${theme.color.border2}`, borderRadius: 4, fontSize: 13,
-    fontFamily: F, color: theme.color.text1, outline: 'none', boxSizing: 'border-box',
-    transition: 'border-color 0.2s', fontWeight: 500
+    width: '100%', height: 64, padding: '0 24px', background: '#FFFFFF',
+    border: '1px solid #8692A6', borderRadius: 6, fontSize: 14,
+    fontFamily: 'inherit', color: '#494949', outline: 'none', boxSizing: 'border-box',
+    transition: 'all 0.2s', fontWeight: 400
   };
-  const onFocus = (e: any) => { e.target.style.borderColor = '#D4AF37'; };
-  const onBlur  = (e: any) => { e.target.style.borderColor = theme.color.border2; };
+  const onFocus = (e: any) => { 
+    e.target.style.borderColor = '#D4AF37'; 
+    e.target.style.boxShadow = '0px 4px 10px 3px rgba(0, 0, 0, 0.11)';
+  };
+  const onBlur  = (e: any) => { 
+    e.target.style.borderColor = '#8692A6'; 
+    e.target.style.boxShadow = 'none';
+  };
 
   const labelStyle: React.CSSProperties = {
-    fontSize: 12, fontWeight: 500, color: theme.color.text3, display: 'block',
-    marginBottom: 6,
+    fontSize: 16, fontWeight: 400, color: '#696F79', display: 'block',
+    marginBottom: 8,
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.first_name.trim())    { toast('Please enter your first name', 'error'); return; }
-    if (!form.last_name.trim())     { toast('Please enter your last name', 'error'); return; }
-    if (!form.email.trim())         { toast('Please enter your email', 'error'); return; }
-    if (!form.phone.trim())         { toast('Please enter your phone number', 'error'); return; }
-    if (form.password.length < 6)   { toast('Password must be at least 6 characters', 'error'); return; }
+    const names = form.fullname.trim().split(' ');
+    const first_name = names[0] || '';
+    const last_name = names.slice(1).join(' ') || '';
+
+    if (!first_name) { toast('Please enter your full name', 'error'); return; }
+    if (!form.email.trim()) { toast('Please enter your email', 'error'); return; }
+    if (form.password.length < 6) { toast('Password must be at least 6 characters', 'error'); return; }
     if (form.password !== form.confirm_password) { toast('Passwords do not match', 'error'); return; }
+    if (!form.agreeToTerms) { toast('You must agree to the terms & conditions', 'error'); return; }
+    
     try {
-      await register(form.first_name, form.last_name, form.email, form.password, form.business_name || undefined, form.phone || undefined);
+      await register(first_name, last_name, form.email, form.password);
       setShowOtpModal(true);
       setTimeout(() => inputRefs.current[0]?.focus(), 100);
     } catch (err: any) {
@@ -203,46 +213,31 @@ export default function RegisterPage() {
             <Link href="/auth/login" style={{ color: '#D4AF37', fontWeight: 600, textDecoration: 'none' }}>Sign in</Link>
           </p>
 
-          <GoogleButton label="Sign up with Google" 
-             style={{ background: theme.color.surface, color: theme.color.text1, border: `1px solid ${theme.color.border}`, boxShadow: '0 2px 4px rgba(0,0,0,0.02)', fontWeight: 600 }} 
+          <GoogleButton label="Google" 
+             style={{ background: '#FFFFFF', color: '#000000', border: '1px solid #D4AF37', borderRadius: 5, fontWeight: 500, height: 44, width: 126, margin: '0 auto', display: 'flex', justifyContent: 'center' }} 
+             iconStyle={{ width: 22, height: 22 }}
           />
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, margin: '24px 0' }}>
-            <div style={{ flex: 1, height: 1, background: theme.color.surface2 }} />
-            <span style={{ fontSize: 12, color: '#475569', fontWeight: 500 }}>Or continue with</span>
-            <div style={{ flex: 1, height: 1, background: theme.color.surface2 }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, margin: '32px 0 24px' }}>
+            <div style={{ flex: 1, height: 1, background: '#DBDBDB' }} />
+            <span style={{ fontSize: 13, color: '#121212', fontWeight: 400 }}>Or continue with</span>
+            <div style={{ flex: 1, height: 1, background: '#DBDBDB' }} />
           </div>
 
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label style={labelStyle}>First name*</label>
-                <input type="text" placeholder="Invictus" value={form.first_name} onChange={e => setForm({ ...form, first_name: e.target.value })} required autoFocus style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
-              </div>
-              <div>
-                <label style={labelStyle}>Last name*</label>
-                <input type="text" placeholder="Innocent" value={form.last_name} onChange={e => setForm({ ...form, last_name: e.target.value })} required style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
-              </div>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <div>
+              <label style={labelStyle}>Your fullname*</label>
+              <input type="text" placeholder="Invictus Innocent" value={form.fullname} onChange={e => setForm({ ...form, fullname: e.target.value })} required autoFocus style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
             </div>
             <div>
               <label style={labelStyle}>Email address*</label>
               <input type="email" placeholder="Enter your email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} required style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-               <div>
-                  <label style={labelStyle}>Business name <span style={{fontWeight:400, color:theme.color.text4}}>(optional)</span></label>
-                  <input type="text" placeholder="Brand name" value={form.business_name} onChange={e => setForm({ ...form, business_name: e.target.value })} style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
-               </div>
-               <div>
-                  <label style={labelStyle}>Phone*</label>
-                  <input type="tel" placeholder="08012345678" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} required style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
-               </div>
-            </div>
             <div>
               <label style={labelStyle}>Password*</label>
               <div style={{ position: 'relative' }}>
                 <input type={showPw ? 'text' : 'password'} placeholder="Enter password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} required style={{ ...inputStyle, paddingRight: 60 }} onFocus={onFocus} onBlur={onBlur} />
-                <button type="button" onClick={() => setShowPw(p => !p)} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text1, fontWeight: 600, fontSize: 11 }}>{showPw ? 'Hide' : 'Show'}</button>
+                <button type="button" onClick={() => setShowPw(p => !p)} style={{ position: 'absolute', right: 24, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#000000', fontWeight: 400, fontSize: 12 }}>{showPw ? 'Hide' : 'Show'}</button>
               </div>
               <PasswordStrength password={form.password} />
             </div>
@@ -250,16 +245,22 @@ export default function RegisterPage() {
               <label style={labelStyle}>Confirm password*</label>
               <div style={{ position: 'relative' }}>
                 <input type={showConfirmPw ? 'text' : 'password'} placeholder="Confirm password" value={form.confirm_password} onChange={e => setForm({ ...form, confirm_password: e.target.value })} required style={{ ...inputStyle, paddingRight: 60 }} onFocus={onFocus} onBlur={onBlur} />
-                <button type="button" onClick={() => setShowConfirmPw(p => !p)} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text1, fontWeight: 600, fontSize: 11 }}>{showConfirmPw ? 'Hide' : 'Show'}</button>
+                <button type="button" onClick={() => setShowConfirmPw(p => !p)} style={{ position: 'absolute', right: 24, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#000000', fontWeight: 400, fontSize: 12 }}>{showConfirmPw ? 'Hide' : 'Show'}</button>
               </div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginTop: 12, marginBottom: 8 }}>
-              <input type="checkbox" id="terms" required style={{ marginTop: 2, accentColor: '#D4AF37', cursor: 'pointer', width: 16, height: 16, borderRadius: 4, border: `1px solid ${theme.color.border2}` }} />
-              <label htmlFor="terms" style={{ fontSize: 13, color: theme.color.text3, lineHeight: 1.5, cursor: 'pointer', fontWeight: 500 }}>
-                I agree to terms & conditions. Read terms & conditions <Link href="/terms" style={{ color: '#D4AF37', textDecoration: 'none', fontWeight: 500 }}>here</Link>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 4 }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
+                <div style={{ width: 20, height: 20, borderRadius: 3, background: form.agreeToTerms ? '#D4AF37' : 'transparent', border: `1px solid ${form.agreeToTerms ? '#D4AF37' : '#8692A6'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}>
+                  {form.agreeToTerms && <FaCheck size={12} color="#fff" />}
+                </div>
+                <input type="checkbox" checked={form.agreeToTerms} onChange={(e) => setForm({ ...form, agreeToTerms: e.target.checked })} style={{ display: 'none' }} />
+                <span style={{ fontSize: 16, color: '#696F79', fontWeight: 400 }}>
+                  I agree to terms & conditions. Read terms & conditions <span style={{ color: '#D4AF37' }}>here</span>
+                </span>
               </label>
             </div>
-            <AnimatedButton type="submit" loading={isLoading} loadingText="Creating account" style={{ width: '100%', padding: '14px', background: '#D4AF37', color: '#0F172A', borderRadius: 6, fontSize: 15, fontWeight: 700, border: 'none', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(212,175,55,0.2)' }}>
+            <AnimatedButton type="submit" loading={isLoading} loadingText="Creating account..." style={{ width: '100%', height: 64, background: '#D4AF37', color: '#121212', borderRadius: 6, fontSize: 16, fontWeight: 300, border: 'none', cursor: 'pointer', transition: 'all 0.2s' }}>
               Register Account
             </AnimatedButton>
           </form>
