@@ -237,8 +237,8 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                       style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 12,
-                        padding: '10px 14px',
+                        gap: 10,
+                        padding: '9px 14px',
                         borderRadius: 10,
                         textDecoration: 'none',
                         fontSize: 14,
@@ -248,7 +248,8 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                       }}
                       className="sidebar-item"
                     >
-                      <ShoppingCart size={17} strokeWidth={2} style={{ color: theme.color.text1 }} />
+                      <ChevronRight size={13} color={theme.color.text4} />
+                      <ShoppingCart size={16} strokeWidth={2} style={{ color: theme.color.text1 }} />
                       <span>Cart</span>
                     </Link>
                   </li>
@@ -261,8 +262,8 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                       style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 12,
-                        padding: '10px 14px',
+                        gap: 10,
+                        padding: '9px 14px',
                         borderRadius: 10,
                         textDecoration: 'none',
                         fontSize: 14,
@@ -272,7 +273,8 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                       }}
                       className="sidebar-item"
                     >
-                      <ClipboardList size={17} strokeWidth={2} style={{ color: theme.color.text1 }} />
+                      <ChevronRight size={13} color={theme.color.text4} />
+                      <ClipboardList size={16} strokeWidth={2} style={{ color: theme.color.text1 }} />
                       <span>My Bookings</span>
                     </Link>
                   </li>
@@ -293,8 +295,8 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                       style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 12,
-                        padding: '10px 14px',
+                        gap: 10,
+                        padding: '9px 14px',
                         borderRadius: 10,
                         textDecoration: 'none',
                         fontSize: 14,
@@ -304,129 +306,52 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                       }}
                       className="sidebar-item"
                     >
-                      <User size={17} strokeWidth={2} style={{ color: theme.color.text1 }} />
+                      <ChevronRight size={13} color={theme.color.text4} />
+                      <User size={16} strokeWidth={2} style={{ color: theme.color.text1 }} />
                       <span>User Profile</span>
                     </Link>
-                  </li>
-                  
-                  {/* Overview (Pages) */}
-                  <li>
-                    <Link
-                      href="/overview"
-                      onClick={onClose}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 12,
-                        padding: '10px 14px',
-                        borderRadius: 10,
-                        textDecoration: 'none',
-                        fontSize: 14,
-                        fontWeight: pathname === '/overview' ? 700 : 500,
-                        color: theme.color.text1,
-                        background: pathname === '/overview' ? theme.color.surface2 : 'transparent',
-                      }}
-                      className="sidebar-item"
-                    >
-                      <LayoutDashboard size={17} strokeWidth={2} style={{ color: theme.color.text1 }} />
-                      <span>Overview</span>
-                    </Link>
-                  </li>
 
-                  {/* Podcasts */}
-                  <li>
-                    <Link
-                      href="/podcast"
-                      onClick={onClose}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 12,
-                        padding: '10px 14px',
-                        borderRadius: 10,
-                        textDecoration: 'none',
-                        fontSize: 14,
-                        fontWeight: pathname.startsWith('/podcast') ? 700 : 500,
-                        color: theme.color.text1,
-                        background: pathname.startsWith('/podcast') ? theme.color.surface2 : 'transparent',
-                      }}
-                      className="sidebar-item"
-                    >
-                      <Mic size={17} strokeWidth={2} style={{ color: theme.color.text1 }} />
-                      <span>Podcasts</span>
-                    </Link>
-                  </li>
-
-                  {/* Campaigns */}
-                  <li>
-                    <Link
-                      href="/campaigns"
-                      onClick={onClose}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 12,
-                        padding: '10px 14px',
-                        borderRadius: 10,
-                        textDecoration: 'none',
-                        fontSize: 14,
-                        fontWeight: pathname === '/campaigns' ? 700 : 500,
-                        color: theme.color.text1,
-                        background: pathname === '/campaigns' ? theme.color.surface2 : 'transparent',
-                      }}
-                      className="sidebar-item"
-                    >
-                      <Megaphone size={17} strokeWidth={2} style={{ color: theme.color.text1 }} />
-                      <span>Campaigns</span>
-                    </Link>
-                  </li>
-
-                  {/* Ads */}
-                  <li>
-                    <Link
-                      href="/ads"
-                      onClick={onClose}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 12,
-                        padding: '10px 14px',
-                        borderRadius: 10,
-                        textDecoration: 'none',
-                        fontSize: 14,
-                        fontWeight: pathname === '/ads' ? 700 : 500,
-                        color: theme.color.text1,
-                        background: pathname === '/ads' ? theme.color.surface2 : 'transparent',
-                      }}
-                      className="sidebar-item"
-                    >
-                      <Film size={17} strokeWidth={2} style={{ color: theme.color.text1 }} />
-                      <span>Ads</span>
-                    </Link>
-                  </li>
-
-                  {/* Followers */}
-                  <li>
-                    <Link
-                      href="/followers"
-                      onClick={onClose}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 12,
-                        padding: '10px 14px',
-                        borderRadius: 10,
-                        textDecoration: 'none',
-                        fontSize: 14,
-                        fontWeight: pathname === '/followers' ? 700 : 500,
-                        color: theme.color.text1,
-                        background: pathname === '/followers' ? theme.color.surface2 : 'transparent',
-                      }}
-                      className="sidebar-item"
-                    >
-                      <User size={17} strokeWidth={2} style={{ color: theme.color.text1 }} />
-                      <span>Followers</span>
-                    </Link>
+                    {/* Submenu under User Profile matching screenshot */}
+                    <ul style={{ listStyle: 'none', margin: '4px 0 6px 36px', padding: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                      <li>
+                        <Link href="/dashboard" style={{ fontSize: 13, color: theme.color.text2, textDecoration: 'none', fontWeight: 500, padding: '4px 8px', display: 'block', borderRadius: 6 }} className="sidebar-item">
+                          Overview
+                        </Link>
+                      </li>
+                      <li>
+                        <Link 
+                          href="/podcast" 
+                          style={{ 
+                            fontSize: 13, 
+                            color: pathname.startsWith('/podcast') ? theme.color.text1 : theme.color.text2, 
+                            textDecoration: 'none', 
+                            fontWeight: pathname.startsWith('/podcast') ? 700 : 500, 
+                            padding: '6px 10px', 
+                            display: 'block', 
+                            borderRadius: 8,
+                            background: pathname.startsWith('/podcast') ? theme.color.surface2 : 'transparent',
+                          }} 
+                          className="sidebar-item"
+                        >
+                          Podcasts
+                        </Link>
+                      </li>
+                      <li>
+                        <Link href="/campaigns" style={{ fontSize: 13, color: pathname === '/campaigns' ? theme.color.text1 : theme.color.text2, textDecoration: 'none', fontWeight: pathname === '/campaigns' ? 700 : 500, padding: '4px 8px', display: 'block', borderRadius: 6 }} className="sidebar-item">
+                          Campaigns
+                        </Link>
+                      </li>
+                      <li>
+                        <Link href="/ads" style={{ fontSize: 13, color: pathname === '/ads' ? theme.color.text1 : theme.color.text2, textDecoration: 'none', fontWeight: pathname === '/ads' ? 700 : 500, padding: '4px 8px', display: 'block', borderRadius: 6 }} className="sidebar-item">
+                          Ads
+                        </Link>
+                      </li>
+                      <li>
+                        <Link href="/followers" style={{ fontSize: 13, color: pathname === '/followers' ? theme.color.text1 : theme.color.text2, textDecoration: 'none', fontWeight: pathname === '/followers' ? 700 : 500, padding: '4px 8px', display: 'block', borderRadius: 6 }} className="sidebar-item">
+                          Followers
+                        </Link>
+                      </li>
+                    </ul>
                   </li>
 
                   {/* Wallet */}
@@ -437,8 +362,8 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                       style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 12,
-                        padding: '10px 14px',
+                        gap: 10,
+                        padding: '9px 14px',
                         borderRadius: 10,
                         textDecoration: 'none',
                         fontSize: 14,
@@ -448,7 +373,8 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                       }}
                       className="sidebar-item"
                     >
-                      <Wallet size={17} strokeWidth={2} style={{ color: theme.color.text1 }} />
+                      <ChevronRight size={13} color={theme.color.text4} />
+                      <Wallet size={16} strokeWidth={2} style={{ color: theme.color.text1 }} />
                       <span>Wallet</span>
                     </Link>
                   </li>
@@ -461,8 +387,8 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                       style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 12,
-                        padding: '10px 14px',
+                        gap: 10,
+                        padding: '9px 14px',
                         borderRadius: 10,
                         textDecoration: 'none',
                         fontSize: 14,
@@ -472,7 +398,8 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                       }}
                       className="sidebar-item"
                     >
-                      <FileText size={17} strokeWidth={2} style={{ color: theme.color.text1 }} />
+                      <ChevronRight size={13} color={theme.color.text4} />
+                      <FileText size={16} strokeWidth={2} style={{ color: theme.color.text1 }} />
                       <span>Blog</span>
                     </Link>
                   </li>
