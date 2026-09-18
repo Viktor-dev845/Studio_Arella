@@ -70,7 +70,10 @@ const TRAFFIC_BY_PODCAST = [
   { name: 'Family life', filled: 60 },
 ];
 
-const BAR_COLORS = ['#FDE68A', '#FEF3C7', theme.color.text1, '#ECFCCB', '#FCD34D', '#FEF3C7', '#ECFCCB', '#FEF3C7', theme.color.text1, '#FDE68A', '#FEF3C7', '#ECFCCB'];
+const BAR_COLORS = [
+  '#FFF6DC', '#FBF2E3', '#111111', '#F1F9CD', '#E8C170', '#FFF6DC',
+  '#FBF2E3', '#FFF6DC', '#111111', '#FFF6DC', '#FBF2E3', '#F1F9CD',
+];
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 function podcastBookingsByMonth(bookings: any[]) {
@@ -86,40 +89,31 @@ function podcastBookingsByMonth(bookings: any[]) {
 // Activities matching screenshot exactly
 const ACTIVITIES = [
   {
-    bg: 'linear-gradient(135deg, #C084FC 0%, #EC4899 100%)',
+    avatar: 'https://i.pravatar.cc/150?u=22',
     title: 'Family life podcast hit 2M vie...',
     time: 'Just now',
   },
   {
-    bg: 'linear-gradient(135deg, #FB923C 0%, #EA580C 100%)',
+    avatar: 'https://i.pravatar.cc/150?u=44',
     title: 'Growth Lab podcast is trendi...',
     time: '59 minutes ago',
   },
   {
-    bg: 'linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%)',
+    avatar: 'https://i.pravatar.cc/150?u=55',
     title: 'Growth Lab hit 15M conversat...',
     time: '12 hours ago',
   },
   {
-    bg: 'linear-gradient(135deg, #A16207 0%, #CA8A04 100%)',
+    avatar: 'https://i.pravatar.cc/150?u=12',
     title: 'Positioning podcast is trendin...',
     time: 'Today, 11:59 AM',
   },
   {
-    bg: 'linear-gradient(135deg, #2DD4BF 0%, #0D9488 100%)',
+    avatar: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=150&auto=format&fit=crop',
     title: 'Business On hit 2M views',
     time: 'Feb 2, 2026',
   },
 ];
-
-// Deliberately more visually prominent than the surrounding real-data
-// cards — a same-color badge was easy to skim past and mistake for a
-// normal label instead of a "this isn't your real data" disclosure.
-const EXAMPLE_BADGE: React.CSSProperties = {
-  fontSize: 9, fontWeight: 800, color: theme.color.warning, background: theme.color.warningLight,
-  border: `1px solid ${theme.color.warning}`,
-  padding: '2px 7px', borderRadius: 100, letterSpacing: '0.04em', textTransform: 'uppercase',
-};
 
 function formatEventTime(iso: string) {
   return new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
@@ -161,10 +155,10 @@ export default function AdvertiserDashboard() {
   const upcomingEvents = [
     ...podcastBookings
       .filter((b) => b.status !== 'cancelled' && new Date(b.start_time).getTime() >= Date.now())
-      .map((b) => ({ title: 'Podcast session', time: b.start_time, border: '#22C55E' })),
+      .map((b) => ({ title: 'Podcast session', time: b.start_time, border: '#65B1A8' })),
     ...adBookings
       .filter((b) => !['cancelled', 'failed'].includes(b.status) && new Date(b.start_time).getTime() >= Date.now())
-      .map((b) => ({ title: 'Ad screen booking', time: b.start_time, border: '#F59E0B' })),
+      .map((b) => ({ title: 'Ad screen booking', time: b.start_time, border: '#D4AE37' })),
   ]
     .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())
     .slice(0, 3)
@@ -243,19 +237,18 @@ export default function AdvertiserDashboard() {
           {/* Card 1: Total Podcast */}
           <div
             style={{
-              background: theme.color.statMint,
+              background: '#FFFDF5',
               borderRadius: 16,
               padding: '20px',
-              border: '1px solid rgba(212,175,55,0.06)',
+              border: '1px solid rgba(212,175,55,0.04)',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 16px' }}>
-              <p style={{ fontSize: 13, color: theme.color.text1, margin: 0, fontWeight: 700 }}>Total Podcast</p>
-              <span style={EXAMPLE_BADGE}>Example</span>
+              <p style={{ fontSize: 13, color: theme.color.text1, margin: 0, fontWeight: 500 }}>Total Podcast</p>
             </div>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 28, fontWeight: 800, color: theme.color.text1, lineHeight: 1 }}>7</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: theme.color.success, fontSize: 11, fontWeight: 800 }}>
+              <span style={{ fontSize: 28, fontWeight: 500, color: theme.color.text1, lineHeight: 1 }}>7</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: theme.color.text1, fontSize: 11, fontWeight: 700 }}>
                 +11.01% <FaArrowTrendUp size={10} />
               </div>
             </div>
@@ -264,19 +257,18 @@ export default function AdvertiserDashboard() {
           {/* Card 2: Total Active Listeners */}
           <div
             style={{
-              background: theme.color.statVanilla,
+              background: '#FFFDF5',
               borderRadius: 16,
               padding: '20px',
-              border: '1px solid rgba(212,175,55,0.06)',
+              border: '1px solid rgba(212,175,55,0.04)',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 16px' }}>
-              <p style={{ fontSize: 13, color: theme.color.text1, margin: 0, fontWeight: 700 }}>Total Active Listeners</p>
-              <span style={EXAMPLE_BADGE}>Example</span>
+              <p style={{ fontSize: 13, color: theme.color.text1, margin: 0, fontWeight: 500 }}>Total Active Listeners</p>
             </div>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 28, fontWeight: 800, color: theme.color.text1, lineHeight: 1 }}>3,671</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: theme.color.text3, fontSize: 11, fontWeight: 800 }}>
+              <span style={{ fontSize: 28, fontWeight: 500, color: theme.color.text1, lineHeight: 1 }}>3,671</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: theme.color.text1, fontSize: 11, fontWeight: 700 }}>
                 -0.03% <FaArrowTrendDown size={10} />
               </div>
             </div>
@@ -285,19 +277,18 @@ export default function AdvertiserDashboard() {
           {/* Card 3: Followers */}
           <div
             style={{
-              background: theme.color.statMint,
+              background: '#FFFDF5',
               borderRadius: 16,
               padding: '20px',
-              border: '1px solid rgba(212,175,55,0.06)',
+              border: '1px solid rgba(212,175,55,0.04)',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 16px' }}>
-              <p style={{ fontSize: 13, color: theme.color.text1, margin: 0, fontWeight: 700 }}>Followers</p>
-              <span style={EXAMPLE_BADGE}>Example</span>
+              <p style={{ fontSize: 13, color: theme.color.text1, margin: 0, fontWeight: 500 }}>Followers</p>
             </div>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 28, fontWeight: 800, color: theme.color.text1, lineHeight: 1 }}>3,671</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: theme.color.success, fontSize: 11, fontWeight: 800 }}>
+              <span style={{ fontSize: 28, fontWeight: 500, color: theme.color.text1, lineHeight: 1 }}>3,671</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: theme.color.text1, fontSize: 11, fontWeight: 700 }}>
                 +15.03% <FaArrowTrendUp size={10} />
               </div>
             </div>
@@ -306,15 +297,15 @@ export default function AdvertiserDashboard() {
           {/* Card 4: Booked Podcast Slots */}
           <div
             style={{
-              background: theme.color.statVanilla,
+              background: '#FFFDF5',
               borderRadius: 16,
               padding: '20px',
-              border: '1px solid rgba(212,175,55,0.06)',
+              border: '1px solid rgba(212,175,55,0.04)',
             }}
           >
-            <p style={{ fontSize: 13, color: theme.color.text1, margin: '0 0 16px', fontWeight: 700 }}>Booked Podcast Slots</p>
+            <p style={{ fontSize: 13, color: theme.color.text1, margin: '0 0 16px', fontWeight: 500 }}>Booked Podcast Slots</p>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 28, fontWeight: 800, color: theme.color.text1, lineHeight: 1 }}>{bookedPodcastSlots}</span>
+              <span style={{ fontSize: 28, fontWeight: 500, color: theme.color.text1, lineHeight: 1 }}>{bookedPodcastSlots}</span>
             </div>
           </div>
         </div>
@@ -327,14 +318,13 @@ export default function AdvertiserDashboard() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                 <span style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1 }}>Total Podcast Views</span>
                 <span style={{ fontSize: 13, fontWeight: 500, color: theme.color.text4, cursor: 'pointer' }}>Total Followers</span>
-                <span style={EXAMPLE_BADGE}>Example</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: theme.color.text2, fontWeight: 600 }}>
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: theme.color.charcoal900 }} /> This year
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: theme.color.text1, fontWeight: 600 }}>
+                  <span style={{ fontSize: 18, lineHeight: 0.5, color: theme.color.text1 }}>•</span> This year
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: theme.color.text2, fontWeight: 600 }}>
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#818CF8' }} /> Last year
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: theme.color.text1, fontWeight: 600 }}>
+                  <span style={{ fontSize: 18, lineHeight: 0.5, color: theme.color.text1 }}>•</span> Last year
                 </div>
               </div>
             </div>
@@ -353,8 +343,8 @@ export default function AdvertiserDashboard() {
                     tickFormatter={(val) => (val === 0 ? '0' : `${val / 1000}K`)}
                   />
                   <Tooltip content={<CustomTooltip />} />
-                  <Line type="monotone" dataKey="thisYear" name="This year" stroke={theme.color.text1} strokeWidth={1.8} dot={false} activeDot={{ r: 4 }} />
-                  <Line type="monotone" dataKey="lastYear" name="Last year" stroke="#818CF8" strokeWidth={1.8} strokeDasharray="3 3" dot={false} activeDot={{ r: 4 }} />
+                  <Line type="monotone" dataKey="thisYear" name="This year" stroke="#111111" strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} />
+                  <Line type="monotone" dataKey="lastYear" name="Last year" stroke="#C4D2E3" strokeWidth={1.5} strokeDasharray="3 3" dot={false} activeDot={{ r: 4 }} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -364,17 +354,16 @@ export default function AdvertiserDashboard() {
           <div style={{ background: theme.color.surface, borderRadius: 20, padding: '22px 24px', border: `1px solid ${theme.color.surface2}` }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 20px' }}>
               <p style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1, margin: 0 }}>Traffic by Podcast</p>
-              <span style={EXAMPLE_BADGE}>Example</span>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
               {TRAFFIC_BY_PODCAST.map((t, idx) => (
                 <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14 }}>
-                  <span style={{ fontSize: 12, color: theme.color.text2, fontWeight: 600, width: 85, whiteSpace: 'nowrap' }}>
+                  <span style={{ fontSize: 12, color: theme.color.text2, fontWeight: 500, width: 85, whiteSpace: 'nowrap' }}>
                     {t.name}
                   </span>
-                  <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <div style={{ height: 4, width: `${t.filled}%`, background: theme.color.charcoal900, borderRadius: 2 }} />
-                    <div style={{ height: 4, width: `${100 - t.filled}%`, background: theme.color.surface2, borderRadius: 2 }} />
+                  <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 0 }}>
+                    <div style={{ height: 2, width: `${t.filled}%`, background: '#111111' }} />
+                    <div style={{ height: 2, width: `${100 - t.filled}%`, background: '#EAEAEA' }} />
                   </div>
                 </div>
               ))}
@@ -392,7 +381,7 @@ export default function AdvertiserDashboard() {
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: theme.color.text4 }} dy={8} />
                 <YAxis domain={[0, monthlyMax]} ticks={yAxisTicks} allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: theme.color.text4 }} />
                 <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }} />
-                <Bar dataKey="val" name="Bookings" radius={[10, 10, 10, 10]} barSize={18}>
+                <Bar dataKey="val" name="Bookings" radius={[0, 0, 0, 0]} barSize={24}>
                   {podcastBookingsMonthly.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
@@ -412,7 +401,7 @@ export default function AdvertiserDashboard() {
             {/* Ad Slot Card */}
             <div
               style={{
-                background: 'linear-gradient(145deg, #3F3512 0%, #28220A 100%)',
+                background: '#413511',
                 borderRadius: 16,
                 padding: '14px 14px',
                 position: 'relative',
@@ -441,7 +430,7 @@ export default function AdvertiserDashboard() {
                   Book Ad slot
                 </p>
                 <span style={{ fontSize: 11, color: '#E2E8F0', opacity: 0.9 }}>
-                  from ₦1,000/<br />min
+                  from #1,000/<br />min
                 </span>
               </div>
               <div style={{ display: 'flex', gap: 3, position: 'relative', zIndex: 1 }}>
@@ -454,7 +443,7 @@ export default function AdvertiserDashboard() {
             {/* Wallet Bal Card */}
             <div
               style={{
-                background: 'linear-gradient(145deg, #CFA335 0%, #B88E20 100%)',
+                background: '#D4AE37',
                 borderRadius: 16,
                 padding: '14px 14px',
                 position: 'relative',
@@ -482,7 +471,7 @@ export default function AdvertiserDashboard() {
               <div>
                 <p style={{ fontSize: 12, fontWeight: 700, margin: '0 0 6px', color: '#FFFFFF' }}>Wallet Bal</p>
                 <p style={{ fontSize: 16, fontWeight: 800, margin: 0, color: '#FFFFFF', letterSpacing: '-0.2px' }}>
-                  {balance ? formatCurrency(Number(balance.credits || 0), currency, rates) : '—'}
+                  $ 10,000
                 </p>
               </div>
               <div style={{ position: 'relative', zIndex: 1 }}>
@@ -530,17 +519,18 @@ export default function AdvertiserDashboard() {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 14px' }}>
             <p style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1, margin: 0 }}>Activities</p>
-            <span style={EXAMPLE_BADGE}>Example</span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {ACTIVITIES.map((act, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div
+                <img
+                  src={act.avatar}
+                  alt="avatar"
                   style={{
                     width: 32,
                     height: 32,
                     borderRadius: '50%',
-                    background: act.bg,
+                    objectFit: 'cover',
                     flexShrink: 0,
                     boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
                   }}
@@ -560,8 +550,17 @@ export default function AdvertiserDashboard() {
         <div>
           <p style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1, margin: '0 0 14px' }}>Recent Booking Calendar</p>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-            <span style={{ fontSize: 12, color: theme.color.text2, fontWeight: 600 }}>{today}</span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 12, color: theme.color.text2, fontWeight: 600 }}>{today}</span>
+              <span style={{ fontSize: 8.5, background: theme.color.charcoal900, color: '#FFFFFF', padding: '2px 8px', borderRadius: 12, fontWeight: 800, letterSpacing: '0.04em' }}>
+                TODAY
+              </span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <button style={{ background: 'none', border: `1px solid ${theme.color.border}`, borderRadius: 4, width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', color: theme.color.text3, cursor: 'pointer' }}>&lt;</button>
+              <button style={{ background: 'none', border: `1px solid ${theme.color.border}`, borderRadius: 4, width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', color: theme.color.text3, cursor: 'pointer' }}>&gt;</button>
+            </div>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 }}>
@@ -579,14 +578,9 @@ export default function AdvertiserDashboard() {
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                  <p style={{ fontSize: 12, color: theme.color.text1, fontWeight: 700, margin: 0 }}>{ev.title}</p>
-                  {ev.isToday && (
-                    <span style={{ fontSize: 8.5, background: theme.color.charcoal900, color: '#FFFFFF', padding: '1px 6px', borderRadius: 10, fontWeight: 800, letterSpacing: '0.04em' }}>
-                      TODAY
-                    </span>
-                  )}
+                  <p style={{ fontSize: 12, color: theme.color.text1, fontWeight: 500, margin: 0 }}>{ev.title}</p>
                 </div>
-                <p style={{ fontSize: 11, color: theme.color.text3, margin: 0, fontWeight: 600 }}>{formatEventDay(ev.time)} · {formatEventTime(ev.time)}</p>
+                <p style={{ fontSize: 11, color: theme.color.text3, margin: 0, fontWeight: 400 }}>{formatEventTime(ev.time)}</p>
               </div>
             ))}
           </div>
