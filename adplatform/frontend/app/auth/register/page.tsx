@@ -276,7 +276,7 @@ export default function RegisterPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(10px)' }}
+              style={{ position: 'absolute', inset: 0, background: 'rgba(162, 161, 168, 0.2)', backdropFilter: 'blur(10px)' }}
             />
             
             {/* Modal Content */}
@@ -286,7 +286,7 @@ export default function RegisterPage() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              style={{ position: 'relative', background: theme.color.surface, borderRadius: 16, padding: '40px', width: '100%', maxWidth: 460, boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', textAlign: 'center' }}
+              style={{ position: 'relative', background: '#FFFFFF', borderRadius: 20, padding: '40px 45px', width: '100%', maxWidth: 500, textAlign: 'center' }}
             >
               {showSuccessModal ? (
                 <>
@@ -307,15 +307,15 @@ export default function RegisterPage() {
                 </>
               ) : (
                 <>
-                  <h2 style={{ fontSize: 20, fontWeight: 700, color: theme.color.text1, margin: '0 0 32px' }}>
-                    We sent you a code. Check your email
+                  <h2 style={{ fontSize: 20, fontWeight: 700, color: '#101828', margin: '0 0 40px' }}>
+                    We sent you a code. Check your work email
                   </h2>
 
-                  <div style={{ textAlign: 'left', marginBottom: 8 }}>
-                    <label style={{ fontSize: 13, fontWeight: 600, color: theme.color.text3 }}>Enter code*</label>
+                  <div style={{ textAlign: 'left', marginBottom: 12 }}>
+                    <label style={{ fontSize: 16, fontWeight: 400, color: '#696F79' }}>Enter code*</label>
                   </div>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, marginBottom: 8 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 15, marginBottom: 12 }}>
                     {otpCode.map((digit, index) => (
                       <input
                         key={index}
@@ -329,38 +329,42 @@ export default function RegisterPage() {
                         onPaste={handleOtpPaste}
                         disabled={verifying}
                         style={{
-                          width: '100%', height: 56, background: theme.color.surface,
-                          border: `1px solid ${digit || index === 0 ? '#D4AF37' : theme.color.border}`,
-                          borderRadius: 8, fontSize: 20, fontWeight: 700, color: theme.color.text1,
+                          width: 70, height: 66, background: '#FFFFFF',
+                          border: `1px solid ${digit || index === 0 ? '#D4AF37' : 'rgba(134, 146, 166, 0.5)'}`,
+                          borderRadius: 8, fontSize: 14, fontWeight: 600, color: digit || index === 0 ? '#D4AF37' : '#7152F3',
                           textAlign: 'center', outline: 'none',
-                          boxShadow: digit || index === 0 ? '0 0 0 2px rgba(212,175,55,0.1)' : 'none',
                           transition: 'all 0.2s',
                         }}
-                        onFocus={(e) => { e.target.style.borderColor = '#D4AF37'; e.target.style.boxShadow = '0 0 0 2px rgba(212,175,55,0.1)'; }}
-                        onBlur={(e) => { if(!digit && index !== 0) { e.target.style.borderColor = theme.color.border; e.target.style.boxShadow = 'none'; } }}
+                        onFocus={(e) => { e.target.style.borderColor = '#D4AF37'; }}
+                        onBlur={(e) => { if(!digit && index !== 0) { e.target.style.borderColor = 'rgba(134, 146, 166, 0.5)'; } }}
                       />
                     ))}
                   </div>
 
-                  <div style={{ textAlign: 'right', marginBottom: 24 }}>
-                    <span style={{ fontSize: 13, color: theme.color.text4, fontWeight: 500 }}>
+                  <div style={{ textAlign: 'right', marginBottom: 32 }}>
+                    <span style={{ fontSize: 12, color: '#696F79', fontWeight: 400 }}>
                       Didn't get code?{' '}
-                      <button onClick={handleResend} disabled={resending} style={{ background: 'none', border: 'none', color: '#D4AF37', fontWeight: 600, cursor: resending ? 'wait' : 'pointer', padding: 0 }}>
+                      <button onClick={handleResend} disabled={resending} style={{ background: 'none', border: 'none', color: '#D4AF37', fontWeight: 400, fontSize: 12, cursor: resending ? 'wait' : 'pointer', padding: 0 }}>
                         {resending ? 'Sending...' : 'Resend'}
                       </button>
                     </span>
                   </div>
 
-                  <p style={{ fontSize: 14, color: '#475569', fontWeight: 500, margin: '0 0 32px', lineHeight: 1.5 }}>
-                    Enter the verification code sent to your email
+                  <p style={{ fontSize: 20, color: '#101828', fontWeight: 400, margin: '0 0 40px', lineHeight: '26px' }}>
+                    Enter the verification code sent to your work email
                   </p>
 
                   <AnimatedButton
                     onClick={() => handleVerify(otpCode.join(''))}
                     disabled={verifying || otpCode.some(v => v === '')}
                     loading={verifying}
-                    loadingText="Verifying..."
-                    style={{ width: '100%', padding: '14px', background: '#D4AF37', color: '#0F172A', borderRadius: 6, fontSize: 15, fontWeight: 700, border: 'none', cursor: (verifying || otpCode.some(v => v === '')) ? 'not-allowed' : 'pointer', opacity: (verifying || otpCode.some(v => v === '')) ? 0.7 : 1, transition: 'all 0.2s' }}
+                    loadingText="..."
+                    style={{ 
+                      width: 108, height: 50, margin: '0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center',
+                      background: '#D4AF37', color: '#121212', borderRadius: 6, fontSize: 16, fontWeight: 300, 
+                      border: 'none', cursor: (verifying || otpCode.some(v => v === '')) ? 'not-allowed' : 'pointer', 
+                      opacity: (verifying || otpCode.some(v => v === '')) ? 0.7 : 1, transition: 'all 0.2s' 
+                    }}
                   >
                     Continue
                   </AnimatedButton>
