@@ -356,6 +356,11 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                           Analytics
                         </Link>
                       </li>
+                      <li>
+                        <Link href="/followers" style={{ fontSize: 13, color: pathname === '/followers' ? theme.color.text1 : theme.color.text2, textDecoration: 'none', fontWeight: pathname === '/followers' ? 700 : 500, padding: '4px 8px', display: 'block', borderRadius: 6 }} className="sidebar-item">
+                          Followers
+                        </Link>
+                      </li>
                     </ul>
                   </li>
 

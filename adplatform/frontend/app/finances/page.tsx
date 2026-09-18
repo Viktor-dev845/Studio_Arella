@@ -25,21 +25,26 @@ import {
   ChevronLeft, 
   ChevronRight, 
   X, 
-  ArrowUpRight, 
-  ArrowDownLeft, 
-  ArrowRight, 
-  Clock, 
-  ShieldCheck, 
-  Receipt, 
-  Building2, 
+  ArrowUpRight,
+  ArrowDownLeft,
+  ArrowRight,
+  ArrowLeft,
+  Clock,
+  ShieldCheck,
+  Receipt,
+  Building2,
   Globe,
   Sparkles
 } from 'lucide-react';
 import Link from 'next/link';
 import { theme } from '@/lib/theme';
 import { useAuthStore } from '@/store/authStore';
+import LinkBankModal from '@/components/wallet/LinkBankModal';
 
 const F = theme.font.body;
+const BANKS = ['GTBank', 'Wema Bank', 'Access Bank', 'Zenith Bank', 'UBA', 'First Bank', 'Union Bank', 'Sterling Bank'];
+const CARD_VERIFICATION_AMOUNT = 50;
+type FundStep = 'cards' | 'confirm' | 'otp' | 'success' | 'add-card' | 'add-card-otp' | 'add-card-success';
 
 export default function FinancesPage() {
   const { user } = useAuthStore();
@@ -52,11 +57,26 @@ export default function FinancesPage() {
   // Modals
   const [showFundModal, setShowFundModal] = useState(false);
   const [showReservedModal, setShowReservedModal] = useState(false);
+  const [showLinkBankModal, setShowLinkBankModal] = useState(false);
   const [selectedReceipt, setSelectedReceipt] = useState<any | null>(null);
   
   // Fund Wallet state
   const [amount, setAmount] = useState('25000');
-  const [adding, setAdding] = useState(false);
+  const [fundStep, setFundStep] = useState<FundStep>('cards');
+  const [savedCards, setSavedCards] = useState<any[]>([]);
+  const [loadingCards, setLoadingCards] = useState(false);
+  const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
+  const [paying, setPaying] = useState(false);
+  // Confirm-screen fields shown to match the design — charging a saved card
+  // uses its stored authorization_code only, so name/number/expiry/cvv here
+  // are never read or sent anywhere.
+  const [confirmCardForm, setConfirmCardForm] = useState({ name: '', number: '', expiry: '', cvv: '' });
+  const [otpDigits, setOtpDigits] = useState(['', '', '', '']);
+  const [otpReference, setOtpReference] = useState<string | null>(null);
+  const [verifyingOtp, setVerifyingOtp] = useState(false);
+  const [fundSuccessMessage, setFundSuccessMessage] = useState('');
+  const [newCardForm, setNewCardForm] = useState({ bank: BANKS[0], name: '', number: '', expiry: '', cvv: '' });
+  const [addingCard, setAddingCard] = useState(false);
   
   // Reserved Account KYC state
   const [idType, setIdType] = useState('bvn');
@@ -125,26 +145,117 @@ export default function FinancesPage() {
     setTimeout(() => setCopiedBankAcct(false), 3000);
   };
 
-  // Fund wallet initialization
-  const handleAdd = async () => {
-    const val = parseFloat(amount);
-    if (!val || val < 1000) { 
-      toast('Minimum top-up is ₦1,000 (1 minute)', 'error'); 
-      return; 
-    }
-    setAdding(true);
+  // ── Fund Wallet wizard: amount → choose/add a card → confirm → (OTP) → success ──
+  const resetFundModal = () => {
+    setShowFundModal(false);
+    setFundStep('cards');
+    setSelectedCardId(null);
+    setConfirmCardForm({ name: '', number: '', expiry: '', cvv: '' });
+    setOtpDigits(['', '', '', '']);
+    setOtpReference(null);
+    setNewCardForm({ bank: BANKS[0], name: '', number: '', expiry: '', cvv: '' });
+  };
+
+  const refreshSavedCards = () => {
+    setLoadingCards(true);
+    api.get('/payments/cards').then((r) => setSavedCards(r.data?.cards || [])).catch(() => {}).finally(() => setLoadingCards(false));
+  };
+
+  const openFundModal = () => {
+    setShowFundModal(true);
+    setFundStep('cards');
+    setSelectedCardId(null);
+    refreshSavedCards();
+  };
+
+  const finishFundSuccess = (message: string) => {
+    setFundSuccessMessage(message);
+    setFundStep('success');
+    fetchData();
+  };
+
+  const handleFundWithSavedCard = async () => {
+    if (!selectedCardId) { toast('Please choose a card', 'error'); return; }
+    if (!(parseFloat(amount) >= 1000)) { toast('Minimum top-up is ₦1,000', 'error'); return; }
+    setPaying(true);
     try {
-      const { data } = await api.post('/payments/initialize-credits', { amount: val });
-      if (data?.checkout_url) {
-        window.location.href = data.checkout_url;
+      const res = await api.post('/payments/topup/charge-authorization', { amount: parseFloat(amount), card_id: selectedCardId });
+      if (res.data?.status === 'send_otp') {
+        setOtpReference(res.data.reference);
+        setOtpDigits(['', '', '', '']);
+        setFundStep('otp');
       } else {
-        toast('Could not start checkout — please try again.', 'error');
+        finishFundSuccess(res.data?.message || 'Wallet funded successfully');
       }
     } catch (err: any) {
-      toast(err?.response?.data?.message || 'Could not start checkout — please try again.', 'error');
+      toast(err?.response?.data?.message || 'Payment failed. Please try a different card.', 'error');
     } finally {
-      setAdding(false);
+      setPaying(false);
     }
+  };
+
+  const handleSubmitFundOtp = async () => {
+    const otp = otpDigits.join('');
+    if (otp.length !== 4) { toast('Please enter the 4-digit code', 'error'); return; }
+    setVerifyingOtp(true);
+    try {
+      const res = await api.post('/payments/charge/submit-otp', { reference: otpReference, otp });
+      finishFundSuccess(res.data?.message || 'Wallet funded successfully');
+    } catch (err: any) {
+      toast(err?.response?.data?.message || 'Incorrect code. Please try again.', 'error');
+    } finally {
+      setVerifyingOtp(false);
+    }
+  };
+
+  // "Add a bank card" — Paystack has no tokenize-only endpoint, so this charges
+  // a small ₦50 verification amount then immediately credits it back to the
+  // wallet (see backend addCardVerification), so adding a card is free in practice.
+  const handleAddCard = async () => {
+    const [expMonth, expYear] = newCardForm.expiry.split('/').map((s) => s.trim());
+    if (!newCardForm.name || !newCardForm.number || !expMonth || !expYear || !newCardForm.cvv) {
+      toast('Please fill in your card details', 'error');
+      return;
+    }
+    setAddingCard(true);
+    try {
+      const res = await api.post('/payments/cards/add', {
+        card: { bank: newCardForm.bank, name: newCardForm.name, number: newCardForm.number, cvv: newCardForm.cvv, expiry_month: expMonth, expiry_year: expYear },
+      });
+      if (res.data?.status === 'send_otp') {
+        setOtpReference(res.data.reference);
+        setOtpDigits(['', '', '', '']);
+        setFundStep('add-card-otp');
+      } else {
+        setFundSuccessMessage(res.data?.message || 'Card added successfully');
+        setFundStep('add-card-success');
+      }
+    } catch (err: any) {
+      toast(err?.response?.data?.message || 'Could not add this card. Please try again.', 'error');
+    } finally {
+      setAddingCard(false);
+    }
+  };
+
+  const handleSubmitAddCardOtp = async () => {
+    const otp = otpDigits.join('');
+    if (otp.length !== 4) { toast('Please enter the 4-digit code', 'error'); return; }
+    setVerifyingOtp(true);
+    try {
+      const res = await api.post('/payments/charge/submit-otp', { reference: otpReference, otp });
+      setFundSuccessMessage(res.data?.message || 'Card added successfully');
+      setFundStep('add-card-success');
+    } catch (err: any) {
+      toast(err?.response?.data?.message || 'Incorrect code. Please try again.', 'error');
+    } finally {
+      setVerifyingOtp(false);
+    }
+  };
+
+  const backToCardsAfterAdd = () => {
+    refreshSavedCards();
+    setNewCardForm({ bank: BANKS[0], name: '', number: '', expiry: '', cvv: '' });
+    setFundStep('cards');
   };
 
   // Create reserved account
@@ -260,9 +371,31 @@ export default function FinancesPage() {
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <button 
+              <button
+                onClick={() => setShowLinkBankModal(true)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  background: theme.color.surface,
+                  border: `1px solid ${theme.color.border}`,
+                  borderRadius: 10,
+                  padding: '10px 18px',
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: theme.color.text2,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  fontFamily: F
+                }}
+              >
+                <Building2 size={14} color="#C69A2C" />
+                <span>Link a bank</span>
+              </button>
+
+              <button
                 onClick={() => setShowReservedModal(true)}
-                style={{ 
+                style={{
                   display: 'flex', 
                   alignItems: 'center', 
                   gap: 8, 
@@ -283,7 +416,7 @@ export default function FinancesPage() {
               </button>
 
               <button 
-                onClick={() => setShowFundModal(true)}
+                onClick={openFundModal}
                 style={{ 
                   display: 'flex', 
                   alignItems: 'center', 
@@ -464,7 +597,7 @@ export default function FinancesPage() {
 
               <div style={{ position: 'relative', zIndex: 1, marginTop: 16, display: 'flex', gap: 10 }}>
                 <button 
-                  onClick={() => setShowFundModal(true)}
+                  onClick={openFundModal}
                   style={{ 
                     flex: 1, 
                     padding: '8px 14px', 
@@ -1010,114 +1143,292 @@ export default function FinancesPage() {
         <AnimatePresence>
           {showFundModal && (
             <>
-              <motion.div 
-                key="fund-bd" 
-                initial={{ opacity: 0 }} 
-                animate={{ opacity: 1 }} 
+              <motion.div
+                key="fund-bd"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                onClick={() => setShowFundModal(false)}
-                style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.5)', zIndex: 200, backdropFilter: 'blur(4px)' }} 
+                onClick={resetFundModal}
+                style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.5)', zIndex: 200, backdropFilter: 'blur(4px)' }}
               />
               <div style={{ position: 'fixed', inset: 0, zIndex: 201, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, pointerEvents: 'none' }}>
-                <motion.div 
+                <motion.div
                   key="fund-card"
-                  initial={{ opacity: 0, scale: 0.94, y: 16 }} 
+                  initial={{ opacity: 0, scale: 0.94, y: 16 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.96, y: 10 }} 
+                  exit={{ opacity: 0, scale: 0.96, y: 10 }}
                   transition={{ duration: 0.2 }}
                   style={{ width: '100%', maxWidth: 440, pointerEvents: 'auto' }}
                 >
                   <div style={{ background: theme.color.surface, borderRadius: 24, padding: '28px 24px', boxShadow: '0 20px 40px rgba(0,0,0,0.15)', fontFamily: F }}>
-                    
+
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <div style={{ width: 36, height: 36, borderRadius: 10, background: '#FFFDF5', border: '1px solid #FDE68A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <CreditCard size={18} color="#C69A2C" />
-                        </div>
-                        <h2 style={{ fontSize: 18, fontWeight: 800, color: theme.color.text1, margin: 0 }}>
-                          Fund Wallet
-                        </h2>
-                      </div>
-                      <button 
-                        onClick={() => setShowFundModal(false)}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text4, padding: 4 }}
-                      >
-                        <X size={18} />
-                      </button>
-                    </div>
-
-                    <p style={{ fontSize: 13, color: theme.color.text3, margin: '0 0 20px', lineHeight: 1.5 }}>
-                      Add funds instantly using Debit Card, USSD, or Bank Transfer. Minimum top-up is ₦1,000 (1 airtime minute).
-                    </p>
-
-                    {/* Quick Amount Presets */}
-                    <p style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: theme.color.text3, margin: '0 0 8px' }}>
-                      Select Amount Preset
-                    </p>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 18 }}>
-                      {['5000', '10000', '25000', '50000', '100000', '250000'].map(preset => (
+                      {['confirm', 'otp', 'add-card', 'add-card-otp'].includes(fundStep) ? (
                         <button
-                          key={preset}
-                          onClick={() => setAmount(preset)}
-                          style={{
-                            padding: '10px 4px',
-                            borderRadius: 10,
-                            border: amount === preset ? '1.5px solid #C69A2C' : `1px solid ${theme.color.border}`,
-                            background: amount === preset ? '#FFFDF5' : '#FFFFFF',
-                            color: amount === preset ? '#C69A2C' : theme.color.text2,
-                            fontSize: 12,
-                            fontWeight: 800,
-                            cursor: 'pointer',
-                            transition: 'all 0.15s',
-                            fontFamily: F
+                          onClick={() => {
+                            if (fundStep === 'confirm' || fundStep === 'otp') setFundStep('cards');
+                            else if (fundStep === 'add-card-otp') setFundStep('add-card');
+                            else if (fundStep === 'add-card') setFundStep('cards');
                           }}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text3, padding: 4, display: 'flex' }}
                         >
-                          ₦{Number(preset).toLocaleString()}
+                          <ArrowLeft size={18} />
                         </button>
-                      ))}
+                      ) : (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <div style={{ width: 36, height: 36, borderRadius: 10, background: '#FFFDF5', border: '1px solid #FDE68A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <CreditCard size={18} color="#C69A2C" />
+                          </div>
+                        </div>
+                      )}
+                      <h2 style={{ fontSize: 16, fontWeight: 800, color: theme.color.text1, margin: 0 }}>
+                        {fundStep === 'cards' && 'Fund Wallet'}
+                        {fundStep === 'confirm' && `Fund with ${savedCards.find((c) => c.id === selectedCardId)?.bank || savedCards.find((c) => c.id === selectedCardId)?.card_type || 'card'} card`}
+                        {fundStep === 'otp' && 'Verify payment'}
+                        {fundStep === 'success' && ''}
+                        {fundStep === 'add-card' && 'Add a bank card'}
+                        {fundStep === 'add-card-otp' && 'Verify card'}
+                        {fundStep === 'add-card-success' && ''}
+                      </h2>
+                      {fundStep !== 'success' && fundStep !== 'add-card-success' ? (
+                        <button
+                          onClick={resetFundModal}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text4, padding: 4 }}
+                        >
+                          <X size={18} />
+                        </button>
+                      ) : <span style={{ width: 26 }} />}
                     </div>
 
-                    {/* Custom Input */}
-                    <div style={{ marginBottom: 16 }}>
-                      <Input 
-                        label="Or Enter Custom Amount (₦)" 
-                        type="number" 
-                        placeholder="e.g. 15000" 
-                        value={amount} 
-                        onChange={e => setAmount(e.target.value)} 
-                      />
-                    </div>
+                    {fundStep === 'cards' && (
+                      <>
+                        {loadingCards ? (
+                          <p style={{ textAlign: 'center', fontSize: 12.5, color: theme.color.text3, padding: '16px 0' }}>Loading your saved cards…</p>
+                        ) : savedCards.length > 0 ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14 }}>
+                            {savedCards.map((c) => (
+                              <div
+                                key={c.id}
+                                onClick={() => setSelectedCardId(c.id)}
+                                style={{
+                                  padding: '12px 16px', borderRadius: 12, cursor: 'pointer',
+                                  border: selectedCardId === c.id ? '1.5px solid #C69A2C' : `1px solid ${theme.color.border}`,
+                                  background: selectedCardId === c.id ? '#FFFDF5' : theme.color.surface,
+                                }}
+                              >
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+                                  <span style={{
+                                    width: 16, height: 16, borderRadius: '50%', flexShrink: 0,
+                                    border: `2px solid ${selectedCardId === c.id ? '#C69A2C' : theme.color.border2}`,
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                  }}>
+                                    {selectedCardId === c.id && <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#C69A2C' }} />}
+                                  </span>
+                                  <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: theme.color.text1 }}>Fund with {c.bank || c.card_type || 'card'}</p>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 26 }}>
+                                  <span style={{ fontSize: 11.5, color: theme.color.text4, fontFamily: 'monospace' }}>•••••••••••{c.last4 || '••••'}</span>
+                                  {c.cardholder_name && <span style={{ fontSize: 11.5, color: theme.color.text3 }}>{c.cardholder_name}</span>}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p style={{ textAlign: 'center', fontSize: 12.5, color: theme.color.text3, marginBottom: 14 }}>You have no saved cards yet.</p>
+                        )}
 
-                    {/* Airtime Conversion Summary */}
-                    <div style={{ background: theme.color.bg, border: `1px solid ${theme.color.border}`, borderRadius: 12, padding: '12px 16px', marginBottom: 20 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                        <span style={{ fontSize: 12, color: theme.color.text3, fontWeight: 600 }}>Equivalent Airtime:</span>
-                        <span style={{ fontSize: 13, fontWeight: 800, color: theme.color.text1 }}>
-                          ~{Math.floor((Number(amount) || 0) / 1000)} broadcast minutes
-                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setFundStep('add-card')}
+                          style={{ display: 'block', width: '100%', textAlign: 'center', background: 'none', border: 'none', cursor: 'pointer', fontSize: 12.5, fontWeight: 700, color: '#C69A2C', marginBottom: 16 }}
+                        >
+                          Add a bank card
+                        </button>
+
+                        {savedCards.length > 0 && (
+                          <Button
+                            onClick={() => {
+                              if (!selectedCardId) { toast('Please choose a card', 'error'); return; }
+                              const c = savedCards.find((x) => x.id === selectedCardId);
+                              setConfirmCardForm({
+                                name: c?.cardholder_name || '',
+                                number: c?.last4 ? `•••• •••• •••• ${c.last4}` : '',
+                                expiry: c?.exp_month && c?.exp_year ? `${c.exp_month}/${c.exp_year}` : '',
+                                cvv: '',
+                              });
+                              setFundStep('confirm');
+                            }}
+                            disabled={!selectedCardId}
+                            variant="primary"
+                            style={{ width: '100%', background: '#C69A2C' }}
+                          >
+                            Continue
+                          </Button>
+                        )}
+                      </>
+                    )}
+
+                    {fundStep === 'confirm' && (
+                      <>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 18 }}>
+                          <input
+                            placeholder="Enter amount"
+                            type="number"
+                            value={amount}
+                            onChange={(e) => setAmount(e.target.value)}
+                            style={{ width: '100%', padding: '12px 14px', borderRadius: 12, border: `1px solid ${theme.color.border}`, background: theme.color.surface, color: theme.color.text1, fontSize: 13, fontFamily: F }}
+                          />
+                          <input
+                            placeholder="Card holder's name"
+                            value={confirmCardForm.name}
+                            onChange={(e) => setConfirmCardForm({ ...confirmCardForm, name: e.target.value })}
+                            style={{ width: '100%', padding: '12px 14px', borderRadius: 12, border: `1px solid ${theme.color.border}`, background: theme.color.surface, color: theme.color.text1, fontSize: 13, fontFamily: F }}
+                          />
+                          <input
+                            placeholder="Card number"
+                            value={confirmCardForm.number}
+                            onChange={(e) => setConfirmCardForm({ ...confirmCardForm, number: e.target.value })}
+                            style={{ width: '100%', padding: '12px 14px', borderRadius: 12, border: `1px solid ${theme.color.border}`, background: theme.color.surface, color: theme.color.text1, fontSize: 13, fontFamily: F }}
+                          />
+                          <div style={{ display: 'flex', gap: 10 }}>
+                            <input
+                              placeholder="Expiry date (MM/YY)"
+                              value={confirmCardForm.expiry}
+                              onChange={(e) => setConfirmCardForm({ ...confirmCardForm, expiry: e.target.value })}
+                              style={{ width: '50%', padding: '12px 14px', borderRadius: 12, border: `1px solid ${theme.color.border}`, background: theme.color.surface, color: theme.color.text1, fontSize: 13, fontFamily: F }}
+                            />
+                            <input
+                              placeholder="CVV"
+                              value={confirmCardForm.cvv}
+                              onChange={(e) => setConfirmCardForm({ ...confirmCardForm, cvv: e.target.value })}
+                              style={{ width: '50%', padding: '12px 14px', borderRadius: 12, border: `1px solid ${theme.color.border}`, background: theme.color.surface, color: theme.color.text1, fontSize: 13, fontFamily: F }}
+                            />
+                          </div>
+                        </div>
+                        <Button loading={paying} loadingText="Funding…" onClick={handleFundWithSavedCard} variant="primary" style={{ width: '100%', background: '#C69A2C' }}>
+                          Fund wallet
+                        </Button>
+                      </>
+                    )}
+
+                    {fundStep === 'otp' && (
+                      <>
+                        <p style={{ textAlign: 'center', fontSize: 13, fontWeight: 700, color: theme.color.text1, margin: '0 0 1px' }}>Enter code*</p>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, margin: '16px 0' }}>
+                          {otpDigits.map((d, i) => (
+                            <input
+                              key={i}
+                              id={`fund-otp-${i}`}
+                              value={d}
+                              maxLength={1}
+                              inputMode="numeric"
+                              onChange={(e) => {
+                                const v = e.target.value.replace(/\D/g, '').slice(-1);
+                                const next = [...otpDigits]; next[i] = v; setOtpDigits(next);
+                                if (v && i < 3) document.getElementById(`fund-otp-${i + 1}`)?.focus();
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Backspace' && !otpDigits[i] && i > 0) document.getElementById(`fund-otp-${i - 1}`)?.focus();
+                              }}
+                              style={{ width: 48, height: 48, textAlign: 'center', fontSize: 18, fontWeight: 800, borderRadius: 10, border: `1px solid ${theme.color.border}`, background: theme.color.surface, color: theme.color.text1, fontFamily: F }}
+                            />
+                          ))}
+                        </div>
+                        <p style={{ textAlign: 'center', fontSize: 11.5, color: theme.color.text4, margin: '0 0 4px' }}>
+                          <button type="button" onClick={() => toast("If you didn't receive a code, please try paying again.", 'info')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#C69A2C', fontWeight: 700, fontSize: 11.5 }}>
+                            Didn&apos;t get code? Resend
+                          </button>
+                        </p>
+                        <p style={{ textAlign: 'center', fontSize: 12, color: theme.color.text3, margin: '16px 0 20px' }}>
+                          To authorize this payment, enter the OTP sent to {user?.email ? <strong>{user.email}</strong> : 'the email'} attached to your Studio Arella account
+                        </p>
+                        <Button loading={verifyingOtp} loadingText="Verifying…" onClick={handleSubmitFundOtp} variant="primary" style={{ width: '100%', background: '#C69A2C' }}>
+                          Pay
+                        </Button>
+                      </>
+                    )}
+
+                    {fundStep === 'success' && (
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#C69A2C', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                          <Check size={28} color="#fff" />
+                        </div>
+                        <p style={{ fontSize: 15, fontWeight: 800, color: theme.color.text1, margin: '0 0 24px' }}>{fundSuccessMessage}</p>
+                        <Button onClick={resetFundModal} variant="primary" style={{ width: '100%', background: '#C69A2C' }}>
+                          Finish
+                        </Button>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span style={{ fontSize: 12, color: theme.color.text3, fontWeight: 600 }}>Payment Gateway:</span>
-                        <span style={{ fontSize: 12, fontWeight: 700, color: '#059669' }}>
-                          Monnify (Zero Surcharge)
-                        </span>
-                      </div>
-                    </div>
+                    )}
 
-                    <div style={{ display: 'flex', gap: 10 }}>
-                      <Button onClick={() => setShowFundModal(false)} variant="secondary" style={{ flex: 1 }}>
-                        Cancel
-                      </Button>
-                      <Button 
-                        loading={adding} 
-                        loadingText="Connecting..." 
-                        onClick={handleAdd} 
-                        variant="primary" 
-                        style={{ flex: 1.4, background: '#C69A2C' }}
-                      >
-                        <ArrowRight size={13} /> Proceed to Pay ₦{Number(amount || 0).toLocaleString()}
-                      </Button>
-                    </div>
+                    {fundStep === 'add-card' && (
+                      <>
+                        <p style={{ fontSize: 12, color: theme.color.text3, margin: '0 0 16px', lineHeight: 1.5 }}>
+                          We&apos;ll charge ₦{CARD_VERIFICATION_AMOUNT} to verify this card, then credit it straight back to your wallet — adding a card is free.
+                        </p>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 18 }}>
+                          <select
+                            value={newCardForm.bank}
+                            onChange={(e) => setNewCardForm({ ...newCardForm, bank: e.target.value })}
+                            style={{ width: '100%', padding: '12px 14px', borderRadius: 12, border: `1px solid ${theme.color.border}`, background: theme.color.surface, color: theme.color.text1, fontSize: 13, fontFamily: F }}
+                          >
+                            {BANKS.map((b) => <option key={b} value={b}>{b}</option>)}
+                          </select>
+                          <input placeholder="Card holder's name" value={newCardForm.name} onChange={(e) => setNewCardForm({ ...newCardForm, name: e.target.value })} style={{ width: '100%', padding: '12px 14px', borderRadius: 12, border: `1px solid ${theme.color.border}`, background: theme.color.surface, color: theme.color.text1, fontSize: 13, fontFamily: F }} />
+                          <input placeholder="Card number" value={newCardForm.number} onChange={(e) => setNewCardForm({ ...newCardForm, number: e.target.value })} style={{ width: '100%', padding: '12px 14px', borderRadius: 12, border: `1px solid ${theme.color.border}`, background: theme.color.surface, color: theme.color.text1, fontSize: 13, fontFamily: F }} />
+                          <div style={{ display: 'flex', gap: 10 }}>
+                            <input placeholder="Expiry (MM/YY)" value={newCardForm.expiry} onChange={(e) => setNewCardForm({ ...newCardForm, expiry: e.target.value })} style={{ width: '50%', padding: '12px 14px', borderRadius: 12, border: `1px solid ${theme.color.border}`, background: theme.color.surface, color: theme.color.text1, fontSize: 13, fontFamily: F }} />
+                            <input placeholder="CVV" value={newCardForm.cvv} onChange={(e) => setNewCardForm({ ...newCardForm, cvv: e.target.value })} style={{ width: '50%', padding: '12px 14px', borderRadius: 12, border: `1px solid ${theme.color.border}`, background: theme.color.surface, color: theme.color.text1, fontSize: 13, fontFamily: F }} />
+                          </div>
+                        </div>
+                        <Button loading={addingCard} loadingText="Adding…" onClick={handleAddCard} variant="primary" style={{ width: '100%', background: '#C69A2C' }}>
+                          Add card
+                        </Button>
+                      </>
+                    )}
+
+                    {fundStep === 'add-card-otp' && (
+                      <>
+                        <p style={{ textAlign: 'center', fontSize: 13, fontWeight: 700, color: theme.color.text1, margin: '0 0 1px' }}>Enter code*</p>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, margin: '16px 0' }}>
+                          {otpDigits.map((d, i) => (
+                            <input
+                              key={i}
+                              id={`addcard-otp-${i}`}
+                              value={d}
+                              maxLength={1}
+                              inputMode="numeric"
+                              onChange={(e) => {
+                                const v = e.target.value.replace(/\D/g, '').slice(-1);
+                                const next = [...otpDigits]; next[i] = v; setOtpDigits(next);
+                                if (v && i < 3) document.getElementById(`addcard-otp-${i + 1}`)?.focus();
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Backspace' && !otpDigits[i] && i > 0) document.getElementById(`addcard-otp-${i - 1}`)?.focus();
+                              }}
+                              style={{ width: 48, height: 48, textAlign: 'center', fontSize: 18, fontWeight: 800, borderRadius: 10, border: `1px solid ${theme.color.border}`, background: theme.color.surface, color: theme.color.text1, fontFamily: F }}
+                            />
+                          ))}
+                        </div>
+                        <p style={{ textAlign: 'center', fontSize: 12, color: theme.color.text3, margin: '16px 0 20px' }}>
+                          To authorize this card, enter the OTP sent to {user?.email ? <strong>{user.email}</strong> : 'the email'} attached to your Studio Arella account
+                        </p>
+                        <Button loading={verifyingOtp} loadingText="Verifying…" onClick={handleSubmitAddCardOtp} variant="primary" style={{ width: '100%', background: '#C69A2C' }}>
+                          Pay
+                        </Button>
+                      </>
+                    )}
+
+                    {fundStep === 'add-card-success' && (
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#C69A2C', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                          <Check size={28} color="#fff" />
+                        </div>
+                        <p style={{ fontSize: 15, fontWeight: 800, color: theme.color.text1, margin: '0 0 24px' }}>{fundSuccessMessage}</p>
+                        <Button onClick={backToCardsAfterAdd} variant="primary" style={{ width: '100%', background: '#C69A2C' }}>
+                          Finish
+                        </Button>
+                      </div>
+                    )}
 
                   </div>
                 </motion.div>
@@ -1362,6 +1673,8 @@ export default function FinancesPage() {
             </>
           )}
         </AnimatePresence>
+
+        {showLinkBankModal && <LinkBankModal onClose={() => setShowLinkBankModal(false)} />}
 
         {/* ─── FLOATING "CHAT WITH ARELLA 🌐" WIDGET ─── */}
         <div className="chat-fab-widget" style={{ position: 'fixed', bottom: 32, right: 32, zIndex: 90 }}>
