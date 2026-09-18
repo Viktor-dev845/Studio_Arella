@@ -118,9 +118,8 @@ export default function ChatPage() {
           {/* Outer Chat Box Card (Matching Frame 2121459599) */}
           <div
             style={{
-              background: theme.color.surface2,
+              background: '#F1F1F1', // Light grey matching design
               borderRadius: 24,
-              border: `1px solid ${theme.color.border}`,
               padding: '32px 36px 24px',
               minHeight: 'calc(100vh - 150px)',
               display: 'flex',
@@ -148,32 +147,31 @@ export default function ChatPage() {
                             width: 34,
                             height: 34,
                             borderRadius: '50%',
-                            background: theme.color.surface2,
-                            border: `1px solid ${theme.color.border}`,
+                            background: '#FFFFFF',
+                            border: `1px solid ${theme.color.border2}`,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             flexShrink: 0,
                           }}
                         >
-                          <User size={18} color={theme.color.text3} />
+                          <User size={18} color="#CCA336" />
                         </div>
 
                         {/* User Input Bubble with Edit Pencil */}
                         <div
                           style={{
                             flex: 1,
-                            background: theme.color.surface,
+                            background: 'transparent',
                             border: `1px solid ${theme.color.border2}`,
-                            borderRadius: 14,
+                            borderRadius: 24,
                             padding: '12px 18px',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'space-between',
-                            fontSize: 13,
-                            fontWeight: 600,
-                            color: theme.color.text1,
-                            boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
+                            fontSize: 14,
+                            fontWeight: 500,
+                            color: theme.color.text3,
                           }}
                         >
                           <span>{m.text}</span>
@@ -191,49 +189,34 @@ export default function ChatPage() {
 
                   return (
                     <div key={m.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
-                      {/* Arella AI Globe Avatar */}
+                      {/* Arella AI Orb Avatar */}
                       <div
                         style={{
                           width: 34,
                           height: 34,
                           borderRadius: '50%',
-                          background: 'linear-gradient(135deg, #6366F1 0%, #A855F7 50%, #EC4899 100%)',
-                          padding: 1.5,
+                          background: 'radial-gradient(circle at 30% 30%, #5CEAEA 0%, #D987EF 30%, #FCB902 60%, #C73FCC 100%)',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                           flexShrink: 0,
                           marginTop: 4,
-                          boxShadow: '0 2px 6px rgba(99,102,241,0.2)',
+                          boxShadow: 'inset -3px -3px 6px rgba(0,0,0,0.2), 0 2px 6px rgba(0,0,0,0.1)',
                         }}
                       >
-                        <div
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            background: theme.color.surface,
-                            borderRadius: '50%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                          }}
-                        >
-                          <Globe size={16} color="#4F46E5" />
-                        </div>
                       </div>
 
                       {/* AI Response Card Container */}
                       <div
                         style={{
                           flex: 1,
-                          background: theme.color.surface,
+                          background: '#FFFFFF',
                           borderRadius: 20,
-                          padding: '28px 32px',
-                          border: `1px solid ${theme.color.surface2}`,
-                          boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
-                          fontSize: 13,
-                          color: theme.color.text2,
-                          lineHeight: 1.7,
+                          padding: '32px 36px',
+                          boxShadow: '0 4px 20px rgba(0,0,0,0.02)',
+                          fontSize: 13.5,
+                          color: '#52525B',
+                          lineHeight: 1.8,
                         }}
                       >
                         {m.text.split('\n\n').map((paragraph, idx) => {
@@ -293,22 +276,21 @@ export default function ChatPage() {
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: 8,
-                    background: theme.color.surface,
+                    background: 'transparent',
                     border: `1px solid ${theme.color.border2}`,
                     borderRadius: 24,
-                    padding: '8px 22px',
-                    fontSize: 12,
-                    fontWeight: 700,
-                    color: theme.color.text2,
+                    padding: '10px 24px',
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: theme.color.text3,
                     cursor: 'pointer',
                     fontFamily: F,
-                    boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
                     transition: 'all 0.2s',
                   }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = theme.color.bg; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = theme.color.surface; }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(0,0,0,0.02)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
                 >
-                  <RotateCcw size={13} color={theme.color.text2} />
+                  <RotateCcw size={14} color={theme.color.text3} />
                   <span>Regenerate response</span>
                 </button>
               </div>
@@ -318,7 +300,7 @@ export default function ChatPage() {
 
             {/* Bottom Input Area & Disclaimer */}
             <div style={{ maxWidth: 760, margin: '20px auto 0', width: '100%' }}>
-              <form onSubmit={handleSubmit} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <form onSubmit={handleSubmit} style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                 <input
                   type="text"
                   placeholder="Chat with Arella"
@@ -326,34 +308,32 @@ export default function ChatPage() {
                   onChange={(e) => setInputText(e.target.value)}
                   style={{
                     flex: 1,
-                    padding: '12px 22px',
-                    background: theme.color.surface,
+                    padding: '16px 24px',
+                    background: 'transparent',
                     border: `1px solid ${theme.color.border2}`,
-                    borderRadius: 24,
-                    fontSize: 13,
+                    borderRadius: 30,
+                    fontSize: 14,
                     fontWeight: 500,
                     fontFamily: F,
                     color: theme.color.text1,
                     outline: 'none',
-                    boxShadow: '0 1px 2px rgba(0,0,0,0.02)',
                   }}
-                  onFocus={(e) => { e.currentTarget.style.borderColor = theme.color.gold; }}
+                  onFocus={(e) => { e.currentTarget.style.borderColor = theme.color.text3; }}
                   onBlur={(e) => { e.currentTarget.style.borderColor = theme.color.border2; }}
                 />
 
                 <button
                   type="submit"
                   style={{
-                    padding: '12px 34px',
+                    padding: '16px 36px',
                     background: '#CCA336',
-                    color: '#0F172A',
+                    color: '#000000',
                     border: 'none',
-                    borderRadius: 12,
-                    fontSize: 13,
-                    fontWeight: 800,
+                    borderRadius: 8,
+                    fontSize: 14,
+                    fontWeight: 600,
                     cursor: 'pointer',
                     fontFamily: F,
-                    boxShadow: '0 4px 14px rgba(204,163,54,0.25)',
                     transition: 'all 0.2s',
                     whiteSpace: 'nowrap',
                   }}
