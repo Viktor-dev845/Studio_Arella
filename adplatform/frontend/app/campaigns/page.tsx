@@ -564,25 +564,25 @@ export default function CampaignsPage() {
           {/* ─── CREATE CAMPAIGN: STEP 1 — DETAILS ─── */}
           {createModalOpen && wizardStep === 'details' && (
             <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px] p-4">
-              <div className="bg-white dark:bg-[#111111] rounded-[24px] w-full max-w-[460px] shadow-2xl relative animate-in fade-in zoom-in-95 duration-150 overflow-hidden max-h-[90vh] flex flex-col">
-                <div className="flex items-center justify-between px-7 pt-6 pb-2 flex-shrink-0">
+              <div className="bg-white dark:bg-[#111111] rounded-[24px] w-full max-w-[640px] shadow-2xl relative animate-in fade-in zoom-in-95 duration-150 overflow-hidden max-h-[90vh] flex flex-col">
+                <div className="flex items-center justify-between px-8 pt-7 pb-4 flex-shrink-0">
                   <button onClick={resetWizard} className="p-1 hover:bg-slate-100 dark:hover:bg-white/[0.06] rounded-full text-slate-900 dark:text-slate-50 transition-colors">
                     <ArrowLeft size={20} strokeWidth={2.5} />
                   </button>
-                  <h3 className="text-[16px] font-bold text-slate-900 dark:text-slate-50 absolute left-1/2 -translate-x-1/2">Create campaign</h3>
+                  <h3 className="text-[17px] font-bold text-slate-900 dark:text-slate-50 absolute left-1/2 -translate-x-1/2">Create campaign</h3>
                   <button onClick={resetWizard} className="p-1 hover:bg-slate-100 dark:hover:bg-white/[0.06] rounded-full text-slate-900 dark:text-slate-50 transition-colors">
                     <X size={20} strokeWidth={2.5} />
                   </button>
                 </div>
 
-                <form onSubmit={handleCreateCampaign} className="px-7 pb-7 pt-4 flex flex-col gap-4 overflow-y-auto">
+                <form onSubmit={handleCreateCampaign} className="px-8 pb-8 flex flex-col gap-5 overflow-y-auto">
                   <input
                     type="text"
                     placeholder="Campaign name e.g Independence day special"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required
-                    className="w-full px-4 py-3.5 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[12px] text-[13px] font-medium text-slate-900 dark:text-slate-50 placeholder:text-slate-300 focus:outline-none focus:border-[#C69A2C]"
+                    className="w-full px-5 py-3.5 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[12px] text-[13px] font-medium text-slate-900 dark:text-slate-50 placeholder:text-slate-300 focus:outline-none focus:border-[#C69A2C]"
                   />
 
                   <textarea
@@ -590,7 +590,7 @@ export default function CampaignsPage() {
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     rows={4}
-                    className="w-full px-4 py-3.5 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[12px] text-[13px] font-medium text-slate-900 dark:text-slate-50 placeholder:text-slate-300 focus:outline-none focus:border-[#C69A2C] resize-none"
+                    className="w-full px-5 py-3.5 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[12px] text-[13px] font-medium text-slate-900 dark:text-slate-50 placeholder:text-slate-300 focus:outline-none focus:border-[#C69A2C] resize-none"
                   />
 
                   <input
@@ -599,29 +599,37 @@ export default function CampaignsPage() {
                     value={budget}
                     onChange={(e) => setBudget(e.target.value)}
                     required
-                    className="w-full px-4 py-3.5 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[12px] text-[13px] font-medium text-slate-900 dark:text-slate-50 placeholder:text-slate-300 focus:outline-none focus:border-[#C69A2C]"
+                    className="w-full px-5 py-3.5 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[12px] text-[13px] font-medium text-slate-900 dark:text-slate-50 placeholder:text-slate-300 focus:outline-none focus:border-[#C69A2C]"
                   />
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-5">
                     <div className="relative">
                       <input
-                        type="date"
+                        type={startDate ? "date" : "text"}
+                        onFocus={(e) => (e.target.type = "date")}
+                        onBlur={(e) => (e.target.type = e.target.value ? "date" : "text")}
+                        placeholder="Start date (dd/mm/yyyy)"
                         value={startDate}
                         onChange={(e) => setStartDate(e.target.value)}
-                        className="w-full pl-4 pr-10 py-3.5 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[12px] text-[13px] font-medium text-slate-900 dark:text-slate-50 focus:outline-none focus:border-[#C69A2C] appearance-none"
+                        className="w-full pl-5 pr-10 py-3.5 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[12px] text-[13px] font-medium text-slate-900 dark:text-slate-50 placeholder:text-slate-300 focus:outline-none focus:border-[#C69A2C] appearance-none"
                       />
+                      {!startDate && <Calendar size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />}
                     </div>
                     <div className="relative">
                       <input
-                        type="date"
+                        type={endDate ? "date" : "text"}
+                        onFocus={(e) => (e.target.type = "date")}
+                        onBlur={(e) => (e.target.type = e.target.value ? "date" : "text")}
+                        placeholder="End date (dd/mm/yyyy)"
                         value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
-                        className="w-full pl-4 pr-10 py-3.5 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[12px] text-[13px] font-medium text-slate-900 dark:text-slate-50 focus:outline-none focus:border-[#C69A2C] appearance-none"
+                        className="w-full pl-5 pr-10 py-3.5 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[12px] text-[13px] font-medium text-slate-900 dark:text-slate-50 placeholder:text-slate-300 focus:outline-none focus:border-[#C69A2C] appearance-none"
                       />
+                      {!endDate && <Calendar size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />}
                     </div>
                   </div>
 
-                  <div className="mt-2">
+                  <div>
                     <label className="block text-[13px] font-medium text-slate-900 dark:text-slate-50 mb-3">
                       Upload campaign materials <span className="font-normal text-slate-500">(You can upload multiple files at once)</span>
                     </label>
@@ -636,13 +644,13 @@ export default function CampaignsPage() {
                     />
                     <label
                       htmlFor="campaign-materials-input"
-                      className="flex flex-col items-center justify-center gap-2 border-[1.5px] border-dashed border-[#C69A2C]/50 rounded-[12px] py-8 cursor-pointer hover:border-[#C69A2C] transition-colors bg-white dark:bg-black/20"
+                      className="flex flex-col items-center justify-center gap-2 border-[1.5px] border-dashed border-[#C69A2C]/50 rounded-[12px] py-9 cursor-pointer hover:border-[#C69A2C] transition-colors bg-white dark:bg-black/20"
                     >
                       <div className="w-10 h-10 rounded-[10px] bg-[#C69A2C] flex items-center justify-center mb-1">
                         <Upload size={18} className="text-white" />
                       </div>
                       <span className="text-[13px] font-medium text-slate-900 dark:text-slate-200">Drag & Drop or choose file to upload</span>
-                      <span className="text-[11.5px] text-slate-400 font-medium">Supported formats .jpeg, png, pdf</span>
+                      <span className="text-[11.5px] text-slate-400 font-medium">Supported formats .jpeg, png, pf</span>
                     </label>
                     {materialFiles.length > 0 && (
                       <div className="flex flex-wrap gap-2 mt-3">
@@ -658,14 +666,14 @@ export default function CampaignsPage() {
                     )}
                   </div>
 
-                  <p className="text-[13px] text-slate-900 dark:text-slate-50 mt-1">
+                  <p className="text-[13px] text-slate-900 dark:text-slate-50">
                     Don&apos;t have campaign materials yet?{' '}
                     <button type="button" onClick={() => setWizardStep('creative-service')} className="text-[#C69A2C] font-medium hover:underline">
                       Request Ad creative services
                     </button>
                   </p>
 
-                  <div className="flex items-center justify-end gap-3 mt-4">
+                  <div className="flex items-center justify-end gap-3 mt-2">
                     <button
                       type="button"
                       onClick={resetWizard}
