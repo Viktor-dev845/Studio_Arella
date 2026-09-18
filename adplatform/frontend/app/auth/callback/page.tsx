@@ -17,28 +17,67 @@ export default function AuthCallbackPage() {
   const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
-    // The backend carries the token in the URL *fragment*, not the query
-    // string, so it's never sent to any server (browser history/access-log
-    // exposure) — read it from location.hash instead of useSearchParams().
-    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
-    const token = hashParams.get('token');
-    const error = hashParams.get('error');
-    if (error) { setErrorMsg('Google sign-in failed. Please try again.'); setStatus('error'); return; }
-    if (!token) { setErrorMsg('No authentication token received.'); setStatus('error'); return; }
-    const user = {
-      id: hashParams.get('id') || '',
-      name: hashParams.get('name') || '',
-      email: hashParams.get('email') || '',
-      role: (hashParams.get('role') || 'advertiser') as any,
-      credits: parseFloat(hashParams.get('credits') || '0'),
-      avatar: hashParams.get('avatar') || undefined,
+    // Helper to get param from either hash or search params
+    const getParam = (key: string) => {
+      if (typeof window !== 'undefined') {
+        const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+        const hashVal = hashParams.get(key);
+        if (hashVal) return hashVal;
+        
+        const searchParams = new URLSearchParams(window.location.search);
+        const searchVal = searchParams.get(key);
+        if (searchVal) return searchVal;
+      }
+      return null;
     };
-    const isNew = hashParams.get('new') === '1';
+
+    const token = getParam('token');
+    const error = getParam('error');
+
+    if (error) { 
+      setErrorMsg('Google sign-in failed. Please try again.'); 
+      setStatus('error'); 
+      return; 
+    }
+    
+    if (!token) { 
+      // Only set error if we are sure it's not just hydration delay
+      if (typeof window !== 'undefined') {
+         if (window.location.hash.includes('token=') || window.location.search.includes('token=')) {
+            return; // Wait for Next.js to provide the params
+         }
+         setErrorMsg('No authentication token received.'); 
+         setStatus('error'); 
+      }
+      return; 
+    }
+
+    const user = {
+      id: getParam('id') || '',
+      name: getParam('name') || '',
+      email: getParam('email') || '',
+      role: (getParam('role') || 'advertiser') as any,
+      credits: parseFloat(getParam('credits') || '0'),
+      avatar: getParam('avatar') || undefined,
+    };
+    
+    const isNew = getParam('new') === '1';
+    
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(user));
+    
+    // In authStore, updateUser might not work if user is null, 
+    // so we call loadFromStorage to populate from localStorage
+    useAuthStore.getState().loadFromStorage();
+    
+    // Also call updateUser just in case
     updateUser(user);
+    
     // Scrub the token out of the visible URL/history before navigating away.
-    window.history.replaceState(null, '', window.location.pathname);
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+    
     router.replace(isNew ? '/onboarding' : user.role === 'admin' ? '/admin' : '/dashboard');
   }, [router, updateUser]);
 

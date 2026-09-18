@@ -22,10 +22,10 @@ passport.use(
     },
     async (_accessToken, _refreshToken, profile, done) => {
       try {
-        const email = profile.emails?.[0]?.value;
-        const name = profile.displayName;
-        const avatar = profile.photos?.[0]?.value;
-        const googleId = profile.id;
+        const email = profile.emails?.[0]?.value || null;
+        const name = profile.displayName || null;
+        const avatar = profile.photos?.[0]?.value || null;
+        const googleId = profile.id || null;
 
         if (!email) {
           return done(new Error('No email returned from Google'), false);
