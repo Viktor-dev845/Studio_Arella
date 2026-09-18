@@ -248,6 +248,11 @@ export const payFromWallet: RequestHandler = async (req, res) => {
     } else {
       await client.query("UPDATE bookings SET status = 'active', payment_reference = 'WALLET' WHERE id = $1", [booking_id]);
       await client.query("UPDATE booking_slots SET status = 'active', locked_until = NULL WHERE booking_id = $1", [booking_id]);
+      await client.query(
+        `UPDATE campaigns SET status = 'active', updated_at = NOW()
+         WHERE id = $1 AND status = 'draft'`,
+        [booking.campaign_id]
+      );
     }
 
     await client.query('COMMIT');
@@ -609,6 +614,16 @@ async function processConfirmedPayment(reference: string, meta: any, amountPaid:
       VALUES ($1, 'debit', 'booking', $2, $3, $4)
     `, [meta.user_id, amountPaid, `Paid for booking INV-${baseReference}`, reference]);
 
+    // A booking tied to a campaign paying for the first time is the real
+    // signal that the campaign has actually launched, not just been drafted.
+    if (!isPodcast) {
+      await client.query(
+        `UPDATE campaigns SET status = 'active', updated_at = NOW()
+         WHERE id = (SELECT campaign_id FROM bookings WHERE id = $1) AND status = 'draft'`,
+        [bookingId]
+      );
+    }
+
     if (isPodcast) {
       const booking = await client.query('SELECT * FROM podcast_bookings WHERE id = $1', [bookingId]);
       const b = booking.rows[0];
@@ -758,12 +773,12 @@ export const initializePaystackPayment: RequestHandler = async (req, res) => {
 // the same way most apps actually build this (from a real completed payment,
 // not a separate tokenize-only flow, which Paystack doesn't cleanly support
 // without charging something anyway).
-async function saveCardFromAuthorization(userId: string | undefined, authorization: any) {
+async function saveCardFromAuthorization(userId: string | undefined, authorization: any, cardholderName?: string | null) {
   if (!userId || !authorization?.reusable || !authorization?.authorization_code) return;
   try {
     await pool.query(
-      `INSERT INTO saved_cards (user_id, authorization_code, card_type, last4, exp_month, exp_year, bank)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `INSERT INTO saved_cards (user_id, authorization_code, card_type, last4, exp_month, exp_year, bank, cardholder_name)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        ON CONFLICT (user_id, authorization_code) DO NOTHING`,
       [
         userId,
@@ -773,6 +788,7 @@ async function saveCardFromAuthorization(userId: string | undefined, authorizati
         authorization.exp_month || null,
         authorization.exp_year || null,
         authorization.bank || null,
+        cardholderName || null,
       ]
     );
   } catch (e) {
@@ -1029,7 +1045,7 @@ export const getSavedCards: RequestHandler = async (req, res) => {
   const authReq = req as AuthRequest;
   try {
     const result = await pool.query(
-      `SELECT id, card_type, last4, exp_month, exp_year, bank, is_default, created_at
+      `SELECT id, card_type, last4, exp_month, exp_year, bank, cardholder_name, is_default, created_at
        FROM saved_cards WHERE user_id = $1 ORDER BY is_default DESC, created_at DESC`,
       [authReq.user?.id]
     );
@@ -1059,5 +1075,551 @@ export const deleteSavedCard: RequestHandler = async (req, res) => {
     res.json({ message: 'Card removed' });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// ── Shared: load the pending booking a custom-UI card charge is paying for ───
+// Same lookup already duplicated across initializePayment / payFromWallet /
+// initializePaystackPayment — factored out here since three more call sites
+// need it below.
+async function loadPendingBooking(userId: string | undefined, bookingId: string, bookingType: string) {
+  if (bookingType === 'podcast') {
+    const r = await pool.query('SELECT * FROM podcast_bookings WHERE id = $1 AND user_id = $2 AND status = $3', [bookingId, userId, 'pending']);
+    if (r.rows.length === 0) return { booking: null, error: { status: 404, message: 'Booking not found or already paid' } };
+    const booking = r.rows[0];
+    if (Date.now() - new Date(booking.created_at).getTime() > 5 * 60 * 1000) {
+      return { booking: null, error: { status: 400, message: 'Reservation expired (5 min limit). Please re-book your slot.' } };
+    }
+    return { booking, error: null };
+  }
+  const r = await pool.query('SELECT * FROM bookings WHERE id = $1 AND user_id = $2 AND status = $3', [bookingId, userId, 'pending_payment']);
+  if (r.rows.length === 0) return { booking: null, error: { status: 404, message: 'Booking not found or already paid' } };
+  const booking = r.rows[0];
+  const slotsRes = await pool.query("SELECT id FROM booking_slots WHERE booking_id = $1 AND status = 'locked' AND locked_until >= NOW()", [bookingId]);
+  if (slotsRes.rows.length === 0) return { booking: null, error: { status: 400, message: 'Reservation expired. Please start again.' } };
+  return { booking, error: null };
+}
+
+const metaFor = (userId: string | undefined, bookingId: string, bookingType: string) => ({
+  user_id: userId,
+  booking_id: bookingId,
+  type: bookingType === 'podcast' ? 'podcast_booking' : 'booking',
+});
+
+// ── Shared: credit real money into a campaign's prepaid budget ───────────────
+// Mirrors processConfirmedPayment's idempotency/locking pattern, but for
+// funding a campaign directly rather than activating a screen booking.
+async function creditCampaignBudget(campaignId: string, userId: string | undefined, amount: number, reference: string) {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    const alreadyProcessed = await client.query('SELECT id FROM transactions WHERE reference = $1', [reference]);
+    if (alreadyProcessed.rows.length > 0) { await client.query('COMMIT'); return; }
+
+    const camp = await client.query('SELECT id, name, paid_budget FROM campaigns WHERE id = $1 FOR UPDATE', [campaignId]);
+    if (!camp.rows[0]) {
+      // Campaign was deleted between charge and confirmation — refund to wallet instead of losing the payment.
+      if (userId) {
+        await client.query('UPDATE users SET credits = credits + $1 WHERE id = $2', [amount, userId]);
+        await client.query(
+          `INSERT INTO transactions (user_id, type, source, amount, description, reference)
+           VALUES ($1, 'refund', 'expired_reservation', $2, 'Campaign no longer exists — refunded to wallet', $3)`,
+          [userId, amount, reference]
+        );
+      }
+      await client.query('COMMIT');
+      return;
+    }
+    if (Number(camp.rows[0].paid_budget) > 0) {
+      // Already funded by an earlier confirmation for this same campaign.
+      await client.query('COMMIT');
+      return;
+    }
+
+    await client.query(
+      `UPDATE campaigns SET paid_budget = paid_budget + $1, status = 'active', updated_at = NOW() WHERE id = $2`,
+      [amount, campaignId]
+    );
+    await client.query(
+      `INSERT INTO transactions (user_id, type, source, amount, description, reference)
+       VALUES ($1, 'debit', 'campaign_funding', $2, $3, $4)`,
+      [userId, amount, `Funded campaign "${camp.rows[0].name}"`, reference]
+    );
+
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
+// ── Shared: credit real money into a user's wallet (top-up) ──────────────────
+async function creditWalletTopup(userId: string | undefined, amount: number, reference: string) {
+  if (!userId) return;
+  const already = await pool.query('SELECT id FROM transactions WHERE reference = $1', [reference]);
+  if (already.rows.length > 0) return;
+  await pool.query('UPDATE users SET credits = credits + $1 WHERE id = $2', [amount, userId]);
+  await pool.query(
+    `INSERT INTO transactions (user_id, type, source, amount, description, reference)
+     VALUES ($1, 'credit', 'topup', $2, 'Wallet top-up via card', $3)`,
+    [userId, amount, reference]
+  );
+}
+
+const CARD_VERIFICATION_AMOUNT = 50; // NGN — charged then immediately refunded, real cost of proving the card works
+
+// ── Paystack: Charge a new card directly (custom inline UI, no redirect) ─────
+// Uses Paystack's server-side Charge API: card data flows through our
+// backend to Paystack over HTTPS, never stored by us. A card that comes back
+// 'send_otp' is parked in pending_charges until submitChargeOtp resolves it.
+export const chargeCard: RequestHandler = async (req, res) => {
+  const authReq = req as AuthRequest;
+  try {
+    const { booking_id, booking_type, card, save_card } = req.body;
+    if (!card?.number || !card?.cvv || !card?.expiry_month || !card?.expiry_year) {
+      res.status(400).json({ message: 'Please fill in your card details' }); return;
+    }
+    const cardholderName: string | null = card.name || null;
+
+    const { booking, error } = await loadPendingBooking(authReq.user?.id, booking_id, booking_type);
+    if (error) { res.status(error.status).json({ message: error.message }); return; }
+
+    const userRes = await pool.query('SELECT email FROM users WHERE id = $1', [authReq.user?.id]);
+    const amount = Math.round(parseFloat(booking!.total_cost) * 100);
+    const reference = `PSC-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
+
+    const chargeRes = await paystackReq('POST', '/charge', {
+      email: userRes.rows[0].email,
+      amount,
+      reference,
+      card: {
+        number: String(card.number).replace(/\s+/g, ''),
+        cvv: String(card.cvv),
+        expiry_month: String(card.expiry_month).padStart(2, '0'),
+        expiry_year: String(card.expiry_year).slice(-2),
+      },
+    });
+
+    if (!chargeRes.status) {
+      res.status(400).json({ message: chargeRes.message || 'Card was declined' }); return;
+    }
+
+    const data = chargeRes.data;
+    if (data.status === 'success') {
+      const meta = metaFor(authReq.user?.id, booking_id, booking_type);
+      await processConfirmedPayment(data.reference || reference, meta, data.amount / 100);
+      if (save_card) await saveCardFromAuthorization(authReq.user?.id, data.authorization, cardholderName);
+      res.json({ status: 'success', message: 'Payment successful and campaign booked' });
+      return;
+    }
+
+    if (data.status === 'send_otp') {
+      await pool.query(
+        `INSERT INTO pending_charges (reference, user_id, purpose, booking_id, booking_type, save_card, cardholder_name)
+         VALUES ($1, $2, 'booking', $3, $4, $5, $6)
+         ON CONFLICT (reference) DO NOTHING`,
+        [data.reference || reference, authReq.user?.id, booking_id, booking_type || 'ad', !!save_card, cardholderName]
+      );
+      res.json({ status: 'send_otp', reference: data.reference || reference });
+      return;
+    }
+
+    res.status(400).json({
+      message: data.display_text || data.gateway_response || "This card needs a verification step we don't support yet. Please try a different card.",
+    });
+  } catch (err) {
+    console.error('Charge card error:', err);
+    res.status(500).json({ message: 'Payment failed. Please try again.' });
+  }
+};
+
+// ── Paystack: Fund a campaign's budget with a new card ────────────────────────
+export const fundCampaignCharge: RequestHandler = async (req, res) => {
+  const authReq = req as AuthRequest;
+  try {
+    const { campaign_id, card, save_card } = req.body;
+    if (!card?.number || !card?.cvv || !card?.expiry_month || !card?.expiry_year) {
+      res.status(400).json({ message: 'Please fill in your card details' }); return;
+    }
+    const cardholderName: string | null = card.name || null;
+
+    const campRes = await pool.query('SELECT * FROM campaigns WHERE id = $1 AND user_id = $2', [campaign_id, authReq.user?.id]);
+    if (!campRes.rows[0]) { res.status(404).json({ message: 'Campaign not found' }); return; }
+    const campaign = campRes.rows[0];
+    if (Number(campaign.paid_budget) > 0) { res.status(400).json({ message: 'This campaign has already been funded.' }); return; }
+    const amountNGN = Number(campaign.budget);
+    if (!(amountNGN > 0)) { res.status(400).json({ message: 'Set a budget before funding this campaign.' }); return; }
+
+    const userRes = await pool.query('SELECT email FROM users WHERE id = $1', [authReq.user?.id]);
+    const amount = Math.round(amountNGN * 100);
+    const reference = `PSCF-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
+
+    const chargeRes = await paystackReq('POST', '/charge', {
+      email: userRes.rows[0].email,
+      amount,
+      reference,
+      card: {
+        number: String(card.number).replace(/\s+/g, ''),
+        cvv: String(card.cvv),
+        expiry_month: String(card.expiry_month).padStart(2, '0'),
+        expiry_year: String(card.expiry_year).slice(-2),
+      },
+    });
+
+    if (!chargeRes.status) {
+      res.status(400).json({ message: chargeRes.message || 'Card was declined' }); return;
+    }
+
+    const data = chargeRes.data;
+    if (data.status === 'success') {
+      await creditCampaignBudget(campaign_id, authReq.user?.id, amountNGN, data.reference || reference);
+      if (save_card) await saveCardFromAuthorization(authReq.user?.id, data.authorization, cardholderName);
+      res.json({ status: 'success', message: 'Payment successful and campaign booked' });
+      return;
+    }
+
+    if (data.status === 'send_otp') {
+      await pool.query(
+        `INSERT INTO pending_charges (reference, user_id, purpose, campaign_id, save_card, cardholder_name)
+         VALUES ($1, $2, 'campaign_funding', $3, $4, $5)
+         ON CONFLICT (reference) DO NOTHING`,
+        [data.reference || reference, authReq.user?.id, campaign_id, !!save_card, cardholderName]
+      );
+      res.json({ status: 'send_otp', reference: data.reference || reference });
+      return;
+    }
+
+    res.status(400).json({
+      message: data.display_text || data.gateway_response || "This card needs a verification step we don't support yet. Please try a different card.",
+    });
+  } catch (err) {
+    console.error('Fund campaign charge error:', err);
+    res.status(500).json({ message: 'Payment failed. Please try again.' });
+  }
+};
+
+// ── Paystack: Fund a campaign's budget with a saved card's authorization ─────
+export const fundCampaignChargeAuthorization: RequestHandler = async (req, res) => {
+  const authReq = req as AuthRequest;
+  try {
+    const { campaign_id, card_id } = req.body;
+    const cardRes = await pool.query('SELECT authorization_code FROM saved_cards WHERE id = $1 AND user_id = $2', [card_id, authReq.user?.id]);
+    if (!cardRes.rows[0]) { res.status(404).json({ message: 'Saved card not found' }); return; }
+
+    const campRes = await pool.query('SELECT * FROM campaigns WHERE id = $1 AND user_id = $2', [campaign_id, authReq.user?.id]);
+    if (!campRes.rows[0]) { res.status(404).json({ message: 'Campaign not found' }); return; }
+    const campaign = campRes.rows[0];
+    if (Number(campaign.paid_budget) > 0) { res.status(400).json({ message: 'This campaign has already been funded.' }); return; }
+    const amountNGN = Number(campaign.budget);
+    if (!(amountNGN > 0)) { res.status(400).json({ message: 'Set a budget before funding this campaign.' }); return; }
+
+    const userRes = await pool.query('SELECT email FROM users WHERE id = $1', [authReq.user?.id]);
+    const amount = Math.round(amountNGN * 100);
+    const reference = `PSAF-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
+
+    const chargeRes = await paystackReq('POST', '/transaction/charge_authorization', {
+      authorization_code: cardRes.rows[0].authorization_code,
+      email: userRes.rows[0].email,
+      amount,
+      reference,
+    });
+
+    const data = chargeRes.data;
+    if (!chargeRes.status || !data) {
+      res.status(400).json({ message: chargeRes.message || 'Payment failed. Please try a different card.' }); return;
+    }
+
+    if (data.status === 'send_otp') {
+      await pool.query(
+        `INSERT INTO pending_charges (reference, user_id, purpose, campaign_id, save_card)
+         VALUES ($1, $2, 'campaign_funding', $3, false)
+         ON CONFLICT (reference) DO NOTHING`,
+        [data.reference || reference, authReq.user?.id, campaign_id]
+      );
+      res.json({ status: 'send_otp', reference: data.reference || reference });
+      return;
+    }
+
+    if (data.status !== 'success') {
+      res.status(400).json({ message: data.gateway_response || 'Payment failed. Please try a different card.' }); return;
+    }
+
+    await creditCampaignBudget(campaign_id, authReq.user?.id, amountNGN, reference);
+    res.json({ status: 'success', message: 'Payment successful and campaign booked' });
+  } catch (err) {
+    console.error('Fund campaign authorization error:', err);
+    res.status(500).json({ message: 'Payment failed. Please try again.' });
+  }
+};
+
+// ── Paystack: Top up the wallet with a new card ───────────────────────────────
+export const topupCharge: RequestHandler = async (req, res) => {
+  const authReq = req as AuthRequest;
+  try {
+    const { amount, card, save_card } = req.body;
+    const amountNGN = Number(amount);
+    if (!(amountNGN >= 1000)) { res.status(400).json({ message: 'Minimum top-up is ₦1,000' }); return; }
+    if (!card?.number || !card?.cvv || !card?.expiry_month || !card?.expiry_year) {
+      res.status(400).json({ message: 'Please fill in your card details' }); return;
+    }
+    const cardholderName: string | null = card.name || null;
+
+    const userRes = await pool.query('SELECT email FROM users WHERE id = $1', [authReq.user?.id]);
+    const amount_kobo = Math.round(amountNGN * 100);
+    const reference = `PST-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
+
+    const chargeRes = await paystackReq('POST', '/charge', {
+      email: userRes.rows[0].email,
+      amount: amount_kobo,
+      reference,
+      card: {
+        number: String(card.number).replace(/\s+/g, ''),
+        cvv: String(card.cvv),
+        expiry_month: String(card.expiry_month).padStart(2, '0'),
+        expiry_year: String(card.expiry_year).slice(-2),
+      },
+    });
+
+    if (!chargeRes.status) {
+      res.status(400).json({ message: chargeRes.message || 'Card was declined' }); return;
+    }
+
+    const data = chargeRes.data;
+    if (data.status === 'success') {
+      await creditWalletTopup(authReq.user?.id, amountNGN, data.reference || reference);
+      if (save_card) await saveCardFromAuthorization(authReq.user?.id, data.authorization, cardholderName);
+      res.json({ status: 'success', message: `Wallet funded successfully. ₦${amountNGN.toLocaleString()} has been added to your wallet balance` });
+      return;
+    }
+
+    if (data.status === 'send_otp') {
+      await pool.query(
+        `INSERT INTO pending_charges (reference, user_id, purpose, amount, save_card, cardholder_name)
+         VALUES ($1, $2, 'wallet_topup', $3, $4, $5)
+         ON CONFLICT (reference) DO NOTHING`,
+        [data.reference || reference, authReq.user?.id, amountNGN, !!save_card, cardholderName]
+      );
+      res.json({ status: 'send_otp', reference: data.reference || reference });
+      return;
+    }
+
+    res.status(400).json({
+      message: data.display_text || data.gateway_response || "This card needs a verification step we don't support yet. Please try a different card.",
+    });
+  } catch (err) {
+    console.error('Topup charge error:', err);
+    res.status(500).json({ message: 'Payment failed. Please try again.' });
+  }
+};
+
+// ── Paystack: Top up the wallet with a saved card's authorization ────────────
+export const topupChargeAuthorization: RequestHandler = async (req, res) => {
+  const authReq = req as AuthRequest;
+  try {
+    const { amount, card_id } = req.body;
+    const amountNGN = Number(amount);
+    if (!(amountNGN >= 1000)) { res.status(400).json({ message: 'Minimum top-up is ₦1,000' }); return; }
+
+    const cardRes = await pool.query('SELECT authorization_code FROM saved_cards WHERE id = $1 AND user_id = $2', [card_id, authReq.user?.id]);
+    if (!cardRes.rows[0]) { res.status(404).json({ message: 'Saved card not found' }); return; }
+
+    const userRes = await pool.query('SELECT email FROM users WHERE id = $1', [authReq.user?.id]);
+    const amount_kobo = Math.round(amountNGN * 100);
+    const reference = `PSTA-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
+
+    const chargeRes = await paystackReq('POST', '/transaction/charge_authorization', {
+      authorization_code: cardRes.rows[0].authorization_code,
+      email: userRes.rows[0].email,
+      amount: amount_kobo,
+      reference,
+    });
+
+    const data = chargeRes.data;
+    if (!chargeRes.status || !data) {
+      res.status(400).json({ message: chargeRes.message || 'Payment failed. Please try a different card.' }); return;
+    }
+
+    if (data.status === 'send_otp') {
+      await pool.query(
+        `INSERT INTO pending_charges (reference, user_id, purpose, amount, save_card)
+         VALUES ($1, $2, 'wallet_topup', $3, false)
+         ON CONFLICT (reference) DO NOTHING`,
+        [data.reference || reference, authReq.user?.id, amountNGN]
+      );
+      res.json({ status: 'send_otp', reference: data.reference || reference });
+      return;
+    }
+
+    if (data.status !== 'success') {
+      res.status(400).json({ message: data.gateway_response || 'Payment failed. Please try a different card.' }); return;
+    }
+
+    await creditWalletTopup(authReq.user?.id, amountNGN, reference);
+    res.json({ status: 'success', message: `Wallet funded successfully. ₦${amountNGN.toLocaleString()} has been added to your wallet balance` });
+  } catch (err) {
+    console.error('Topup authorization error:', err);
+    res.status(500).json({ message: 'Payment failed. Please try again.' });
+  }
+};
+
+// ── Paystack: Add (save) a bank card without a real top-up ───────────────────
+// Paystack has no tokenize-only endpoint — a reusable authorization only
+// exists after a real charge. Charges a small fixed amount to create it, then
+// immediately refunds the same amount, so the card gets saved for free.
+export const addCardVerification: RequestHandler = async (req, res) => {
+  const authReq = req as AuthRequest;
+  try {
+    const { card } = req.body;
+    if (!card?.number || !card?.cvv || !card?.expiry_month || !card?.expiry_year) {
+      res.status(400).json({ message: 'Please fill in your card details' }); return;
+    }
+    const cardholderName: string | null = card.name || null;
+
+    const userRes = await pool.query('SELECT email FROM users WHERE id = $1', [authReq.user?.id]);
+    const reference = `PSV-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
+
+    const chargeRes = await paystackReq('POST', '/charge', {
+      email: userRes.rows[0].email,
+      amount: CARD_VERIFICATION_AMOUNT * 100,
+      reference,
+      card: {
+        number: String(card.number).replace(/\s+/g, ''),
+        cvv: String(card.cvv),
+        expiry_month: String(card.expiry_month).padStart(2, '0'),
+        expiry_year: String(card.expiry_year).slice(-2),
+      },
+    });
+
+    if (!chargeRes.status) {
+      res.status(400).json({ message: chargeRes.message || 'Card was declined' }); return;
+    }
+
+    const data = chargeRes.data;
+    if (data.status === 'success') {
+      await saveCardFromAuthorization(authReq.user?.id, data.authorization, cardholderName);
+      await creditWalletTopup(authReq.user?.id, CARD_VERIFICATION_AMOUNT, `REFUND-${data.reference || reference}`);
+      res.json({
+        status: 'success',
+        message: `${data.authorization?.bank || 'Your'} card added successfully`,
+      });
+      return;
+    }
+
+    if (data.status === 'send_otp') {
+      await pool.query(
+        `INSERT INTO pending_charges (reference, user_id, purpose, amount, save_card, cardholder_name)
+         VALUES ($1, $2, 'card_verification', $3, true, $4)
+         ON CONFLICT (reference) DO NOTHING`,
+        [data.reference || reference, authReq.user?.id, CARD_VERIFICATION_AMOUNT, cardholderName]
+      );
+      res.json({ status: 'send_otp', reference: data.reference || reference });
+      return;
+    }
+
+    res.status(400).json({
+      message: data.display_text || data.gateway_response || "This card needs a verification step we don't support yet. Please try a different card.",
+    });
+  } catch (err) {
+    console.error('Add card verification error:', err);
+    res.status(500).json({ message: 'Card could not be added. Please try again.' });
+  }
+};
+
+// ── Paystack: Submit OTP to complete a pending card charge ───────────────────
+export const submitChargeOtp: RequestHandler = async (req, res) => {
+  const authReq = req as AuthRequest;
+  try {
+    const { reference, otp } = req.body;
+    if (!reference || !otp) { res.status(400).json({ message: 'Reference and OTP are required' }); return; }
+
+    const pending = await pool.query('SELECT * FROM pending_charges WHERE reference = $1 AND user_id = $2', [reference, authReq.user?.id]);
+    if (!pending.rows[0]) { res.status(404).json({ message: 'This payment session has expired. Please start again.' }); return; }
+
+    const otpRes = await paystackReq('POST', '/charge/submit_otp', { otp, reference });
+    if (!otpRes.status || otpRes.data?.status !== 'success') {
+      res.status(400).json({ message: otpRes.data?.display_text || otpRes.message || 'Incorrect code. Please try again.' });
+      return;
+    }
+
+    const p = pending.rows[0];
+    const amountNGN = otpRes.data.amount / 100;
+    let message = 'Payment successful and campaign booked';
+
+    if (p.purpose === 'campaign_funding') {
+      await creditCampaignBudget(p.campaign_id, p.user_id, amountNGN, reference);
+    } else if (p.purpose === 'wallet_topup') {
+      await creditWalletTopup(p.user_id, amountNGN, reference);
+      message = `Wallet funded successfully. ₦${Number(p.amount).toLocaleString()} has been added to your wallet balance`;
+    } else if (p.purpose === 'card_verification') {
+      await saveCardFromAuthorization(p.user_id, otpRes.data.authorization, p.cardholder_name);
+      await creditWalletTopup(p.user_id, CARD_VERIFICATION_AMOUNT, `REFUND-${reference}`);
+      message = `${otpRes.data.authorization?.bank || 'Your'} card added successfully`;
+    } else {
+      const meta = metaFor(p.user_id, p.booking_id, p.booking_type);
+      await processConfirmedPayment(reference, meta, amountNGN);
+    }
+    if (p.save_card && p.purpose !== 'card_verification') await saveCardFromAuthorization(p.user_id, otpRes.data.authorization, p.cardholder_name);
+    await pool.query('DELETE FROM pending_charges WHERE reference = $1', [reference]);
+
+    res.json({ status: 'success', message });
+  } catch (err) {
+    console.error('Submit OTP error:', err);
+    res.status(500).json({ message: 'Verification failed. Please try again.' });
+  }
+};
+
+// ── Paystack: Charge a saved card's stored authorization ─────────────────────
+// No CVV/expiry re-entry — that's the point of a reusable authorization, and
+// we never store a CVV to ask for one back.
+export const chargeAuthorization: RequestHandler = async (req, res) => {
+  const authReq = req as AuthRequest;
+  try {
+    const { booking_id, booking_type, card_id } = req.body;
+    const cardRes = await pool.query('SELECT authorization_code FROM saved_cards WHERE id = $1 AND user_id = $2', [card_id, authReq.user?.id]);
+    if (!cardRes.rows[0]) { res.status(404).json({ message: 'Saved card not found' }); return; }
+
+    const { booking, error } = await loadPendingBooking(authReq.user?.id, booking_id, booking_type);
+    if (error) { res.status(error.status).json({ message: error.message }); return; }
+
+    const userRes = await pool.query('SELECT email FROM users WHERE id = $1', [authReq.user?.id]);
+    const amount = Math.round(parseFloat(booking!.total_cost) * 100);
+    const reference = `PSA-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
+
+    const chargeRes = await paystackReq('POST', '/transaction/charge_authorization', {
+      authorization_code: cardRes.rows[0].authorization_code,
+      email: userRes.rows[0].email,
+      amount,
+      reference,
+    });
+
+    const data = chargeRes.data;
+    if (!chargeRes.status || !data) {
+      res.status(400).json({ message: chargeRes.message || 'Payment failed. Please try a different card.' }); return;
+    }
+
+    if (data.status === 'send_otp') {
+      await pool.query(
+        `INSERT INTO pending_charges (reference, user_id, booking_id, booking_type, save_card)
+         VALUES ($1, $2, $3, $4, false)
+         ON CONFLICT (reference) DO NOTHING`,
+        [data.reference || reference, authReq.user?.id, booking_id, booking_type || 'ad']
+      );
+      res.json({ status: 'send_otp', reference: data.reference || reference });
+      return;
+    }
+
+    if (data.status !== 'success') {
+      res.status(400).json({ message: data.gateway_response || 'Payment failed. Please try a different card.' }); return;
+    }
+
+    const meta = metaFor(authReq.user?.id, booking_id, booking_type);
+    await processConfirmedPayment(reference, meta, data.amount / 100);
+    res.json({ status: 'success', message: 'Payment successful and campaign booked' });
+  } catch (err) {
+    console.error('Charge authorization error:', err);
+    res.status(500).json({ message: 'Payment failed. Please try again.' });
   }
 };

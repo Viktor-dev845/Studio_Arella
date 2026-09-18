@@ -13,7 +13,8 @@ export type NotificationType =
   | 'new_booking'           // admin only
   | 'orphaned_payment'      // admin only
   | 'new_support_ticket'    // admin only
-  | 'account_suspended';
+  | 'account_suspended'
+  | 'new_follower';
 
 interface CreateNotificationParams {
   user_id: string;

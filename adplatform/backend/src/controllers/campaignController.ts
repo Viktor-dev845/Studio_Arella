@@ -74,15 +74,71 @@ export const getCampaign : RequestHandler = async (req, res) => {
 export const createCampaign : RequestHandler = async (req, res) => {
     const authReq = req as AuthRequest;
   try {
-    const { name, budget, start_date, end_date } = req.body;
+    const { name, description, budget, start_date, end_date } = req.body;
     const result = await pool.query(
-      `INSERT INTO campaigns (user_id, name, budget, start_date, end_date)
-       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [authReq.user?.id, name, budget, start_date, end_date]
+      `INSERT INTO campaigns (user_id, name, description, budget, start_date, end_date)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [authReq.user?.id, name, description || null, budget, start_date, end_date]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// ── Fund a campaign's budget from the wallet (real money, drawn down later ──
+// by real bookings made against this campaign_id) ────────────────────────────
+export const fundCampaignWallet: RequestHandler = async (req, res) => {
+  const authReq = req as AuthRequest;
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const campRes = await client.query(
+      'SELECT * FROM campaigns WHERE id = $1 AND user_id = $2 FOR UPDATE',
+      [req.params.id, authReq.user?.id]
+    );
+    if (!campRes.rows[0]) {
+      await client.query('ROLLBACK');
+      res.status(404).json({ message: 'Campaign not found' }); return;
+    }
+    const campaign = campRes.rows[0];
+    if (Number(campaign.paid_budget) > 0) {
+      await client.query('ROLLBACK');
+      res.status(400).json({ message: 'This campaign has already been funded.' }); return;
+    }
+    const amount = Number(campaign.budget);
+    if (!(amount > 0)) {
+      await client.query('ROLLBACK');
+      res.status(400).json({ message: 'Set a budget before funding this campaign.' }); return;
+    }
+
+    const userRes = await client.query('SELECT credits FROM users WHERE id = $1 FOR UPDATE', [authReq.user?.id]);
+    const credits = parseFloat(userRes.rows[0].credits);
+    if (credits < amount) {
+      await client.query('ROLLBACK');
+      res.status(400).json({ message: 'Insufficient wallet balance' }); return;
+    }
+
+    await client.query('UPDATE users SET credits = credits - $1 WHERE id = $2', [amount, authReq.user?.id]);
+    await client.query(
+      `UPDATE campaigns SET paid_budget = paid_budget + $1, status = 'active', updated_at = NOW() WHERE id = $2`,
+      [amount, campaign.id]
+    );
+    const reference = `CF-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
+    await client.query(
+      `INSERT INTO transactions (user_id, type, source, amount, description, reference)
+       VALUES ($1, 'debit', 'campaign_funding', $2, $3, $4)`,
+      [authReq.user?.id, amount, `Funded campaign "${campaign.name}"`, reference]
+    );
+
+    await client.query('COMMIT');
+    res.json({ success: true, message: 'Payment successful and campaign booked' });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('Fund campaign wallet error:', err);
+    res.status(500).json({ message: 'Payment failed. Please try again.' });
+  } finally {
+    client.release();
   }
 };
 

@@ -241,6 +241,61 @@ app.listen(PORT, async () => {
         created_at TIMESTAMPTZ DEFAULT NOW()
       );
       CREATE UNIQUE INDEX IF NOT EXISTS idx_saved_cards_unique ON saved_cards(user_id, authorization_code);
+
+      CREATE TABLE IF NOT EXISTS pending_charges (
+        reference VARCHAR(255) PRIMARY KEY,
+        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        purpose VARCHAR(20) DEFAULT 'booking',
+        booking_id UUID,
+        booking_type VARCHAR(20),
+        campaign_id UUID,
+        save_card BOOLEAN DEFAULT false,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+      ALTER TABLE pending_charges ADD COLUMN IF NOT EXISTS purpose VARCHAR(20) DEFAULT 'booking';
+      ALTER TABLE pending_charges ADD COLUMN IF NOT EXISTS campaign_id UUID;
+      ALTER TABLE pending_charges ADD COLUMN IF NOT EXISTS cardholder_name VARCHAR(255);
+      ALTER TABLE campaigns ADD COLUMN IF NOT EXISTS description TEXT;
+      ALTER TABLE campaigns ADD COLUMN IF NOT EXISTS paid_budget DECIMAL(10,2) DEFAULT 0.00;
+      ALTER TABLE saved_cards ADD COLUMN IF NOT EXISTS cardholder_name VARCHAR(255);
+
+      CREATE TABLE IF NOT EXISTS follows (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        follower_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        followed_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        UNIQUE(follower_id, followed_id)
+      );
+      CREATE INDEX IF NOT EXISTS idx_follows_follower ON follows(follower_id);
+      CREATE INDEX IF NOT EXISTS idx_follows_followed ON follows(followed_id);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS followers_last_seen_at TIMESTAMPTZ;
+      ALTER TABLE pending_charges ADD COLUMN IF NOT EXISTS amount DECIMAL(10,2);
+
+      CREATE TABLE IF NOT EXISTS blog_posts (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        title VARCHAR(500) NOT NULL,
+        excerpt TEXT,
+        content TEXT NOT NULL,
+        category VARCHAR(100),
+        author_name VARCHAR(255),
+        image_url VARCHAR(500),
+        reading_time_minutes INTEGER DEFAULT 5,
+        views_count INTEGER DEFAULT 0,
+        comments_count INTEGER DEFAULT 0,
+        status VARCHAR(20) DEFAULT 'published',
+        published_at TIMESTAMPTZ DEFAULT NOW(),
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS idx_blog_posts_status ON blog_posts(status, published_at DESC);
+
+      CREATE TABLE IF NOT EXISTS blog_post_likes (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        post_id UUID REFERENCES blog_posts(id) ON DELETE CASCADE,
+        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        UNIQUE(post_id, user_id)
+      );
     `);
 
     // HOTFIX: the redesigned /book page has a real "Describe your Ad" field

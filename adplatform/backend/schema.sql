@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS users (
   reserved_account_reference VARCHAR(255),
   reserved_account_number VARCHAR(50),
   reserved_account_bank VARCHAR(100),
+  followers_last_seen_at TIMESTAMPTZ,
   created_at TIMESTAMP DEFAULT NOW(),
   updated_at TIMESTAMP DEFAULT NOW()
 );
@@ -43,8 +44,10 @@ CREATE TABLE IF NOT EXISTS campaigns (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   name VARCHAR(255) NOT NULL,
+  description TEXT,
   status VARCHAR(50) DEFAULT 'draft', -- 'draft' | 'active' | 'paused' | 'ended'
   budget DECIMAL(10,2) DEFAULT 0.00,
+  paid_budget DECIMAL(10,2) DEFAULT 0.00, -- real money actually funded into this campaign, drawn down by bookings made against it
   spent DECIMAL(10,2) DEFAULT 0.00,
   impressions INTEGER DEFAULT 0,
   clicks INTEGER DEFAULT 0,
@@ -530,7 +533,64 @@ CREATE TABLE IF NOT EXISTS saved_cards (
   exp_month VARCHAR(4),
   exp_year VARCHAR(4),
   bank VARCHAR(100),
+  cardholder_name VARCHAR(255), -- the name the advertiser typed when adding the card, not returned by Paystack's authorization object
   is_default BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 CREATE UNIQUE INDEX IF NOT EXISTS idx_saved_cards_unique ON saved_cards(user_id, authorization_code);
+
+-- ─── Follows (social graph — any user can follow any other user) ───────────
+CREATE TABLE IF NOT EXISTS follows (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  follower_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  followed_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(follower_id, followed_id)
+);
+CREATE INDEX IF NOT EXISTS idx_follows_follower ON follows(follower_id);
+CREATE INDEX IF NOT EXISTS idx_follows_followed ON follows(followed_id);
+
+-- ─── Pending Charges (in-flight Paystack Charge API sessions awaiting OTP) ──
+-- Short-lived: a row exists only between "card requires OTP" and either the
+-- OTP being submitted or the session being abandoned. Needed because
+-- Paystack's /charge/submit_otp response doesn't reliably echo back our
+-- original metadata, so we keep it ourselves, keyed by their reference.
+CREATE TABLE IF NOT EXISTS pending_charges (
+  reference VARCHAR(255) PRIMARY KEY,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  purpose VARCHAR(20) DEFAULT 'booking', -- 'booking' | 'campaign_funding'
+  booking_id UUID,
+  booking_type VARCHAR(20),
+  campaign_id UUID,
+  amount DECIMAL(10,2), -- wallet_topup / card_verification: the pending purpose has no backing row to re-derive amount from
+  save_card BOOLEAN DEFAULT false,
+  cardholder_name VARCHAR(255),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ─── Blog ────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS blog_posts (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  title VARCHAR(500) NOT NULL,
+  excerpt TEXT,
+  content TEXT NOT NULL, -- markdown; ## headings become the real table of contents
+  category VARCHAR(100),
+  author_name VARCHAR(255),
+  image_url VARCHAR(500),
+  reading_time_minutes INTEGER DEFAULT 5,
+  views_count INTEGER DEFAULT 0,
+  comments_count INTEGER DEFAULT 0,
+  status VARCHAR(20) DEFAULT 'published', -- 'draft' | 'published'
+  published_at TIMESTAMPTZ DEFAULT NOW(),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_blog_posts_status ON blog_posts(status, published_at DESC);
+
+CREATE TABLE IF NOT EXISTS blog_post_likes (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  post_id UUID REFERENCES blog_posts(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(post_id, user_id)
+);

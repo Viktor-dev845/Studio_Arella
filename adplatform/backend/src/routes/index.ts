@@ -10,7 +10,7 @@ import { getExchangeRates } from '../controllers/exchangeRateController';
 import { googleCallback } from '../controllers/googleAuthController';
 
 // Features
-import { getCampaigns, getCampaign, createCampaign, updateCampaign, deleteCampaign } from '../controllers/campaignController';
+import { getCampaigns, getCampaign, createCampaign, updateCampaign, deleteCampaign, fundCampaignWallet } from '../controllers/campaignController';
 import {
   getBookings,
   getBookingSlots,
@@ -25,7 +25,7 @@ import { getBalance, getTransactions, getTotalRevenue } from '../controllers/fin
 import { getDashboardStats, getHourlyAnalytics, getAdvertiserProofOfPlay } from '../controllers/analyticsController';
 import { getPlatformStats, getAllUsers, getAllBookings, getAllCampaigns, getAllScreens, updateUserRole, getAllTransactions, getAllPodcastBookings } from '../controllers/adminController';
 import { getPlans, getBaseRate } from '../controllers/pricingController';
-import { initializePayment, initializeCreditPayment, verifyPayment, monnifyWebhook, devBypassPayment, payFromWallet, initializePaystackPayment, verifyPaystackPayment, paystackWebhook, initializePaystackCreditPayment, createReservedAccount, getSavedCards, deleteSavedCard } from '../controllers/paymentController';
+import { initializePayment, initializeCreditPayment, verifyPayment, monnifyWebhook, devBypassPayment, payFromWallet, initializePaystackPayment, verifyPaystackPayment, paystackWebhook, initializePaystackCreditPayment, createReservedAccount, getSavedCards, deleteSavedCard, chargeCard, submitChargeOtp, chargeAuthorization, fundCampaignCharge, fundCampaignChargeAuthorization, topupCharge, topupChargeAuthorization, addCardVerification } from '../controllers/paymentController';
 import { getNotifications, markRead, markAllRead, deleteNotification, getUnreadCount } from '../controllers/notificationController';
 import { submitCreativeRequest, getMyCreativeRequests, getAllCreativeRequests, updateCreativeRequestStatus } from '../controllers/creativeController';
 import { submitTicket, getMyTickets } from '../controllers/supportController';
@@ -35,6 +35,8 @@ import { sendChatMessage } from '../controllers/chatController';
 import { createReview } from '../controllers/reviewController';
 import { getFavorites, addFavorite, removeFavorite } from '../controllers/favoriteController';
 import { globalSearch } from '../controllers/searchController';
+import { followUser, unfollowUser, getFollowers, getFollowing } from '../controllers/followController';
+import { getBlogPosts, getBlogPost, likeBlogPost, unlikeBlogPost, createBlogPost, updateBlogPost, deleteBlogPost, getAllBlogPostsAdmin } from '../controllers/blogController';
 
 import pool from '../db/pool';
 
@@ -63,6 +65,20 @@ router.post('/shows/:id/episodes', authenticate, upload.fields([{ name: 'cover',
 router.get('/favorites', authenticate, getFavorites);
 router.post('/favorites', authenticate, addFavorite);
 router.delete('/favorites', authenticate, removeFavorite);
+
+router.get('/follows/followers', authenticate, getFollowers);
+router.get('/follows/following', authenticate, getFollowing);
+router.post('/follows/:userId', authenticate, followUser);
+router.delete('/follows/:userId', authenticate, unfollowUser);
+
+router.get('/blog/posts', authenticate, getBlogPosts);
+router.get('/blog/posts/admin', authenticate, getAllBlogPostsAdmin);
+router.get('/blog/posts/:id', authenticate, getBlogPost);
+router.post('/blog/posts', authenticate, createBlogPost);
+router.put('/blog/posts/:id', authenticate, updateBlogPost);
+router.delete('/blog/posts/:id', authenticate, deleteBlogPost);
+router.post('/blog/posts/:id/like', authenticate, likeBlogPost);
+router.delete('/blog/posts/:id/like', authenticate, unlikeBlogPost);
 
 // ── Global search ────────────────────────────────────────────────────────────
 router.get('/search', authenticate, globalSearch);
@@ -169,6 +185,15 @@ router.post('/payments/webhook/monnify', monnifyWebhook); // No auth — Monnify
 router.post('/payments/reserved-account', authenticate, createReservedAccount);
 router.get('/payments/cards', authenticate, getSavedCards);
 router.delete('/payments/cards/:id', authenticate, deleteSavedCard);
+router.post('/payments/charge', authenticate, chargeCard);
+router.post('/payments/charge/submit-otp', authenticate, submitChargeOtp);
+router.post('/payments/charge-authorization', authenticate, chargeAuthorization);
+router.post('/campaigns/:id/fund/wallet', authenticate, fundCampaignWallet);
+router.post('/campaigns/:id/fund/charge', authenticate, fundCampaignCharge);
+router.post('/campaigns/:id/fund/charge-authorization', authenticate, fundCampaignChargeAuthorization);
+router.post('/payments/topup/charge', authenticate, topupCharge);
+router.post('/payments/topup/charge-authorization', authenticate, topupChargeAuthorization);
+router.post('/payments/cards/add', authenticate, addCardVerification);
 
 // Paystack (alternative gateway)
 router.post('/payments/paystack/initialize', authenticate, initializePaystackPayment);
