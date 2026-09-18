@@ -223,7 +223,7 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                         borderRadius: 10,
                         textDecoration: 'none',
                         fontSize: 14,
-                        fontWeight: pathname === '/dashboard' ? 600 : 500,
+                        fontWeight: pathname === '/dashboard' ? 700 : 600,
                         color: theme.color.text1,
                         background: pathname === '/dashboard' ? theme.color.surface2 : 'transparent',
                       }}
@@ -247,7 +247,7 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                         borderRadius: 10,
                         textDecoration: 'none',
                         fontSize: 14,
-                        fontWeight: pathname === '/cart' ? 600 : 500,
+                        fontWeight: pathname === '/cart' ? 700 : 600,
                         color: theme.color.text1,
                         background: pathname === '/cart' ? theme.color.surface2 : 'transparent',
                       }}
@@ -272,7 +272,7 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                         borderRadius: 10,
                         textDecoration: 'none',
                         fontSize: 14,
-                        fontWeight: pathname.startsWith('/bookings') ? 600 : 500,
+                        fontWeight: pathname.startsWith('/bookings') ? 700 : 600,
                         color: theme.color.text1,
                         background: pathname.startsWith('/bookings') ? theme.color.surface2 : 'transparent',
                       }}
@@ -305,7 +305,7 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                         borderRadius: 10,
                         textDecoration: 'none',
                         fontSize: 14,
-                        fontWeight: pathname === '/settings' ? 600 : 500,
+                        fontWeight: pathname === '/settings' ? 700 : 600,
                         color: theme.color.text1,
                         background: pathname === '/settings' ? theme.color.surface2 : 'transparent',
                       }}
@@ -372,7 +372,7 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                         borderRadius: 10,
                         textDecoration: 'none',
                         fontSize: 14,
-                        fontWeight: pathname === '/finances' ? 600 : 500,
+                        fontWeight: pathname === '/finances' ? 700 : 600,
                         color: theme.color.text1,
                         background: pathname === '/finances' ? theme.color.surface2 : 'transparent',
                       }}
@@ -397,7 +397,7 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                         borderRadius: 10,
                         textDecoration: 'none',
                         fontSize: 14,
-                        fontWeight: pathname === '/blog' ? 600 : 500,
+                        fontWeight: pathname === '/blog' ? 700 : 600,
                         color: theme.color.text1,
                         background: pathname === '/blog' ? theme.color.surface2 : 'transparent',
                       }}
