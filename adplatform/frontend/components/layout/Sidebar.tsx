@@ -319,7 +319,7 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                     {/* Submenu under User Profile matching screenshot */}
                     <ul style={{ listStyle: 'none', margin: '4px 0 6px 42px', padding: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
                       <li>
-                        <Link href="/dashboard" style={{ fontSize: 13, color: '#71717A', textDecoration: 'none', fontWeight: 500, padding: '6px 8px', display: 'block', borderRadius: 6 }} className="sidebar-item">
+                        <Link href="/dashboard" style={{ fontSize: 13, color: '#71717A', textDecoration: 'none', fontWeight: 600, padding: '6px 8px', display: 'block', borderRadius: 6 }} className="sidebar-item">
                           Overview
                         </Link>
                       </li>
@@ -330,7 +330,7 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                             fontSize: 13, 
                             color: pathname.startsWith('/podcast') ? theme.color.text1 : '#71717A', 
                             textDecoration: 'none', 
-                            fontWeight: pathname.startsWith('/podcast') ? 600 : 500, 
+                            fontWeight: pathname.startsWith('/podcast') ? 700 : 600, 
                             padding: '6px 8px', 
                             display: 'block', 
                             borderRadius: 6,
@@ -342,17 +342,17 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                         </Link>
                       </li>
                       <li>
-                        <Link href="/campaigns" style={{ fontSize: 13, color: pathname === '/campaigns' ? theme.color.text1 : '#71717A', textDecoration: 'none', fontWeight: pathname === '/campaigns' ? 600 : 500, padding: '6px 8px', display: 'block', borderRadius: 6 }} className="sidebar-item">
+                        <Link href="/campaigns" style={{ fontSize: 13, color: pathname === '/campaigns' ? theme.color.text1 : '#71717A', textDecoration: 'none', fontWeight: pathname === '/campaigns' ? 700 : 600, padding: '6px 8px', display: 'block', borderRadius: 6 }} className="sidebar-item">
                           Campaigns
                         </Link>
                       </li>
                       <li>
-                        <Link href="/ads" style={{ fontSize: 13, color: pathname === '/ads' ? theme.color.text1 : '#71717A', textDecoration: 'none', fontWeight: pathname === '/ads' ? 600 : 500, padding: '6px 8px', display: 'block', borderRadius: 6 }} className="sidebar-item">
+                        <Link href="/ads" style={{ fontSize: 13, color: pathname === '/ads' ? theme.color.text1 : '#71717A', textDecoration: 'none', fontWeight: pathname === '/ads' ? 700 : 600, padding: '6px 8px', display: 'block', borderRadius: 6 }} className="sidebar-item">
                           Ads
                         </Link>
                       </li>
                       <li>
-                        <Link href="/followers" style={{ fontSize: 13, color: pathname === '/followers' ? theme.color.text1 : '#71717A', textDecoration: 'none', fontWeight: pathname === '/followers' ? 600 : 500, padding: '6px 8px', display: 'block', borderRadius: 6 }} className="sidebar-item">
+                        <Link href="/followers" style={{ fontSize: 13, color: pathname === '/followers' ? theme.color.text1 : '#71717A', textDecoration: 'none', fontWeight: pathname === '/followers' ? 700 : 600, padding: '6px 8px', display: 'block', borderRadius: 6 }} className="sidebar-item">
                           Followers
                         </Link>
                       </li>
