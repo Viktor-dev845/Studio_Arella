@@ -212,16 +212,16 @@ export default function ForgotPasswordPage() {
           {/* STEP 2: OTP */}
           {step === 2 && (
             <motion.div key="step2" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="w-full max-w-[426px]">
-              <h1 style={{ fontSize: 32, fontWeight: 800, color: theme.color.text1, margin: '0 0 8px', letterSpacing: '-0.5px' }}>Enter code</h1>
-              <p style={{ fontSize: 15, color: theme.color.text3, margin: '0 0 32px', fontWeight: 500 }}>
+              <h1 style={{ fontSize: 30, fontWeight: 700, color: '#000000', margin: '0 0 8px' }}>Enter code</h1>
+              <p style={{ fontSize: 18, color: '#8692A6', margin: '0 0 32px', fontWeight: 400 }}>
                 We sent a four digit code to your email.
               </p>
 
-              <div style={{ textAlign: 'left', marginBottom: 8 }}>
+              <div style={{ textAlign: 'left', marginBottom: 12 }}>
                 <label style={labelStyle}>Enter code*</label>
               </div>
 
-              <div style={{ display: 'flex', gap: 16, marginBottom: 8 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 15, marginBottom: 12 }}>
                 {otpCode.map((digit, index) => (
                   <input
                     key={index}
@@ -234,23 +234,22 @@ export default function ForgotPasswordPage() {
                     onKeyDown={(e) => handleOtpKeyDown(index, e)}
                     onPaste={handleOtpPaste}
                     style={{
-                      flex: 1, height: 56, background: theme.color.surface,
-                      border: `1px solid ${digit || index === 0 ? '#D4AF37' : theme.color.border2}`,
-                      borderRadius: 8, fontSize: 20, fontWeight: 700, color: theme.color.text1,
+                      width: 70, height: 66, background: '#FFFFFF',
+                      border: `1px solid ${digit || index === 0 ? '#D4AF37' : 'rgba(134, 146, 166, 0.5)'}`,
+                      borderRadius: 8, fontSize: 14, fontWeight: 600, color: digit || index === 0 ? '#D4AF37' : '#7152F3',
                       textAlign: 'center', outline: 'none',
-                      boxShadow: digit || index === 0 ? '0 0 0 2px rgba(212,175,55,0.1)' : 'none',
                       transition: 'all 0.2s',
                     }}
-                    onFocus={(e) => { e.target.style.borderColor = '#D4AF37'; e.target.style.boxShadow = '0 0 0 2px rgba(212,175,55,0.1)'; }}
-                    onBlur={(e) => { if(!digit && index !== 0) { e.target.style.borderColor = theme.color.border2; e.target.style.boxShadow = 'none'; } }}
+                    onFocus={(e) => { e.target.style.borderColor = '#D4AF37'; }}
+                    onBlur={(e) => { if(!digit && index !== 0) { e.target.style.borderColor = 'rgba(134, 146, 166, 0.5)'; } }}
                   />
                 ))}
               </div>
 
               <div style={{ textAlign: 'right', marginBottom: 32 }}>
-                <span style={{ fontSize: 13, color: theme.color.text4, fontWeight: 500 }}>
+                <span style={{ fontSize: 12, color: '#696F79', fontWeight: 400 }}>
                   Didn't get code?{' '}
-                  <button onClick={handleResend} disabled={resending} style={{ background: 'none', border: 'none', color: '#D4AF37', fontWeight: 600, cursor: resending ? 'wait' : 'pointer', padding: 0 }}>
+                  <button onClick={handleResend} disabled={resending} style={{ background: 'none', border: 'none', color: '#D4AF37', fontWeight: 400, fontSize: 12, cursor: resending ? 'wait' : 'pointer', padding: 0 }}>
                     {resending ? 'Sending...' : 'Resend'}
                   </button>
                 </span>
@@ -259,7 +258,7 @@ export default function ForgotPasswordPage() {
               <AnimatedButton
                 onClick={handleVerifyOtp}
                 disabled={otpCode.some(v => v === '')}
-                style={{ width: '100%', padding: '14px', background: '#D4AF37', color: '#0F172A', borderRadius: 6, fontSize: 15, fontWeight: 700, border: 'none', cursor: (otpCode.some(v => v === '')) ? 'not-allowed' : 'pointer', opacity: (otpCode.some(v => v === '')) ? 0.7 : 1, transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(212,175,55,0.2)' }}
+                style={{ width: '100%', height: 64, background: '#D4AF37', color: '#121212', borderRadius: 6, fontSize: 16, fontWeight: 300, border: 'none', cursor: (otpCode.some(v => v === '')) ? 'not-allowed' : 'pointer', opacity: (otpCode.some(v => v === '')) ? 0.7 : 1, transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >
                 Continue
               </AnimatedButton>
@@ -269,8 +268,8 @@ export default function ForgotPasswordPage() {
           {/* STEP 3: Change Password */}
           {step === 3 && (
             <motion.div key="step3" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="w-full max-w-[426px]">
-              <h1 style={{ fontSize: 32, fontWeight: 800, color: theme.color.text1, margin: '0 0 8px', letterSpacing: '-0.5px' }}>Change password</h1>
-              <p style={{ fontSize: 15, color: theme.color.text3, margin: '0 0 32px', fontWeight: 500 }}>
+              <h1 style={{ fontSize: 30, fontWeight: 700, color: '#000000', margin: '0 0 8px' }}>Change password</h1>
+              <p style={{ fontSize: 18, color: '#8692A6', margin: '0 0 32px', fontWeight: 400 }}>
                 Enter a new password and proceed to Log in
               </p>
 
@@ -284,7 +283,7 @@ export default function ForgotPasswordPage() {
                       onChange={e => setPassword(e.target.value)}
                       required style={{ ...inputStyle, paddingRight: 60 }} onFocus={onFocus} onBlur={onBlur} />
                     <button type="button" onClick={() => setShowPw(p => !p)}
-                      style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text1, fontWeight: 600, fontSize: 11 }}>
+                      style={{ position: 'absolute', right: 24, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#000000', fontWeight: 400, fontSize: 12 }}>
                       {showPw ? 'Hide' : 'Show'}
                     </button>
                   </div>
@@ -298,7 +297,7 @@ export default function ForgotPasswordPage() {
                       onChange={e => setConfirmPassword(e.target.value)}
                       required style={{ ...inputStyle, paddingRight: 60 }} onFocus={onFocus} onBlur={onBlur} />
                     <button type="button" onClick={() => setShowConfirmPw(p => !p)}
-                      style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text1, fontWeight: 600, fontSize: 11 }}>
+                      style={{ position: 'absolute', right: 24, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#000000', fontWeight: 400, fontSize: 12 }}>
                       {showConfirmPw ? 'Hide' : 'Show'}
                     </button>
                   </div>
