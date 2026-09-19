@@ -250,12 +250,12 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
 
         {/* Right Actions */}
         <div className="flex items-center gap-3 text-neutral-400 dark:text-neutral-500">
-          <button onClick={toggleTheme} className="hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors" title="Toggle Theme">
+          <button onClick={toggleTheme} className="flex items-center justify-center hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors" title="Toggle Theme">
             {colorMode === 'dark' ? <Sun className="h-[18px] w-[18px]" strokeWidth={1.75} /> : <Moon className="h-[18px] w-[18px]" strokeWidth={1.75} />}
           </button>
           
           <div className="relative hide-on-mobile flex items-center justify-center">
-            <button onClick={() => setHistoryOpen(o => !o)} className="hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors" title="Recently visited">
+            <button onClick={() => setHistoryOpen(o => !o)} className="flex items-center justify-center hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors" title="Recently visited">
               <History className="h-[18px] w-[18px]" strokeWidth={1.75} />
             </button>
             <AnimatePresence>
@@ -281,7 +281,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
 
           <NotificationBell />
 
-          <button onClick={onMenuClick} className="hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors lg:hidden" title="Toggle Sidebar">
+          <button onClick={onMenuClick} className="flex items-center justify-center hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors lg:hidden" title="Toggle Sidebar">
             <PanelLeft className="h-[18px] w-[18px]" strokeWidth={1.75} />
           </button>
         </div>
