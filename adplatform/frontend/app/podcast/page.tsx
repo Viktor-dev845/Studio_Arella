@@ -418,23 +418,22 @@ export default function PodcastsPage() {
                 </div>
               ) : (
                 /* List View matching podcast-listview mockup */
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {[PODCAST_ITEMS[0], PODCAST_ITEMS[0]].map((pod, i) => (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  {PODCAST_ITEMS.map((pod, i) => (
                     <Link
                       key={i}
                       href={`/podcast/${pod.id}`}
                       style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 14,
+                        gap: 16,
                         textDecoration: 'none',
-                        padding: '6px 0',
                       }}
                     >
                       <div
                         style={{
-                          width: 44,
-                          height: 44,
+                          width: 48,
+                          height: 48,
                           borderRadius: 8,
                           overflow: 'hidden',
                           background: theme.color.surface2,
@@ -448,10 +447,10 @@ export default function PodcastsPage() {
                         />
                       </div>
                       <div>
-                        <p style={{ fontSize: 13, fontWeight: 700, color: theme.color.text1, margin: '0 0 2px' }}>
+                        <p style={{ fontSize: 14, fontWeight: 700, color: theme.color.text1, margin: '0 0 4px' }}>
                           {pod.title}
                         </p>
-                        <p style={{ fontSize: 11.5, color: theme.color.text4, fontWeight: 500, margin: 0 }}>
+                        <p style={{ fontSize: 12, color: theme.color.text4, fontWeight: 500, margin: 0 }}>
                           {pod.listeners} • {pod.episodes}
                         </p>
                       </div>
@@ -537,7 +536,7 @@ export default function PodcastsPage() {
                   {ALL_PODCAST_ITEMS.map(renderCard)}
                 </div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                   {ALL_PODCAST_ITEMS.map((pod, i) => (
                     <Link
                       key={i}
@@ -545,15 +544,14 @@ export default function PodcastsPage() {
                       style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 14,
+                        gap: 16,
                         textDecoration: 'none',
-                        padding: '6px 0',
                       }}
                     >
                       <div
                         style={{
-                          width: 44,
-                          height: 44,
+                          width: 48,
+                          height: 48,
                           borderRadius: 8,
                           overflow: 'hidden',
                           background: theme.color.surface2,
@@ -567,10 +565,10 @@ export default function PodcastsPage() {
                         />
                       </div>
                       <div>
-                        <p style={{ fontSize: 13, fontWeight: 700, color: theme.color.text1, margin: '0 0 2px' }}>
+                        <p style={{ fontSize: 14, fontWeight: 700, color: theme.color.text1, margin: '0 0 4px' }}>
                           {pod.title}
                         </p>
-                        <p style={{ fontSize: 11.5, color: theme.color.text4, fontWeight: 500, margin: 0 }}>
+                        <p style={{ fontSize: 12, color: theme.color.text4, fontWeight: 500, margin: 0 }}>
                           {pod.listeners} • {pod.episodes}
                         </p>
                       </div>
