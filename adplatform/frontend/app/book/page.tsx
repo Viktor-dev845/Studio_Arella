@@ -59,6 +59,7 @@ function BookAdForm() {
   const [walletBalance, setWalletBalance] = useState(0);
   const [paying, setPaying] = useState(false);
   const [cardForm, setCardForm] = useState({ name: '', number: '', expiry: '', cvv: '' });
+  const [adDesignRequested, setAdDesignRequested] = useState(false);
 
   useEffect(() => {
     api.get('/finances/balance').then((res) => setWalletBalance(Number(res.data?.credits ?? 0))).catch(() => {});
@@ -184,16 +185,6 @@ function BookAdForm() {
   };
 
   const handlePayCard = async () => {
-    if (!bookingId) return;
-    if (!cardForm.name || !cardForm.number || !cardForm.expiry || !cardForm.cvv) {
-      toast('Please fill in your card details', 'error');
-      return;
-    }
-    setPaying(true);
-    try {
-      const res = await api.post('/payments/initialize', { booking_id: bookingId });
-      const checkoutUrl = res.data?.checkout_url || res.data?.authorization_url;
-      if (checkoutUrl) {
     setPaying(true);
     try {
       await new Promise(r => setTimeout(r, 1500));
@@ -205,17 +196,7 @@ function BookAdForm() {
     }
   };
 
-  const handlePayWallet = async () => {
-    setPaying(true);
-    try {
-      await new Promise(r => setTimeout(r, 1500));
-      setStep('success');
-    } catch (error) {
-      toast('Payment failed', 'error');
-    } finally {
-      setPaying(false);
-    }
-  };
+
 
   const inputClasses = "w-full px-5 py-4 bg-white dark:bg-[#111111] border border-gray-200 dark:border-white/10 rounded-[12px] text-[15px] font-medium text-gray-800 dark:text-slate-50 placeholder:text-gray-400 focus:outline-none focus:border-[#C69A2C] transition-colors shadow-sm";
   const dropdownMenuClasses = "absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#111111] border border-gray-100 dark:border-white/10 rounded-[12px] shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] z-50 overflow-hidden py-1.5";

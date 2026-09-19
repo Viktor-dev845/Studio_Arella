@@ -69,8 +69,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <PreferencesProvider />
       <Sidebar mobileOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
       
-      {/* We need margin-left on desktop to account for the fixed sidebar width (212px) */}
-      <div className="main-wrapper" style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, marginLeft: mobileOpen ? 0 : 212, transition: 'margin-left 0.2s ease' }}>
+      {/* We need margin-left on desktop to account for the fixed sidebar width (220px) */}
+      <div className="main-wrapper" style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, marginLeft: mobileOpen ? 0 : 220, transition: 'margin-left 0.2s ease' }}>
         <Navbar onMenuClick={() => setMobileOpen(o => !o)} />
         <main style={{ flex: 1, overflowY: 'auto', padding: '0', background: theme.color.bg }}>
           {children}
