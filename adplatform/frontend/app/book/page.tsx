@@ -62,6 +62,7 @@ function BookAdForm() {
   const [adDesignRequested, setAdDesignRequested] = useState(false);
   const [showCreativeModal, setShowCreativeModal] = useState(false);
   const [showCancelCreativeModal, setShowCancelCreativeModal] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'card' | 'wallet'>('card');
 
   useEffect(() => {
     api.get('/finances/balance').then((res) => setWalletBalance(Number(res.data?.credits ?? 0))).catch(() => {});
@@ -389,37 +390,75 @@ function BookAdForm() {
         {step !== 'form' && (
           <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/45 backdrop-blur-[2px] p-4">
             <div className="bg-white dark:bg-[#111111] rounded-[24px] w-full max-w-[420px] shadow-2xl relative animate-in fade-in zoom-in duration-200">
-              <div className="flex items-center justify-between p-6 pb-4 border-b border-gray-100 dark:border-white/5">
+              <div className="flex items-center justify-between p-6 pb-2">
                 {step !== 'billing' && step !== 'success' ? (
-                  <button onClick={() => setStep('billing')} className="p-1.5 hover:bg-gray-100 dark:hover:bg-white/[0.06] rounded-full transition-colors text-gray-900 dark:text-slate-50"><ArrowLeft size={18} /></button>
-                ) : <div className="w-[30px]" />}
+                  <button onClick={() => setStep('billing')} className="p-1.5 -ml-1.5 hover:bg-gray-100 dark:hover:bg-white/[0.06] rounded-full transition-colors text-gray-900 dark:text-slate-50"><ArrowLeft size={22} strokeWidth={2} /></button>
+                ) : (
+                  <button onClick={() => setStep('form')} className="p-1.5 -ml-1.5 hover:bg-gray-100 dark:hover:bg-white/[0.06] rounded-full transition-colors text-gray-900 dark:text-slate-50"><ArrowLeft size={22} strokeWidth={2} /></button>
+                )}
                 
-                <span className="text-[15px] font-bold text-gray-900 dark:text-slate-50">
+                <span className="text-[18px] font-medium text-gray-900 dark:text-slate-50">
                   {step === 'billing' ? 'Billing' : step === 'card' ? 'Pay with card' : step === 'wallet' ? 'Pay from wallet' : ''}
                 </span>
                 
                 {step !== 'success' ? (
-                  <button onClick={() => setStep('form')} className="p-1.5 hover:bg-gray-100 dark:hover:bg-white/[0.06] rounded-full transition-colors text-gray-900 dark:text-slate-50"><X size={18} /></button>
+                  <button onClick={() => setStep('form')} className="p-1.5 -mr-1.5 hover:bg-gray-100 dark:hover:bg-white/[0.06] rounded-full transition-colors text-gray-900 dark:text-slate-50"><X size={22} strokeWidth={2} /></button>
                 ) : <div className="w-[30px]" />}
               </div>
 
-              <div className="px-8 pb-10 pt-6">
+              <div className="px-8 pb-10 pt-4">
                 {step === 'billing' && (
-                  <div className="space-y-4">
-                    <p className="text-center text-[14px] font-bold text-gray-900 dark:text-slate-50 mb-6">
-                      {durationLabel} Ad space at <span className="text-[#C69A2C]">{formatCurrency(totalCost, currency, rates)}</span>
+                  <div className="space-y-6 flex flex-col items-center">
+                    <p className="text-center text-[16px] font-bold text-gray-900 dark:text-slate-50 mb-4 leading-[1.4]">
+                      {durationLabel} Ad space at<br/>
+                      {formatCurrency(totalCost, currency, rates)}
                     </p>
                     
-                    <button onClick={() => setStep('card')} className="w-full text-left px-5 py-4 bg-white dark:bg-[#111111] border border-gray-200 dark:border-white/10 hover:border-[#C69A2C] dark:hover:border-[#C69A2C] rounded-[14px] transition-all group">
-                      <span className="text-[14px] font-bold text-gray-800 dark:text-slate-200 group-hover:text-[#C69A2C] transition-colors">Pay with card</span>
-                    </button>
-                    
-                    <button onClick={() => setStep('wallet')} className="w-full text-left px-5 py-4 bg-white dark:bg-[#111111] border-2 border-[#C69A2C] rounded-[14px] flex items-center justify-between transition-all hover:bg-[#C69A2C]/5 shadow-[0_4px_14px_rgba(198,154,44,0.1)]">
-                      <div>
-                        <p className="text-[14px] font-bold text-gray-900 dark:text-slate-50">Pay from wallet</p>
-                        <p className="text-[12px] font-medium text-gray-500 dark:text-slate-400 mt-0.5">Balance: {formatCurrency(walletBalance, currency, rates)}</p>
+                    <div className="w-full space-y-4">
+                      {/* Card Option */}
+                      <div 
+                        onClick={() => setSelectedPaymentMethod('card')}
+                        className={`w-full p-5 rounded-[16px] border-2 cursor-pointer transition-all flex items-center gap-4 ${selectedPaymentMethod === 'card' ? 'border-[#C69A2C]' : 'border-gray-200 dark:border-white/10'}`}
+                      >
+                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedPaymentMethod === 'card' ? 'border-[#C69A2C]' : 'border-gray-300 dark:border-gray-600'}`}>
+                          {selectedPaymentMethod === 'card' && <div className="w-2.5 h-2.5 rounded-full bg-[#D94A1C]" />}
+                        </div>
+                        <span className="text-[16px] font-medium text-gray-900 dark:text-slate-50">Pay with card</span>
                       </div>
-                      {walletBalance >= totalCost && <Check size={18} className="text-[#C69A2C]" />}
+                      
+                      {/* Wallet Option */}
+                      <div 
+                        onClick={() => setSelectedPaymentMethod('wallet')}
+                        className={`w-full p-5 rounded-[16px] border-2 cursor-pointer transition-all ${selectedPaymentMethod === 'wallet' ? 'border-[#C69A2C]' : 'border-gray-200 dark:border-white/10'}`}
+                      >
+                        <div className="flex items-center gap-4 mb-4">
+                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${selectedPaymentMethod === 'wallet' ? 'border-[#C69A2C]' : 'border-gray-300 dark:border-gray-600'}`}>
+                            {selectedPaymentMethod === 'wallet' && <div className="w-2.5 h-2.5 rounded-full bg-[#D94A1C]" />}
+                          </div>
+                          <span className="text-[16px] font-medium text-gray-900 dark:text-slate-50">Pay from wallet</span>
+                          <button type="button" className="ml-auto bg-[#FEFAED] text-[#C69A2C] px-3 py-1.5 rounded-[8px] text-[13px] font-medium">Fund wallet</button>
+                        </div>
+                        <div className="ml-9 flex items-center justify-between">
+                          <div className="flex flex-col gap-1">
+                            <span className="text-[14px] text-gray-900 dark:text-slate-50">Wallet ID: 23cvo_23759ryi</span>
+                            <button type="button" className="flex items-center gap-1.5 text-[#C69A2C] text-[13px] font-medium">
+                              Copy
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="8" y="8" width="12" height="12" rx="2" fill="#C69A2C"/>
+                                <path d="M4 14V6C4 4.89543 4.89543 4 6 4H14" stroke="#C69A2C" strokeWidth="2" strokeLinecap="round"/>
+                              </svg>
+                            </button>
+                          </div>
+                          <span className="text-[15px] font-medium text-gray-900 dark:text-slate-50">NGN 5,215,005.25</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <button 
+                      onClick={() => setStep(selectedPaymentMethod)} 
+                      className="w-full mt-8 py-4 bg-[#C69A2C] hover:bg-[#b58b24] text-black rounded-[12px] text-[15px] font-medium transition-colors shadow-sm"
+                    >
+                      Continue
                     </button>
                   </div>
                 )}
