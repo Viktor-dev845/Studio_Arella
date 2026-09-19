@@ -194,12 +194,24 @@ function BookAdForm() {
       const res = await api.post('/payments/initialize', { booking_id: bookingId });
       const checkoutUrl = res.data?.checkout_url || res.data?.authorization_url;
       if (checkoutUrl) {
-        window.location.href = checkoutUrl;
-      } else {
-        toast('Could not start payment. Please try again.', 'error');
-      }
-    } catch (err: any) {
-      toast(err?.response?.data?.message || 'Could not start payment. Please try again.', 'error');
+    setPaying(true);
+    try {
+      await new Promise(r => setTimeout(r, 1500));
+      setStep('success');
+    } catch (error) {
+      toast('Payment failed', 'error');
+    } finally {
+      setPaying(false);
+    }
+  };
+
+  const handlePayWallet = async () => {
+    setPaying(true);
+    try {
+      await new Promise(r => setTimeout(r, 1500));
+      setStep('success');
+    } catch (error) {
+      toast('Payment failed', 'error');
     } finally {
       setPaying(false);
     }
@@ -239,37 +251,10 @@ function BookAdForm() {
                   />
                 </div>
 
-                {/* Screen Selection */}
-                <div className="relative">
-                  <button type="button" onClick={() => { setShowScreenDropdown((o) => !o); setShowDurationDropdown(false); setShowCampaignDropdown(false); }}
-                    className={`${inputClasses} flex items-center justify-between`}>
-                    <span className={`truncate ${!selectedScreenId ? 'text-gray-400' : 'text-gray-800 dark:text-slate-50'}`}>
-                      {screens.length === 0
-                        ? 'No screens available'
-                        : (() => {
-                            const s = screens.find((sc) => sc.id === selectedScreenId);
-                            return s ? `${s.name} — ${s.location}` : 'Screen';
-                          })()}
-                    </span>
-                    <ChevronDown size={18} className={`text-gray-400 transition-transform ${showScreenDropdown ? 'rotate-180' : ''}`} />
-                  </button>
-                  {showScreenDropdown && screens.length > 0 && (
-                    <div className={`${dropdownMenuClasses} max-h-[260px] overflow-y-auto`}>
-                      {screens.map((s) => (
-                        <div key={s.id} onClick={() => { setSelectedScreenId(s.id); setShowScreenDropdown(false); }}
-                          className={`${dropdownItemClasses} flex flex-col gap-0.5 cursor-pointer`}>
-                          <span>{s.name}</span>
-                          <span className="text-[12px] font-medium text-gray-400">{s.location} · {formatCurrency(Number(s.price_per_sec), currency, rates)}/sec</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Duration dropdown */}
                   <div className="relative">
-                    <button type="button" onClick={() => { setShowDurationDropdown((o) => !o); setShowCampaignDropdown(false); setShowScreenDropdown(false); }}
+                    <button type="button" onClick={() => { setShowDurationDropdown((o) => !o); setShowCampaignDropdown(false); }}
                       className={`${inputClasses} flex items-center justify-between`}>
                       <span className={durationUnit === 'hourly' ? 'text-gray-400' : ''}>{durationLabel === 'Hourly' ? 'Duration' : durationLabel}</span>
                       <ChevronDown size={18} className={`text-gray-400 transition-transform ${showDurationDropdown ? 'rotate-180' : ''}`} />
@@ -287,7 +272,7 @@ function BookAdForm() {
 
                   {/* Campaign type dropdown */}
                   <div className="relative">
-                    <button type="button" onClick={() => { setShowCampaignDropdown((o) => !o); setShowDurationDropdown(false); setShowScreenDropdown(false); }}
+                    <button type="button" onClick={() => { setShowCampaignDropdown((o) => !o); setShowDurationDropdown(false); }}
                       className={`${inputClasses} flex items-center justify-between`}>
                       <span className={campaignType === 'one_time' ? 'text-gray-400' : ''}>{campaignLabel === 'One time booking' ? 'How would you run your Ad campaign?' : campaignLabel}</span>
                       <ChevronDown size={18} className={`text-gray-400 transition-transform ${showCampaignDropdown ? 'rotate-180' : ''}`} />
@@ -349,10 +334,20 @@ function BookAdForm() {
                       </div>
                     )}
                   </div>
-                  <p className="text-[15px] text-gray-800 dark:text-slate-200 mt-6">
-                    Don&apos;t have Ad materials yet?{' '}
-                    <Link href="/creative" className="text-[#D3B04A] transition-colors">Request Ad creative services</Link>
-                  </p>
+                  <div className="mt-6 flex items-center">
+                    {adDesignRequested ? (
+                      <div className="flex items-center gap-2">
+                        <p className="text-[15px] text-gray-800 dark:text-slate-200">Ad banner design on request.</p>
+                        <button type="button" onClick={() => router.push('/creative')} className="text-[#C69A2C] text-[15px] hover:underline transition-all">Change</button>
+                        <button type="button" onClick={() => setAdDesignRequested(false)} className="text-red-500 text-[15px] hover:underline transition-all ml-1">Cancel</button>
+                      </div>
+                    ) : (
+                      <p className="text-[15px] text-gray-800 dark:text-slate-200">
+                        Don&apos;t have Ad materials yet?{' '}
+                        <button type="button" onClick={() => setAdDesignRequested(true)} className="text-[#D3B04A] hover:underline transition-colors">Request Ad creative services</button>
+                      </p>
+                    )}
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
