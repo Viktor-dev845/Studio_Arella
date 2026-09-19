@@ -3,7 +3,7 @@
 import { Suspense, useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Search, Monitor, Mic, X, Calendar, Loader2, Download, Star, ArrowLeft, Check } from 'lucide-react';
+import { Search, Monitor, Mic, X, Calendar, Loader2, Download, Star, ArrowLeft, Check, Filter, ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { PageTransition } from '@/components/ui/Animations';
 import { useToast } from '@/components/ui/ToastProvider';
@@ -95,6 +95,10 @@ function BookingsPageContent() {
   const [podcastBookings, setPodcastBookings] = useState<BookingRow[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
+
   const [cancelTarget, setCancelTarget] = useState<{ id: string; info: string; type: 'ad' | 'podcast' } | null>(null);
   const [cancelling, setCancelling] = useState(false);
   const [cancelSuccessInfo, setCancelSuccessInfo] = useState<string | null>(null);
@@ -159,6 +163,18 @@ function BookingsPageContent() {
       (r.booking_number || '').toLowerCase().includes(q)
     );
   }, [rows, search]);
+
+  // Reset to page 1 when tab or search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, search]);
+
+  const paginatedRows = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredRows.slice(start, start + itemsPerPage);
+  }, [filteredRows, currentPage]);
+
+  const totalPages = Math.ceil(filteredRows.length / itemsPerPage);
 
   const canReview = (b: BookingRow) => b.status !== 'cancelled' && new Date(b.end_time).getTime() <= Date.now();
 
@@ -326,29 +342,37 @@ function BookingsPageContent() {
                 <div className="flex items-center gap-3 w-full sm:w-auto">
                   {/* Search */}
                   <div className="relative flex-1 sm:w-72">
-                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" />
+                    <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" />
                     <input
                       type="text"
                       placeholder="Search"
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
-                      className="w-full pl-9 pr-4 py-2.5 bg-white dark:bg-[#111111] border border-gray-200 dark:border-white/10 rounded-lg text-xs font-bold text-gray-900 dark:text-slate-50 placeholder:text-[#94A3B8] placeholder:font-medium focus:outline-none focus:ring-1 focus:ring-gray-200 focus:border-gray-300 dark:focus:border-white/20 transition-colors"
+                      className="w-full pl-10 pr-4 py-2.5 bg-[#F9FAFB] dark:bg-[#111111] border border-transparent rounded-[12px] text-[13px] font-medium text-gray-900 dark:text-slate-50 placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-white/10 transition-all shadow-sm"
                     />
                   </div>
+
+                  {/* Filter */}
+                  <button
+                    className="flex items-center justify-center w-10 h-10 bg-white dark:bg-[#111111] border border-gray-200 dark:border-white/10 rounded-[12px] text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-white/[0.06] transition-colors shadow-sm"
+                    title="Filter"
+                  >
+                    <Filter size={16} />
+                  </button>
 
                   {/* Export */}
                   <button
                     onClick={handleExport}
-                    className="flex items-center gap-1.5 px-5 py-2.5 bg-white dark:bg-[#111111] border border-[#C69A2C] rounded-lg text-xs font-bold text-[#C69A2C] hover:bg-[#C69A2C]/5 transition-colors"
+                    className="flex items-center gap-2 px-4 h-10 bg-white dark:bg-[#111111] border border-gray-200 dark:border-white/10 rounded-[12px] text-[13px] font-bold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-white/[0.06] transition-colors shadow-sm"
                   >
-                    <Download size={13} />
+                    <Download size={15} />
                     Export
                   </button>
 
-                  {/* Book Ad Slot */}
+                  {/* Book Slot */}
                   <Link
                     href={activeTab === 'podcast' ? "/podcast/book" : "/book"}
-                    className="flex items-center justify-center px-6 py-2.5 bg-[#C69A2C] hover:bg-[#b58b24] text-white rounded-lg text-xs font-bold transition-colors whitespace-nowrap shadow-sm"
+                    className="flex items-center justify-center px-6 h-10 bg-[#1A1A1A] dark:bg-white hover:bg-black dark:hover:bg-gray-100 text-white dark:text-[#1A1A1A] rounded-[12px] text-[13px] font-bold transition-all shadow-sm whitespace-nowrap ml-2"
                   >
                     {activeTab === 'podcast' ? 'Book Podcast Slot' : 'Book Ad Slot'}
                   </Link>
@@ -376,10 +400,9 @@ function BookingsPageContent() {
                             <Loader2 size={20} className="animate-spin inline-block mr-2" />
                             Loading bookings…
                           </td>
-                        </tr>
-                      ) : filteredRows.length === 0 ? (
+                        <                        ) : paginatedRows.length === 0 ? (
                         <tr>
-                          <td colSpan={6} className="px-6 py-16 text-center text-gray-400 dark:text-slate-500 text-sm">
+                          <td colSpan={6} className="px-6 py-16 text-center text-gray-400 dark:text-slate-500 text-[13px] font-medium">
                             {search
                               ? 'No bookings match your search.'
                               : activeTab === 'podcast'
@@ -387,7 +410,7 @@ function BookingsPageContent() {
                                 : "You haven't booked any ad slots yet."}
                           </td>
                         </tr>
-                      ) : filteredRows.map((b) => {
+                      ) : paginatedRows.map((b) => {
                         const statusInfo = STATUS_LABEL[b.status] || { label: b.status, className: 'text-gray-500 dark:text-slate-400' };
                         const bookingType = activeTab === 'podcast' ? 'podcast' : 'ad';
                         const showCancel = CANCELLABLE_STATUSES[bookingType === 'podcast' ? 'podcast' : 'screen'].has(b.status);
@@ -395,20 +418,27 @@ function BookingsPageContent() {
                           && new Date(b.end_time).getTime() > Date.now();
                         const showReview = canReview(b);
                         return (
-                          <tr key={b.id} className="border-b border-gray-50 dark:border-white/10 last:border-0 hover:bg-gray-50 dark:hover:bg-white/[0.06] transition-colors">
-                            <td className="px-6 py-4 text-[13px] font-bold text-gray-700 dark:text-slate-200">{b.info}</td>
-                            <td className="px-6 py-4 text-xs font-semibold text-gray-500 dark:text-slate-400">{formatSchedule(b.start_time, timezone)}</td>
-                            <td className="px-6 py-4 text-[13px] font-bold text-gray-700 dark:text-slate-200">{naira(b.billing)}</td>
-                            <td className="px-6 py-4 text-[13px] font-semibold text-gray-500 dark:text-slate-400">{b.duration}</td>
-                            <td className="px-6 py-4">
-                              <span className={`text-xs font-bold ${statusInfo.className}`}>{statusInfo.label}</span>
+                          <tr key={b.id} className="border-b border-gray-100 dark:border-white/10 last:border-0 hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-colors group">
+                            <td className="px-6 py-5 text-[14px] font-bold text-gray-900 dark:text-slate-50">{b.info}</td>
+                            <td className="px-6 py-5 text-[13px] font-medium text-gray-500 dark:text-slate-400">{formatSchedule(b.start_time, timezone)}</td>
+                            <td className="px-6 py-5 text-[14px] font-bold text-gray-900 dark:text-slate-50">{naira(b.billing)}</td>
+                            <td className="px-6 py-5 text-[13px] font-medium text-gray-500 dark:text-slate-400">{b.duration}</td>
+                            <td className="px-6 py-5">
+                              <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold tracking-wide uppercase ${
+                                b.status === 'active' || b.status === 'confirmed' ? 'bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400' :
+                                b.status === 'pending' || b.status === 'pending_payment' ? 'bg-orange-100 text-orange-700 dark:bg-orange-500/10 dark:text-orange-400' :
+                                b.status === 'cancelled' || b.status === 'failed' ? 'bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400' :
+                                'bg-gray-100 text-gray-700 dark:bg-white/10 dark:text-slate-300'
+                              }`}>
+                                {statusInfo.label}
+                              </span>
                             </td>
-                            <td className="px-6 py-4">
-                              <div className="flex items-center gap-3">
+                            <td className="px-6 py-5">
+                              <div className="flex items-center gap-4">
                                 {showExtend && (
                                   <button
                                     onClick={() => { setExtendTarget({ id: b.id, info: b.info, type: bookingType }); setExtendAmount('1'); setExtendUnit('hours'); }}
-                                    className="text-xs font-bold text-[#C69A2C] hover:text-[#b58b24] transition-colors"
+                                    className="text-[13px] font-bold text-[#1A1A1A] dark:text-white hover:text-gray-500 transition-colors"
                                   >
                                     Extend
                                   </button>
@@ -416,7 +446,7 @@ function BookingsPageContent() {
                                 {showCancel && (
                                   <button
                                     onClick={() => setCancelTarget({ id: b.id, info: b.info, type: bookingType })}
-                                    className="text-xs font-bold text-red-500 dark:text-red-400 hover:text-red-600 transition-colors"
+                                    className="text-[13px] font-bold text-red-500 dark:text-red-400 hover:text-red-600 transition-colors"
                                   >
                                     Cancel
                                   </button>
@@ -424,28 +454,83 @@ function BookingsPageContent() {
                                 {showReview && (
                                   <button
                                     onClick={() => { setReviewTarget({ id: b.id, info: b.info, type: bookingType }); setReviewTitle(''); setReviewBody(''); setReviewRating(4); }}
-                                    className="text-xs font-bold text-[#7C5DFA] hover:text-[#6a4de0] transition-colors"
+                                    className="text-[13px] font-bold text-[#7C5DFA] hover:text-[#6a4de0] transition-colors"
                                   >
                                     Send a review
                                   </button>
                                 )}
                                 {!showExtend && !showCancel && !showReview && (
-                                  <span className="text-xs text-gray-300 dark:text-slate-500">—</span>
+                                  <span className="text-gray-300 dark:text-slate-600">
+                                    <MoreHorizontal size={18} />
+                                  </span>
                                 )}
                               </div>
                             </td>
                           </tr>
                         );
-                      })}
+                      })}     })}
                     </tbody>
                   </table>
                 </div>
               </div>
 
-              {/* Real count line (no fake pagination) */}
-              {!loading && filteredRows.length > 0 && (
-                <div className="mt-6 text-xs text-gray-500 dark:text-slate-400 font-medium">
-                  Showing {filteredRows.length} of {rows.length} booking{rows.length === 1 ? '' : 's'}
+              {/* Pagination */}
+              {!loading && totalPages > 1 && (
+                <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="text-[13px] text-gray-500 dark:text-slate-400 font-medium">
+                    Showing <span className="font-bold text-gray-900 dark:text-slate-50">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="font-bold text-gray-900 dark:text-slate-50">{Math.min(currentPage * itemsPerPage, filteredRows.length)}</span> of <span className="font-bold text-gray-900 dark:text-slate-50">{filteredRows.length}</span> results
+                  </div>
+                  
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      className="flex items-center justify-center w-8 h-8 rounded-lg border border-gray-200 dark:border-white/10 text-gray-500 hover:bg-gray-50 dark:hover:bg-white/5 disabled:opacity-50 disabled:hover:bg-transparent transition-colors"
+                    >
+                      <ChevronLeft size={16} />
+                    </button>
+                    
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => {
+                      // Simple pagination logic: show first, last, current, and adjacent
+                      if (
+                        page === 1 || 
+                        page === totalPages || 
+                        Math.abs(page - currentPage) <= 1
+                      ) {
+                        return (
+                          <button
+                            key={page}
+                            onClick={() => setCurrentPage(page)}
+                            className={`flex items-center justify-center w-8 h-8 rounded-lg text-[13px] font-bold transition-colors ${
+                              currentPage === page 
+                                ? 'bg-[#1A1A1A] dark:bg-white text-white dark:text-[#1A1A1A]' 
+                                : 'text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-white/5'
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        );
+                      }
+                      
+                      // Show ellipsis
+                      if (
+                        (page === 2 && currentPage > 3) || 
+                        (page === totalPages - 1 && currentPage < totalPages - 2)
+                      ) {
+                        return <span key={page} className="px-1 text-gray-400">...</span>;
+                      }
+                      
+                      return null;
+                    })}
+                    
+                    <button
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                      className="flex items-center justify-center w-8 h-8 rounded-lg border border-gray-200 dark:border-white/10 text-gray-500 hover:bg-gray-50 dark:hover:bg-white/5 disabled:opacity-50 disabled:hover:bg-transparent transition-colors"
+                    >
+                      <ChevronRight size={16} />
+                    </button>
+                  </div>
                 </div>
               )}
             </>

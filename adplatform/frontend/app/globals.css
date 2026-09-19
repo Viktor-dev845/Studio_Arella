@@ -68,7 +68,7 @@
 
   /* ── Fonts ── */
   --font-body:    var(--font-quicksand), 'Quicksand', sans-serif;
-  --font-display: var(--font-outfit), 'Outfit', sans-serif;
+  --font-display: var(--font-quicksand), 'Quicksand', sans-serif;
 
   /* ── Shadows ── */
   --shadow-sm:   0 2px 8px rgba(33,29,23,0.06);
