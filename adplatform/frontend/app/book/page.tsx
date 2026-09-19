@@ -60,6 +60,7 @@ function BookAdForm() {
   const [paying, setPaying] = useState(false);
   const [cardForm, setCardForm] = useState({ name: '', number: '', expiry: '', cvv: '' });
   const [adDesignRequested, setAdDesignRequested] = useState(false);
+  const [showCreativeModal, setShowCreativeModal] = useState(false);
 
   useEffect(() => {
     api.get('/finances/balance').then((res) => setWalletBalance(Number(res.data?.credits ?? 0))).catch(() => {});
@@ -319,13 +320,13 @@ function BookAdForm() {
                     {adDesignRequested ? (
                       <div className="flex items-center gap-2">
                         <p className="text-[15px] text-gray-800 dark:text-slate-200">Ad banner design on request.</p>
-                        <button type="button" onClick={() => router.push('/creative')} className="text-[#C69A2C] text-[15px] hover:underline transition-all">Change</button>
+                        <button type="button" onClick={() => setShowCreativeModal(true)} className="text-[#C69A2C] text-[15px] hover:underline transition-all">Change</button>
                         <button type="button" onClick={() => setAdDesignRequested(false)} className="text-red-500 text-[15px] hover:underline transition-all ml-1">Cancel</button>
                       </div>
                     ) : (
                       <p className="text-[15px] text-gray-800 dark:text-slate-200">
                         Don&apos;t have Ad materials yet?{' '}
-                        <button type="button" onClick={() => setAdDesignRequested(true)} className="text-[#D3B04A] hover:underline transition-colors">Request Ad creative services</button>
+                        <button type="button" onClick={() => setShowCreativeModal(true)} className="text-[#D3B04A] hover:underline transition-colors">Request creative services</button>
                       </p>
                     )}
                   </div>
@@ -471,6 +472,71 @@ function BookAdForm() {
                     </button>
                   </div>
                 )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Creative Services Modal */}
+        {showCreativeModal && (
+          <div className="fixed inset-0 z-[200] flex bg-white dark:bg-[#111111] animate-in fade-in duration-200">
+            <div className="flex flex-col w-full h-full max-w-[700px] mx-auto pt-6 px-4 md:px-8">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-10 mt-2">
+                <button onClick={() => setShowCreativeModal(false)} className="p-2 -ml-2 hover:bg-gray-100 dark:hover:bg-white/[0.06] rounded-full transition-colors text-gray-900 dark:text-slate-50">
+                  <ArrowLeft size={24} strokeWidth={2} />
+                </button>
+                <h2 className="text-[20px] font-medium text-gray-900 dark:text-slate-50">Ad creative services</h2>
+                <button onClick={() => setShowCreativeModal(false)} className="p-2 -mr-2 hover:bg-gray-100 dark:hover:bg-white/[0.06] rounded-full transition-colors text-gray-900 dark:text-slate-50">
+                  <X size={24} strokeWidth={2} />
+                </button>
+              </div>
+
+              {/* Form Content */}
+              <div className="flex flex-col flex-1 overflow-y-auto pb-6">
+                <div className="relative mb-6">
+                  <select 
+                    className="w-full h-[56px] px-4 rounded-[12px] border border-gray-200 dark:border-white/10 bg-transparent text-[15px] text-gray-800 dark:text-slate-200 appearance-none focus:outline-none focus:border-[#C69A2C]"
+                  >
+                    <option value="" disabled selected>Select creative services</option>
+                    <option value="banner">Banner Design</option>
+                    <option value="video">Video Production</option>
+                    <option value="copywriting">Ad Copywriting</option>
+                  </select>
+                  <ChevronDown size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                </div>
+
+                <div className="mb-8">
+                  <textarea
+                    placeholder="Describe your Ad creative brief"
+                    className="w-full h-[160px] p-4 rounded-[12px] border border-gray-200 dark:border-white/10 bg-transparent text-[15px] text-gray-800 dark:text-slate-200 resize-none focus:outline-none focus:border-[#C69A2C]"
+                  ></textarea>
+                </div>
+
+                <p className="text-[16px] text-gray-900 dark:text-slate-50 mb-4">Or upload Ad creative brief</p>
+                
+                <div className="w-full rounded-[16px] border border-dashed border-[#D3B04A] bg-transparent flex flex-col items-center justify-center py-10 mb-auto">
+                  <div className="w-12 h-12 rounded-[12px] bg-[#CCAB46] flex items-center justify-center mb-4">
+                    <Upload size={20} className="text-white" />
+                  </div>
+                  <p className="text-[15px] font-medium text-gray-800 dark:text-slate-200 mb-1">
+                    Drag & Drop or <span className="text-[#4E8B7C]">choose file</span> to upload
+                  </p>
+                  <p className="text-[13px] text-gray-400">Supported formats : jpeg, png, pf</p>
+                </div>
+
+                <div className="pt-8 mt-4">
+                  <button 
+                    onClick={() => {
+                      setAdDesignRequested(true);
+                      setShowCreativeModal(false);
+                      toast('Creative service added to your request.', 'success');
+                    }}
+                    className="w-full py-4 bg-[#C69A2C] hover:bg-[#b58b24] text-black rounded-[12px] text-[15px] font-medium transition-colors shadow-sm"
+                  >
+                    Add service
+                  </button>
+                </div>
               </div>
             </div>
           </div>
