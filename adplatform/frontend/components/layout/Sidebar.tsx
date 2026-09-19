@@ -97,7 +97,7 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
       <aside
         className={`mobile-sidebar ${!mobileOpen ? 'closed' : ''}`}
         style={{
-          width: 260,
+          width: 212,
           background: theme.color.surface,
           height: '100%',
           borderRight: `1px solid ${theme.color.border}`,

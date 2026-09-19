@@ -250,9 +250,8 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
         style={{
           width: '100%',
           padding: '12px 16px',
-          background: '#FDF8EE',
-          border: '1px solid #F3EBD8',
-          borderRadius: 12,
+          background: '#F5F0E6',
+          borderRadius: 8,
           fontSize: 13,
           fontWeight: 700,
           color: '#0F172A',
@@ -262,10 +261,10 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
           transition: 'all 0.15s ease',
         }}
         onMouseOver={(e) => {
-          e.currentTarget.style.background = '#F6EEDC';
+          e.currentTarget.style.background = '#EBE3D3';
         }}
         onMouseOut={(e) => {
-          e.currentTarget.style.background = '#FDF8EE';
+          e.currentTarget.style.background = '#F5F0E6';
         }}
       >
         Add a podcast
@@ -280,9 +279,11 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
           <span style={EXAMPLE_BADGE}>Example</span>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {/* Vertical connecting line */}
+          <div style={{ position: 'absolute', left: 15.5, top: 16, bottom: 16, width: 1, background: '#E2E8F0', zIndex: 0 }} />
           {TOP_PERFORMING_TOPICS.map((topic, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, position: 'relative', zIndex: 1 }}>
               <div
                 style={{
                   width: 32,
@@ -291,6 +292,7 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
                   overflow: 'hidden',
                   flexShrink: 0,
                   background: topic.avatarBg,
+                  border: `2px solid ${theme.color.surface}`,
                 }}
               >
                 <img
@@ -371,9 +373,8 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
           style={{
             width: '100%',
             padding: '10px 14px',
-            background: '#FDF8EE',
-            border: '1px solid #F3EBD8',
-            borderRadius: 10,
+            background: '#F5F0E6',
+            borderRadius: 8,
             fontSize: 12,
             fontWeight: 700,
             color: '#0F172A',
@@ -381,6 +382,13 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
             textDecoration: 'none',
             display: 'block',
             marginBottom: 10,
+            transition: 'all 0.15s ease',
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.background = '#EBE3D3';
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.background = '#F5F0E6';
           }}
         >
           Book podcast slot
