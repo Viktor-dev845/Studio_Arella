@@ -61,6 +61,7 @@ function BookAdForm() {
   const [cardForm, setCardForm] = useState({ name: '', number: '', expiry: '', cvv: '' });
   const [adDesignRequested, setAdDesignRequested] = useState(false);
   const [showCreativeModal, setShowCreativeModal] = useState(false);
+  const [showCancelCreativeModal, setShowCancelCreativeModal] = useState(false);
 
   useEffect(() => {
     api.get('/finances/balance').then((res) => setWalletBalance(Number(res.data?.credits ?? 0))).catch(() => {});
@@ -319,9 +320,9 @@ function BookAdForm() {
                   <div className="mt-6 flex items-center">
                     {adDesignRequested ? (
                       <div className="flex items-center gap-2">
-                        <p className="text-[15px] text-gray-800 dark:text-slate-200">Ad banner design on request.</p>
+                        <p className="text-[15px] text-gray-800 dark:text-slate-200">Ad banner design on request?</p>
                         <button type="button" onClick={() => setShowCreativeModal(true)} className="text-[#C69A2C] text-[15px] hover:underline transition-all">Change</button>
-                        <button type="button" onClick={() => setAdDesignRequested(false)} className="text-red-500 text-[15px] hover:underline transition-all ml-1">Cancel</button>
+                        <button type="button" onClick={() => setShowCancelCreativeModal(true)} className="text-red-500 text-[15px] hover:underline transition-all ml-1">Cancel</button>
                       </div>
                     ) : (
                       <p className="text-[15px] text-gray-800 dark:text-slate-200">
@@ -536,6 +537,36 @@ function BookAdForm() {
                     Add service
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Cancel Creative Request Modal */}
+        {showCancelCreativeModal && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/45 backdrop-blur-[2px] p-4 animate-in fade-in duration-200">
+            <div className="bg-white dark:bg-[#111111] rounded-[24px] w-full max-w-[480px] shadow-2xl relative flex flex-col p-10 py-12 text-center">
+              <h3 className="text-[28px] font-bold text-gray-900 dark:text-slate-50 leading-[1.3] mb-12">
+                Are you sure you want to cancel<br/>your Ad creative request?
+              </h3>
+              
+              <div className="flex items-center gap-4">
+                <button 
+                  onClick={() => setShowCancelCreativeModal(false)}
+                  className="flex-1 py-4 bg-transparent border border-gray-200 dark:border-white/10 rounded-[12px] text-[16px] font-medium text-gray-800 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                >
+                  No
+                </button>
+                <button 
+                  onClick={() => {
+                    setAdDesignRequested(false);
+                    setShowCancelCreativeModal(false);
+                    toast('Ad creative request cancelled.', 'info');
+                  }}
+                  className="flex-1 py-4 bg-[#C69A2C] hover:bg-[#b58b24] text-black rounded-[12px] text-[16px] font-medium transition-colors shadow-sm"
+                >
+                  Yes
+                </button>
               </div>
             </div>
           </div>
