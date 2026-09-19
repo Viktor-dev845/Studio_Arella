@@ -28,23 +28,23 @@ export default function ForgotPasswordPage() {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const inputStyle: React.CSSProperties = {
-    width: '100%', padding: '13px 14px', background: theme.color.surface,
-    border: `1px solid ${theme.color.border2}`, borderRadius: 4, fontSize: 13,
-    fontFamily: F, color: theme.color.text1, outline: 'none', boxSizing: 'border-box',
-    transition: 'border-color 0.2s, box-shadow 0.2s', fontWeight: 500
+    width: '100%', height: 64, padding: '0 24px', background: '#FFFFFF',
+    border: '1px solid #8692A6', borderRadius: 6, fontSize: 14,
+    fontFamily: 'inherit', color: '#494949', outline: 'none', boxSizing: 'border-box',
+    transition: 'all 0.2s', fontWeight: 400
   };
   const onFocus = (e: any) => { 
     e.target.style.borderColor = '#D4AF37'; 
-    e.target.style.boxShadow = '0 0 0 2px rgba(212,175,55,0.1)'; 
+    e.target.style.boxShadow = '0px 4px 10px 3px rgba(0, 0, 0, 0.11)';
   };
   const onBlur  = (e: any) => { 
-    e.target.style.borderColor = theme.color.border2; 
-    e.target.style.boxShadow = 'none'; 
+    e.target.style.borderColor = '#8692A6'; 
+    e.target.style.boxShadow = 'none';
   };
 
   const labelStyle: React.CSSProperties = {
-    fontSize: 12, fontWeight: 600, color: theme.color.text3, display: 'block',
-    marginBottom: 6,
+    fontSize: 16, fontWeight: 400, color: '#696F79', display: 'block',
+    marginBottom: 8,
   };
 
   // Step 1: Request OTP
@@ -171,8 +171,8 @@ export default function ForgotPasswordPage() {
       <div className="flex items-center justify-center p-6 md:p-12 lg:p-16" style={{ flex: '1 1 50%', maxWidth: '100%', position: 'relative', overflow: 'hidden' }}>
         
         <div style={{ position: 'absolute', top: 40, right: 40, textAlign: 'right' }}>
-           <Link href="/auth/login" style={{ fontSize: 13, color: theme.color.text3, fontWeight: 700, textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-             <span style={{ fontSize: 11, color: '#CBD5E1', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Go to</span>
+           <Link href="/auth/login" style={{ fontSize: 16, color: '#8692A6', fontWeight: 600, textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+             <span style={{ fontSize: 14, color: '#BDBDBD', fontWeight: 400, marginBottom: 2 }}>Go to</span>
              Log in
            </Link>
         </div>
@@ -181,16 +181,18 @@ export default function ForgotPasswordPage() {
           
           {/* STEP 1: Email Input */}
           {step === 1 && (
-            <motion.div key="step1" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="w-full max-w-[420px]">
-              <h1 style={{ fontSize: 32, fontWeight: 800, color: theme.color.text1, margin: '0 0 8px', letterSpacing: '-0.5px' }}>Forgot password</h1>
-              <p style={{ fontSize: 15, color: theme.color.text3, margin: '0 0 32px', fontWeight: 500 }}>
+            <motion.div key="step1" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="w-full max-w-[426px]">
+              <h1 style={{ fontSize: 30, fontWeight: 700, color: '#000000', margin: '0 0 8px' }}>Forgot password</h1>
+              <p style={{ fontSize: 18, color: '#8692A6', margin: '0 0 24px', fontWeight: 400, lineHeight: '28px' }}>
                 Enter your email and a verification code will be sent to you
               </p>
 
-              <form onSubmit={handleRequestOtp} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+              <div style={{ width: '100%', height: 1, background: '#F5F5F5', marginBottom: 24 }} />
+
+              <form onSubmit={handleRequestOtp} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                 <div>
-                  <label style={labelStyle}>Email address*</label>
-                  <input type="email" placeholder="you@example.com"
+                  <label style={labelStyle}>Work email address*</label>
+                  <input type="email" placeholder="Invictus@example.com"
                     value={email} onChange={e => setEmail(e.target.value)}
                     required style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
                 </div>
@@ -199,7 +201,7 @@ export default function ForgotPasswordPage() {
                   type="submit"
                   loading={loading}
                   loadingText="Sending..."
-                  style={{ width: '100%', padding: '14px', background: '#D4AF37', color: '#0F172A', borderRadius: 6, fontSize: 15, fontWeight: 700, border: 'none', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(212,175,55,0.2)' }}
+                  style={{ width: '100%', height: 64, background: '#D4AF37', color: '#121212', borderRadius: 6, fontSize: 16, fontWeight: 300, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 8 }}
                 >
                   Continue
                 </AnimatedButton>
@@ -209,7 +211,7 @@ export default function ForgotPasswordPage() {
 
           {/* STEP 2: OTP */}
           {step === 2 && (
-            <motion.div key="step2" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="w-full max-w-[420px]">
+            <motion.div key="step2" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="w-full max-w-[426px]">
               <h1 style={{ fontSize: 32, fontWeight: 800, color: theme.color.text1, margin: '0 0 8px', letterSpacing: '-0.5px' }}>Enter code</h1>
               <p style={{ fontSize: 15, color: theme.color.text3, margin: '0 0 32px', fontWeight: 500 }}>
                 We sent a four digit code to your email.
@@ -266,7 +268,7 @@ export default function ForgotPasswordPage() {
 
           {/* STEP 3: Change Password */}
           {step === 3 && (
-            <motion.div key="step3" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="w-full max-w-[420px]">
+            <motion.div key="step3" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="w-full max-w-[426px]">
               <h1 style={{ fontSize: 32, fontWeight: 800, color: theme.color.text1, margin: '0 0 8px', letterSpacing: '-0.5px' }}>Change password</h1>
               <p style={{ fontSize: 15, color: theme.color.text3, margin: '0 0 32px', fontWeight: 500 }}>
                 Enter a new password and proceed to Log in
@@ -306,7 +308,7 @@ export default function ForgotPasswordPage() {
                   type="submit"
                   loading={loading}
                   loadingText="Resetting..."
-                  style={{ width: '100%', padding: '14px', background: '#D4AF37', color: '#0F172A', borderRadius: 6, fontSize: 15, fontWeight: 700, border: 'none', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(212,175,55,0.2)', marginTop: 8 }}
+                  style={{ width: '100%', height: 64, background: '#D4AF37', color: '#121212', borderRadius: 6, fontSize: 16, fontWeight: 300, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 8 }}
                 >
                   Proceed to login
                 </AnimatedButton>
