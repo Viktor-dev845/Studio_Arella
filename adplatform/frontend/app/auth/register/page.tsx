@@ -285,21 +285,21 @@ export default function RegisterPage() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              style={{ position: 'relative', background: '#FFFFFF', borderRadius: 20, padding: '40px 45px', width: '100%', maxWidth: 500, textAlign: 'center' }}
+              style={{ position: 'relative', background: '#FFFFFF', borderRadius: 20, padding: showSuccessModal ? '50px 20px' : '40px 45px', width: '100%', maxWidth: showSuccessModal ? 383 : 500, minHeight: showSuccessModal ? 341 : 'auto', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}
             >
               {showSuccessModal ? (
                 <>
                   <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
-                    <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#D4AF37', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <FaCheck size={32} color="#FFFFFF" />
+                    <div style={{ width: 72, height: 72, borderRadius: '50%', background: '#D4AF37', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <FaCheck size={36} color="#FFFFFF" />
                     </div>
                   </div>
-                  <h2 style={{ fontSize: 20, fontWeight: 700, color: theme.color.text1, margin: '0 0 32px' }}>
+                  <h2 style={{ fontSize: 20, fontWeight: 400, color: '#101828', margin: '0 0 32px' }}>
                     Account created successfully
                   </h2>
                   <AnimatedButton
                     onClick={() => router.push('/onboarding')}
-                    style={{ width: '100%', padding: '14px', background: '#D4AF37', color: '#0F172A', borderRadius: 6, fontSize: 15, fontWeight: 700, border: 'none', cursor: 'pointer', transition: 'all 0.2s' }}
+                    style={{ width: 179, height: 50, margin: '0 auto', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#D4AF37', color: '#121212', borderRadius: 6, fontSize: 16, fontWeight: 300, border: 'none', cursor: 'pointer', transition: 'all 0.2s' }}
                   >
                     Continue to home
                   </AnimatedButton>
