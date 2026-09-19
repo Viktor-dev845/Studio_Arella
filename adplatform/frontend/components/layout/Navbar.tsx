@@ -1,19 +1,19 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
 import { useThemeStore } from '@/store/themeStore';
 import { FaArrowRightFromBracket } from 'react-icons/fa6';
 import NotificationBell from '@/components/ui/NotificationBell';
-import { Search, Star, Sun, Moon, Clock, PanelLeft, Loader2 } from 'lucide-react';
+import { Search, Star, Sun, Moon, History, PanelLeft, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '@/lib/api';
 import { theme } from '@/lib/theme';
 import { trackRecentPage, getRecentPages, pathToLabel, RecentPage } from '@/lib/recentPages';
 
-const F = "'Quicksand', sans-serif";
+const F = theme.font.body;
 
 interface SearchResult { type: string; label: string; path: string; }
 
@@ -164,70 +164,80 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
   }, [searchQuery]);
 
   return (
-    <header style={{ height: 64, background: theme.color.surface, borderBottom: `1px solid ${theme.color.border}`, padding: '0 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0, fontFamily: F }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 20, minWidth: 0 }}>
-
-        {/* Favorite this page */}
+    <header className="flex h-[65px] shrink-0 items-center justify-between border-b border-neutral-200 dark:border-white/10 px-6 bg-white dark:bg-[#111111]" style={{ fontFamily: F }}>
+      <div className="flex items-center gap-4 text-sm min-w-0">
+        
+        {/* Favorite */}
         <button
           onClick={toggleFavorite}
-          className="hide-on-mobile"
-          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', flexShrink: 0 }}
+          className="hide-on-mobile flex items-center justify-center hover:opacity-80 transition-opacity"
           title={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
         >
-          <Star size={15} fill={isFavorited ? theme.color.gold : 'none'} color={isFavorited ? theme.color.gold : theme.color.text4} style={{ transition: 'all 0.15s' }} />
+          <Star className="h-4 w-4 transition-colors" strokeWidth={1.75} fill={isFavorited ? theme.color.gold : 'none'} color={isFavorited ? theme.color.gold : '#9ca3af'} />
         </button>
 
         {/* Creator / Audience Toggle */}
-        <div className="hide-on-mobile" style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-          <span style={{ fontSize: 13, fontWeight: !isAudience ? 700 : 500, color: !isAudience ? theme.color.text1 : theme.color.text4 }}>Creator</span>
+        <div className="hide-on-mobile flex items-center gap-2 text-neutral-500 dark:text-neutral-400">
+          <span className={!isAudience ? "text-neutral-900 dark:text-white font-medium" : ""}>Creator</span>
           <button
             onClick={() => router.push(isAudience ? '/dashboard' : '/audience')}
-            style={{ width: 34, height: 18, borderRadius: 20, background: theme.color.charcoal900, position: 'relative', border: 'none', cursor: 'pointer', padding: 0 }}
+            className="relative inline-flex h-4 w-7 items-center rounded-full bg-neutral-900 dark:bg-neutral-100 transition-colors"
             title={isAudience ? 'Switch back to Creator dashboard' : 'Preview as a listener would see it'}
           >
-            <div style={{ width: 12, height: 12, borderRadius: '50%', background: theme.color.surface, position: 'absolute', top: 3, left: isAudience ? 19 : 3, transition: 'all 0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.2)' }} />
+            <span className={`h-3 w-3 rounded-full bg-white dark:bg-black transition-all ${isAudience ? 'ml-[14px]' : 'ml-0.5'}`} />
           </button>
-          <span style={{ fontSize: 13, fontWeight: isAudience ? 700 : 500, color: isAudience ? theme.color.text1 : theme.color.text4 }}>Audience</span>
+          <span className={isAudience ? "text-neutral-900 dark:text-white font-medium" : ""}>Audience</span>
         </div>
 
         {/* Breadcrumb */}
-        <div style={{ fontSize: 13, fontWeight: 500, color: theme.color.text3, display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, overflow: 'hidden' }}>
-          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{getBreadcrumb()}</span>
+        <div className="flex items-center gap-3 min-w-0">
+          {getBreadcrumb().split(' / ').map((part, i, arr) => (
+            <React.Fragment key={i}>
+              {i > 0 && <span className="text-neutral-300 dark:text-neutral-600">/</span>}
+              <span className={`truncate ${i === arr.length - 1 ? 'font-medium text-neutral-900 dark:text-white' : 'text-neutral-400 dark:text-neutral-500'}`}>
+                {part}
+              </span>
+            </React.Fragment>
+          ))}
         </div>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexShrink: 0 }}>
-
+      <div className="flex items-center gap-4">
+        
         {/* Search */}
-        <div style={{ position: 'relative', width: 200 }} className="hidden sm:block">
-          <Search size={13} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: theme.color.text4 }} />
+        <div className="hidden sm:flex relative items-center gap-2 rounded-lg border border-neutral-200 dark:border-white/10 bg-neutral-50 dark:bg-white/5 px-3 py-1.5 text-sm text-neutral-400 dark:text-neutral-500 min-w-[200px]">
+          <Search className="h-4 w-4" strokeWidth={1.75} />
           <input
             type="text"
-            placeholder="Search bookings, ads, podcasts…"
+            placeholder="Search"
             value={searchQuery}
             onChange={(e) => { setSearchQuery(e.target.value); setSearchOpen(true); }}
             onFocus={() => setSearchOpen(true)}
-            style={{ width: '100%', padding: '6px 28px 6px 30px', background: theme.color.surface2, border: `1px solid ${theme.color.border}`, borderRadius: 8, fontSize: 12, fontWeight: 500, color: theme.color.text1, outline: 'none' }}
+            className="bg-transparent border-none outline-none w-full text-neutral-900 dark:text-white placeholder:text-neutral-400 dark:placeholder:text-neutral-500 font-medium"
           />
-          {searching && <Loader2 size={12} className="animate-spin" style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', color: theme.color.text4 }} />}
+          {!searchQuery && (
+            <kbd className="ml-2 rounded border border-neutral-200 dark:border-white/10 px-1 text-xs text-neutral-300 dark:text-neutral-600">
+              /
+            </kbd>
+          )}
+          {searching && <Loader2 size={12} className="animate-spin text-neutral-400" />}
 
+          {/* Search Dropdown logic */}
           <AnimatePresence>
             {searchOpen && searchQuery.trim().length >= 2 && (
               <>
-                <div style={{ position: 'fixed', inset: 0, zIndex: 9 }} onClick={() => setSearchOpen(false)} />
+                <div className="fixed inset-0 z-[9]" onClick={() => setSearchOpen(false)} />
                 <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 6 }} transition={{ duration: 0.15 }}
-                  style={{ position: 'absolute', top: '100%', left: 0, marginTop: 8, background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 14, padding: 6, minWidth: 280, maxHeight: 320, overflowY: 'auto', boxShadow: '0 10px 30px rgba(0,0,0,0.12)', zIndex: 10 }}>
+                  className="absolute top-full left-0 mt-2 bg-white dark:bg-[#111111] border border-neutral-200 dark:border-white/10 rounded-xl p-1.5 min-w-[280px] max-h-[320px] overflow-y-auto shadow-lg z-10">
                   {searchResults.length === 0 ? (
-                    <p style={{ padding: '12px', fontSize: 12, color: theme.color.text3, margin: 0, textAlign: 'center' }}>
+                    <p className="p-3 text-xs text-neutral-500 text-center">
                       {searching ? 'Searching…' : 'No matches found'}
                     </p>
                   ) : searchResults.map((r, i) => (
                     <Link key={i} href={r.path} onClick={() => { setSearchOpen(false); setSearchQuery(''); }}
-                      style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '8px 10px', borderRadius: 10, textDecoration: 'none' }}
-                      onMouseOver={e => (e.currentTarget.style.background = theme.color.surface2)}
-                      onMouseOut={e => (e.currentTarget.style.background = 'transparent')}>
-                      <span style={{ fontSize: 10, fontWeight: 700, color: theme.color.gold, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{r.type}</span>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: theme.color.text1 }}>{r.label}</span>
+                      className="flex flex-col gap-0.5 px-2.5 py-2 rounded-lg hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors">
+                      <span className="text-[10px] font-bold text-amber-500 uppercase tracking-wider">{r.type}</span>
+                      <span className="text-[13px] font-semibold text-neutral-900 dark:text-white">{r.label}</span>
                     </Link>
                   ))}
                 </motion.div>
@@ -236,66 +246,51 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
           </AnimatePresence>
         </div>
 
-        {/* Theme toggle — deliberately visible at every viewport width so a
-            user who ends up in dark mode (their own past toggle, persisted
-            via localStorage) always has a way back to light, not just on
-            desktop. */}
-        <button
-          onClick={toggleTheme}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text3, display: 'flex', padding: 4 }}
-          title={colorMode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-        >
-          {colorMode === 'dark' ? <Moon size={17} /> : <Sun size={17} />}
-        </button>
-
-        {/* Recently visited */}
-        <div style={{ position: 'relative' }} className="hide-on-mobile">
-          <button onClick={() => setHistoryOpen(o => !o)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text3, display: 'flex', padding: 4 }} title="Recently visited">
-            <Clock size={17} />
+        {/* Right Actions */}
+        <div className="flex items-center gap-3 text-neutral-400 dark:text-neutral-500">
+          <button onClick={toggleTheme} className="hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors" title="Toggle Theme">
+            {colorMode === 'dark' ? <Sun className="h-[18px] w-[18px]" strokeWidth={1.75} /> : <Moon className="h-[18px] w-[18px]" strokeWidth={1.75} />}
           </button>
-          <AnimatePresence>
-            {historyOpen && (
-              <>
-                <div style={{ position: 'fixed', inset: 0, zIndex: 9 }} onClick={() => setHistoryOpen(false)} />
-                <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 6 }} transition={{ duration: 0.15 }}
-                  style={{ position: 'absolute', top: '100%', right: 0, marginTop: 8, background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 14, padding: 6, minWidth: 220, boxShadow: '0 10px 30px rgba(0,0,0,0.12)', zIndex: 10 }}>
-                  <p style={{ fontSize: 11, fontWeight: 700, color: theme.color.text3, textTransform: 'uppercase', letterSpacing: '0.04em', margin: '4px 8px 6px' }}>Recently Visited</p>
-                  {recentPages.length === 0 ? (
-                    <p style={{ padding: '10px', fontSize: 12, color: theme.color.text3, margin: 0, textAlign: 'center' }}>No pages visited yet</p>
-                  ) : recentPages.map((p) => (
-                    <Link key={p.path} href={p.path} onClick={() => setHistoryOpen(false)}
-                      style={{ display: 'block', padding: '8px 10px', fontSize: 13, fontWeight: 600, color: theme.color.text1, textDecoration: 'none', borderRadius: 10 }}
-                      onMouseOver={e => (e.currentTarget.style.background = theme.color.surface2)}
-                      onMouseOut={e => (e.currentTarget.style.background = 'transparent')}>
-                      {p.label}
-                    </Link>
-                  ))}
-                </motion.div>
-              </>
-            )}
-          </AnimatePresence>
+          
+          <div className="relative hide-on-mobile flex items-center justify-center">
+            <button onClick={() => setHistoryOpen(o => !o)} className="hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors" title="Recently visited">
+              <History className="h-[18px] w-[18px]" strokeWidth={1.75} />
+            </button>
+            <AnimatePresence>
+              {historyOpen && (
+                <>
+                  <div className="fixed inset-0 z-[9]" onClick={() => setHistoryOpen(false)} />
+                  <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 6 }} transition={{ duration: 0.15 }}
+                    className="absolute top-full right-0 mt-2 bg-white dark:bg-[#111111] border border-neutral-200 dark:border-white/10 rounded-xl p-1.5 min-w-[220px] shadow-lg z-10 text-left">
+                    <p className="text-[11px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-wider mx-2 my-1.5">Recently Visited</p>
+                    {recentPages.length === 0 ? (
+                      <p className="p-2.5 text-xs text-neutral-500 text-center">No pages visited yet</p>
+                    ) : recentPages.map((p) => (
+                      <Link key={p.path} href={p.path} onClick={() => setHistoryOpen(false)}
+                        className="block px-2.5 py-2 text-[13px] font-semibold text-neutral-900 dark:text-white hover:bg-neutral-50 dark:hover:bg-white/5 rounded-lg transition-colors">
+                        {p.label}
+                      </Link>
+                    ))}
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
+          </div>
+
+          <NotificationBell />
+
+          <button onClick={onMenuClick} className="hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors lg:hidden" title="Toggle Sidebar">
+            <PanelLeft className="h-[18px] w-[18px]" strokeWidth={1.75} />
+          </button>
         </div>
-
-        {/* Notification Bell */}
-        <NotificationBell />
-
-        {/* Sidebar Toggle Icon */}
-        <button onClick={onMenuClick} style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text3, display: 'flex', padding: 4 }} title="Toggle Sidebar">
-          <PanelLeft size={17} />
-        </button>
 
         {/* User Avatar */}
-        <div style={{ position: 'relative' }}>
-          <button onClick={() => setDropOpen(o => !o)}
-            style={{ display: 'flex', alignItems: 'center', gap: 9, background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: F }}>
+        <div className="relative">
+          <button onClick={() => setDropOpen(o => !o)} className="flex items-center justify-center hover:opacity-80 transition-opacity">
             {user?.avatar ? (
-              <img
-                src={user.avatar}
-                alt={user.name || 'Profile'}
-                style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', display: 'block' }}
-              />
+              <img src={user.avatar} alt={user.name || 'Profile'} className="flex h-8 w-8 rounded-full object-cover" />
             ) : (
-              <div style={{ width: 28, height: 28, borderRadius: '50%', background: theme.color.charcoal900, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#fff' }}>
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-900 dark:bg-neutral-100 text-white dark:text-neutral-900 font-bold text-[13px]">
                 {user?.name?.[0]?.toUpperCase() || 'A'}
               </div>
             )}
@@ -304,26 +299,22 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
           <AnimatePresence>
             {dropOpen && (
               <>
-                <div style={{ position: 'fixed', inset: 0, zIndex: 9 }} onClick={() => setDropOpen(false)} />
+                <div className="fixed inset-0 z-[9]" onClick={() => setDropOpen(false)} />
                 <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 6 }} transition={{ duration: 0.15 }}
-                  style={{ position: 'absolute', top: '100%', right: 0, marginTop: 8, background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 16, padding: 8, minWidth: 200, boxShadow: '0 10px 30px rgba(0,0,0,0.08)', zIndex: 10 }}>
-                  <div style={{ padding: '10px 12px', borderBottom: `1px solid ${theme.color.surface2}`, marginBottom: 6 }}>
-                    <p style={{ fontSize: 13, fontWeight: 800, color: theme.color.text1, margin: '0 0 2px' }}>{user?.name || 'Creator'}</p>
-                    <p style={{ fontSize: 11, color: theme.color.text4, margin: 0, fontWeight: 500 }}>{user?.email || 'creator@example.com'}</p>
+                  className="absolute top-full right-0 mt-2 bg-white dark:bg-[#111111] border border-neutral-200 dark:border-white/10 rounded-xl p-2 min-w-[200px] shadow-lg z-10 text-left">
+                  <div className="px-3 py-2 border-b border-neutral-100 dark:border-white/10 mb-1.5">
+                    <p className="text-[13px] font-bold text-neutral-900 dark:text-white m-0 leading-tight">{user?.name || 'Creator'}</p>
+                    <p className="text-[11px] font-medium text-neutral-500 m-0 mt-0.5">{user?.email || 'creator@example.com'}</p>
                   </div>
                   {[{ label: 'My Dashboard', href: '/dashboard' }, { label: 'Settings', href: '/settings' }, { label: 'Support', href: '/support' }].map(({ label, href }) => (
                     <Link key={href} href={href} onClick={() => setDropOpen(false)}
-                      style={{ display: 'block', padding: '9px 12px', fontSize: 13, fontWeight: 700, color: theme.color.text2, textDecoration: 'none', borderRadius: 10, transition: 'background 0.1s' }}
-                      onMouseOver={e => (e.currentTarget.style.background = theme.color.surface2)}
-                      onMouseOut={e => (e.currentTarget.style.background = 'transparent')}>
+                      className="block px-3 py-2 text-[13px] font-bold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-white/5 rounded-lg transition-colors">
                       {label}
                     </Link>
                   ))}
-                  <div style={{ borderTop: `1px solid ${theme.color.surface2}`, marginTop: 6, paddingTop: 6 }}>
+                  <div className="border-t border-neutral-100 dark:border-white/10 mt-1.5 pt-1.5">
                     <button onClick={handleLogout}
-                      style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '9px 12px', fontSize: 13, fontWeight: 800, color: theme.color.error, background: 'none', border: 'none', cursor: 'pointer', borderRadius: 10, fontFamily: F, textAlign: 'left' }}
-                      onMouseOver={e => (e.currentTarget.style.background = theme.color.errorLight)}
-                      onMouseOut={e => (e.currentTarget.style.background = 'transparent')}>
+                      className="w-full flex items-center gap-2 px-3 py-2 text-[13px] font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors">
                       <FaArrowRightFromBracket size={13} /> Sign out
                     </button>
                   </div>
