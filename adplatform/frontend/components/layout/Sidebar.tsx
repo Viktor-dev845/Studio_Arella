@@ -24,6 +24,10 @@ import {
   X
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
+import { useThemeStore } from '@/store/themeStore';
+import { theme } from '@/lib/theme';
+
+const F = theme.font.body;
 
 const adminNav = [
   { href: '/admin', label: 'Overview', icon: Shield },
@@ -131,6 +135,7 @@ function SidebarSectionLabel({ children }: any) {
 export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean; onClose?: () => void }) {
   const pathname = usePathname();
   const { user, logout } = useAuthStore();
+  const { theme: colorMode } = useThemeStore();
   
   const isAdmin = user?.role === 'admin';
   const isActive = (href: string) =>
@@ -166,18 +171,16 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
         />
       )}
       <aside
-        className={`fixed left-0 top-0 z-30 flex h-full w-[220px] shrink-0 flex-col border-r border-neutral-200 dark:border-white/10 bg-white dark:bg-[#111111] font-sans transition-transform duration-200 ease-in-out lg:translate-x-0 ${
+        className={`fixed left-0 top-0 z-30 flex h-full w-[220px] shrink-0 flex-col border-r border-neutral-200 dark:border-white/10 bg-white dark:bg-[#111111] transition-transform duration-200 ease-in-out lg:translate-x-0 ${
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
+        style={{ fontFamily: F }}
       >
         {/* Logo */}
         <div className="flex items-center gap-2 px-5 pb-6 pt-6">
-          <div className="relative flex h-9 w-9 items-center justify-center rounded-md bg-black dark:bg-white/10">
-            <Mic className="h-4 w-4 text-amber-400" strokeWidth={2} />
-          </div>
-          <span className="font-serif text-lg italic tracking-tight text-neutral-900 dark:text-white flex-1">
-            studio
-          </span>
+          <Link href="/" className="flex-1" style={{ textDecoration: 'none' }}>
+            <img src={colorMode === 'dark' ? '/logo-white.png' : '/logo.png'} alt="Studio Arella Logo" className="h-10 object-contain" />
+          </Link>
           {mobileOpen && (
             <button onClick={onClose} className="p-1.5 rounded-full hover:bg-neutral-100 dark:hover:bg-white/10 lg:hidden text-neutral-500 dark:text-neutral-400">
               <X size={16} />
