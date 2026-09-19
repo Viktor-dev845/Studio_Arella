@@ -205,296 +205,286 @@ function BookAdForm() {
     }
   };
 
-  const inputClasses = "w-full px-4 py-3.5 bg-[#F9FAFB] dark:bg-[#111111] border border-transparent rounded-[12px] text-[13px] font-medium text-gray-900 dark:text-slate-50 placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-white/10 transition-all shadow-sm";
-  const labelClasses = "block text-[13px] font-bold text-gray-900 dark:text-slate-50 mb-2.5";
-  const dropdownMenuClasses = "absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#111111] border border-gray-100 dark:border-white/10 rounded-[16px] shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] z-50 overflow-hidden py-1.5";
-  const dropdownItemClasses = "w-full text-left px-4 py-2.5 text-[13px] font-semibold text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors";
+  const inputStyle: React.CSSProperties = {
+    width: '100%', padding: '14px 16px', background: theme.color.surface,
+    border: `1px solid ${theme.color.border}`, borderRadius: 10, fontSize: 14,
+    fontFamily: F, color: theme.color.text1, outline: 'none', boxSizing: 'border-box',
+  };
+  const labelStyle: React.CSSProperties = { fontSize: 13, fontWeight: 600, color: theme.color.text2, marginBottom: 8, display: 'block' };
 
   return (
     <DashboardLayout>
       <PageTransition>
-        <div className="font-body max-w-[1100px] mx-auto px-6 py-8 md:py-10">
-          <div className="flex flex-col lg:flex-row gap-10 lg:gap-14 items-start">
-            
-            {/* Form Column */}
-            <div className="flex-1 min-w-0 w-full">
-              <div className="mb-8">
-                <h1 className="text-[20px] font-bold text-gray-900 dark:text-slate-50">Book Ad</h1>
-                <p className="text-[13px] text-gray-500 dark:text-slate-400 mt-1.5">Fill in the details to schedule your screen ad campaign.</p>
+        <div style={{ fontFamily: F, padding: '24px 32px 48px', display: 'flex', gap: 28, alignItems: 'flex-start', maxWidth: 1100 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h1 style={{ fontFamily: theme.font.display, fontSize: 22, fontWeight: 800, color: theme.color.text1, margin: '0 0 20px' }}>Book Ad</h1>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+              <div>
+                <label style={labelStyle}>Describe your Ad</label>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Describe your Ad"
+                  rows={4}
+                  style={{ ...inputStyle, resize: 'vertical', fontFamily: F }}
+                />
               </div>
 
-              <div className="space-y-6">
-                <div>
-                  <label className={labelClasses}>Describe your Ad</label>
-                  <textarea
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="E.g. Summer sale promotional billboard..."
-                    rows={4}
-                    className={`${inputClasses} resize-none`}
-                  />
-                </div>
+              <div style={{ position: 'relative' }}>
+                <label style={labelStyle}>Screen</label>
+                <button type="button" onClick={() => { setShowScreenDropdown((o) => !o); setShowDurationDropdown(false); setShowCampaignDropdown(false); }}
+                  style={{ ...inputStyle, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', textAlign: 'left' }}>
+                  <span>
+                    {screens.length === 0
+                      ? 'No screens available'
+                      : (() => {
+                          const s = screens.find((sc) => sc.id === selectedScreenId);
+                          return s ? `${s.name} — ${s.location}` : 'Select a screen';
+                        })()}
+                  </span>
+                  <ChevronDown size={15} color={theme.color.text4} />
+                </button>
+                {showScreenDropdown && screens.length > 0 && (
+                  <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 6, background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 10, boxShadow: '0 10px 30px rgba(0,0,0,0.12)', zIndex: 10, width: '100%', overflow: 'hidden', maxHeight: 260, overflowY: 'auto' }}>
+                    {screens.map((s) => (
+                      <div key={s.id} onClick={() => { setSelectedScreenId(s.id); setShowScreenDropdown(false); }}
+                        style={{ padding: '10px 16px', cursor: 'pointer' }}
+                        onMouseOver={(e) => (e.currentTarget.style.background = theme.color.surface2)}
+                        onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}>
+                        <div style={{ fontSize: 14, color: theme.color.text1, fontWeight: 600 }}>{s.name}</div>
+                        <div style={{ fontSize: 12, color: theme.color.text3 }}>{s.location} · {formatCurrency(Number(s.price_per_sec), currency, rates)}/sec</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
 
-                <div className="relative">
-                  <label className={labelClasses}>Screen</label>
-                  <button type="button" onClick={() => { setShowScreenDropdown((o) => !o); setShowDurationDropdown(false); setShowCampaignDropdown(false); }}
-                    className={`${inputClasses} flex items-center justify-between`}>
-                    <span className="truncate">
-                      {screens.length === 0
-                        ? 'No screens available'
-                        : (() => {
-                            const s = screens.find((sc) => sc.id === selectedScreenId);
-                            return s ? `${s.name} — ${s.location}` : 'Select a screen';
-                          })()}
-                    </span>
-                    <ChevronDown size={16} className={`text-gray-400 transition-transform ${showScreenDropdown ? 'rotate-180' : ''}`} />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                {/* Duration dropdown */}
+                <div style={{ position: 'relative' }}>
+                  <label style={labelStyle}>Duration</label>
+                  <button type="button" onClick={() => { setShowDurationDropdown((o) => !o); setShowCampaignDropdown(false); setShowScreenDropdown(false); }}
+                    style={{ ...inputStyle, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', textAlign: 'left' }}>
+                    <span>{durationLabel}</span>
+                    <ChevronDown size={15} color={theme.color.text4} />
                   </button>
-                  {showScreenDropdown && screens.length > 0 && (
-                    <div className={`${dropdownMenuClasses} max-h-[260px] overflow-y-auto`}>
-                      {screens.map((s) => (
-                        <div key={s.id} onClick={() => { setSelectedScreenId(s.id); setShowScreenDropdown(false); }}
-                          className={`${dropdownItemClasses} flex flex-col gap-0.5 cursor-pointer`}>
-                          <span>{s.name}</span>
-                          <span className="text-[11.5px] font-medium text-gray-400">{s.location} · {formatCurrency(Number(s.price_per_sec), currency, rates)}/sec</span>
+                  {showDurationDropdown && (
+                    <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 6, background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 10, boxShadow: '0 10px 30px rgba(0,0,0,0.12)', zIndex: 10, width: '100%', overflow: 'hidden' }}>
+                      {(['hourly', 'weekly', 'monthly'] as DurationUnit[]).map((u) => (
+                        <div key={u} onClick={() => { setDurationUnit(u); setShowDurationDropdown(false); }}
+                          style={{ padding: '10px 16px', fontSize: 14, color: theme.color.text1, cursor: 'pointer' }}
+                          onMouseOver={(e) => (e.currentTarget.style.background = theme.color.surface2)}
+                          onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}>
+                          {{ hourly: 'Hourly', weekly: 'Weekly', monthly: 'Monthly' }[u]}
                         </div>
                       ))}
                     </div>
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Duration dropdown */}
-                  <div className="relative">
-                    <label className={labelClasses}>Duration</label>
-                    <button type="button" onClick={() => { setShowDurationDropdown((o) => !o); setShowCampaignDropdown(false); setShowScreenDropdown(false); }}
-                      className={`${inputClasses} flex items-center justify-between`}>
-                      <span>{durationLabel}</span>
-                      <ChevronDown size={16} className={`text-gray-400 transition-transform ${showDurationDropdown ? 'rotate-180' : ''}`} />
-                    </button>
-                    {showDurationDropdown && (
-                      <div className={dropdownMenuClasses}>
-                        {(['hourly', 'weekly', 'monthly'] as DurationUnit[]).map((u) => (
-                          <button key={u} type="button" onClick={() => { setDurationUnit(u); setShowDurationDropdown(false); }} className={dropdownItemClasses}>
-                            {{ hourly: 'Hourly', weekly: 'Weekly', monthly: 'Monthly' }[u]}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Campaign type dropdown */}
-                  <div className="relative">
-                    <label className={labelClasses}>How would you run your Ad campaign?</label>
-                    <button type="button" onClick={() => { setShowCampaignDropdown((o) => !o); setShowDurationDropdown(false); setShowScreenDropdown(false); }}
-                      className={`${inputClasses} flex items-center justify-between`}>
-                      <span>{campaignLabel}</span>
-                      <ChevronDown size={16} className={`text-gray-400 transition-transform ${showCampaignDropdown ? 'rotate-180' : ''}`} />
-                    </button>
-                    {showCampaignDropdown && (
-                      <div className={dropdownMenuClasses}>
-                        {(['one_time', 'recurring'] as CampaignType[]).map((c) => (
-                          <button key={c} type="button" onClick={() => { setCampaignType(c); setShowCampaignDropdown(false); }} className={dropdownItemClasses}>
-                            {{ one_time: 'One time booking', recurring: 'Recurring booking' }[c]}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                {/* Campaign type dropdown */}
+                <div style={{ position: 'relative' }}>
+                  <label style={labelStyle}>How would you run your Ad campaign?</label>
+                  <button type="button" onClick={() => { setShowCampaignDropdown((o) => !o); setShowDurationDropdown(false); setShowScreenDropdown(false); }}
+                    style={{ ...inputStyle, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', textAlign: 'left' }}>
+                    <span>{campaignLabel}</span>
+                    <ChevronDown size={15} color={theme.color.text4} />
+                  </button>
+                  {showCampaignDropdown && (
+                    <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 6, background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 10, boxShadow: '0 10px 30px rgba(0,0,0,0.12)', zIndex: 10, width: '100%', overflow: 'hidden' }}>
+                      {(['one_time', 'recurring'] as CampaignType[]).map((c) => (
+                        <div key={c} onClick={() => { setCampaignType(c); setShowCampaignDropdown(false); }}
+                          style={{ padding: '10px 16px', fontSize: 14, color: theme.color.text1, cursor: 'pointer' }}
+                          onMouseOver={(e) => (e.currentTarget.style.background = theme.color.surface2)}
+                          onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}>
+                          {{ one_time: 'One time booking', recurring: 'Recurring booking' }[c]}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
+              </div>
 
-                {(durationUnit !== 'hourly' || campaignType === 'recurring') && (
-                  <div>
-                    <label className={labelClasses}>Enter number of {durationUnit === 'monthly' ? 'months' : durationUnit === 'weekly' ? 'weeks' : 'hours'}</label>
-                    <input type="number" min={1} value={durationCount} onChange={(e) => setDurationCount(e.target.value)} className={inputClasses} />
-                  </div>
-                )}
-
+              {(durationUnit !== 'hourly' || campaignType === 'recurring') && (
                 <div>
-                  <label className={labelClasses}>Upload Ad materials <span className="text-gray-400 font-medium ml-1">(You can upload multiple files at once)</span></label>
-                  <div
-                    onClick={() => fileInputRef.current?.click()}
-                    onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
-                    onDragLeave={() => setDragging(false)}
-                    onDrop={(e) => { e.preventDefault(); setDragging(false); handleFile(e.dataTransfer.files?.[0] || null); }}
-                    className={`relative overflow-hidden border-2 border-dashed rounded-[16px] transition-all cursor-pointer ${
-                      dragging ? 'border-[#C69A2C] bg-[#C69A2C]/5' : 'border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5'
-                    } ${file ? 'p-4' : 'p-10'}`}
-                  >
-                    <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/gif,video/mp4,video/quicktime" hidden onChange={(e) => handleFile(e.target.files?.[0] || null)} />
-                    {file && filePreview ? (
-                      <div className="flex items-center gap-4 bg-white dark:bg-[#111111] p-3 rounded-[12px] shadow-sm border border-gray-100 dark:border-white/5 relative z-10">
-                        {file.type.startsWith('video') ? (
-                          <video src={filePreview} className="w-16 h-16 object-cover rounded-[8px]" muted />
-                        ) : (
-                          <img src={filePreview} alt="preview" className="w-16 h-16 object-cover rounded-[8px]" />
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[13px] font-bold text-gray-900 dark:text-slate-50 truncate">{file.name}</p>
-                          <p className="text-[11.5px] font-medium text-gray-500 dark:text-slate-400 mt-0.5">{(file.size / 1024 / 1024).toFixed(1)} MB</p>
-                        </div>
-                        <button type="button" onClick={(e) => { e.stopPropagation(); setFile(null); setFilePreview(null); }} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 transition-colors">
-                          <X size={16} />
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center text-center">
-                        <div className="w-12 h-12 rounded-full bg-[#1A1A1A] dark:bg-white flex items-center justify-center mb-4 shadow-sm">
-                          <Upload size={18} className="text-white dark:text-[#1A1A1A]" />
-                        </div>
-                        <p className="text-[14px] font-bold text-gray-900 dark:text-slate-50 mb-1">Drag &amp; Drop or choose file to upload</p>
-                        <p className="text-[12px] font-medium text-gray-400">Supported formats: jpeg, png, gif, mp4</p>
-                      </div>
-                    )}
-                  </div>
-                  <p className="text-[12.5px] font-medium text-gray-500 dark:text-slate-400 mt-3">
-                    Don&apos;t have Ad materials yet?{' '}
-                    <Link href="/creative" className="text-[#C69A2C] font-bold hover:underline underline-offset-2 transition-all">Request Ad creative services</Link>
-                  </p>
+                  <label style={labelStyle}>Enter number of {durationUnit === 'monthly' ? 'months' : durationUnit === 'weekly' ? 'weeks' : 'hours'}</label>
+                  <input type="number" min={1} value={durationCount} onChange={(e) => setDurationCount(e.target.value)} style={inputStyle} />
                 </div>
+              )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className={labelClasses}>Schedule service delivery timeline</label>
-                    <div className="relative">
-                      <input type="date" min={new Date().toISOString().slice(0, 10)} value={scheduleDate} onChange={(e) => setScheduleDate(e.target.value)} className={`${inputClasses} pr-12`} />
-                      <Calendar size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+              <div>
+                <label style={labelStyle}>Upload Ad materials (You can upload multiple files at once)</label>
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+                  onDragLeave={() => setDragging(false)}
+                  onDrop={(e) => { e.preventDefault(); setDragging(false); handleFile(e.dataTransfer.files?.[0] || null); }}
+                  style={{
+                    border: `2px dashed ${dragging ? theme.color.gold : theme.color.border}`,
+                    borderRadius: 12, padding: file ? 16 : 40, textAlign: 'center', cursor: 'pointer',
+                    background: dragging ? theme.color.goldLight : theme.color.surface2,
+                  }}
+                >
+                  <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/gif,video/mp4,video/quicktime" hidden onChange={(e) => handleFile(e.target.files?.[0] || null)} />
+                  {file && filePreview ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      {file.type.startsWith('video') ? (
+                        <video src={filePreview} style={{ width: 64, height: 64, objectFit: 'cover', borderRadius: 8 }} muted />
+                      ) : (
+                        <img src={filePreview} alt="preview" style={{ width: 64, height: 64, objectFit: 'cover', borderRadius: 8 }} />
+                      )}
+                      <div style={{ textAlign: 'left', flex: 1 }}>
+                        <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: theme.color.text1 }}>{file.name}</p>
+                        <p style={{ margin: 0, fontSize: 11, color: theme.color.text3 }}>{(file.size / 1024 / 1024).toFixed(1)} MB</p>
+                      </div>
+                      <button type="button" onClick={(e) => { e.stopPropagation(); setFile(null); setFilePreview(null); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text3 }}>
+                        <X size={16} />
+                      </button>
                     </div>
-                  </div>
-                  <div>
-                    <label className={labelClasses}>Set timer <span className="text-gray-400 font-medium ml-1">(optional)</span></label>
-                    <div className="relative">
-                      <input type="time" value={scheduleTime} onChange={(e) => setScheduleTime(e.target.value)} className={`${inputClasses} pr-12`} />
-                      <Clock size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                    </div>
+                  ) : (
+                    <>
+                      <div style={{ width: 40, height: 40, borderRadius: '50%', background: theme.color.gold, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+                        <Upload size={18} color="#fff" />
+                      </div>
+                      <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: theme.color.text2 }}>Drag &amp; Drop or choose file to upload</p>
+                      <p style={{ margin: '4px 0 0', fontSize: 11, color: theme.color.text4 }}>Supported formats: jpeg, png, gif, mp4</p>
+                    </>
+                  )}
+                </div>
+                <p style={{ fontSize: 12, color: theme.color.text3, margin: '10px 0 0' }}>
+                  Don&apos;t have Ad materials yet?{' '}
+                  <a href="/creative" style={{ color: theme.color.gold, fontWeight: 700, textDecoration: 'none' }}>Request Ad creative services</a>
+                </p>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <div>
+                  <label style={labelStyle}>Schedule service delivery timeline</label>
+                  <div style={{ position: 'relative' }}>
+                    <input type="date" min={new Date().toISOString().slice(0, 10)} value={scheduleDate} onChange={(e) => setScheduleDate(e.target.value)} style={{ ...inputStyle, paddingRight: 38 }} />
+                    <Calendar size={16} color={theme.color.text4} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
                   </div>
                 </div>
-
-                <div className="pt-6 border-t border-gray-100 dark:border-white/10 flex flex-col sm:flex-row items-center justify-between gap-6">
-                  {cart.length > 0 ? (
-                    <Link href="/cart" className="flex items-center gap-2 text-[13.5px] font-bold text-[#C69A2C] hover:text-[#b58b24] transition-colors bg-[#C69A2C]/10 px-4 py-2 rounded-full">
-                      <ShoppingCart size={15} /> {cart.length} item{cart.length !== 1 ? 's' : ''} in cart
-                    </Link>
-                  ) : <div />}
-                  <div className="flex items-center gap-3 w-full sm:w-auto">
-                    <button type="button" onClick={() => router.push('/dashboard')} className="flex-1 sm:flex-none px-6 py-3.5 bg-white dark:bg-[#111111] border border-gray-200 dark:border-white/10 rounded-[12px] text-[13px] font-bold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors text-center shadow-sm">
-                      Cancel
-                    </button>
-                    <button type="button" onClick={handleAddToCart} disabled={addingToCart || submitting} className="flex-1 sm:flex-none px-6 py-3.5 bg-white dark:bg-[#111111] border-2 border-[#C69A2C] rounded-[12px] text-[13px] font-bold text-[#C69A2C] hover:bg-[#C69A2C]/5 transition-colors disabled:opacity-50 text-center shadow-sm">
-                      {addingToCart ? 'Adding…' : 'Add to Cart'}
-                    </button>
-                    <button type="button" onClick={handleBookSlot} disabled={submitting || addingToCart} className="flex-1 sm:flex-none px-8 py-3.5 bg-[#1A1A1A] dark:bg-white hover:bg-black dark:hover:bg-gray-100 border-2 border-[#1A1A1A] dark:border-white text-white dark:text-[#1A1A1A] rounded-[12px] text-[13px] font-bold transition-all disabled:opacity-60 text-center shadow-sm">
-                      {submitting ? 'Booking…' : 'Book Slot'}
-                    </button>
+                <div>
+                  <label style={labelStyle}>Set timer (optional)</label>
+                  <div style={{ position: 'relative' }}>
+                    <input type="time" value={scheduleTime} onChange={(e) => setScheduleTime(e.target.value)} style={{ ...inputStyle, paddingRight: 38 }} />
+                    <Clock size={16} color={theme.color.text4} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
                   </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, marginTop: 8 }}>
+                {cart.length > 0 ? (
+                  <Link href="/cart" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 700, color: theme.color.gold, textDecoration: 'none' }}>
+                    <ShoppingCart size={15} /> {cart.length} item{cart.length !== 1 ? 's' : ''} in cart
+                  </Link>
+                ) : <span />}
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <button type="button" onClick={() => router.push('/dashboard')} style={{ padding: '12px 24px', background: 'transparent', border: `1px solid ${theme.color.border}`, borderRadius: 10, fontSize: 14, fontWeight: 700, color: theme.color.text2, cursor: 'pointer', fontFamily: F }}>
+                    Cancel
+                  </button>
+                  <button type="button" onClick={handleAddToCart} disabled={addingToCart || submitting} style={{ padding: '12px 24px', background: 'transparent', border: `1px solid ${theme.color.gold}`, borderRadius: 10, fontSize: 14, fontWeight: 800, color: theme.color.goldDark, cursor: (addingToCart || submitting) ? 'not-allowed' : 'pointer', opacity: addingToCart ? 0.7 : 1, fontFamily: F }}>
+                    {addingToCart ? 'Adding…' : 'Add to Cart'}
+                  </button>
+                  <button type="button" onClick={handleBookSlot} disabled={submitting || addingToCart} style={{ padding: '12px 28px', background: theme.color.gold, border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 800, color: theme.color.charcoal900, cursor: submitting ? 'not-allowed' : 'pointer', opacity: submitting ? 0.7 : 1, fontFamily: F }}>
+                    {submitting ? 'Booking…' : 'Book Slot'}
+                  </button>
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Right Column / Sidebar Promo */}
-            <div className="w-full lg:w-[280px] shrink-0 sticky top-[100px]">
-              <div className="bg-white dark:bg-[#111111] border border-gray-100 dark:border-white/10 rounded-[20px] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none overflow-hidden relative group">
-                <div className="absolute -top-12 -right-12 w-32 h-32 bg-[#C69A2C]/10 rounded-full blur-2xl group-hover:bg-[#C69A2C]/20 transition-all duration-700" />
-                <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-[#C69A2C]/10 rounded-full blur-2xl group-hover:bg-[#C69A2C]/20 transition-all duration-700" />
-                
-                <h3 className="text-[16px] font-bold text-gray-900 dark:text-slate-50 mb-3 relative z-10 leading-snug">
-                  Special Ad Space <span className="text-[#C69A2C]">Promo</span>
-                </h3>
-                <p className="text-[13px] font-medium text-gray-500 dark:text-slate-400 mb-6 leading-relaxed relative z-10">
-                  We are running an Ad space promo! Get a massive discount for any booking longer than 3 months.
-                </p>
-                <button type="button" onClick={() => router.push('/podcast/book')} className="w-full py-3 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-white/10 rounded-[12px] text-[12px] font-bold text-gray-800 dark:text-slate-200 uppercase tracking-wider transition-colors relative z-10">
-                  Book Podcast
-                </button>
-              </div>
+          {/* Right column — promo banner, matching the previous /book layout */}
+          <div style={{ width: 260, flexShrink: 0 }}>
+            <div style={{ background: theme.color.charcoal900, borderRadius: 16, padding: '20px 22px', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', bottom: -24, right: -24, width: 100, height: 100, background: 'rgba(224,165,38,0.12)', borderRadius: '50%', pointerEvents: 'none' }} />
+              <p style={{ margin: '0 0 14px', fontSize: 13, fontWeight: 600, color: '#FFFFFF', lineHeight: 1.5, position: 'relative' }}>
+                we are running Ad space promo, get a discount for more than 3months booking
+              </p>
+              <button type="button" onClick={() => router.push('/podcast/book')} style={{ background: theme.color.gold, color: theme.color.charcoal900, border: 'none', borderRadius: 8, padding: '9px 16px', fontSize: 11, fontWeight: 800, letterSpacing: '0.04em', textTransform: 'uppercase', cursor: 'pointer', position: 'relative' }}>
+                Book Podcast Session
+              </button>
             </div>
           </div>
         </div>
 
         {/* ─── Billing / payment modals ─── */}
         {step !== 'form' && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/45 backdrop-blur-[2px] p-4">
-            <div className="bg-white dark:bg-[#111111] rounded-[24px] w-full max-w-[420px] shadow-2xl relative animate-in fade-in zoom-in duration-200">
-              <div className="flex items-center justify-between p-6 pb-4 border-b border-gray-100 dark:border-white/5">
+          <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(15,23,42,0.5)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+            <div style={{ width: '100%', maxWidth: 400, background: theme.color.surface, borderRadius: 20, boxShadow: '0 20px 40px rgba(0,0,0,0.2)', fontFamily: F }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px', borderBottom: `1px solid ${theme.color.surface2}` }}>
                 {step !== 'billing' && step !== 'success' ? (
-                  <button onClick={() => setStep('billing')} className="p-1.5 hover:bg-gray-100 dark:hover:bg-white/[0.06] rounded-full transition-colors text-gray-900 dark:text-slate-50"><ArrowLeft size={18} /></button>
-                ) : <div className="w-[30px]" />}
-                
-                <span className="text-[15px] font-bold text-gray-900 dark:text-slate-50">
+                  <button onClick={() => setStep('billing')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text2, display: 'flex' }}><ArrowLeft size={18} /></button>
+                ) : <span />}
+                <span style={{ fontSize: 15, fontWeight: 800, color: theme.color.text1 }}>
                   {step === 'billing' ? 'Billing' : step === 'card' ? 'Pay with card' : step === 'wallet' ? 'Pay from wallet' : ''}
                 </span>
-                
                 {step !== 'success' ? (
-                  <button onClick={() => setStep('form')} className="p-1.5 hover:bg-gray-100 dark:hover:bg-white/[0.06] rounded-full transition-colors text-gray-900 dark:text-slate-50"><X size={18} /></button>
-                ) : <div className="w-[30px]" />}
+                  <button onClick={() => setStep('form')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text3, display: 'flex' }}><X size={18} /></button>
+                ) : <span />}
               </div>
 
-              <div className="px-8 pb-10 pt-6">
+              <div style={{ padding: '24px 24px 26px' }}>
                 {step === 'billing' && (
-                  <div className="space-y-4">
-                    <p className="text-center text-[14px] font-bold text-gray-900 dark:text-slate-50 mb-6">
-                      {durationLabel} Ad space at <span className="text-[#C69A2C]">{formatCurrency(totalCost, currency, rates)}</span>
+                  <>
+                    <p style={{ textAlign: 'center', fontSize: 13, fontWeight: 700, color: theme.color.text1, margin: '0 0 20px' }}>
+                      {durationLabel} Ad space at {formatCurrency(totalCost, currency, rates)}
                     </p>
-                    
-                    <button onClick={() => setStep('card')} className="w-full text-left px-5 py-4 bg-white dark:bg-[#111111] border border-gray-200 dark:border-white/10 hover:border-[#C69A2C] dark:hover:border-[#C69A2C] rounded-[14px] transition-all group">
-                      <span className="text-[14px] font-bold text-gray-800 dark:text-slate-200 group-hover:text-[#C69A2C] transition-colors">Pay with card</span>
-                    </button>
-                    
-                    <button onClick={() => setStep('wallet')} className="w-full text-left px-5 py-4 bg-white dark:bg-[#111111] border-2 border-[#C69A2C] rounded-[14px] flex items-center justify-between transition-all hover:bg-[#C69A2C]/5 shadow-[0_4px_14px_rgba(198,154,44,0.1)]">
+                    <div onClick={() => setStep('card')} style={{ padding: '14px 16px', border: `1px solid ${theme.color.border}`, borderRadius: 12, marginBottom: 12, cursor: 'pointer', fontSize: 14, fontWeight: 700, color: theme.color.text1 }}>
+                      Pay with card
+                    </div>
+                    <div onClick={() => setStep('wallet')} style={{ padding: '14px 16px', border: `1px solid ${theme.color.gold}`, borderRadius: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div>
-                        <p className="text-[14px] font-bold text-gray-900 dark:text-slate-50">Pay from wallet</p>
-                        <p className="text-[12px] font-medium text-gray-500 dark:text-slate-400 mt-0.5">Balance: {formatCurrency(walletBalance, currency, rates)}</p>
+                        <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: theme.color.text1 }}>Pay from wallet</p>
+                        <p style={{ margin: '2px 0 0', fontSize: 12, color: theme.color.text3 }}>Balance: {formatCurrency(walletBalance, currency, rates)}</p>
                       </div>
-                      {walletBalance >= totalCost && <Check size={18} className="text-[#C69A2C]" />}
-                    </button>
-                  </div>
+                      {walletBalance >= totalCost && <Check size={16} color={theme.color.success} />}
+                    </div>
+                  </>
                 )}
 
                 {step === 'card' && (
-                  <div className="space-y-4">
-                    <p className="text-center text-[14px] font-bold text-gray-900 dark:text-slate-50 mb-6">
-                      Total: <span className="text-[#C69A2C]">{formatCurrency(totalCost, currency, rates)}</span>
+                  <>
+                    <p style={{ textAlign: 'center', fontSize: 13, fontWeight: 700, color: theme.color.text1, margin: '0 0 20px' }}>
+                      {durationLabel} Ad space at {formatCurrency(totalCost, currency, rates)}
                     </p>
-                    <div className="space-y-3 mb-8">
-                      <input placeholder="Card holder's name" value={cardForm.name} onChange={(e) => setCardForm({ ...cardForm, name: e.target.value })} className={inputClasses} />
-                      <input placeholder="Card number" value={cardForm.number} onChange={(e) => setCardForm({ ...cardForm, number: e.target.value })} className={inputClasses} />
-                      <div className="flex gap-3">
-                        <input placeholder="Expiry (MM/YY)" value={cardForm.expiry} onChange={(e) => setCardForm({ ...cardForm, expiry: e.target.value })} className={inputClasses} />
-                        <input placeholder="CVV" value={cardForm.cvv} onChange={(e) => setCardForm({ ...cardForm, cvv: e.target.value })} className={inputClasses} />
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 20 }}>
+                      <input placeholder="Card holder's name" value={cardForm.name} onChange={(e) => setCardForm({ ...cardForm, name: e.target.value })} style={inputStyle} />
+                      <input placeholder="Card number" value={cardForm.number} onChange={(e) => setCardForm({ ...cardForm, number: e.target.value })} style={inputStyle} />
+                      <div style={{ display: 'flex', gap: 10 }}>
+                        <input placeholder="Expiry date (MM/YY)" value={cardForm.expiry} onChange={(e) => setCardForm({ ...cardForm, expiry: e.target.value })} style={inputStyle} />
+                        <input placeholder="CVV" value={cardForm.cvv} onChange={(e) => setCardForm({ ...cardForm, cvv: e.target.value })} style={inputStyle} />
                       </div>
                     </div>
-                    <button onClick={handlePayCard} disabled={paying} className="w-full py-4 bg-[#1A1A1A] dark:bg-white hover:bg-black dark:hover:bg-gray-100 text-white dark:text-[#1A1A1A] rounded-[14px] text-[14px] font-bold transition-all disabled:opacity-60 shadow-sm flex items-center justify-center gap-2">
-                      {paying && <div className="w-4 h-4 border-2 border-white/30 dark:border-black/30 border-t-white dark:border-t-black rounded-full animate-spin" />}
-                      {paying ? 'Redirecting…' : 'Proceed to Checkout'}
+                    <button onClick={handlePayCard} disabled={paying} style={{ width: '100%', padding: 14, background: theme.color.gold, border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 800, color: theme.color.charcoal900, cursor: paying ? 'not-allowed' : 'pointer', opacity: paying ? 0.7 : 1 }}>
+                      {paying ? 'Redirecting…' : 'Pay'}
                     </button>
-                    <p className="text-[11px] font-medium text-gray-400 text-center mt-4">You'll be redirected to a secure gateway to complete payment.</p>
-                  </div>
+                    <p style={{ fontSize: 11, color: theme.color.text4, textAlign: 'center', margin: '10px 0 0' }}>You&apos;ll be redirected to a secure checkout to complete payment.</p>
+                  </>
                 )}
 
                 {step === 'wallet' && (
-                  <div className="space-y-6">
-                    <div className="bg-[#F9FAFB] dark:bg-white/[0.03] border border-gray-100 dark:border-white/5 rounded-[16px] p-5 flex justify-between items-center">
-                      <span className="text-[13px] font-bold text-gray-500 dark:text-slate-400">Total amount</span>
-                      <strong className="text-[15px] font-bold text-gray-900 dark:text-slate-50">NGN {totalCost.toLocaleString()}</strong>
+                  <>
+                    <div style={{ background: theme.color.bg, border: `1px solid ${theme.color.border}`, borderRadius: 12, padding: '16px 18px', display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
+                      <span style={{ fontSize: 13, color: theme.color.text3, fontWeight: 600 }}>Total amount</span>
+                      <strong style={{ fontSize: 13, color: theme.color.text1 }}>NGN {totalCost.toLocaleString()}</strong>
                     </div>
-                    <button onClick={handlePayWallet} disabled={paying || walletBalance < totalCost} className="w-full py-4 bg-[#C69A2C] hover:bg-[#b58b24] text-white rounded-[14px] text-[14px] font-bold transition-all disabled:opacity-60 shadow-[0_4px_14px_rgba(198,154,44,0.3)] flex items-center justify-center gap-2">
-                      {paying && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
-                      {paying ? 'Processing…' : walletBalance < totalCost ? 'Insufficient balance' : 'Pay Now'}
+                    <button onClick={handlePayWallet} disabled={paying || walletBalance < totalCost} style={{ width: '100%', padding: 14, background: theme.color.gold, border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 800, color: theme.color.charcoal900, cursor: (paying || walletBalance < totalCost) ? 'not-allowed' : 'pointer', opacity: (paying || walletBalance < totalCost) ? 0.7 : 1 }}>
+                      {paying ? 'Paying…' : walletBalance < totalCost ? 'Insufficient balance' : 'Pay'}
                     </button>
-                  </div>
+                  </>
                 )}
 
                 {step === 'success' && (
-                  <div className="flex flex-col items-center text-center py-4">
-                    <div className="relative flex items-center justify-center w-24 h-24 mb-6">
-                      <div className="absolute inset-0 bg-[#C69A2C]/20 blur-xl rounded-full" />
-                      <div className="relative w-16 h-16 bg-[#C69A2C] rounded-full flex items-center justify-center shadow-[0_4px_20px_rgba(198,154,44,0.4)]">
-                        <Check size={28} className="text-white" strokeWidth={3} />
-                      </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ width: 64, height: 64, borderRadius: '50%', background: theme.color.gold, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                      <Check size={28} color="#fff" />
                     </div>
-                    <h3 className="text-[18px] font-bold text-gray-900 dark:text-slate-50 mb-2">Booking Confirmed!</h3>
-                    <p className="text-[13px] font-medium text-gray-500 dark:text-slate-400 mb-8">Your ad space has been successfully secured.</p>
-                    <button onClick={() => router.push('/bookings')} className="w-[160px] py-3 bg-[#1A1A1A] dark:bg-white hover:bg-black dark:hover:bg-gray-100 text-white dark:text-[#1A1A1A] rounded-[12px] text-[13px] font-bold transition-all shadow-sm">
-                      View Bookings
+                    <p style={{ fontSize: 16, fontWeight: 800, color: theme.color.text1, margin: '0 0 24px' }}>Payment successful</p>
+                    <button onClick={() => router.push('/bookings')} style={{ width: '100%', padding: 14, background: theme.color.gold, border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 800, color: theme.color.charcoal900, cursor: 'pointer' }}>
+                      Finish
                     </button>
                   </div>
                 )}
