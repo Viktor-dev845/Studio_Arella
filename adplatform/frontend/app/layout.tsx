@@ -1,13 +1,13 @@
 import type { Metadata, Viewport } from 'next';
-import { DM_Sans, Outfit } from 'next/font/google';
+import { Quicksand, Outfit } from 'next/font/google';
 import './globals.css';
 import { ToastProvider } from '@/components/ui/ToastProvider';
 import PublicThemeGuard from '@/components/ui/PublicThemeGuard';
 
-const dmSans = DM_Sans({
+const quicksand = Quicksand({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
-  variable: '--font-dmsans',
+  variable: '--font-quicksand',
   display: 'swap',
 });
 
@@ -36,7 +36,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${dmSans.variable} ${outfit.variable}`}>
+    <html lang="en" className={`${quicksand.variable} ${outfit.variable}`}>
       <body>
         <PublicThemeGuard />
         <ToastProvider>

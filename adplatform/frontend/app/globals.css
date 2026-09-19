@@ -67,7 +67,7 @@
   --owner-purple-border: #DDD6FE;
 
   /* ── Fonts ── */
-  --font-body:    var(--font-dmsans), 'DM Sans', sans-serif;
+  --font-body:    var(--font-quicksand), 'Quicksand', sans-serif;
   --font-display: var(--font-outfit), 'Outfit', sans-serif;
 
   /* ── Shadows ── */
