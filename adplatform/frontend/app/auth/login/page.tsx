@@ -23,23 +23,23 @@ export default function LoginPage() {
   const router = useRouter();
 
   const inputStyle: React.CSSProperties = {
-    width: '100%', padding: '13px 14px', background: theme.color.surface,
-    border: `1px solid ${theme.color.border2}`, borderRadius: 4, fontSize: 13,
-    fontFamily: F, color: theme.color.text1, outline: 'none', boxSizing: 'border-box',
-    transition: 'border-color 0.2s, box-shadow 0.2s', fontWeight: 500
+    width: '100%', height: 64, padding: '0 24px', background: '#FFFFFF',
+    border: '1px solid #8692A6', borderRadius: 6, fontSize: 14,
+    fontFamily: 'inherit', color: '#494949', outline: 'none', boxSizing: 'border-box',
+    transition: 'all 0.2s', fontWeight: 400
   };
   const onFocus = (e: any) => { 
     e.target.style.borderColor = '#D4AF37'; 
-    e.target.style.boxShadow = '0 0 0 2px rgba(212,175,55,0.1)'; 
+    e.target.style.boxShadow = '0px 4px 10px 3px rgba(0, 0, 0, 0.11)';
   };
   const onBlur  = (e: any) => { 
-    e.target.style.borderColor = theme.color.border2; 
-    e.target.style.boxShadow = 'none'; 
+    e.target.style.borderColor = '#8692A6'; 
+    e.target.style.boxShadow = 'none';
   };
 
   const labelStyle: React.CSSProperties = {
-    fontSize: 12, fontWeight: 600, color: theme.color.text3, display: 'block',
-    marginBottom: 6,
+    fontSize: 16, fontWeight: 400, color: '#696F79', display: 'block',
+    marginBottom: 8,
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -113,12 +113,12 @@ export default function LoginPage() {
       <div className="flex items-center justify-center p-6 md:p-12 lg:p-16" style={{ flex: '1 1 50%', maxWidth: '100%', position: 'relative' }}>
         
         <div style={{ position: 'absolute', top: 40, right: 40, textAlign: 'right' }}>
-           <p style={{ fontSize: 11, color: '#CBD5E1', fontWeight: 700, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>YOUR</p>
-           <p style={{ fontSize: 13, color: theme.color.text3, fontWeight: 700, margin: 0 }}>Login details</p>
+           <p style={{ fontSize: 14, color: '#BDBDBD', fontWeight: 400, margin: 0 }}>YOUR</p>
+           <p style={{ fontSize: 16, color: '#8692A6', fontWeight: 600, margin: 0 }}>Login details</p>
         </div>
 
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}
-          className="w-full max-w-[420px]">
+          className="w-full max-w-[426px]">
 
           {pendingToken ? (
             <>
@@ -154,27 +154,27 @@ export default function LoginPage() {
             </>
           ) : (
             <>
-              <h1 style={{ fontSize: 32, fontWeight: 800, color: theme.color.text1, margin: '0 0 8px', letterSpacing: '-0.5px' }}>Log in</h1>
-              <p style={{ fontSize: 15, color: theme.color.text3, margin: '0 0 32px', fontWeight: 500 }}>
+              <h1 style={{ fontSize: 30, fontWeight: 700, color: '#000000', margin: '0 0 8px' }}>Log in</h1>
+              <p style={{ fontSize: 18, color: '#8692A6', margin: '0 0 32px', fontWeight: 400 }}>
                 Don't have an account?{' '}
-                <Link href="/auth/register" style={{ color: '#D4AF37', fontWeight: 600, textDecoration: 'none' }}>Sign up</Link>
+                <Link href="/auth/register" style={{ color: '#D4AF37', fontWeight: 400, textDecoration: 'none' }}>Sign up</Link>
               </p>
 
-              <GoogleButton label="Log in with Google"
-                 style={{ background: theme.color.surface, color: theme.color.text1, border: `1px solid ${theme.color.border}`, boxShadow: '0 2px 4px rgba(0,0,0,0.02)', fontWeight: 600 }}
+              <GoogleButton label="Google" 
+                 style={{ background: '#FFFFFF', color: '#000000', border: '1px solid #D4AF37', borderRadius: 5, fontWeight: 500, height: 44, width: 126, margin: '0 auto', display: 'flex', justifyContent: 'center' }} 
               />
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: 16, margin: '24px 0' }}>
-                <div style={{ flex: 1, height: 1, background: theme.color.surface2 }} />
-                <span style={{ fontSize: 12, color: '#475569', fontWeight: 500 }}>Or continue with</span>
-                <div style={{ flex: 1, height: 1, background: theme.color.surface2 }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16, margin: '32px 0 24px' }}>
+                <div style={{ flex: 1, height: 1, background: '#DBDBDB' }} />
+                <span style={{ fontSize: 13, color: '#121212', fontWeight: 400 }}>Or continue with</span>
+                <div style={{ flex: 1, height: 1, background: '#DBDBDB' }} />
               </div>
 
-              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
                 <div>
                   <label style={labelStyle}>Email address*</label>
-                  <input type="email" placeholder="you@example.com"
+                  <input type="email" placeholder="Invictus@example.com"
                     value={form.email}
                     onChange={e => setForm({ ...form, email: e.target.value })}
                     required style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
@@ -188,12 +188,12 @@ export default function LoginPage() {
                       onChange={e => setForm({ ...form, password: e.target.value })}
                       required style={{ ...inputStyle, paddingRight: 60 }} onFocus={onFocus} onBlur={onBlur} />
                     <button type="button" onClick={() => setShowPw(p => !p)}
-                      style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text1, fontWeight: 600, fontSize: 11 }}>
+                      style={{ position: 'absolute', right: 24, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#000000', fontWeight: 400, fontSize: 12 }}>
                       {showPw ? 'Hide' : 'Show'}
                     </button>
                   </div>
-                  <div style={{ textAlign: 'right', marginTop: 8 }}>
-                     <Link href="/auth/forgot-password" style={{ fontSize: 12, color: '#D4AF37', fontWeight: 600, textDecoration: 'none' }}>Forgot password?</Link>
+                  <div style={{ textAlign: 'right', marginTop: 12 }}>
+                     <Link href="/auth/forgot-password" style={{ fontSize: 12, color: '#D4AF37', fontWeight: 400, textDecoration: 'none' }}>Forgot password?</Link>
                   </div>
                 </div>
 
@@ -201,9 +201,9 @@ export default function LoginPage() {
                   type="submit"
                   loading={loading}
                   loadingText="Logging in..."
-                  style={{ width: '100%', padding: '14px', background: '#D4AF37', color: '#0F172A', borderRadius: 6, fontSize: 15, fontWeight: 700, border: 'none', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(212,175,55,0.2)', marginTop: 8 }}
+                  style={{ width: '100%', height: 64, background: '#D4AF37', color: '#121212', borderRadius: 6, fontSize: 16, fontWeight: 300, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 8 }}
                 >
-                  Log in
+                  Login
                 </AnimatedButton>
               </form>
             </>
