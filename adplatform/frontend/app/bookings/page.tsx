@@ -571,19 +571,20 @@ function BookingsPageContent() {
         {/* Cancel success modal */}
         {cancelSuccessInfo && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px]">
-            <div className="bg-white dark:bg-[#111111] rounded-[24px] pt-10 pb-8 px-8 max-w-[360px] w-full mx-4 shadow-2xl flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-150">
-              <div className="relative flex items-center justify-center w-36 h-36 mb-3">
-                <div className="absolute inset-0 bg-[#C69A2C]/25 blur-2xl rounded-full"></div>
-                <div className="relative w-[64px] h-[64px] bg-[#9E7B21] rounded-full flex items-center justify-center shadow-[0_4px_20px_rgba(158,123,33,0.35)]">
-                  <X size={28} className="text-white" strokeWidth={3} />
+            <div className="bg-white dark:bg-[#111111] rounded-[24px] pt-14 pb-12 px-8 max-w-[380px] w-full mx-4 shadow-2xl flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-150">
+              <div className="relative flex items-center justify-center w-40 h-40 mb-6">
+                <div className="absolute inset-0 bg-[#C69A2C]/20 blur-2xl rounded-full transform scale-110"></div>
+                <div className="relative w-[72px] h-[72px] bg-[#9F7A26] rounded-full flex items-center justify-center shadow-[0_4px_24px_rgba(159,122,38,0.4)]">
+                  <X size={26} className="text-white" strokeWidth={1.25} />
                 </div>
               </div>
-              <h3 className="text-[16px] font-bold text-gray-900 dark:text-slate-50 mb-2">Booking cancelled</h3>
-              <p className="text-[12px] text-gray-500 dark:text-slate-400 mb-8">{cancelSuccessInfo}</p>
+              <h3 className="text-[22px] md:text-[24px] font-semibold text-gray-900 dark:text-white mb-10">
+                Ads cancelled
+              </h3>
               <button
                 type="button"
                 onClick={() => setCancelSuccessInfo(null)}
-                className="w-[140px] py-2.5 rounded-[12px] bg-[#C69A2C] hover:bg-[#b58b24] text-[13px] font-bold text-white transition-colors shadow-sm"
+                className="w-full max-w-[200px] py-3.5 rounded-[12px] bg-[#C69A2C] hover:bg-[#b58b24] text-[15px] font-medium text-black transition-colors shadow-sm"
               >
                 Finish
               </button>
