@@ -139,16 +139,17 @@ export default function NotificationBell() {
         onClick={() => setOpen(o => !o)}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        style={{ width: 38, height: 38, borderRadius: '50%', background: open ? theme.color.goldLight : theme.color.surface2, border: `1px solid ${open ? theme.color.goldMid : theme.color.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative', transition: 'all 0.15s' }}
+        className="relative flex items-center justify-center text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 transition-colors"
+        title="Notifications"
       >
-        <FaBell size={15} color={open ? theme.color.gold : theme.color.text2} />
+        <FaBell className="h-[18px] w-[18px]" />
 
         {/* Unread badge */}
         <AnimatePresence>
           {unread > 0 && (
             <motion.span
               initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
-              style={{ position: 'absolute', top: -3, right: -3, width: 18, height: 18, borderRadius: '50%', background: theme.color.gold, border: `2px solid ${theme.color.surface}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 900, color: theme.color.charcoal900, fontFamily: F }}
+              style={{ position: 'absolute', top: -4, right: -4, width: 14, height: 14, borderRadius: '50%', background: theme.color.gold, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 900, color: theme.color.charcoal900, fontFamily: F }}
             >
               {unread > 9 ? '9+' : unread}
             </motion.span>

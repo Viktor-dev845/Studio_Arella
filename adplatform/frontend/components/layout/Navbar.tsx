@@ -177,7 +177,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
         </button>
 
         {/* Creator / Audience Toggle */}
-        <div className="hide-on-mobile flex items-center gap-2 text-neutral-500 dark:text-neutral-400">
+        <div className="hide-on-mobile flex items-center gap-3 text-neutral-500 dark:text-neutral-400">
           <span className={!isAudience ? "text-neutral-900 dark:text-white font-medium" : ""}>Creator</span>
           <button
             onClick={() => router.push(isAudience ? '/dashboard' : '/audience')}
@@ -188,6 +188,8 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
           </button>
           <span className={isAudience ? "text-neutral-900 dark:text-white font-medium" : ""}>Audience</span>
         </div>
+
+        <span className="hide-on-mobile text-neutral-300 dark:text-neutral-600">/</span>
 
         {/* Breadcrumb */}
         <div className="flex items-center gap-3 min-w-0">
