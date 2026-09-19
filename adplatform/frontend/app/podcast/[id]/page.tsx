@@ -151,7 +151,7 @@ export default function PodcastDetailPage() {
               {/* Stat 1: Total Active Listeners */}
               <div
                 style={{
-                  background: '#FAF8ED',
+                  background: '#F8FAF2',
                   borderRadius: 14,
                   padding: '16px 20px',
                   display: 'flex',
@@ -185,7 +185,7 @@ export default function PodcastDetailPage() {
               {/* Stat 2: Total Plays */}
               <div
                 style={{
-                  background: '#FAF8ED',
+                  background: '#FDF7EC',
                   borderRadius: 14,
                   padding: '16px 20px',
                   display: 'flex',
@@ -219,7 +219,7 @@ export default function PodcastDetailPage() {
               {/* Stat 3: Followers */}
               <div
                 style={{
-                  background: '#FAF8ED',
+                  background: '#F7FAF2',
                   borderRadius: 14,
                   padding: '16px 20px',
                   display: 'flex',
@@ -253,7 +253,7 @@ export default function PodcastDetailPage() {
               {/* Stat 4: Total Likes */}
               <div
                 style={{
-                  background: '#FAF8ED',
+                  background: '#FEF9F0',
                   borderRadius: 14,
                   padding: '16px 20px',
                   display: 'flex',
@@ -298,11 +298,11 @@ export default function PodcastDetailPage() {
               {/* Legend */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 16 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#CCA336' }} />
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#F4C733' }} />
                   <span style={{ fontSize: 11, fontWeight: 600, color: theme.color.text1 }}>Total Plays</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#A3E635' }} />
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#B6FC28' }} />
                   <span style={{ fontSize: 11, fontWeight: 600, color: theme.color.text1 }}>Active Listeners</span>
                 </div>
               </div>
@@ -325,7 +325,7 @@ export default function PodcastDetailPage() {
                 >
                   <div
                     style={{
-                      background: '#CCA336',
+                      background: '#F4C733',
                       color: '#FFFFFF',
                       fontSize: 11,
                       fontWeight: 800,
@@ -342,7 +342,7 @@ export default function PodcastDetailPage() {
                       height: 8,
                       borderRadius: '50%',
                       background: theme.color.surface,
-                      border: '2.5px solid #CCA336',
+                      border: '2.5px solid #F4C733',
                       marginTop: 4,
                     }}
                   />
@@ -352,12 +352,12 @@ export default function PodcastDetailPage() {
                   <AreaChart data={ANALYTICS_DATA} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <defs>
                       <linearGradient id="colorTotalPlays" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#CCA336" stopOpacity={0.4} />
-                        <stop offset="95%" stopColor="#CCA336" stopOpacity={0.02} />
+                        <stop offset="5%" stopColor="#F4C733" stopOpacity={0.4} />
+                        <stop offset="95%" stopColor="#F4C733" stopOpacity={0.02} />
                       </linearGradient>
                       <linearGradient id="colorActiveListeners" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#A3E635" stopOpacity={0.4} />
-                        <stop offset="95%" stopColor="#A3E635" stopOpacity={0.02} />
+                        <stop offset="5%" stopColor="#B6FC28" stopOpacity={0.4} />
+                        <stop offset="95%" stopColor="#B6FC28" stopOpacity={0.02} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid stroke={theme.color.surface2} strokeDasharray="3 3" vertical={false} />
@@ -378,7 +378,7 @@ export default function PodcastDetailPage() {
                     <Area
                       type="monotone"
                       dataKey="plays"
-                      stroke="#CCA336"
+                      stroke="#F4C733"
                       strokeWidth={1.5}
                       fillOpacity={1}
                       fill="url(#colorTotalPlays)"
@@ -386,7 +386,7 @@ export default function PodcastDetailPage() {
                     <Area
                       type="monotone"
                       dataKey="listeners"
-                      stroke="#A3E635"
+                      stroke="#B6FC28"
                       strokeWidth={1.5}
                       fillOpacity={1}
                       fill="url(#colorActiveListeners)"
@@ -413,13 +413,13 @@ export default function PodcastDetailPage() {
                 <Link
                   href={`/podcast/${params.id}/episode/new`}
                   style={{
-                    fontSize: 11,
-                    fontWeight: 700,
-                    color: '#CCA336',
+                    fontSize: 14,
+                    fontWeight: 500,
+                    color: '#E0A526',
                     background: theme.color.surface,
-                    border: '1px solid #CCA336',
+                    border: '1px solid #E0A526',
                     borderRadius: 6,
-                    padding: '6px 14px',
+                    padding: '10px 16px',
                     textDecoration: 'none',
                     display: 'inline-block',
                   }}
@@ -437,11 +437,11 @@ export default function PodcastDetailPage() {
                   const duration = formatEpisodeDuration(ep.duration_seconds);
                   const uploaded = new Date(ep.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
                   return (
-                    <div key={ep.id} style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                    <div key={ep.id} style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                       <div
                         style={{
-                          width: 44,
-                          height: 44,
+                          width: 56,
+                          height: 56,
                           borderRadius: 8,
                           overflow: 'hidden',
                           background: theme.color.surface2,
@@ -457,11 +457,11 @@ export default function PodcastDetailPage() {
                         )}
                       </div>
                       <div>
-                        <p style={{ fontSize: 13, fontWeight: 700, color: theme.color.text1, margin: '0 0 2px' }}>
+                        <p style={{ fontSize: 16, fontWeight: 700, color: theme.color.text1, margin: '0 0 4px' }}>
                           {ep.title}
                         </p>
-                        <p style={{ fontSize: 11.5, color: theme.color.text4, fontWeight: 500, margin: 0 }}>
-                          {ep.status === 'scheduled' ? 'Scheduled' : 'Uploaded'} {uploaded}{duration ? ` • ${duration}` : ''}
+                        <p style={{ fontSize: 14, color: theme.color.text4, fontWeight: 500, margin: 0 }}>
+                          {ep.status === 'scheduled' ? 'Scheduled' : 'Uploaded'} {uploaded}{duration ? ` • ${duration}` : ''} • 2K Likes
                         </p>
                       </div>
                     </div>
