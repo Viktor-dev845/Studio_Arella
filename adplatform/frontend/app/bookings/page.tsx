@@ -126,70 +126,27 @@ function BookingsPageContent() {
         api.get('/podcasts/my-bookings').catch(() => ({ data: { bookings: [] } })),
       ]);
 
-      const adData = adsRes.data.bookings || [];
-      if (adData.length === 0) {
-        // Fallback mock data for preview purposes
-        setAdBookings([
-          {
-            id: 'mock-1',
-            booking_number: 'BKG-001',
-            info: 'Summer Sale Billboard Ad',
-            start_time: new Date(Date.now() + 86400000).toISOString(),
-            end_time: new Date(Date.now() + 172800000).toISOString(),
-            billing: 15000,
-            duration: '24 hours',
-            status: 'active',
-          },
-          {
-            id: 'mock-2',
-            booking_number: 'BKG-002',
-            info: 'Weekend Special Promo',
-            start_time: new Date(Date.now() - 86400000).toISOString(),
-            end_time: new Date(Date.now() - 43200000).toISOString(),
-            billing: 5000,
-            duration: '12 hours',
-            status: 'completed',
-          }
-        ]);
-      } else {
-        setAdBookings(adData.map((b: any): BookingRow => ({
-          id: b.id,
-          booking_number: b.booking_number,
-          info: b.creative_title || b.screen_name || 'Screen Ad Booking',
-          start_time: b.start_time,
-          end_time: b.end_time,
-          billing: Number(b.total_cost) || 0,
-          duration: formatDuration(b.start_time, b.end_time),
-          status: b.status,
-        })));
-      }
+      setAdBookings((adsRes.data.bookings || []).map((b: any): BookingRow => ({
+        id: b.id,
+        booking_number: b.booking_number,
+        info: b.creative_title || b.screen_name || 'Screen Ad Booking',
+        start_time: b.start_time,
+        end_time: b.end_time,
+        billing: Number(b.total_cost) || 0,
+        duration: formatDuration(b.start_time, b.end_time),
+        status: b.status,
+      })));
 
-      const podcastData = podcastRes.data.bookings || [];
-      if (podcastData.length === 0) {
-        setPodcastBookings([
-          {
-            id: 'mock-p1',
-            booking_number: 'POD-001',
-            info: 'Undressed Podcast Session',
-            start_time: new Date(Date.now() + 172800000).toISOString(),
-            end_time: new Date(Date.now() + 176400000).toISOString(),
-            billing: 45000,
-            duration: '60 min',
-            status: 'confirmed',
-          }
-        ]);
-      } else {
-        setPodcastBookings(podcastData.map((b: any): BookingRow => ({
-          id: b.id,
-          booking_number: b.booking_number,
-          info: b.package_type ? `${b.package_type} podcast session` : 'Podcast studio session',
-          start_time: b.start_time,
-          end_time: b.end_time,
-          billing: Number(b.total_cost) || 0,
-          duration: b.duration_minutes ? `${b.duration_minutes} min` : formatDuration(b.start_time, b.end_time),
-          status: b.status,
-        })));
-      }
+      setPodcastBookings((podcastRes.data.bookings || []).map((b: any): BookingRow => ({
+        id: b.id,
+        booking_number: b.booking_number,
+        info: b.package_type ? `${b.package_type} podcast session` : 'Podcast studio session',
+        start_time: b.start_time,
+        end_time: b.end_time,
+        billing: Number(b.total_cost) || 0,
+        duration: b.duration_minutes ? `${b.duration_minutes} min` : formatDuration(b.start_time, b.end_time),
+        status: b.status,
+      })));
     } finally {
       setLoading(false);
     }
