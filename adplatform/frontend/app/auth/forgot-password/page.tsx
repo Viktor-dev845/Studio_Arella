@@ -269,16 +269,18 @@ export default function ForgotPasswordPage() {
           {step === 3 && (
             <motion.div key="step3" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="w-full max-w-[426px]">
               <h1 style={{ fontSize: 30, fontWeight: 700, color: '#000000', margin: '0 0 8px' }}>Change password</h1>
-              <p style={{ fontSize: 18, color: '#8692A6', margin: '0 0 32px', fontWeight: 400 }}>
+              <p style={{ fontSize: 18, color: '#8692A6', margin: '0 0 24px', fontWeight: 400 }}>
                 Enter a new password and proceed to Log in
               </p>
 
-              <form onSubmit={handleResetPassword} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+              <div style={{ width: '100%', height: 1, background: '#F5F5F5', marginBottom: 24 }} />
+
+              <form onSubmit={handleResetPassword} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                 
                 <div>
                   <label style={labelStyle}>New password*</label>
                   <div style={{ position: 'relative' }}>
-                    <input type={showPw ? 'text' : 'password'} placeholder="123 Arella"
+                    <input type={showPw ? 'text' : 'password'} placeholder="123arella"
                       value={password}
                       onChange={e => setPassword(e.target.value)}
                       required style={{ ...inputStyle, paddingRight: 60 }} onFocus={onFocus} onBlur={onBlur} />
