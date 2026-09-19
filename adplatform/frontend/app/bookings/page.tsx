@@ -541,28 +541,27 @@ function BookingsPageContent() {
         {/* Cancel confirm modal */}
         {cancelTarget && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px]">
-            <div className="bg-white dark:bg-[#111111] rounded-[24px] pt-10 pb-8 px-8 max-w-[360px] w-full mx-4 shadow-2xl flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-150">
-              <h3 className="text-[15px] font-bold text-gray-900 dark:text-slate-50 mb-2 leading-snug">
-                Cancel this booking?
+            <div className="bg-white dark:bg-[#111111] rounded-[24px] pt-12 pb-10 px-8 max-w-[420px] w-full mx-4 shadow-2xl flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-150">
+              <h3 className="text-[18px] md:text-[20px] font-semibold text-gray-900 dark:text-white mb-8 leading-snug">
+                Are you sure you want to cancel this {cancelTarget.type === 'ad' ? 'Ad screen' : 'podcast session'}? Ad cancelled is non-refundable after 72hrs of booking. Read Studio Arella <span className="text-[#C69A2C]">terms & condition</span>
               </h3>
-              <p className="text-[12px] text-gray-500 dark:text-slate-400 mb-8">{cancelTarget.info}</p>
-              <div className="flex items-center justify-center gap-3 w-full">
+              <div className="flex items-center justify-center gap-4 w-full">
                 <button
                   type="button"
                   disabled={cancelling}
                   onClick={() => setCancelTarget(null)}
-                  className="flex-1 py-2.5 rounded-[12px] border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111111] text-[13px] font-bold text-gray-800 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-white/[0.06] transition-colors disabled:opacity-50"
+                  className="flex-1 py-3.5 rounded-[12px] border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111111] text-[15px] font-medium text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-white/[0.06] transition-colors disabled:opacity-50"
                 >
-                  No, keep it
+                  No
                 </button>
                 <button
                   type="button"
                   disabled={cancelling}
                   onClick={handleCancel}
-                  className="flex-1 py-2.5 rounded-[12px] bg-[#C69A2C] hover:bg-[#b58b24] text-[13px] font-bold text-white transition-colors shadow-sm disabled:opacity-60 flex items-center justify-center gap-2"
+                  className="flex-1 py-3.5 rounded-[12px] bg-[#C69A2C] hover:bg-[#b58b24] text-[15px] font-medium text-black transition-colors shadow-sm disabled:opacity-60 flex items-center justify-center gap-2"
                 >
-                  {cancelling ? <Loader2 size={14} className="animate-spin" /> : null}
-                  Yes, cancel
+                  {cancelling ? <Loader2 size={16} className="animate-spin text-black" /> : null}
+                  Yes
                 </button>
               </div>
             </div>
