@@ -54,8 +54,8 @@ function SidebarLink({ icon: Icon, label, active = false, dot = false, href, onC
   );
   const className = `flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm transition-colors ${
     active
-      ? "bg-neutral-100 dark:bg-white/10 text-neutral-900 dark:text-white font-medium"
-      : "text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-white/5"
+      ? "bg-neutral-100 dark:bg-white/10 text-neutral-900 dark:text-white font-bold"
+      : "text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-white/5 font-semibold"
   }`;
   
   if (href) {
@@ -85,8 +85,8 @@ function SidebarExpandable({ icon: Icon, label, active = false, href, onClick }:
   );
   const className = `flex w-full items-center gap-1.5 rounded-lg px-1 py-2 text-sm transition-colors ${
     active
-      ? "bg-neutral-100 dark:bg-white/10 text-neutral-900 dark:text-white font-medium"
-      : "text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-white/5"
+      ? "bg-neutral-100 dark:bg-white/10 text-neutral-900 dark:text-white font-bold"
+      : "text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-white/5 font-semibold"
   }`;
 
   if (href) {
@@ -106,8 +106,8 @@ function SidebarExpandable({ icon: Icon, label, active = false, href, onClick }:
 function SidebarSubLink({ label, href, onClick, active = false }: any) {
   const className = `block w-full truncate rounded-lg py-2 pl-9 pr-2.5 text-left text-sm transition-colors ${
     active
-      ? "text-neutral-900 dark:text-white font-medium bg-neutral-100 dark:bg-white/10"
-      : "text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-white/5 hover:text-neutral-900 dark:hover:text-white"
+      ? "text-neutral-900 dark:text-white font-bold bg-neutral-100 dark:bg-white/10"
+      : "text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-white/5 hover:text-neutral-900 dark:hover:text-white font-semibold"
   }`;
 
   if (href) {
