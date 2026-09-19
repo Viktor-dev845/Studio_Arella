@@ -400,7 +400,8 @@ function BookingsPageContent() {
                             <Loader2 size={20} className="animate-spin inline-block mr-2" />
                             Loading bookings…
                           </td>
-                        <                        ) : paginatedRows.length === 0 ? (
+                        </tr>
+                      ) : paginatedRows.length === 0 ? (
                         <tr>
                           <td colSpan={6} className="px-6 py-16 text-center text-gray-400 dark:text-slate-500 text-[13px] font-medium">
                             {search
@@ -468,7 +469,7 @@ function BookingsPageContent() {
                             </td>
                           </tr>
                         );
-                      })}     })}
+                      })}
                     </tbody>
                   </table>
                 </div>
