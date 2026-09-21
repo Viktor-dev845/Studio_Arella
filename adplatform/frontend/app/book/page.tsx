@@ -610,16 +610,16 @@ function BookAdForm() {
 
         {/* Cancel Creative Request Modal */}
         {showCancelCreativeModal && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/45 backdrop-blur-[2px] p-4 animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-[#111111] rounded-[24px] w-full max-w-[480px] shadow-2xl relative flex flex-col p-10 py-12 text-center">
-              <h3 className="text-[28px] font-bold text-gray-900 dark:text-slate-50 leading-[1.3] mb-12">
-                Are you sure you want to cancel<br/>your Ad creative request?
+          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[rgba(162,161,168,0.2)] backdrop-blur-[10px] p-4 animate-in fade-in duration-200">
+            <div className="bg-[#FFFFFF] rounded-[20px] w-[383px] h-[320px] shadow-2xl relative flex flex-col px-[20px]">
+              <h3 className="w-[343px] mt-[74px] mx-auto text-center text-[20px] font-semibold text-[#16151C] leading-[30px]">
+                Are you sure you want to cancel your Ad creative request?
               </h3>
               
-              <div className="flex items-center gap-4">
+              <div className="mt-[68px] flex items-center gap-[11px] mx-auto">
                 <button 
                   onClick={() => setShowCancelCreativeModal(false)}
-                  className="flex-1 py-4 bg-transparent border border-gray-200 dark:border-white/10 rounded-[12px] text-[16px] font-medium text-gray-800 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                  className="w-[166px] h-[50px] flex items-center justify-center bg-transparent border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[16px] font-normal text-[#16151C] hover:bg-gray-50 transition-colors"
                 >
                   No
                 </button>
@@ -629,7 +629,7 @@ function BookAdForm() {
                     setShowCancelCreativeModal(false);
                     toast('Ad creative request cancelled.', 'info');
                   }}
-                  className="flex-1 py-4 bg-[#C69A2C] hover:bg-[#b58b24] text-black rounded-[12px] text-[16px] font-medium transition-colors shadow-sm"
+                  className="w-[166px] h-[50px] flex items-center justify-center bg-[#D4AF37] hover:bg-[#b58b24] text-[#000000] rounded-[6px] text-[16px] font-normal transition-colors"
                 >
                   Yes
                 </button>
