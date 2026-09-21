@@ -62,6 +62,7 @@ function BookAdForm() {
   const [adDesignRequested, setAdDesignRequested] = useState(false);
   const [showCreativeModal, setShowCreativeModal] = useState(false);
   const [showCancelCreativeModal, setShowCancelCreativeModal] = useState(false);
+  const [showCreativeCancelSuccessModal, setShowCreativeCancelSuccessModal] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'card' | 'wallet'>('card');
 
   useEffect(() => {
@@ -627,13 +628,47 @@ function BookAdForm() {
                   onClick={() => {
                     setAdDesignRequested(false);
                     setShowCancelCreativeModal(false);
-                    toast('Ad creative request cancelled.', 'info');
+                    setShowCreativeCancelSuccessModal(true);
                   }}
                   className="w-[166px] h-[50px] flex items-center justify-center bg-[#D4AF37] hover:bg-[#b58b24] text-[#000000] rounded-[6px] text-[16px] font-normal transition-colors"
                 >
                   Yes
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Creative Cancel Success Modal */}
+        {showCreativeCancelSuccessModal && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[rgba(162,161,168,0.2)] backdrop-blur-[10px] p-4 animate-in fade-in duration-200">
+            <div className="bg-[#FFFFFF] rounded-[20px] w-full max-w-[383px] h-[433px] shadow-2xl relative animate-in zoom-in-95 duration-150">
+              
+              {/* Top Line */}
+              <div className="absolute top-[66px] left-[20px] right-[20px] h-0 border-t border-[rgba(162,161,168,0.1)]"></div>
+              
+              {/* Alert Icon */}
+              <div className="absolute top-[94px] left-1/2 -translate-x-1/2 w-[70px] h-[70px] flex items-center justify-center">
+                <div className="absolute inset-[-51.43%] bg-[radial-gradient(116.28%_116.28%_at_0%_-16.28%,_#443A18_4.69%,_#D4AF37_98.31%)] opacity-10 blur-[5px] rounded-full"></div>
+                <div className="absolute inset-[-28.57%] bg-[radial-gradient(116.28%_116.28%_at_0%_-16.28%,_#443A18_4.69%,_#D4AF37_98.31%)] opacity-[0.15] blur-[5px] rounded-full"></div>
+                <div className="absolute inset-0 bg-[radial-gradient(116.28%_116.28%_at_0%_-16.28%,_#443A18_4.69%,_#D4AF37_98.31%)] rounded-full flex items-center justify-center">
+                  <X size={28} className="text-[#FFFFFF]" strokeWidth={1.5} />
+                </div>
+              </div>
+
+              {/* Title */}
+              <h3 className="absolute top-[224px] w-full text-center text-[20px] font-semibold leading-[30px] text-[#16151C]">
+                Creative request cancelled
+              </h3>
+
+              {/* Finish Button */}
+              <button
+                type="button"
+                onClick={() => setShowCreativeCancelSuccessModal(false)}
+                className="absolute top-[307px] left-1/2 -translate-x-1/2 w-[166px] h-[50px] rounded-[6px] bg-[#D4AF37] text-[16px] font-normal text-[#000000] hover:bg-[#b58b24] transition-colors flex items-center justify-center"
+              >
+                Finish
+              </button>
             </div>
           </div>
         )}
