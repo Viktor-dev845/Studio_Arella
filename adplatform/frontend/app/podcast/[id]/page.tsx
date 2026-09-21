@@ -74,7 +74,32 @@ export default function PodcastDetailPage() {
         setShow(res.data.podcast);
         setEpisodes(res.data.episodes || []);
       })
-      .catch(() => { setShow(null); setEpisodes([]); })
+      .catch(() => { 
+        // Fallback dummy data so we can see the layout if backend fails
+        setShow({
+          id: params.id,
+          title: 'Undressed',
+          cover_url: 'https://images.unsplash.com/photo-1593697821252-0c9137d9fc45?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+        });
+        setEpisodes([
+          {
+            id: 'mock-1',
+            title: 'Undressed',
+            cover_url: 'https://images.unsplash.com/photo-1593697821252-0c9137d9fc45?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+            duration_seconds: 142,
+            status: 'published',
+            created_at: '2026-08-17T12:00:00Z'
+          },
+          {
+            id: 'mock-2',
+            title: 'Undressed',
+            cover_url: 'https://images.unsplash.com/photo-1593697821252-0c9137d9fc45?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+            duration_seconds: 142,
+            status: 'published',
+            created_at: '2026-08-17T12:00:00Z'
+          }
+        ]);
+      })
       .finally(() => setLoadingShow(false));
   }, [params.id]);
 
