@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState, useEffect, useMemo } from 'react';
+import { Suspense, useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Search, Monitor, Mic, X, Calendar, Loader2, Download, Star, ArrowLeft, Check, Filter, ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react';
@@ -91,6 +91,20 @@ function BookingsPageContent() {
   };
   const [search, setSearch] = useState('');
 
+  const [showFilter, setShowFilter] = useState(false);
+  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const filterRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
+        setShowFilter(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const [adBookings, setAdBookings] = useState<BookingRow[]>([]);
   const [podcastBookings, setPodcastBookings] = useState<BookingRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -156,13 +170,28 @@ function BookingsPageContent() {
 
   const rows = activeTab === 'podcast' ? podcastBookings : adBookings;
   const filteredRows = useMemo(() => {
+    let result = rows;
+
+    if (filterStatus !== 'all') {
+      result = result.filter(r => {
+        if (filterStatus === 'active') return r.status === 'active' || r.status === 'confirmed';
+        if (filterStatus === 'pending') return r.status === 'pending' || r.status === 'pending_payment';
+        if (filterStatus === 'completed') return r.status === 'completed' || r.status === 'ended';
+        if (filterStatus === 'cancelled') return r.status === 'cancelled' || r.status === 'failed';
+        return r.status === filterStatus;
+      });
+    }
+
     const q = search.trim().toLowerCase();
-    if (!q) return rows;
-    return rows.filter(r =>
-      r.info.toLowerCase().includes(q) ||
-      (r.booking_number || '').toLowerCase().includes(q)
-    );
-  }, [rows, search]);
+    if (q) {
+      result = result.filter(r =>
+        r.info.toLowerCase().includes(q) ||
+        (r.booking_number || '').toLowerCase().includes(q)
+      );
+    }
+    
+    return result;
+  }, [rows, search, filterStatus]);
 
   // Reset to page 1 when tab or search changes
   useEffect(() => {
@@ -353,12 +382,68 @@ function BookingsPageContent() {
                   </div>
 
                   {/* Filter */}
-                  <button
-                    className="flex items-center justify-center w-10 h-10 bg-white dark:bg-[#111111] border border-gray-200 dark:border-white/10 rounded-[12px] text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-white/[0.06] transition-colors shadow-sm"
-                    title="Filter"
-                  >
-                    <Filter size={16} />
-                  </button>
+                  <div className="relative" ref={filterRef}>
+                    <button
+                      onClick={() => setShowFilter(!showFilter)}
+                      className="flex items-center justify-center w-10 h-10 bg-white dark:bg-[#111111] border border-gray-200 dark:border-white/10 rounded-[12px] text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-white/[0.06] transition-colors shadow-sm"
+                      title="Filter"
+                    >
+                      <Filter size={16} />
+                    </button>
+
+                    {showFilter && (
+                      <div 
+                        className="absolute right-0 top-[48px] z-50 bg-white shadow-2xl p-[25px] flex flex-col"
+                        style={{ width: '383px', height: '433px', borderRadius: '20px', border: '1px solid rgba(0,0,0,0.05)' }}
+                      >
+                        <div className="flex justify-between items-center mb-8">
+                           <h3 className="text-[#000000]" style={{ fontFamily: 'Montserrat, sans-serif', fontSize: '25px', fontWeight: 400 }}>Filter by:</h3>
+                           <button onClick={() => setShowFilter(false)} className="text-gray-400 hover:text-gray-600 transition-colors p-1">
+                             <X size={24} />
+                           </button>
+                        </div>
+                        
+                        <div className="flex-1 overflow-y-auto mt-2">
+                           <div className="space-y-5">
+                             {['all', 'active', 'pending', 'completed', 'cancelled'].map(status => (
+                               <label key={status} className="flex items-center gap-4 cursor-pointer group">
+                                 <div className="relative flex items-center justify-center w-6 h-6 rounded-full border border-gray-300 group-hover:border-[#D4AF37] transition-colors">
+                                   <input 
+                                     type="radio" 
+                                     name="status"
+                                     className="peer sr-only" 
+                                     checked={filterStatus === status}
+                                     onChange={() => setFilterStatus(status)} 
+                                   />
+                                   <div className="w-[12px] h-[12px] rounded-full bg-transparent peer-checked:bg-[#D4AF37] transition-colors"></div>
+                                 </div>
+                                 <span className="text-[16px] font-medium text-gray-600 capitalize font-body group-hover:text-black transition-colors">{status}</span>
+                               </label>
+                             ))}
+                           </div>
+                        </div>
+
+                        <div className="w-full flex justify-center items-center mt-6">
+                           <button 
+                             onClick={() => setShowFilter(false)}
+                             style={{ 
+                               width: '166px', 
+                               height: '50px', 
+                               background: '#D4AF37', 
+                               borderRadius: '6px',
+                               color: '#000000',
+                               fontFamily: 'DM Sans, sans-serif',
+                               fontSize: '16px',
+                               fontWeight: 400
+                             }}
+                             className="flex items-center justify-center hover:opacity-90 transition-opacity"
+                           >
+                             Apply
+                           </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
 
                   {/* Export */}
                   <button
