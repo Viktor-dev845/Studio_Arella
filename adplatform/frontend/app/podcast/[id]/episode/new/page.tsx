@@ -567,37 +567,35 @@ export default function AddNewEpisodePage() {
           >
             <div
               style={{
-                background: '#FFFFFF', borderRadius: 20, padding: '70px 40px 50px',
-                textAlign: 'center', maxWidth: 440, width: '90%', margin: 16,
-                boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                background: '#FFFFFF', borderRadius: 20, width: 383, height: 433,
+                boxShadow: '0 20px 60px rgba(0,0,0,0.15)', margin: 16,
                 display: 'flex', flexDirection: 'column', alignItems: 'center'
               }}
             >
-              <div style={{ position: 'relative', width: 140, height: 140, margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                {/* Glowing aura */}
-                <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: '#DCA525', opacity: 0.25, filter: 'blur(28px)' }} />
-                {/* Solid circle */}
-                <div
-                  style={{
-                    position: 'relative', width: 76, height: 76,
-                    borderRadius: '50%', background: '#A17E23',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    boxShadow: '0 4px 15px rgba(161,126,35,0.3)',
-                  }}
-                >
-                  <Check size={36} color="#FFFFFF" strokeWidth={2.5} />
-                </div>
+              {/* Divider Line */}
+              <div style={{ width: 343, height: 1, background: 'rgba(162, 161, 168, 0.1)', marginTop: 66 }} />
+              
+              {/* Check Icon with radial gradients */}
+              <div style={{ position: 'relative', width: 70, height: 70, marginTop: 27 }}>
+                 <div style={{ position: 'absolute', inset: '-51.43%', background: 'radial-gradient(116.28% 116.28% at 0% -16.28%, #443A18 4.69%, #D4AF37 98.31%)', filter: 'blur(5px)', opacity: 0.1, borderRadius: '50%' }} />
+                 <div style={{ position: 'absolute', inset: '-28.57%', background: 'radial-gradient(116.28% 116.28% at 0% -16.28%, #443A18 4.69%, #D4AF37 98.31%)', filter: 'blur(5px)', opacity: 0.15, borderRadius: '50%' }} />
+                 <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(116.28% 116.28% at 0% -16.28%, #443A18 4.69%, #D4AF37 98.31%)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                   <Check size={28} color="#FFFFFF" strokeWidth={1.5} />
+                 </div>
               </div>
-              <h3 style={{ fontSize: 24, fontWeight: 700, color: '#111111', margin: '20px 0 48px' }}>
+
+              <h3 style={{ fontSize: 20, fontWeight: 600, color: '#16151C', margin: '60px 0 0', lineHeight: '30px', textAlign: 'center', padding: '0 20px' }}>
                 {selectedEpisode ? `Episode ${selectedEpisode} posted successfully` : 'Episode posted successfully'}
               </h3>
+
               <button
                 type="button"
                 onClick={() => router.push(`/podcast/${params.id}`)}
                 style={{
-                  padding: '14px 72px', borderRadius: 8, border: 'none',
-                  background: '#DCA525', color: '#111111', fontSize: 16, fontWeight: 500,
-                  cursor: 'pointer', fontFamily: F, boxShadow: '0 2px 6px rgba(220,165,37,0.25)',
+                  marginTop: 53,
+                  width: 166, height: 50, borderRadius: 6, border: 'none',
+                  background: '#D4AF37', color: '#000000', fontSize: 16, fontWeight: 400,
+                  cursor: 'pointer', fontFamily: F,
                 }}
               >
                 Finish
