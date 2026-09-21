@@ -201,27 +201,27 @@ function BookAdForm() {
 
 
 
-  const inputClasses = "w-full px-5 py-4 bg-white dark:bg-[#111111] border border-gray-200 dark:border-white/10 rounded-[12px] text-[15px] font-medium text-gray-800 dark:text-slate-50 placeholder:text-gray-400 focus:outline-none focus:border-[#C69A2C] transition-colors shadow-sm";
-  const dropdownMenuClasses = "absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#111111] border border-gray-100 dark:border-white/10 rounded-[12px] shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] z-50 overflow-hidden py-1.5";
-  const dropdownItemClasses = "w-full text-left px-5 py-3 text-[14px] font-medium text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors";
+  const inputClasses = "w-full px-5 py-4 bg-white border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[17px] font-light text-gray-800 placeholder:text-[rgba(162,161,168,0.8)] focus:outline-none focus:border-[#D4AF37] transition-colors font-body";
+  const dropdownMenuClasses = "absolute top-full left-0 right-0 mt-2 bg-white rounded-[10px] shadow-[0px_30px_30px_rgba(184,184,184,0.25)] z-50 overflow-hidden py-4 px-3 border border-gray-100";
+  const dropdownItemClasses = "w-full text-left px-4 py-3 text-[15px] font-karla text-black hover:bg-gray-50 transition-colors rounded-lg flex justify-between items-center";
 
   return (
     <DashboardLayout>
       <PageTransition>
-        <div className="font-body max-w-[1200px] mx-auto px-8 py-8">
+        <div className="max-w-[1200px] mx-auto px-8 py-8 h-full relative font-body bg-white rounded-[24px]">
           
           {/* Header */}
-          <div className="flex items-center gap-3 mb-10">
-            <button onClick={() => router.back()} className="flex items-center gap-1.5 text-[14px] font-bold text-gray-800 dark:text-slate-200 hover:opacity-70 transition-opacity">
-              <ChevronDown className="rotate-90" size={16} /> Back
+          <div className="flex items-center gap-3 mb-10 mt-2">
+            <button onClick={() => router.back()} className="flex items-center gap-1.5 text-[24px] font-normal text-[#16151C] hover:opacity-70 transition-opacity">
+              <ChevronDown className="rotate-90" size={24} strokeWidth={2.5} /> <span className="ml-1 text-[24px] font-body">Back</span>
             </button>
-            <h1 className="text-[18px] font-bold text-gray-900 dark:text-slate-50 ml-2">Book Ad</h1>
+            <h1 className="text-[20px] font-bold text-[#16151C] ml-6 mt-1 font-body">Book Ad</h1>
           </div>
 
-          <div className="flex flex-col xl:flex-row gap-12 items-start">
+          <div className="flex flex-col xl:flex-row gap-20 items-start">
             
             {/* Form Column */}
-            <div className="flex-1 min-w-0 w-full">
+            <div className="flex-1 min-w-0 w-full max-w-[850px]">
               <div className="space-y-6">
                 
                 {/* Describe Ad */}
@@ -230,24 +230,24 @@ function BookAdForm() {
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Describe your Ad"
-                    rows={5}
-                    className={`${inputClasses} resize-none`}
+                    className={`${inputClasses} h-[131px] resize-none`}
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   {/* Duration dropdown */}
                   <div className="relative">
                     <button type="button" onClick={() => { setShowDurationDropdown((o) => !o); setShowCampaignDropdown(false); }}
-                      className={`${inputClasses} flex items-center justify-between`}>
-                      <span className={durationUnit === 'hourly' ? 'text-gray-400' : ''}>{durationLabel === 'Hourly' ? 'Duration' : durationLabel}</span>
-                      <ChevronDown size={18} className={`text-gray-400 transition-transform ${showDurationDropdown ? 'rotate-180' : ''}`} />
+                      className={`${inputClasses} flex items-center justify-between h-[56px]`}>
+                      <span className={durationUnit === 'hourly' ? 'text-[rgba(162,161,168,0.8)]' : ''}>{durationLabel === 'Hourly' ? 'Duration' : durationLabel}</span>
+                      <ChevronDown size={24} className={`text-[#16151C] transition-transform ${showDurationDropdown ? 'rotate-180' : ''}`} />
                     </button>
                     {showDurationDropdown && (
                       <div className={dropdownMenuClasses}>
                         {(['hourly', 'weekly', 'monthly'] as DurationUnit[]).map((u) => (
                           <button key={u} type="button" onClick={() => { setDurationUnit(u); setShowDurationDropdown(false); }} className={dropdownItemClasses}>
-                            {{ hourly: 'Hourly', weekly: 'Weekly', monthly: 'Monthly' }[u]}
+                            <span>{{ hourly: 'Hourly', weekly: 'Weekly', monthly: 'Monthly' }[u]}</span>
+                            {durationUnit === u && <div className="w-[2px] h-[14px] bg-[#D4AF37] rounded-full" />}
                           </button>
                         ))}
                       </div>
@@ -257,15 +257,16 @@ function BookAdForm() {
                   {/* Campaign type dropdown */}
                   <div className="relative">
                     <button type="button" onClick={() => { setShowCampaignDropdown((o) => !o); setShowDurationDropdown(false); }}
-                      className={`${inputClasses} flex items-center justify-between`}>
-                      <span className={campaignType === 'one_time' ? 'text-gray-400' : ''}>{campaignLabel === 'One time booking' ? 'How would you run your Ad campaign?' : campaignLabel}</span>
-                      <ChevronDown size={18} className={`text-gray-400 transition-transform ${showCampaignDropdown ? 'rotate-180' : ''}`} />
+                      className={`${inputClasses} flex items-center justify-between h-[56px]`}>
+                      <span className={campaignType === 'one_time' ? 'text-[rgba(162,161,168,0.8)]' : ''}>{campaignLabel === 'One time booking' ? 'How would you run your Ad campaign?' : campaignLabel}</span>
+                      <ChevronDown size={24} className={`text-[#16151C] transition-transform ${showCampaignDropdown ? 'rotate-180' : ''}`} />
                     </button>
                     {showCampaignDropdown && (
                       <div className={dropdownMenuClasses}>
                         {(['one_time', 'recurring'] as CampaignType[]).map((c) => (
                           <button key={c} type="button" onClick={() => { setCampaignType(c); setShowCampaignDropdown(false); }} className={dropdownItemClasses}>
-                            {{ one_time: 'One time booking', recurring: 'Recurring booking' }[c]}
+                            <span>{{ one_time: 'One time booking', recurring: 'Recurring booking' }[c]}</span>
+                            {campaignType === c && <div className="w-[2px] h-[14px] bg-[#D4AF37] rounded-full" />}
                           </button>
                         ))}
                       </div>
@@ -275,92 +276,88 @@ function BookAdForm() {
 
                 {(durationUnit !== 'hourly' || campaignType === 'recurring') && (
                   <div>
-                    <input type="number" min={1} value={durationCount} onChange={(e) => setDurationCount(e.target.value)} placeholder={`Enter number of ${durationUnit === 'monthly' ? 'months' : durationUnit === 'weekly' ? 'weeks' : 'hours'}`} className={inputClasses} />
+                    <input type="number" min={1} value={durationCount} onChange={(e) => setDurationCount(e.target.value)} placeholder={`Enter number of ${durationUnit === 'monthly' ? 'months' : durationUnit === 'weekly' ? 'weeks' : 'hours'}`} className={`${inputClasses} h-[56px]`} />
                   </div>
                 )}
 
                 <div className="pt-2">
-                  <p className="text-[15px] text-gray-800 dark:text-slate-200 mb-4">Upload Ad materials (You can upload multiple files at once)</p>
+                  <p className="text-[16px] text-[#16151C] font-light mb-4 font-body">Upload Ad materials (You can upload multiple files at once)</p>
                   <div
                     onClick={() => fileInputRef.current?.click()}
                     onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
                     onDragLeave={() => setDragging(false)}
                     onDrop={(e) => { e.preventDefault(); setDragging(false); handleFile(e.dataTransfer.files?.[0] || null); }}
-                    className={`relative overflow-hidden border border-dashed rounded-[12px] transition-all cursor-pointer ${
-                      dragging ? 'border-[#C69A2C] bg-[#C69A2C]/5' : 'border-[#C69A2C] bg-transparent hover:bg-gray-50 dark:hover:bg-white/5'
-                    } ${file ? 'p-6' : 'p-12'}`}
+                    className={`relative overflow-hidden border border-dashed rounded-[10px] transition-all cursor-pointer h-[133px] flex flex-col items-center justify-center ${
+                      dragging ? 'border-[#D4AF37] bg-[#D4AF37]/5' : 'border-[#D4AF37] bg-transparent hover:bg-gray-50'
+                    }`}
                   >
                     <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/gif,video/mp4,video/quicktime" hidden onChange={(e) => handleFile(e.target.files?.[0] || null)} />
                     {file && filePreview ? (
-                      <div className="flex items-center gap-4 bg-white dark:bg-[#111111] p-3 rounded-[12px] shadow-sm border border-gray-100 dark:border-white/5 relative z-10">
+                      <div className="flex items-center gap-4 bg-white p-3 rounded-[12px] shadow-sm border border-gray-100 relative z-10 w-full max-w-[90%] mx-auto">
                         {file.type.startsWith('video') ? (
-                          <video src={filePreview} className="w-16 h-16 object-cover rounded-[8px]" muted />
+                          <video src={filePreview} className="w-12 h-12 object-cover rounded-[8px]" muted />
                         ) : (
-                          <img src={filePreview} alt="preview" className="w-16 h-16 object-cover rounded-[8px]" />
+                          <img src={filePreview} alt="preview" className="w-12 h-12 object-cover rounded-[8px]" />
                         )}
                         <div className="flex-1 min-w-0">
-                          <p className="text-[14px] font-medium text-gray-900 dark:text-slate-50 truncate">{file.name}</p>
-                          <p className="text-[12px] text-gray-500 dark:text-slate-400 mt-0.5">{(file.size / 1024 / 1024).toFixed(1)} MB</p>
+                          <p className="text-[14px] font-medium text-gray-900 truncate">{file.name}</p>
+                          <p className="text-[12px] text-gray-500 mt-0.5">{(file.size / 1024 / 1024).toFixed(1)} MB</p>
                         </div>
-                        <button type="button" onClick={(e) => { e.stopPropagation(); setFile(null); setFilePreview(null); }} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 transition-colors">
+                        <button type="button" onClick={(e) => { e.stopPropagation(); setFile(null); setFilePreview(null); }} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 transition-colors">
                           <X size={16} />
                         </button>
                       </div>
                     ) : (
                       <div className="flex flex-col items-center justify-center text-center">
-                        <div className="w-12 h-12 rounded-[12px] bg-[#CBB147] flex items-center justify-center mb-4">
+                        <div className="w-[40px] h-[40px] rounded-[10px] bg-[#D4AF37] flex items-center justify-center mb-3">
                           <Upload size={20} className="text-white" />
                         </div>
-                        <p className="text-[15px] font-medium text-gray-800 dark:text-slate-200 mb-1">
-                          Drag &amp; Drop or <span className="text-[#4E8B7C]">choose file</span> to upload
+                        <p className="text-[14px] font-light text-[#16151C] mb-1 font-body">
+                          Drag & Drop or <span className="text-[#3E8B7C]">choose file</span> to upload
                         </p>
-                        <p className="text-[13px] text-gray-400 mt-1">Supported formats : jpeg, png, gif</p>
+                        <p className="text-[11px] font-light text-[#A2A1A8] font-body mt-1">Supported formats : jpeg, png, pf</p>
                       </div>
                     )}
                   </div>
-                  <div className="mt-6 flex items-center">
+                  
+                  <div className="mt-8 flex items-center">
                     {adDesignRequested ? (
                       <div className="flex items-center gap-2">
-                        <p className="text-[15px] text-gray-800 dark:text-slate-200">Ad banner design on request?</p>
-                        <button type="button" onClick={() => setShowCreativeModal(true)} className="text-[#C69A2C] text-[15px] hover:underline transition-all">Change</button>
-                        <button type="button" onClick={() => setShowCancelCreativeModal(true)} className="text-red-500 text-[15px] hover:underline transition-all ml-1">Cancel</button>
+                        <p className="text-[16px] font-light text-[#16151C] font-body">Ad banner design on request?</p>
+                        <button type="button" onClick={() => setShowCreativeModal(true)} className="text-[#D4AF37] text-[16px] font-light hover:underline transition-all font-body">Change</button>
+                        <button type="button" onClick={() => setShowCancelCreativeModal(true)} className="text-red-500 text-[16px] font-light hover:underline transition-all ml-1 font-body">Cancel</button>
                       </div>
                     ) : (
-                      <p className="text-[15px] text-gray-800 dark:text-slate-200">
-                        Don&apos;t have Ad materials yet?{' '}
-                        <button type="button" onClick={() => setShowCreativeModal(true)} className="text-[#D3B04A] hover:underline transition-colors">Request creative services</button>
+                      <p className="text-[16px] font-light text-[#16151C] font-body">
+                        Don’t have Ad materials yet?{' '}
+                        <button type="button" onClick={() => setShowCreativeModal(true)} className="text-[#D4AF37] hover:underline transition-colors font-body">Request Ad creative services</button>
                       </p>
                     )}
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
                   <div className="relative">
                     <input type="date" min={new Date().toISOString().slice(0, 10)} value={scheduleDate} onChange={(e) => setScheduleDate(e.target.value)} 
-                      className={`${inputClasses} pr-12 placeholder-gray-400`} placeholder="Schedule service delivery timeline" 
+                      className={`${inputClasses} h-[58px] pr-12`} placeholder="Schedule service delivery timeline" 
                       style={{ color: scheduleDate ? 'inherit' : 'transparent' }} />
-                    {!scheduleDate && <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 text-[15px] font-medium pointer-events-none bg-white dark:bg-[#111111] pr-2">Schedule service delivery timeline</span>}
-                    <Calendar size={20} className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-800 dark:text-slate-200 pointer-events-none" />
+                    {!scheduleDate && <span className="absolute left-5 top-1/2 -translate-y-1/2 text-[rgba(162,161,168,0.8)] text-[17px] font-light pointer-events-none bg-white pr-2 font-body">Schedule service delivery timeline</span>}
+                    <Calendar size={24} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#16151C] pointer-events-none" />
                   </div>
                   <div className="relative">
                     <input type="time" value={scheduleTime} onChange={(e) => setScheduleTime(e.target.value)} 
-                      className={`${inputClasses} pr-12 placeholder-gray-400`} placeholder="Set timer (optional)" 
+                      className={`${inputClasses} h-[58px] pr-12`} placeholder="Set timer (optional)" 
                       style={{ color: scheduleTime ? 'inherit' : 'transparent' }} />
-                    {!scheduleTime && <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 text-[15px] font-medium pointer-events-none bg-white dark:bg-[#111111] pr-2">Set timer (optional)</span>}
-                    <Clock size={20} className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-800 dark:text-slate-200 pointer-events-none" />
+                    {!scheduleTime && <span className="absolute left-5 top-1/2 -translate-y-1/2 text-[rgba(162,161,168,0.8)] text-[17px] font-light pointer-events-none bg-white pr-2 font-body">Set timer (optional)</span>}
+                    <Clock size={24} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#16151C] pointer-events-none" />
                   </div>
                 </div>
 
-                <div className="pt-4 flex flex-col sm:flex-row items-center justify-end gap-4">
-                  {cart.length > 0 && (
-                    <Link href="/cart" className="flex items-center gap-2 text-[14px] font-medium text-[#C69A2C] hover:text-[#b58b24] transition-colors mr-auto">
-                      <ShoppingCart size={16} /> {cart.length} item{cart.length !== 1 ? 's' : ''} in cart
-                    </Link>
-                  )}
-                  <button type="button" onClick={() => router.push('/dashboard')} className="px-8 py-3.5 bg-white dark:bg-[#111111] border border-gray-200 dark:border-white/10 rounded-[12px] text-[15px] font-medium text-gray-800 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors text-center">
+                <div className="pt-8 flex items-center justify-end gap-5">
+                  <button type="button" onClick={() => router.push('/dashboard')} className="w-[91px] h-[40px] bg-white border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[16px] font-light text-[#16151C] hover:bg-gray-50 transition-colors font-lexend">
                     Cancel
                   </button>
-                  <button type="button" onClick={handleBookSlot} disabled={submitting || addingToCart} className="px-10 py-3.5 bg-[#CCAB46] hover:bg-[#b89839] text-gray-900 rounded-[12px] text-[15px] font-medium transition-all disabled:opacity-60 text-center">
+                  <button type="button" onClick={handleBookSlot} disabled={submitting || addingToCart} className="w-[116px] h-[40px] bg-[#D4AF37] hover:bg-[#b89839] text-black rounded-[6px] text-[14px] font-normal transition-all disabled:opacity-60 font-jost">
                     {submitting ? 'Booking…' : 'Book Slot'}
                   </button>
                 </div>
@@ -368,21 +365,31 @@ function BookAdForm() {
             </div>
 
             {/* Right Column / Sidebar Promo */}
-            <div className="w-full xl:w-[320px] shrink-0 mt-8 xl:mt-0">
-              <div className="bg-[#242424] rounded-[24px] p-8 relative overflow-hidden">
-                <p className="text-[17px] text-white leading-[1.4] mb-8 font-medium">
-                  we are running Ad space<br/>promo, get a discount for more<br/>than 3months booking
+            <div className="w-full xl:w-[245px] shrink-0 mt-8 xl:mt-3">
+              <div className="bg-[#232121] rounded-[15px] p-4 pt-8 pb-6 relative flex flex-col h-[162px] justify-between">
+                <p className="text-[12.6px] text-white leading-[16px] font-normal font-body pr-4">
+                  we are running Ad space promo, get a discount for more than 3months booking
                 </p>
-                <button 
-                  type="button" 
-                  onClick={() => router.push('/podcast/book')} 
-                  className="w-full py-4 bg-[#FAFF66] hover:bg-[#eaf04f] text-[#0A0A0A] rounded-[12px] text-[13px] font-bold uppercase tracking-wide transition-all"
-                  style={{ boxShadow: '0 0 20px rgba(250, 255, 102, 0.4)' }}
-                >
-                  Book Podcast Session
-                </button>
+                <div className="flex justify-center w-full">
+                  <button 
+                    type="button" 
+                    onClick={() => router.push('/podcast/book')} 
+                    className="w-[148px] h-[23.5px] bg-[#FBFF79] hover:bg-[#eaf04f] text-[#051235] rounded-[6px] text-[9.4px] font-semibold uppercase transition-all flex items-center justify-center font-body"
+                    style={{ boxShadow: '0px 0px 7px rgba(251, 255, 121, 0.32)' }}
+                  >
+                    BOOK PODCAST SESSION
+                  </button>
+                </div>
               </div>
             </div>
+          </div>
+          
+          {/* Chat with Arella floating button */}
+          <div className="absolute bottom-8 right-8 z-[100]">
+            <button className="h-[98px] px-8 bg-white rounded-[24px] shadow-[0px_0px_168px_rgba(0,0,0,0.15)] flex items-center gap-3 hover:scale-105 transition-transform">
+              <span className="text-[18px] font-semibold text-[#1A1A1A] font-body">Chat with Arella</span>
+              <div className="w-[27px] h-[27px] rounded-full overflow-hidden bg-gradient-to-br from-pink-300 via-purple-300 to-blue-300 animate-pulse" />
+            </button>
           </div>
         </div>
 
