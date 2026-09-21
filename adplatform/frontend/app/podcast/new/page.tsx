@@ -167,6 +167,9 @@ export default function AddPodcastPage() {
 
             {/* Cover photo section */}
             <div>
+              <p style={{ fontSize: 14, fontWeight: 500, color: theme.color.text1, margin: '0 0 16px' }}>
+                Add cover photo
+              </p>
               <input
                 type="file"
                 ref={fileInputRef}
@@ -178,11 +181,11 @@ export default function AddPodcastPage() {
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 style={{
-                  width: 76,
-                  height: 76,
+                  width: 90,
+                  height: 90,
                   borderRadius: 12,
                   border: `1px solid ${theme.color.border}`,
-                  background: theme.color.bg,
+                  background: '#FFFFFF',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -194,12 +197,9 @@ export default function AddPodcastPage() {
                 {coverPhotoPreview ? (
                   <img src={coverPhotoPreview} alt="Cover Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 ) : (
-                  <Camera size={22} color={theme.color.text4} strokeWidth={1.75} />
+                  <Camera size={22} color={theme.color.text1} strokeWidth={1.5} />
                 )}
               </button>
-              <p style={{ fontSize: 13, fontWeight: 700, color: theme.color.text1, margin: '10px 0 0' }}>
-                Add cover photo
-              </p>
             </div>
 
             {/* Title Input */}
@@ -332,7 +332,7 @@ export default function AddPodcastPage() {
 
             {/* Upload podcast box */}
             <div>
-              <p style={{ fontSize: 13, fontWeight: 700, color: theme.color.text1, margin: '0 0 10px' }}>
+              <p style={{ fontSize: 14, fontWeight: 500, color: theme.color.text1, margin: '0 0 10px' }}>
                 Upload podcast
               </p>
 
@@ -347,10 +347,10 @@ export default function AddPodcastPage() {
               <div
                 onClick={() => audioInputRef.current?.click()}
                 style={{
-                  border: '1.5px dashed #CCA336',
+                  border: '1px dashed #DCA525',
                   borderRadius: 12,
-                  padding: '30px 20px',
-                  background: '#FFFDF9',
+                  padding: '40px 20px',
+                  background: '#FFFFFF',
                   textAlign: 'center',
                   cursor: 'pointer',
                   display: 'flex',
@@ -360,27 +360,29 @@ export default function AddPodcastPage() {
                   transition: 'background 0.15s ease',
                 }}
                 onMouseOver={(e) => (e.currentTarget.style.background = '#FFFBEB')}
-                onMouseOut={(e) => (e.currentTarget.style.background = '#FFFDF9')}
+                onMouseOut={(e) => (e.currentTarget.style.background = '#FFFFFF')}
               >
                 <div
                   style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: '50%',
-                    background: '#CCA336',
+                    width: 40,
+                    height: 40,
+                    borderRadius: 10,
+                    background: '#DCA525',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    marginBottom: 10,
+                    marginBottom: 16,
                   }}
                 >
-                  <UploadCloud size={16} color="#FFFFFF" strokeWidth={2.5} />
+                  <UploadCloud size={20} color="#FFFFFF" strokeWidth={2} />
                 </div>
 
-                <p style={{ fontSize: 13, fontWeight: 700, color: theme.color.text1, margin: '0 0 4px' }}>
-                  {audioFile ? audioFile.name : 'Drag & Drop or choose file to upload'}
+                <p style={{ fontSize: 13, fontWeight: 400, color: theme.color.text1, margin: '0 0 8px' }}>
+                  {audioFile ? audioFile.name : (
+                    <>Drag & Drop or <span style={{ color: '#2F6B4A' }}>choose file</span> to upload</>
+                  )}
                 </p>
-                <p style={{ fontSize: 11, color: theme.color.text4, margin: 0, fontWeight: 500 }}>
+                <p style={{ fontSize: 11, color: theme.color.text4, margin: 0, fontWeight: 400 }}>
                   Supported formats : mp3
                 </p>
               </div>
@@ -515,9 +517,9 @@ export default function AddPodcastPage() {
                     padding: '10px 24px',
                     borderRadius: 8,
                     border: `1px solid ${theme.color.border}`,
-                    background: theme.color.surface,
-                    fontSize: 12.5,
-                    fontWeight: 700,
+                    background: '#FFFFFF',
+                    fontSize: 14,
+                    fontWeight: 500,
                     color: theme.color.text1,
                     cursor: 'pointer',
                     fontFamily: F,
@@ -531,17 +533,17 @@ export default function AddPodcastPage() {
                   onClick={handlePost}
                   disabled={posting}
                   style={{
-                    padding: '10px 32px',
+                    padding: '10px 42px',
                     borderRadius: 8,
                     border: 'none',
-                    background: '#CCA336',
-                    fontSize: 12.5,
-                    fontWeight: 700,
-                    color: '#FFFFFF',
+                    background: '#DCA525',
+                    fontSize: 14,
+                    fontWeight: 500,
+                    color: '#222222',
                     cursor: posting ? 'not-allowed' : 'pointer',
                     opacity: posting ? 0.7 : 1,
                     fontFamily: F,
-                    boxShadow: '0 2px 6px rgba(204,163,54,0.3)',
+                    boxShadow: '0 2px 6px rgba(220,165,37,0.3)',
                     display: 'flex', alignItems: 'center', gap: 8,
                   }}
                 >
@@ -550,6 +552,7 @@ export default function AddPodcastPage() {
                 </button>
               </div>
             </div>
+            <div style={{ height: 40 }} />
           </div>
 
           {/* ─── RIGHT COLUMN (Promos) ─── */}

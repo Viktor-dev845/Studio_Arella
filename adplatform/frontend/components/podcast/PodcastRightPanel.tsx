@@ -50,7 +50,7 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
         {/* Billboard Promo Card */}
         <div
           style={{
-            background: '#3B3416',
+            background: '#493700',
             borderRadius: 16,
             padding: 20,
             display: 'flex',
@@ -66,7 +66,7 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
               Place your Ad on our billboard for wider reach
             </h3>
             <p style={{ fontSize: 10.5, color: '#D5CCA7', margin: 0, lineHeight: 1.45, fontWeight: 500 }}>
-              Did you know that over 78% of businesses grow with billboard? That's a lot of potential revenue lost!
+              Did you know that over 70% of businesses goes unknown? That's a lot of potential revenue lost!
             </p>
           </div>
 
@@ -74,7 +74,7 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
             <Link
               href="/podcast/book"
               style={{
-                background: '#FBF5E8',
+                background: '#E2F163',
                 color: '#1E293B',
                 padding: '7px 14px',
                 borderRadius: 8,
@@ -97,6 +97,7 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
                 overflow: 'hidden',
                 background: '#4D4421',
                 border: '1px solid rgba(255,255,255,0.15)',
+                transform: 'rotate(-8deg)',
               }}
             >
               <img
@@ -111,7 +112,7 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
         {/* Studio Arella Promo Card */}
         <div
           style={{
-            background: '#1E1F24',
+            background: '#222222',
             borderRadius: 16,
             padding: 20,
             display: 'flex',
@@ -150,40 +151,51 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
           </div>
         </div>
 
-        {/* Floating Chat Widget */}
-        <div style={{ marginTop: 8 }}>
-          <Link
-            href="/chat"
+        {/* Chat with Arella bubble */}
+        <div
+          style={{
+            marginTop: 8,
+            display: 'flex',
+            justifyContent: 'flex-start',
+            position: 'relative',
+          }}
+        >
+          <div
             style={{
-              background: theme.color.surface,
-              border: `1px solid ${theme.color.border}`,
+              background: '#FFFFFF',
               borderRadius: 24,
-              padding: '10px 18px',
+              padding: '14px 20px',
               display: 'inline-flex',
               alignItems: 'center',
-              gap: 8,
-              textDecoration: 'none',
-              boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
+              gap: 12,
+              boxShadow: '0 8px 30px rgba(0,0,0,0.06)',
               position: 'relative',
+              cursor: 'pointer',
             }}
           >
-            <span style={{ fontSize: 12.5, fontWeight: 700, color: theme.color.text1 }}>Chat with Arella</span>
-            <span style={{ fontSize: 15 }}>🌐</span>
+            <span style={{ fontSize: 15, fontWeight: 700, color: theme.color.text1 }}>
+              Chat with Arella
+            </span>
+            <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'linear-gradient(135deg, #A1C4FD, #C2E9FB)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', boxShadow: '0 0 10px rgba(161,196,253,0.6)' }}>
+              <Globe size={14} color="#3B82F6" strokeWidth={2} />
+            </div>
+            
+            {/* Speech bubble tail */}
             <div
               style={{
                 position: 'absolute',
-                bottom: -6,
-                right: 28,
-                width: 10,
-                height: 10,
-                background: theme.color.surface,
-                borderRight: `1px solid ${theme.color.border}`,
-                borderBottom: `1px solid ${theme.color.border}`,
-                transform: 'rotate(45deg)',
+                bottom: -8,
+                left: 32,
+                width: 16,
+                height: 16,
+                background: '#FFFFFF',
+                clipPath: 'polygon(0 0, 100% 0, 100% 100%)',
+                transform: 'rotate(25deg)',
               }}
             />
-          </Link>
+          </div>
         </div>
+
       </div>
     );
   }
