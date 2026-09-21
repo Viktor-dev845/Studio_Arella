@@ -496,15 +496,22 @@ function BookAdForm() {
                 )}
 
                 {step === 'wallet' && (
-                  <div className="space-y-6">
-                    <div className="bg-[#F9FAFB] dark:bg-white/[0.03] border border-gray-100 dark:border-white/5 rounded-[16px] p-5 flex justify-between items-center">
-                      <span className="text-[13px] font-bold text-gray-500 dark:text-slate-400">Total amount</span>
-                      <strong className="text-[15px] font-bold text-gray-900 dark:text-slate-50">NGN {totalCost.toLocaleString()}</strong>
+                  <div className="w-full max-w-[468px] flex flex-col items-center h-full pt-10">
+                    <div className="w-full h-[127px] rounded-[16px] border-2 border-[#D4AF37] px-[44px] flex justify-between items-center bg-white mb-8">
+                      <span className="text-[16px] font-medium text-[#101828]">Total amount</span>
+                      <span className="text-[14px] font-medium text-[#101828]">{formatCurrency(totalCost, currency, rates)}</span>
                     </div>
-                    <button onClick={handlePayWallet} disabled={paying || walletBalance < totalCost} className="w-full py-4 bg-[#C69A2C] hover:bg-[#b58b24] text-white rounded-[14px] text-[14px] font-bold transition-all disabled:opacity-60 shadow-[0_4px_14px_rgba(198,154,44,0.3)] flex items-center justify-center gap-2">
-                      {paying && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
-                      {paying ? 'Processing…' : walletBalance < totalCost ? 'Insufficient balance' : 'Pay Now'}
-                    </button>
+                    
+                    <div className="mt-8 w-full flex-1 flex flex-col justify-end">
+                      <button 
+                        onClick={handlePayWallet} 
+                        disabled={paying || walletBalance < totalCost} 
+                        className="w-full h-[56px] bg-[#D4AF37] hover:bg-[#b58b24] text-[#000000] rounded-[6px] text-[16px] font-medium transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+                      >
+                        {paying && <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />}
+                        {paying ? 'Processing…' : walletBalance < totalCost ? 'Insufficient balance' : 'Pay'}
+                      </button>
+                    </div>
                   </div>
                 )}
 
