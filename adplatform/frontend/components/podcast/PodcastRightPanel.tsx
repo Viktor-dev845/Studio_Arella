@@ -1,27 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ChevronRight, Globe } from 'lucide-react';
 import { theme } from '@/lib/theme';
-import api from '@/lib/api';
 
 const F = theme.font.body;
 
-const EXAMPLE_BADGE: React.CSSProperties = {
-  fontSize: 9, fontWeight: 800, color: theme.color.text4, background: theme.color.surface2,
-  padding: '2px 7px', borderRadius: 100, letterSpacing: '0.04em', textTransform: 'uppercase',
-};
-
 interface PodcastRightPanelProps {
   variant?: 'calendar' | 'promos';
-}
-
-interface UpcomingBooking {
-  title: string;
-  time: string;
-  border: string;
-  isToday: boolean;
 }
 
 const TOP_PERFORMING_TOPICS = [
@@ -57,47 +43,7 @@ const TOP_PERFORMING_TOPICS = [
   },
 ];
 
-function formatBookingTime(iso: string) {
-  return new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-}
-
-function isSameDay(a: Date, b: Date) {
-  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
-}
-
-function formatBookingDay(iso: string) {
-  const d = new Date(iso);
-  const now = new Date();
-  if (isSameDay(d, now)) return 'Today';
-  const tomorrow = new Date(now); tomorrow.setDate(now.getDate() + 1);
-  if (isSameDay(d, tomorrow)) return 'Tomorrow';
-  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-}
-
 export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRightPanelProps) {
-  const [upcoming, setUpcoming] = useState<UpcomingBooking[]>([]);
-
-  useEffect(() => {
-    if (variant !== 'calendar') return;
-    api.get('/podcasts/my-bookings')
-      .then((res) => {
-        const bookings = (res.data.bookings || [])
-          .filter((b: any) => b.status !== 'cancelled' && new Date(b.start_time).getTime() >= Date.now())
-          .sort((a: any, b: any) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
-          .slice(0, 3)
-          .map((b: any) => ({
-            title: 'Podcast session',
-            time: b.start_time,
-            border: '#10B981',
-            isToday: isSameDay(new Date(b.start_time), new Date()),
-          }));
-        setUpcoming(bookings);
-      })
-      .catch(() => setUpcoming([]));
-  }, [variant]);
-
-  const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', weekday: 'short' });
-
   if (variant === 'promos') {
     return (
       <div style={{ width: 280, display: 'flex', flexDirection: 'column', gap: 20, flexShrink: 0, fontFamily: F }}>
@@ -273,10 +219,9 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
       {/* Your top performing topics */}
       <div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 14px' }}>
-          <h3 style={{ fontSize: 12.5, fontWeight: 700, color: theme.color.text1, margin: 0 }}>
+          <h3 style={{ fontSize: 13, fontWeight: 500, color: '#000000', margin: 0 }}>
             Your top performing topics
           </h3>
-          <span style={EXAMPLE_BADGE}>Example</span>
         </div>
 
         <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -304,9 +249,9 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
               <div style={{ minWidth: 0 }}>
                 <p
                   style={{
-                    fontSize: 12,
-                    fontWeight: 700,
-                    color: theme.color.text1,
+                    fontSize: 13,
+                    fontWeight: 500,
+                    color: '#000000',
                     margin: '0 0 2px',
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
@@ -315,7 +260,7 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
                 >
                   {topic.title}
                 </p>
-                <p style={{ fontSize: 10.5, color: theme.color.text4, margin: 0, fontWeight: 500 }}>
+                <p style={{ fontSize: 11, color: theme.color.text4, margin: 0, fontWeight: 400 }}>
                   {topic.listeners}
                 </p>
               </div>
@@ -326,45 +271,42 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
 
       {/* Recent Podcast Booking Calendar */}
       <div>
-        <h3 style={{ fontSize: 12.5, fontWeight: 700, color: theme.color.text1, margin: '0 0 12px' }}>
+        <h3 style={{ fontSize: 13, fontWeight: 500, color: '#000000', margin: '0 0 12px' }}>
           Recent Podcast Booking Calendar
         </h3>
 
-        {/* Today's date */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-          <span style={{ fontSize: 12, fontWeight: 700, color: theme.color.text1 }}>{today}</span>
+        {/* Date and Controls */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 13, color: '#64748B', fontWeight: 400 }}>Aug 15, Sat</span>
+            <span style={{ fontSize: 9, fontWeight: 700, color: '#FFFFFF', background: '#1E293B', padding: '3px 8px', borderRadius: 12, letterSpacing: '0.02em' }}>
+              TODAY
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <button style={{ width: 24, height: 24, borderRadius: 6, border: '1px solid #E2E8F0', background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#94A3B8' }}>
+              <ChevronRight size={14} style={{ transform: 'rotate(180deg)' }} />
+            </button>
+            <button style={{ width: 24, height: 24, borderRadius: 6, border: '1px solid #E2E8F0', background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#94A3B8' }}>
+              <ChevronRight size={14} />
+            </button>
+          </div>
         </div>
 
         {/* Bookings cards */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 }}>
-          {upcoming.length === 0 ? (
-            <p style={{ fontSize: 11.5, color: theme.color.text4, fontWeight: 600, margin: 0 }}>No upcoming sessions.</p>
-          ) : upcoming.map((b, i) => (
-            <div
-              key={i}
-              style={{
-                background: theme.color.surface,
-                border: `1px solid ${theme.color.border}`,
-                borderLeft: `3px solid ${b.border}`,
-                borderRadius: 8,
-                padding: '9px 12px',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                <p style={{ fontSize: 12, fontWeight: 700, color: theme.color.text1, margin: 0 }}>
-                  {b.title}
-                </p>
-                {b.isToday && (
-                  <span style={{ fontSize: 8.5, fontWeight: 800, color: '#FFFFFF', background: '#1E293B', padding: '1px 6px', borderRadius: 10, letterSpacing: '0.04em' }}>
-                    TODAY
-                  </span>
-                )}
-              </div>
-              <p style={{ fontSize: 10.5, color: theme.color.text4, margin: 0, fontWeight: 500 }}>
-                {formatBookingDay(b.time)} · {formatBookingTime(b.time)}
-              </p>
-            </div>
-          ))}
+          <div style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderLeft: `3px solid #10B981`, borderRadius: 8, padding: '12px 14px' }}>
+            <p style={{ fontSize: 13, fontWeight: 500, color: '#000000', margin: '0 0 4px' }}>Podcast session</p>
+            <p style={{ fontSize: 11, color: '#94A3B8', margin: 0 }}>16:00</p>
+          </div>
+          <div style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderLeft: `3px solid #F59E0B`, borderRadius: 8, padding: '12px 14px' }}>
+            <p style={{ fontSize: 13, fontWeight: 500, color: '#000000', margin: '0 0 4px' }}>Podcast booking</p>
+            <p style={{ fontSize: 11, color: '#94A3B8', margin: 0 }}>14:00</p>
+          </div>
+          <div style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderLeft: `3px solid #3B82F6`, borderRadius: 8, padding: '12px 14px' }}>
+            <p style={{ fontSize: 13, fontWeight: 500, color: '#000000', margin: '0 0 4px' }}>Podcast booking</p>
+            <p style={{ fontSize: 11, color: '#94A3B8', margin: 0 }}>13:00</p>
+          </div>
         </div>
 
         {/* Book podcast slot button */}

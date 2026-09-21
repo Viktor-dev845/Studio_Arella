@@ -7,16 +7,8 @@ import { theme } from '@/lib/theme';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { PageTransition } from '@/components/ui/Animations';
 import PodcastRightPanel from '@/components/podcast/PodcastRightPanel';
-import api from '@/lib/api';
 
 const F = theme.font.body;
-
-interface MyShow {
-  id: string;
-  title: string;
-  cover_url: string | null;
-  episode_count: string;
-}
 
 interface PodcastItem {
   id: string;
@@ -83,15 +75,6 @@ const ALL_PODCAST_ITEMS: PodcastItem[] = [
 export default function PodcastsPage() {
   const [trendingView, setTrendingView] = useState<'board' | 'list'>('board');
   const [allView, setAllView] = useState<'board' | 'list'>('board');
-  const [myShows, setMyShows] = useState<MyShow[]>([]);
-  const [loadingMyShows, setLoadingMyShows] = useState(true);
-
-  useEffect(() => {
-    api.get('/shows/mine')
-      .then((res) => setMyShows(res.data?.shows || []))
-      .catch(() => setMyShows([]))
-      .finally(() => setLoadingMyShows(false));
-  }, []);
 
   const renderCard = (pod: PodcastItem) => (
     <Link
@@ -127,92 +110,6 @@ export default function PodcastsPage() {
             display: 'block',
           }}
         />
-
-        {/* Artistic styled badge simulating Figma artwork overlay if present */}
-        {pod.overlayBadge && (
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              pointerEvents: 'none',
-            }}
-          >
-            {pod.id === '2' || pod.id === '7' ? (
-              <div
-                style={{
-                  position: 'absolute',
-                  top: 10,
-                  left: 10,
-                  fontSize: 8,
-                  fontWeight: 900,
-                  color: '#B45309',
-                  background: 'rgba(254, 243, 199, 0.9)',
-                  padding: '2px 5px',
-                  borderRadius: 3,
-                  letterSpacing: '0.05em',
-                }}
-              >
-                WEAK IN YOUR LIGHT
-              </div>
-            ) : null}
-
-            {pod.id === '3' || pod.id === '8' ? (
-              <div
-                style={{
-                  fontSize: 18,
-                  fontWeight: 900,
-                  color: '#EF4444',
-                  textShadow: '0 2px 8px rgba(0,0,0,0.5)',
-                  transform: 'rotate(-12deg)',
-                  letterSpacing: '0.08em',
-                }}
-              >
-                pink SOBER
-              </div>
-            ) : null}
-
-            {pod.id === '4' || pod.id === '9' ? (
-              <div
-                style={{
-                  position: 'absolute',
-                  bottom: 8,
-                  left: 8,
-                  right: 8,
-                  background: 'rgba(255, 255, 255, 0.85)',
-                  backdropFilter: 'blur(4px)',
-                  textAlign: 'center',
-                  fontSize: 8,
-                  fontWeight: 900,
-                  color: '#1E3A8A',
-                  padding: '3px 0',
-                  borderRadius: 4,
-                  letterSpacing: '0.1em',
-                }}
-              >
-                DELUXE EDITION
-              </div>
-            ) : null}
-
-            {pod.id === '5' || pod.id === '10' ? (
-              <div
-                style={{
-                  position: 'absolute',
-                  bottom: 12,
-                  textAlign: 'center',
-                  fontSize: 11,
-                  fontWeight: 800,
-                  color: 'rgba(255,255,255,0.9)',
-                  letterSpacing: '0.12em',
-                }}
-              >
-                sphere
-              </div>
-            ) : null}
-          </div>
-        )}
       </div>
 
       <div style={{ marginTop: 10 }}>
@@ -245,8 +142,8 @@ export default function PodcastsPage() {
         <p
           style={{
             fontSize: 11,
-            color: '#CCA336',
-            fontWeight: 700,
+            color: '#E2BC44',
+            fontWeight: 500,
             margin: 0,
           }}
         >
@@ -296,51 +193,6 @@ export default function PodcastsPage() {
         >
           {/* ─── MAIN COLUMN ─── */}
           <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 36 }}>
-            {/* 0. My Podcasts — real, backed by /shows/mine */}
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
-                <h2 style={{ fontSize: 14, fontWeight: 700, color: theme.color.text1, margin: 0 }}>
-                  My Podcasts {!loadingMyShows && `(${myShows.length})`}
-                </h2>
-                <Link href="/podcast/new" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: theme.color.gold, textDecoration: 'none' }}>
-                  <Plus size={13} /> New podcast
-                </Link>
-              </div>
-
-              {loadingMyShows ? (
-                <p style={{ fontSize: 13, color: theme.color.text3 }}>Loading your podcasts…</p>
-              ) : myShows.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '32px 20px', background: theme.color.surface2, borderRadius: 16, border: `1px dashed ${theme.color.border}` }}>
-                  <Mic size={24} color={theme.color.text4} style={{ marginBottom: 8 }} />
-                  <p style={{ fontSize: 13, color: theme.color.text3, margin: 0 }}>You haven't created a podcast yet.</p>
-                </div>
-              ) : (
-                <div className="podcast-grid-5" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: 18 }}>
-                  {myShows.map((show) => (
-                    <Link key={show.id} href={`/podcast/${show.id}`} style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', minWidth: 0 }} className="podcast-card-hover">
-                      <div style={{ width: '100%', aspectRatio: '1 / 1', borderRadius: 14, overflow: 'hidden', background: theme.color.surface2, boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-                        {show.cover_url ? (
-                          <img src={show.cover_url} alt={show.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                        ) : (
-                          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <Mic size={26} color={theme.color.text4} />
-                          </div>
-                        )}
-                      </div>
-                      <div style={{ marginTop: 10 }}>
-                        <p style={{ fontSize: 13, fontWeight: 700, color: theme.color.text1, margin: '0 0 3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {show.title}
-                        </p>
-                        <p style={{ fontSize: 11, color: theme.color.text4, fontWeight: 500, margin: 0 }}>
-                          {show.episode_count} episode{show.episode_count === '1' ? '' : 's'}
-                        </p>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-
             {/* 1. Your trending topics (2) */}
             <div>
               <div
@@ -353,11 +205,8 @@ export default function PodcastsPage() {
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <h2 style={{ fontSize: 14, fontWeight: 700, color: theme.color.text1, margin: 0 }}>
-                    Your trending topics ({PODCAST_ITEMS.length})
+                    Your trending topics (2)
                   </h2>
-                  <span style={{ fontSize: 9, fontWeight: 800, color: theme.color.text4, background: theme.color.surface2, padding: '2px 7px', borderRadius: 100, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-                    Example
-                  </span>
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -474,9 +323,6 @@ export default function PodcastsPage() {
                   <h2 style={{ fontSize: 14, fontWeight: 700, color: theme.color.text1, margin: 0 }}>
                     All podcasts (10)
                   </h2>
-                  <span style={{ fontSize: 9, fontWeight: 800, color: theme.color.text4, background: theme.color.surface2, padding: '2px 7px', borderRadius: 100, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-                    Example
-                  </span>
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
