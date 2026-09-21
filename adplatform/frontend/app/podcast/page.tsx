@@ -268,7 +268,7 @@ export default function PodcastsPage() {
               ) : (
                 /* List View matching podcast-listview mockup */
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                  {PODCAST_ITEMS.map((pod, i) => (
+                  {[PODCAST_ITEMS[0], PODCAST_ITEMS[0]].map((pod, i) => (
                     <Link
                       key={i}
                       href={`/podcast/${pod.id}`}
@@ -281,8 +281,8 @@ export default function PodcastsPage() {
                     >
                       <div
                         style={{
-                          width: 48,
-                          height: 48,
+                          width: 56,
+                          height: 56,
                           borderRadius: 8,
                           overflow: 'hidden',
                           background: theme.color.surface2,
@@ -296,11 +296,11 @@ export default function PodcastsPage() {
                         />
                       </div>
                       <div>
-                        <p style={{ fontSize: 14, fontWeight: 700, color: theme.color.text1, margin: '0 0 4px' }}>
+                        <p style={{ fontSize: 15, fontWeight: 700, color: theme.color.text1, margin: '0 0 4px' }}>
                           {pod.title}
                         </p>
-                        <p style={{ fontSize: 12, color: theme.color.text4, fontWeight: 500, margin: 0 }}>
-                          {pod.listeners} • {pod.episodes}
+                        <p style={{ fontSize: 13, color: theme.color.text4, fontWeight: 500, margin: 0 }}>
+                          {pod.listeners} · {pod.episodes}
                         </p>
                       </div>
                     </Link>
@@ -396,8 +396,8 @@ export default function PodcastsPage() {
                     >
                       <div
                         style={{
-                          width: 48,
-                          height: 48,
+                          width: 56,
+                          height: 56,
                           borderRadius: 8,
                           overflow: 'hidden',
                           background: theme.color.surface2,
@@ -411,11 +411,11 @@ export default function PodcastsPage() {
                         />
                       </div>
                       <div>
-                        <p style={{ fontSize: 14, fontWeight: 700, color: theme.color.text1, margin: '0 0 4px' }}>
+                        <p style={{ fontSize: 15, fontWeight: 700, color: theme.color.text1, margin: '0 0 4px' }}>
                           {pod.title}
                         </p>
-                        <p style={{ fontSize: 12, color: theme.color.text4, fontWeight: 500, margin: 0 }}>
-                          {pod.listeners} • {pod.episodes}
+                        <p style={{ fontSize: 13, color: theme.color.text4, fontWeight: 500, margin: 0 }}>
+                          {pod.listeners} · {pod.episodes}
                         </p>
                       </div>
                     </Link>

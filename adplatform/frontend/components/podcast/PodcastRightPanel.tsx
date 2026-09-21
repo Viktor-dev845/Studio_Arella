@@ -300,11 +300,11 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
             <p style={{ fontSize: 11, color: '#94A3B8', margin: 0 }}>16:00</p>
           </div>
           <div style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderLeft: `3px solid #F59E0B`, borderRadius: 8, padding: '12px 14px' }}>
-            <p style={{ fontSize: 13, fontWeight: 500, color: '#000000', margin: '0 0 4px' }}>Podcast booking</p>
+            <p style={{ fontSize: 13, fontWeight: 500, color: '#000000', margin: '0 0 4px' }}>Ad screen booking</p>
             <p style={{ fontSize: 11, color: '#94A3B8', margin: 0 }}>14:00</p>
           </div>
           <div style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderLeft: `3px solid #3B82F6`, borderRadius: 8, padding: '12px 14px' }}>
-            <p style={{ fontSize: 13, fontWeight: 500, color: '#000000', margin: '0 0 4px' }}>Podcast booking</p>
+            <p style={{ fontSize: 13, fontWeight: 500, color: '#000000', margin: '0 0 4px' }}>Ad screen booking</p>
             <p style={{ fontSize: 11, color: '#94A3B8', margin: 0 }}>13:00</p>
           </div>
         </div>
