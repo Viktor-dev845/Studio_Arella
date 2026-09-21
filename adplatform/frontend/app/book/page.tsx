@@ -544,63 +544,65 @@ function BookAdForm() {
 
         {/* Creative Services Modal */}
         {showCreativeModal && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/45 backdrop-blur-[2px] p-4 animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-[#111111] rounded-[24px] w-full max-w-[640px] shadow-2xl relative flex flex-col p-8 md:p-10 max-h-[90vh]">
-              {/* Header */}
-              <div className="flex items-center justify-between mb-8">
-                <button onClick={() => setShowCreativeModal(false)} className="p-2 -ml-2 hover:bg-gray-100 dark:hover:bg-white/[0.06] rounded-full transition-colors text-gray-900 dark:text-slate-50">
-                  <ArrowLeft size={22} strokeWidth={2} />
-                </button>
-                <h2 className="text-[18px] font-medium text-gray-900 dark:text-slate-50">Ad creative services</h2>
-                <button onClick={() => setShowCreativeModal(false)} className="p-2 -mr-2 hover:bg-gray-100 dark:hover:bg-white/[0.06] rounded-full transition-colors text-gray-900 dark:text-slate-50">
-                  <X size={22} strokeWidth={2} />
-                </button>
-              </div>
+          <div className="fixed inset-0 z-[200] bg-[#FFFFFF] flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-200">
+            {/* Header */}
+            <div className="w-full flex items-center justify-between px-8 py-6 max-w-[1440px] mx-auto">
+              <button onClick={() => setShowCreativeModal(false)} className="p-2 -ml-2 text-[#16151C] hover:bg-gray-100 rounded-full transition-colors">
+                <ArrowLeft size={24} strokeWidth={2} />
+              </button>
+              <h2 className="text-[20px] font-medium text-[#16151C]">Ad creative services</h2>
+              <button onClick={() => setShowCreativeModal(false)} className="p-2 -mr-2 text-[#16151C] hover:bg-gray-100 rounded-full transition-colors">
+                <X size={24} strokeWidth={2} />
+              </button>
+            </div>
 
-              {/* Form Content */}
-              <div className="flex flex-col overflow-y-auto pr-2 -mr-2" style={{ scrollbarWidth: 'thin' }}>
-                <div className="relative mb-6">
+            {/* Form Content */}
+            <div className="flex-1 flex flex-col items-center pt-[40px] pb-10 overflow-y-auto">
+              <div className="w-full max-w-[510px] flex flex-col px-4">
+                
+                {/* Select */}
+                <div className="relative mb-[24px]">
                   <select 
-                    className="w-full h-[56px] px-4 rounded-[12px] border border-gray-200 dark:border-white/10 bg-transparent text-[15px] text-gray-800 dark:text-slate-200 appearance-none focus:outline-none focus:border-[#C69A2C]"
+                    className="w-full h-[56px] px-4 rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-transparent text-[17px] font-light text-[rgba(162,161,168,0.8)] appearance-none focus:outline-none focus:border-[#D4AF37] cursor-pointer"
                   >
                     <option value="" disabled selected>Select creative services</option>
-                    <option value="banner">Ad Banner design</option>
-                    <option value="storytelling">Ad storytelling</option>
+                    <option value="banner" className="text-black">Ad Banner design</option>
+                    <option value="storytelling" className="text-black">Ad storytelling</option>
                   </select>
-                  <ChevronDown size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                  <ChevronDown size={24} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#16151C] pointer-events-none" />
                 </div>
 
-                <div className="mb-8">
+                {/* Textarea */}
+                <div className="mb-[40px]">
                   <textarea
                     placeholder="Describe your Ad creative brief"
-                    className="w-full h-[120px] p-4 rounded-[12px] border border-gray-200 dark:border-white/10 bg-transparent text-[15px] text-gray-800 dark:text-slate-200 resize-none focus:outline-none focus:border-[#C69A2C]"
+                    className="w-full h-[131px] p-4 rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-transparent text-[17px] font-light text-[rgba(162,161,168,0.8)] resize-none focus:outline-none focus:border-[#D4AF37]"
                   ></textarea>
                 </div>
 
-                <p className="text-[14px] text-gray-900 dark:text-slate-50 mb-4">Or upload Ad creative brief</p>
+                <p className="text-[16px] font-light text-[#16151C] mb-[16px]">Or upload Ad creative brief</p>
                 
-                <div className="w-full rounded-[16px] border border-dashed border-[#D3B04A] bg-transparent flex flex-col items-center justify-center py-8 mb-6">
-                  <div className="w-12 h-12 rounded-[12px] bg-[#CCAB46] flex items-center justify-center mb-4">
-                    <Upload size={20} className="text-white" />
+                {/* File Dropzone */}
+                <div className="w-full h-[133px] rounded-[10px] border border-dashed border-[#D4AF37] bg-transparent flex flex-col items-center justify-center p-[20px] mb-[40px]">
+                  <div className="w-[40px] h-[40px] rounded-[10px] bg-[#D4AF37] flex items-center justify-center mb-[10px]">
+                    <Upload size={20} className="text-[#FFFFFF]" />
                   </div>
-                  <p className="text-[14px] font-medium text-gray-800 dark:text-slate-200 mb-1">
-                    Drag & Drop or <span className="text-[#4E8B7C]">choose file</span> to upload
+                  <p className="text-[14px] font-light text-[#16151C] mb-[5px] text-center">
+                    Drag & Drop or <span className="text-[#1F593E]">choose file</span> to upload
                   </p>
-                  <p className="text-[12px] text-gray-400">Supported formats : jpeg, png, pf</p>
+                  <p className="text-[11px] font-light text-[#A2A1A8] text-center">Supported formats : jpeg, png, pf</p>
                 </div>
 
-                <div className="pt-2">
-                  <button 
-                    onClick={() => {
-                      setAdDesignRequested(true);
-                      setShowCreativeModal(false);
-                      toast('Creative service added to your request.', 'success');
-                    }}
-                    className="w-full py-3.5 bg-[#C69A2C] hover:bg-[#b58b24] text-black rounded-[12px] text-[15px] font-medium transition-colors shadow-sm"
-                  >
-                    Add service
-                  </button>
-                </div>
+                <button 
+                  onClick={() => {
+                    setAdDesignRequested(true);
+                    setShowCreativeModal(false);
+                    toast('Creative service added to your request.', 'success');
+                  }}
+                  className="w-full h-[50px] bg-[#D4AF37] hover:bg-[#b58b24] text-[#000000] rounded-[6px] text-[16px] font-normal transition-colors flex items-center justify-center"
+                >
+                  Add service
+                </button>
               </div>
             </div>
           </div>
