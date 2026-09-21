@@ -621,17 +621,18 @@ function BookingsPageContent() {
 
         {/* Cancel confirm modal */}
         {cancelTarget && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px]">
-            <div className="bg-white dark:bg-[#111111] rounded-[24px] pt-12 pb-10 px-8 max-w-[420px] w-full mx-4 shadow-2xl flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-150">
-              <h3 className="text-[18px] md:text-[20px] font-semibold text-gray-900 dark:text-white mb-8 leading-snug">
-                Are you sure you want to cancel this {cancelTarget.type === 'ad' ? 'Ad screen' : 'podcast session'}? Ad cancelled is non-refundable after 72hrs of booking. Read Studio Arella <span className="text-[#C69A2C]">terms & condition</span>
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[rgba(162,161,168,0.2)] backdrop-blur-[10px]">
+            <div className="bg-[#FFFFFF] rounded-[20px] w-full max-w-[383px] h-[320px] shadow-2xl relative animate-in fade-in zoom-in-95 duration-150">
+              <h3 className="absolute top-[36px] left-[20px] right-[20px] text-center text-[20px] font-semibold leading-[30px] text-[#16151C]">
+                Are you sure you want to cancel this {cancelTarget.type === 'ad' ? 'Ad screen' : 'podcast session'}? Ad cancelled is non-refundable after 72hrs of booking. Read Studio Arella <span className="text-[#D4AF37]">terms & condition</span>
               </h3>
-              <div className="flex items-center justify-center gap-4 w-full">
+              
+              <div className="absolute top-[221px] left-[20px] right-[20px] flex items-center justify-between">
                 <button
                   type="button"
                   disabled={cancelling}
                   onClick={() => setCancelTarget(null)}
-                  className="flex-1 py-3.5 rounded-[12px] border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111111] text-[15px] font-medium text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-white/[0.06] transition-colors disabled:opacity-50"
+                  className="w-[166px] h-[50px] rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-transparent text-[#16151C] text-[16px] font-normal flex items-center justify-center transition-colors hover:bg-gray-50 disabled:opacity-50"
                 >
                   No
                 </button>
@@ -639,9 +640,9 @@ function BookingsPageContent() {
                   type="button"
                   disabled={cancelling}
                   onClick={handleCancel}
-                  className="flex-1 py-3.5 rounded-[12px] bg-[#C69A2C] hover:bg-[#b58b24] text-[15px] font-medium text-black transition-colors shadow-sm disabled:opacity-60 flex items-center justify-center gap-2"
+                  className="w-[166px] h-[50px] rounded-[6px] bg-[#D4AF37] text-[#000000] text-[16px] font-normal flex items-center justify-center gap-2 transition-colors hover:bg-[#b58b24] disabled:opacity-60"
                 >
-                  {cancelling ? <Loader2 size={16} className="animate-spin text-black" /> : null}
+                  {cancelling && <Loader2 size={16} className="animate-spin text-black" />}
                   Yes
                 </button>
               </div>
