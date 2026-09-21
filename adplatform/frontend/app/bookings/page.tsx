@@ -652,21 +652,31 @@ function BookingsPageContent() {
 
         {/* Cancel success modal */}
         {cancelSuccessInfo && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px]">
-            <div className="bg-white dark:bg-[#111111] rounded-[24px] pt-14 pb-12 px-8 max-w-[380px] w-full mx-4 shadow-2xl flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-150">
-              <div className="relative flex items-center justify-center w-40 h-40 mb-6">
-                <div className="absolute inset-0 bg-[#C69A2C]/20 blur-2xl rounded-full transform scale-110"></div>
-                <div className="relative w-[72px] h-[72px] bg-[#9F7A26] rounded-full flex items-center justify-center shadow-[0_4px_24px_rgba(159,122,38,0.4)]">
-                  <X size={26} className="text-white" strokeWidth={1.25} />
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[rgba(162,161,168,0.2)] backdrop-blur-[10px]">
+            <div className="bg-[#FFFFFF] rounded-[20px] w-full max-w-[383px] h-[433px] shadow-2xl relative animate-in fade-in zoom-in-95 duration-150">
+              
+              {/* Top Line */}
+              <div className="absolute top-[66px] left-[20px] right-[20px] h-0 border-t border-[rgba(162,161,168,0.1)]"></div>
+              
+              {/* Alert Icon */}
+              <div className="absolute top-[94px] left-1/2 -translate-x-1/2 w-[70px] h-[70px] flex items-center justify-center">
+                <div className="absolute inset-[-51.43%] bg-[radial-gradient(116.28%_116.28%_at_0%_-16.28%,_#443A18_4.69%,_#D4AF37_98.31%)] opacity-10 blur-[5px] rounded-full"></div>
+                <div className="absolute inset-[-28.57%] bg-[radial-gradient(116.28%_116.28%_at_0%_-16.28%,_#443A18_4.69%,_#D4AF37_98.31%)] opacity-[0.15] blur-[5px] rounded-full"></div>
+                <div className="absolute inset-0 bg-[radial-gradient(116.28%_116.28%_at_0%_-16.28%,_#443A18_4.69%,_#D4AF37_98.31%)] rounded-full flex items-center justify-center">
+                  <X size={28} className="text-[#FFFFFF]" strokeWidth={1.5} />
                 </div>
               </div>
-              <h3 className="text-[22px] md:text-[24px] font-semibold text-gray-900 dark:text-white mb-10">
+
+              {/* Title */}
+              <h3 className="absolute top-[224px] w-full text-center text-[20px] font-semibold leading-[30px] text-[#16151C]">
                 Ads cancelled
               </h3>
+
+              {/* Finish Button */}
               <button
                 type="button"
                 onClick={() => setCancelSuccessInfo(null)}
-                className="w-full max-w-[200px] py-3.5 rounded-[12px] bg-[#C69A2C] hover:bg-[#b58b24] text-[15px] font-medium text-black transition-colors shadow-sm"
+                className="absolute top-[307px] left-1/2 -translate-x-1/2 w-[166px] h-[50px] rounded-[6px] bg-[#D4AF37] text-[16px] font-normal text-[#000000] hover:bg-[#b58b24] transition-colors flex items-center justify-center"
               >
                 Finish
               </button>
