@@ -393,52 +393,48 @@ function BookingsPageContent() {
 
                     {showFilter && (
                       <div 
-                        className="absolute right-0 top-[48px] z-50 bg-white shadow-2xl p-[25px] flex flex-col"
-                        style={{ width: '383px', height: '433px', borderRadius: '20px', border: '1px solid rgba(0,0,0,0.05)' }}
+                        className="absolute right-0 top-[48px] z-50 bg-white shadow-2xl p-[24px] flex flex-col"
+                        style={{ width: '400px', borderRadius: '16px', border: '1px solid rgba(0,0,0,0.05)' }}
                       >
-                        <div className="flex justify-between items-center mb-8">
-                           <h3 className="text-[#000000]" style={{ fontFamily: 'Montserrat, sans-serif', fontSize: '25px', fontWeight: 400 }}>Filter by:</h3>
-                           <button onClick={() => setShowFilter(false)} className="text-gray-400 hover:text-gray-600 transition-colors p-1">
-                             <X size={24} />
-                           </button>
-                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-6 font-body">Filter</h3>
                         
-                        <div className="flex-1 overflow-y-auto mt-2">
-                           <div className="space-y-5">
-                             {['all', 'active', 'pending', 'completed', 'cancelled'].map(status => (
-                               <label key={status} className="flex items-center gap-4 cursor-pointer group">
-                                 <div className="relative flex items-center justify-center w-6 h-6 rounded-full border border-gray-300 group-hover:border-[#D4AF37] transition-colors">
-                                   <input 
-                                     type="radio" 
-                                     name="status"
-                                     className="peer sr-only" 
-                                     checked={filterStatus === status}
-                                     onChange={() => setFilterStatus(status)} 
-                                   />
-                                   <div className="w-[12px] h-[12px] rounded-full bg-transparent peer-checked:bg-[#D4AF37] transition-colors"></div>
-                                 </div>
-                                 <span className="text-[16px] font-medium text-gray-600 capitalize font-body group-hover:text-black transition-colors">{status}</span>
-                               </label>
-                             ))}
-                           </div>
+                        {/* Search Input */}
+                        <div className="relative mb-8">
+                           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                           <input 
+                             type="text" 
+                             placeholder="Search Employee" 
+                             className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-[12px] text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#D4AF37] font-body font-light placeholder:text-gray-300" 
+                           />
                         </div>
 
-                        <div className="w-full flex justify-center items-center mt-6">
+                        <h4 className="font-bold text-gray-900 mb-4 text-[16px] font-body">All Ad bookings</h4>
+                        <div className="flex items-center gap-8 mb-10">
+                           <label className="flex items-center gap-3 cursor-pointer">
+                              <div className="w-[20px] h-[20px] rounded-[4px] bg-[#D4AF37] flex items-center justify-center">
+                                 <Check size={14} className="text-white" strokeWidth={3} />
+                              </div>
+                              <span className="text-gray-700 text-[15px] font-body">Status</span>
+                           </label>
+                           <label className="flex items-center gap-3 cursor-pointer">
+                              <div className="w-[20px] h-[20px] rounded-[4px] border border-gray-200 flex items-center justify-center bg-white">
+                              </div>
+                              <span className="text-gray-700 text-[15px] font-body">By duration</span>
+                           </label>
+                        </div>
+
+                        <div className="flex gap-4">
                            <button 
-                             onClick={() => setShowFilter(false)}
-                             style={{ 
-                               width: '166px', 
-                               height: '50px', 
-                               background: '#D4AF37', 
-                               borderRadius: '6px',
-                               color: '#000000',
-                               fontFamily: 'DM Sans, sans-serif',
-                               fontSize: '16px',
-                               fontWeight: 400
-                             }}
-                             className="flex items-center justify-center hover:opacity-90 transition-opacity"
+                             onClick={() => setShowFilter(false)} 
+                             className="flex-1 py-3 bg-white border border-gray-200 rounded-[12px] text-gray-700 font-medium hover:bg-gray-50 transition-colors font-body text-[16px]"
                            >
-                             Apply
+                              Cancel
+                           </button>
+                           <button 
+                             onClick={() => setShowFilter(false)} 
+                             className="flex-1 py-3 bg-[#D4AF37] rounded-[12px] text-[#16151C] font-medium hover:opacity-90 transition-opacity font-body text-[16px]"
+                           >
+                              Apply
                            </button>
                         </div>
                       </div>
