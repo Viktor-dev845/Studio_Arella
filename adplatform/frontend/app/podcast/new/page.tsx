@@ -565,39 +565,42 @@ export default function AddPodcastPage() {
             style={{
               position: 'fixed', inset: 0, zIndex: 200, display: 'flex',
               alignItems: 'center', justifyContent: 'center',
-              background: 'rgba(15,23,42,0.45)', backdropFilter: 'blur(2px)',
+              background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)',
             }}
           >
             <div
               style={{
-                background: theme.color.surface, borderRadius: 24, padding: '40px 32px 32px',
-                textAlign: 'center', maxWidth: 340, width: '100%', margin: 16,
-                boxShadow: '0 20px 60px rgba(0,0,0,0.18)',
+                background: '#FFFFFF', borderRadius: 20, padding: '70px 40px 50px',
+                textAlign: 'center', maxWidth: 440, width: '90%', margin: 16,
+                boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                display: 'flex', flexDirection: 'column', alignItems: 'center'
               }}
             >
-              <div style={{ position: 'relative', width: 88, height: 88, margin: '0 auto 24px' }}>
-                <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: '#CCA336', opacity: 0.25, filter: 'blur(18px)' }} />
+              <div style={{ position: 'relative', width: 140, height: 140, margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {/* Glowing aura */}
+                <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: '#DCA525', opacity: 0.25, filter: 'blur(28px)' }} />
+                {/* Solid circle */}
                 <div
                   style={{
-                    position: 'relative', width: 64, height: 64, margin: '12px auto 0',
-                    borderRadius: '50%', background: '#9E7B21',
+                    position: 'relative', width: 76, height: 76,
+                    borderRadius: '50%', background: '#A17E23',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    boxShadow: '0 4px 20px rgba(158,123,33,0.35)',
+                    boxShadow: '0 4px 15px rgba(161,126,35,0.3)',
                   }}
                 >
-                  <Check size={28} color="#FFFFFF" strokeWidth={3} />
+                  <Check size={36} color="#FFFFFF" strokeWidth={2.5} />
                 </div>
               </div>
-              <h3 style={{ fontSize: 16, fontWeight: 800, color: theme.color.text1, margin: '0 0 24px' }}>
+              <h3 style={{ fontSize: 24, fontWeight: 700, color: '#111111', margin: '20px 0 48px' }}>
                 Your podcast was a success
               </h3>
               <button
                 type="button"
                 onClick={() => createdShowId && router.push(`/podcast/${createdShowId}`)}
                 style={{
-                  width: '100%', padding: '12px', borderRadius: 12, border: 'none',
-                  background: '#CCA336', color: '#FFFFFF', fontSize: 13, fontWeight: 800,
-                  cursor: 'pointer', fontFamily: F, boxShadow: '0 2px 6px rgba(204,163,54,0.3)',
+                  padding: '14px 72px', borderRadius: 8, border: 'none',
+                  background: '#DCA525', color: '#111111', fontSize: 16, fontWeight: 500,
+                  cursor: 'pointer', fontFamily: F, boxShadow: '0 2px 6px rgba(220,165,37,0.25)',
                 }}
               >
                 Finish
