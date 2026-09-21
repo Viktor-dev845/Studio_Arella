@@ -396,77 +396,81 @@ function BookAdForm() {
         {/* ─── Billing / payment modals ─── */}
         {step !== 'form' && (
           <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/45 backdrop-blur-[2px] p-4">
-            <div className="bg-white dark:bg-[#111111] rounded-[24px] w-full max-w-[420px] shadow-2xl relative animate-in fade-in zoom-in duration-200">
-              <div className="flex items-center justify-between p-6 pb-2">
+            <div className="bg-white rounded-[32px] w-full max-w-[625px] min-h-[500px] shadow-2xl relative animate-in fade-in zoom-in duration-200 flex flex-col font-body pt-8 pb-10">
+              
+              <div className="flex items-center justify-between px-10 pb-2 absolute top-8 left-0 right-0">
                 {step !== 'billing' && step !== 'success' ? (
-                  <button onClick={() => setStep('billing')} className="p-1.5 -ml-1.5 hover:bg-gray-100 dark:hover:bg-white/[0.06] rounded-full transition-colors text-gray-900 dark:text-slate-50"><ArrowLeft size={22} strokeWidth={2} /></button>
+                  <button onClick={() => setStep('billing')} className="hover:opacity-70 transition-opacity text-[#101828]"><ArrowLeft size={28} strokeWidth={2.5} /></button>
                 ) : (
-                  <button onClick={() => setStep('form')} className="p-1.5 -ml-1.5 hover:bg-gray-100 dark:hover:bg-white/[0.06] rounded-full transition-colors text-gray-900 dark:text-slate-50"><ArrowLeft size={22} strokeWidth={2} /></button>
+                  <button onClick={() => setStep('form')} className="hover:opacity-70 transition-opacity text-[#101828]"><ArrowLeft size={28} strokeWidth={2.5} /></button>
                 )}
                 
-                <span className="text-[18px] font-medium text-gray-900 dark:text-slate-50">
+                <span className="text-[20px] font-medium text-[#101828] text-center flex-1">
                   {step === 'billing' ? 'Billing' : step === 'card' ? 'Pay with card' : step === 'wallet' ? 'Pay from wallet' : ''}
                 </span>
                 
                 {step !== 'success' ? (
-                  <button onClick={() => setStep('form')} className="p-1.5 -mr-1.5 hover:bg-gray-100 dark:hover:bg-white/[0.06] rounded-full transition-colors text-gray-900 dark:text-slate-50"><X size={22} strokeWidth={2} /></button>
-                ) : <div className="w-[30px]" />}
+                  <button onClick={() => setStep('form')} className="hover:opacity-70 transition-opacity text-[#101828]"><X size={28} strokeWidth={2.5} /></button>
+                ) : <div className="w-[28px]" />}
               </div>
 
-              <div className="px-8 pb-10 pt-4">
+              <div className="px-10 flex-1 flex flex-col items-center pt-24">
                 {step === 'billing' && (
-                  <div className="space-y-6 flex flex-col items-center">
-                    <p className="text-center text-[16px] font-bold text-gray-900 dark:text-slate-50 mb-4 leading-[1.4]">
-                      {durationLabel} Ad space at<br/>
+                  <div className="w-full max-w-[468px] flex flex-col items-center h-full">
+                    <p className="text-center text-[16px] font-bold text-[#101828] mb-12">
+                      {durationCount} {durationUnit === 'hourly' ? 'hours' : durationUnit === 'weekly' ? 'weeks' : 'months'} Ad space at<br/>
                       {formatCurrency(totalCost, currency, rates)}
                     </p>
                     
-                    <div className="w-full space-y-4">
+                    <div className="w-full space-y-6">
                       {/* Card Option */}
                       <div 
                         onClick={() => setSelectedPaymentMethod('card')}
-                        className={`w-full p-5 rounded-[16px] border-2 cursor-pointer transition-all flex items-center gap-4 ${selectedPaymentMethod === 'card' ? 'border-[#C69A2C]' : 'border-gray-200 dark:border-white/10'}`}
+                        className={`w-full h-[127px] rounded-[16px] border cursor-pointer transition-all flex flex-col justify-center px-6 relative ${selectedPaymentMethod === 'card' ? 'border-2 border-[#D4AF37]' : 'border border-[#D7D7D7]'}`}
                       >
-                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedPaymentMethod === 'card' ? 'border-[#C69A2C]' : 'border-gray-300 dark:border-gray-600'}`}>
-                          {selectedPaymentMethod === 'card' && <div className="w-2.5 h-2.5 rounded-full bg-[#D94A1C]" />}
+                        <div className="flex items-center gap-4">
+                          <div className={`w-[16px] h-[16px] rounded-full border flex items-center justify-center shrink-0 ${selectedPaymentMethod === 'card' ? 'border-[#D4AF37]' : 'border-[#D7D7D7]'}`}>
+                            {selectedPaymentMethod === 'card' && <div className="w-[8px] h-[8px] rounded-full bg-[#DF4308]" />}
+                          </div>
+                          <span className="text-[16px] font-medium text-[#101828]">Pay with card</span>
                         </div>
-                        <span className="text-[16px] font-medium text-gray-900 dark:text-slate-50">Pay with card</span>
                       </div>
                       
                       {/* Wallet Option */}
                       <div 
                         onClick={() => setSelectedPaymentMethod('wallet')}
-                        className={`w-full p-5 rounded-[16px] border-2 cursor-pointer transition-all ${selectedPaymentMethod === 'wallet' ? 'border-[#C69A2C]' : 'border-gray-200 dark:border-white/10'}`}
+                        className={`w-full h-[127px] rounded-[16px] border cursor-pointer transition-all flex flex-col justify-center px-6 relative ${selectedPaymentMethod === 'wallet' ? 'border-2 border-[#D4AF37]' : 'border border-[#D7D7D7]'}`}
                       >
-                        <div className="flex items-center gap-4 mb-4">
-                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${selectedPaymentMethod === 'wallet' ? 'border-[#C69A2C]' : 'border-gray-300 dark:border-gray-600'}`}>
-                            {selectedPaymentMethod === 'wallet' && <div className="w-2.5 h-2.5 rounded-full bg-[#D94A1C]" />}
+                        <div className="flex items-center gap-4 mb-3">
+                          <div className={`w-[16px] h-[16px] rounded-full border flex items-center justify-center shrink-0 ${selectedPaymentMethod === 'wallet' ? 'border-[#D4AF37]' : 'border-[#D7D7D7]'}`}>
+                            {selectedPaymentMethod === 'wallet' && <div className="w-[8px] h-[8px] rounded-full bg-[#DF4308]" />}
                           </div>
-                          <span className="text-[16px] font-medium text-gray-900 dark:text-slate-50">Pay from wallet</span>
-                          <button type="button" className="ml-auto bg-[#FEFAED] text-[#C69A2C] px-3 py-1.5 rounded-[8px] text-[13px] font-medium">Fund wallet</button>
+                          <span className="text-[16px] font-medium text-[#101828]">Pay from wallet</span>
+                          <div className="ml-auto bg-[#FFFCF2] text-[#D4AF37] px-3 py-1 rounded-[8px] text-[14px] font-normal">Fund wallet</div>
                         </div>
-                        <div className="ml-9 flex items-center justify-between">
-                          <div className="flex flex-col gap-1">
-                            <span className="text-[14px] text-gray-900 dark:text-slate-50">Wallet ID: 23cvo_23759ryi</span>
-                            <button type="button" className="flex items-center gap-1.5 text-[#C69A2C] text-[13px] font-medium">
+                        <div className="ml-[32px] flex items-end justify-between">
+                          <div className="flex flex-col gap-1.5">
+                            <span className="text-[13px] font-medium text-[#101828] tracking-[0.02em]">Wallet ID: 23cvo_23759ryi</span>
+                            <button type="button" className="flex items-center gap-1.5 text-[#D4AF37] text-[12px] font-normal tracking-[0.03em]">
                               Copy
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <rect x="8" y="8" width="12" height="12" rx="2" fill="#C69A2C"/>
-                                <path d="M4 14V6C4 4.89543 4.89543 4 6 4H14" stroke="#C69A2C" strokeWidth="2" strokeLinecap="round"/>
+                              <svg width="13" height="16" viewBox="0 0 13 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M9 0H2C0.9 0 0 0.9 0 2V12H2V2H9V0ZM11 4H5C3.9 4 3 4.9 3 6V14C3 15.1 3.9 16 5 16H11C12.1 16 13 15.1 13 14V6C13 4.9 12.1 4 11 4ZM11 14H5V6H11V14Z" fill="#D4AF37"/>
                               </svg>
                             </button>
                           </div>
-                          <span className="text-[15px] font-medium text-gray-900 dark:text-slate-50">NGN 5,215,005.25</span>
+                          <span className="text-[14px] font-medium text-[#101828]">{formatCurrency(totalCost, currency, rates)}</span>
                         </div>
                       </div>
                     </div>
 
-                    <button 
-                      onClick={() => setStep(selectedPaymentMethod)} 
-                      className="w-full mt-8 py-4 bg-[#C69A2C] hover:bg-[#b58b24] text-black rounded-[12px] text-[15px] font-medium transition-colors shadow-sm"
-                    >
-                      Continue
-                    </button>
+                    <div className="mt-8 w-full flex-1 flex flex-col justify-end">
+                      <button 
+                        onClick={() => setStep(selectedPaymentMethod)} 
+                        className="w-full h-[56px] bg-[#D4AF37] hover:bg-[#b58b24] text-[#000000] rounded-[6px] text-[16px] font-medium transition-colors"
+                      >
+                        Continue
+                      </button>
+                    </div>
                   </div>
                 )}
 
