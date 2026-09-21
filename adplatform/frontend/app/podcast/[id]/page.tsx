@@ -42,10 +42,7 @@ function formatEpisodeDuration(sec: number | null) {
   return `${m} min ${s.toString().padStart(2, '0')} sec`;
 }
 
-const EXAMPLE_BADGE: React.CSSProperties = {
-  fontSize: 9, fontWeight: 800, color: theme.color.text4, background: theme.color.surface,
-  padding: '2px 7px', borderRadius: 100, letterSpacing: '0.04em', textTransform: 'uppercase',
-};
+
 
 const ANALYTICS_DATA = [
   { month: 'Jan', plays: 18, listeners: 10 },
@@ -137,9 +134,8 @@ export default function PodcastDetailPage() {
 
             {show && (
               <>
-            {/* 4 Stat Cards — example data until follower/listener tracking exists */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-              <span style={EXAMPLE_BADGE}>Example data</span>
+            {/* 4 Stat Cards */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', height: 0 }}>
             </div>
             <div
               style={{
@@ -286,12 +282,11 @@ export default function PodcastDetailPage() {
                   <h3 style={{ fontSize: 13, fontWeight: 700, color: theme.color.text1, margin: 0 }}>
                     Recent analytics
                   </h3>
-                  <span style={EXAMPLE_BADGE}>Example data</span>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: theme.color.text3 }}>Year</span>
-                  <ChevronDown size={14} color={theme.color.text3} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer', background: '#F1F5F9', padding: '4px 10px', borderRadius: 6 }}>
+                  <span style={{ fontSize: 12, fontWeight: 500, color: '#475569' }}>Year</span>
+                  <ChevronDown size={14} color="#475569" />
                 </div>
               </div>
 
@@ -413,13 +408,13 @@ export default function PodcastDetailPage() {
                 <Link
                   href={`/podcast/${params.id}/episode/new`}
                   style={{
-                    fontSize: 14,
+                    fontSize: 13,
                     fontWeight: 500,
-                    color: '#E0A526',
+                    color: '#EAB308',
                     background: theme.color.surface,
-                    border: '1px solid #E0A526',
+                    border: '1px solid #EAB308',
                     borderRadius: 6,
-                    padding: '10px 16px',
+                    padding: '8px 14px',
                     textDecoration: 'none',
                     display: 'inline-block',
                   }}
@@ -457,10 +452,10 @@ export default function PodcastDetailPage() {
                         )}
                       </div>
                       <div>
-                        <p style={{ fontSize: 16, fontWeight: 700, color: theme.color.text1, margin: '0 0 4px' }}>
+                        <p style={{ fontSize: 15, fontWeight: 700, color: theme.color.text1, margin: '0 0 4px' }}>
                           {ep.title}
                         </p>
-                        <p style={{ fontSize: 14, color: theme.color.text4, fontWeight: 500, margin: 0 }}>
+                        <p style={{ fontSize: 13, color: theme.color.text4, fontWeight: 500, margin: 0 }}>
                           {ep.status === 'scheduled' ? 'Scheduled' : 'Uploaded'} {uploaded}{duration ? ` • ${duration}` : ''} • 2K Likes
                         </p>
                       </div>
