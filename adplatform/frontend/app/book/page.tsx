@@ -544,21 +544,21 @@ function BookAdForm() {
 
         {/* Creative Services Modal */}
         {showCreativeModal && (
-          <div className="fixed inset-0 z-[200] bg-[#FFFFFF] flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-200">
-            {/* Header */}
-            <div className="w-full flex items-center justify-between px-8 py-6 max-w-[1440px] mx-auto">
-              <button onClick={() => setShowCreativeModal(false)} className="p-2 -ml-2 text-[#16151C] hover:bg-gray-100 rounded-full transition-colors">
-                <ArrowLeft size={24} strokeWidth={2} />
-              </button>
-              <h2 className="text-[20px] font-medium text-[#16151C]">Ad creative services</h2>
-              <button onClick={() => setShowCreativeModal(false)} className="p-2 -mr-2 text-[#16151C] hover:bg-gray-100 rounded-full transition-colors">
-                <X size={24} strokeWidth={2} />
-              </button>
-            </div>
+          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/45 backdrop-blur-md p-4 animate-in fade-in duration-200">
+            <div className="bg-[#FFFFFF] rounded-[24px] w-full max-w-[625px] shadow-2xl relative flex flex-col pt-8 pb-10 px-10 max-h-[90vh]">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-8">
+                <button onClick={() => setShowCreativeModal(false)} className="p-2 -ml-2 text-[#16151C] hover:bg-gray-100 rounded-full transition-colors">
+                  <ArrowLeft size={24} strokeWidth={2} />
+                </button>
+                <h2 className="text-[20px] font-medium text-[#16151C]">Ad creative services</h2>
+                <button onClick={() => setShowCreativeModal(false)} className="p-2 -mr-2 text-[#16151C] hover:bg-gray-100 rounded-full transition-colors">
+                  <X size={24} strokeWidth={2} />
+                </button>
+              </div>
 
-            {/* Form Content */}
-            <div className="flex-1 flex flex-col items-center pt-[40px] pb-10 overflow-y-auto">
-              <div className="w-full max-w-[510px] flex flex-col px-4">
+              {/* Form Content */}
+              <div className="flex flex-col overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
                 
                 {/* Select */}
                 <div className="relative mb-[24px]">
