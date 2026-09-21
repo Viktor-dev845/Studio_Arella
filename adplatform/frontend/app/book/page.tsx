@@ -406,12 +406,12 @@ function BookAdForm() {
                 )}
                 
                 <span className="text-[20px] font-medium text-[#101828] text-center flex-1">
-                  {step === 'billing' ? 'Billing' : step === 'card' ? 'Pay with card' : step === 'wallet' ? 'Pay from wallet' : ''}
+                  {step === 'billing' ? 'Billing' : step === 'card' || (step === 'success' && selectedPaymentMethod === 'card') ? 'Pay with card' : step === 'wallet' || (step === 'success' && selectedPaymentMethod === 'wallet') ? 'Pay from wallet' : ''}
                 </span>
                 
-                {step !== 'success' ? (
-                  <button onClick={() => setStep('form')} className="hover:opacity-70 transition-opacity text-[#101828]"><X size={28} strokeWidth={2.5} /></button>
-                ) : <div className="w-[28px]" />}
+                <button onClick={() => { if(step === 'success') { router.push('/bookings'); } else { setStep('form'); } }} className="hover:opacity-70 transition-opacity text-[#101828]">
+                  <X size={28} strokeWidth={2.5} />
+                </button>
               </div>
 
               <div className="px-10 flex-1 flex flex-col items-center pt-24">
@@ -516,18 +516,25 @@ function BookAdForm() {
                 )}
 
                 {step === 'success' && (
-                  <div className="flex flex-col items-center text-center py-4">
-                    <div className="relative flex items-center justify-center w-24 h-24 mb-6">
-                      <div className="absolute inset-0 bg-[#C69A2C]/20 blur-xl rounded-full" />
-                      <div className="relative w-16 h-16 bg-[#C69A2C] rounded-full flex items-center justify-center shadow-[0_4px_20px_rgba(198,154,44,0.4)]">
-                        <Check size={28} className="text-white" strokeWidth={3} />
+                  <div className="w-full max-w-[468px] flex flex-col items-center h-full pt-20">
+                    <div className="relative flex items-center justify-center w-[70px] h-[70px] mb-12">
+                      <div className="absolute w-[142px] h-[142px] rounded-full blur-[5px] opacity-10" style={{ background: 'radial-gradient(116.28% 116.28% at 0% -16.28%, #443A18 4.69%, #D4AF37 98.31%)' }} />
+                      <div className="absolute w-[110px] h-[110px] rounded-full blur-[5px] opacity-15" style={{ background: 'radial-gradient(116.28% 116.28% at 0% -16.28%, #443A18 4.69%, #D4AF37 98.31%)' }} />
+                      <div className="relative w-full h-full rounded-full flex items-center justify-center" style={{ background: 'radial-gradient(116.28% 116.28% at 0% -16.28%, #443A18 4.69%, #D4AF37 98.31%)' }}>
+                        <Check size={30} className="text-white" strokeWidth={2.5} />
                       </div>
                     </div>
-                    <h3 className="text-[18px] font-bold text-gray-900 dark:text-slate-50 mb-2">Booking Confirmed!</h3>
-                    <p className="text-[13px] font-medium text-gray-500 dark:text-slate-400 mb-8">Your ad space has been successfully secured.</p>
-                    <button onClick={() => router.push('/bookings')} className="w-[160px] py-3 bg-[#1A1A1A] dark:bg-white hover:bg-black dark:hover:bg-gray-100 text-white dark:text-[#1A1A1A] rounded-[12px] text-[13px] font-bold transition-all shadow-sm">
-                      View Bookings
-                    </button>
+                    
+                    <h3 className="text-[20px] font-semibold text-[#16151C]">Payment successful and Ad booked</h3>
+                    
+                    <div className="mt-12 w-full flex-1 flex flex-col justify-end">
+                      <button 
+                        onClick={() => router.push('/bookings')} 
+                        className="w-full h-[56px] bg-[#D4AF37] hover:bg-[#b58b24] text-[#000000] rounded-[6px] text-[16px] font-medium transition-colors flex items-center justify-center"
+                      >
+                        Finish
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
