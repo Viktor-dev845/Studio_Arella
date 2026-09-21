@@ -180,6 +180,9 @@ export default function AddNewEpisodePage() {
               <>
             {/* Cover photo section */}
             <div>
+              <p style={{ fontSize: 14, fontWeight: 500, color: theme.color.text1, margin: '0 0 16px' }}>
+                Add cover photo
+              </p>
               <input
                 type="file"
                 ref={fileInputRef}
@@ -191,11 +194,11 @@ export default function AddNewEpisodePage() {
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 style={{
-                  width: 76,
-                  height: 76,
+                  width: 90,
+                  height: 90,
                   borderRadius: 12,
                   border: `1px solid ${theme.color.border}`,
-                  background: theme.color.bg,
+                  background: '#FFFFFF',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -207,12 +210,9 @@ export default function AddNewEpisodePage() {
                 {coverPhoto ? (
                   <img src={coverPhoto} alt="Cover Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 ) : (
-                  <Camera size={22} color={theme.color.text4} strokeWidth={1.75} />
+                  <Camera size={22} color={theme.color.text1} strokeWidth={1.5} />
                 )}
               </button>
-              <p style={{ fontSize: 13, fontWeight: 700, color: theme.color.text1, margin: '10px 0 0' }}>
-                Add cover photo
-              </p>
             </div>
 
             {/* Episode Selector & Episode Title Row */}
@@ -320,7 +320,7 @@ export default function AddNewEpisodePage() {
 
             {/* Upload episode box */}
             <div>
-              <p style={{ fontSize: 13, fontWeight: 700, color: theme.color.text1, margin: '0 0 10px' }}>
+              <p style={{ fontSize: 14, fontWeight: 500, color: theme.color.text1, margin: '0 0 10px' }}>
                 Upload episode
               </p>
 
@@ -335,10 +335,10 @@ export default function AddNewEpisodePage() {
               <div
                 onClick={() => audioInputRef.current?.click()}
                 style={{
-                  border: '1.5px dashed #CCA336',
+                  border: '1px dashed #DCA525',
                   borderRadius: 12,
-                  padding: '30px 20px',
-                  background: '#FFFDF9',
+                  padding: '40px 20px',
+                  background: '#FFFFFF',
                   textAlign: 'center',
                   cursor: 'pointer',
                   display: 'flex',
@@ -348,27 +348,29 @@ export default function AddNewEpisodePage() {
                   transition: 'background 0.15s ease',
                 }}
                 onMouseOver={(e) => (e.currentTarget.style.background = '#FFFBEB')}
-                onMouseOut={(e) => (e.currentTarget.style.background = '#FFFDF9')}
+                onMouseOut={(e) => (e.currentTarget.style.background = '#FFFFFF')}
               >
                 <div
                   style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: '50%',
-                    background: '#CCA336',
+                    width: 40,
+                    height: 40,
+                    borderRadius: 10,
+                    background: '#DCA525',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    marginBottom: 10,
+                    marginBottom: 16,
                   }}
                 >
-                  <UploadCloud size={16} color="#FFFFFF" strokeWidth={2.5} />
+                  <UploadCloud size={20} color="#FFFFFF" strokeWidth={2} />
                 </div>
 
-                <p style={{ fontSize: 13, fontWeight: 700, color: theme.color.text1, margin: '0 0 4px' }}>
-                  {audioFile ? audioFile.name : 'Drag & Drop or choose file to upload'}
+                <p style={{ fontSize: 13, fontWeight: 400, color: theme.color.text1, margin: '0 0 8px' }}>
+                  {audioFile ? audioFile.name : (
+                    <>Drag & Drop or <span style={{ color: '#2F6B4A' }}>choose file</span> to upload</>
+                  )}
                 </p>
-                <p style={{ fontSize: 11, color: theme.color.text4, margin: 0, fontWeight: 500 }}>
+                <p style={{ fontSize: 11, color: theme.color.text4, margin: 0, fontWeight: 400 }}>
                   Supported formats : mp3
                 </p>
               </div>
@@ -503,9 +505,9 @@ export default function AddNewEpisodePage() {
                     padding: '10px 24px',
                     borderRadius: 8,
                     border: `1px solid ${theme.color.border}`,
-                    background: theme.color.surface,
-                    fontSize: 12.5,
-                    fontWeight: 700,
+                    background: '#FFFFFF',
+                    fontSize: 14,
+                    fontWeight: 500,
                     color: theme.color.text1,
                     cursor: 'pointer',
                     fontFamily: F,
@@ -519,17 +521,17 @@ export default function AddNewEpisodePage() {
                   onClick={handlePost}
                   disabled={posting}
                   style={{
-                    padding: '10px 32px',
+                    padding: '10px 42px',
                     borderRadius: 8,
                     border: 'none',
-                    background: '#CCA336',
-                    fontSize: 12.5,
-                    fontWeight: 700,
-                    color: '#FFFFFF',
+                    background: '#DCA525',
+                    fontSize: 14,
+                    fontWeight: 500,
+                    color: '#222222',
                     cursor: posting ? 'not-allowed' : 'pointer',
                     opacity: posting ? 0.7 : 1,
                     fontFamily: F,
-                    boxShadow: '0 2px 6px rgba(204,163,54,0.3)',
+                    boxShadow: '0 2px 6px rgba(220,165,37,0.3)',
                     display: 'flex', alignItems: 'center', gap: 8,
                   }}
                 >
@@ -538,6 +540,7 @@ export default function AddNewEpisodePage() {
                 </button>
               </div>
             </div>
+            <div style={{ height: 40 }} />
               </>
             )}
           </div>
@@ -552,39 +555,42 @@ export default function AddNewEpisodePage() {
             style={{
               position: 'fixed', inset: 0, zIndex: 200, display: 'flex',
               alignItems: 'center', justifyContent: 'center',
-              background: 'rgba(15,23,42,0.45)', backdropFilter: 'blur(2px)',
+              background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)',
             }}
           >
             <div
               style={{
-                background: theme.color.surface, borderRadius: 24, padding: '40px 32px 32px',
-                textAlign: 'center', maxWidth: 340, width: '100%', margin: 16,
-                boxShadow: '0 20px 60px rgba(0,0,0,0.18)',
+                background: '#FFFFFF', borderRadius: 20, padding: '70px 40px 50px',
+                textAlign: 'center', maxWidth: 440, width: '90%', margin: 16,
+                boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+                display: 'flex', flexDirection: 'column', alignItems: 'center'
               }}
             >
-              <div style={{ position: 'relative', width: 88, height: 88, margin: '0 auto 24px' }}>
-                <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: '#CCA336', opacity: 0.25, filter: 'blur(18px)' }} />
+              <div style={{ position: 'relative', width: 140, height: 140, margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {/* Glowing aura */}
+                <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: '#DCA525', opacity: 0.25, filter: 'blur(28px)' }} />
+                {/* Solid circle */}
                 <div
                   style={{
-                    position: 'relative', width: 64, height: 64, margin: '12px auto 0',
-                    borderRadius: '50%', background: '#9E7B21',
+                    position: 'relative', width: 76, height: 76,
+                    borderRadius: '50%', background: '#A17E23',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    boxShadow: '0 4px 20px rgba(158,123,33,0.35)',
+                    boxShadow: '0 4px 15px rgba(161,126,35,0.3)',
                   }}
                 >
-                  <Check size={28} color="#FFFFFF" strokeWidth={3} />
+                  <Check size={36} color="#FFFFFF" strokeWidth={2.5} />
                 </div>
               </div>
-              <h3 style={{ fontSize: 16, fontWeight: 800, color: theme.color.text1, margin: '0 0 24px' }}>
+              <h3 style={{ fontSize: 24, fontWeight: 700, color: '#111111', margin: '20px 0 48px' }}>
                 {selectedEpisode ? `Episode ${selectedEpisode} posted successfully` : 'Episode posted successfully'}
               </h3>
               <button
                 type="button"
                 onClick={() => router.push(`/podcast/${params.id}`)}
                 style={{
-                  width: '100%', padding: '12px', borderRadius: 12, border: 'none',
-                  background: '#CCA336', color: '#FFFFFF', fontSize: 13, fontWeight: 800,
-                  cursor: 'pointer', fontFamily: F, boxShadow: '0 2px 6px rgba(204,163,54,0.3)',
+                  padding: '14px 72px', borderRadius: 8, border: 'none',
+                  background: '#DCA525', color: '#111111', fontSize: 16, fontWeight: 500,
+                  cursor: 'pointer', fontFamily: F, boxShadow: '0 2px 6px rgba(220,165,37,0.25)',
                 }}
               >
                 Finish
