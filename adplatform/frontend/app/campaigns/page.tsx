@@ -410,47 +410,53 @@ export default function CampaignsPage() {
           <div className="bg-white dark:bg-[#111111] rounded-[24px] border border-slate-100 dark:border-white/10 shadow-[0_2px_16px_rgba(0,0,0,0.03)] overflow-hidden">
             
             {/* Toolbar */}
-            <div className="p-6 sm:p-7 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 dark:border-white/10">
-              <h2 className="text-[20px] font-medium text-[#101828]">Recently Played</h2>
-              
-              <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-[104px] pt-[24px] pb-[8px]">
+              <h2 className="text-[14px] font-semibold text-[#000000] leading-[32px] w-full max-w-[967px]">Recently Played</h2>
+              <button className="flex items-center justify-center gap-[4px] min-w-[70px] h-[24px] border border-[rgba(214,214,214,0.7)] rounded-[8px] px-[8px]">
+                <span className="text-[12px] font-normal text-[#000000]">Sort</span>
+                <ChevronDown size={16} className="text-[rgba(0,0,0,0.4)]" />
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between mt-8 mb-6">
+              <div className="flex items-center gap-[10px]">
                 {/* Search */}
-                <div className="relative min-w-[220px]">
+                <div className="relative w-[261px] h-[50px]">
                   <input
                     type="text"
                     placeholder="Search campaign name..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="w-full pl-4 pr-10 py-2 bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-[10px] text-[12.5px] font-medium text-slate-900 dark:text-slate-50 placeholder:text-slate-400 focus:outline-none focus:border-[#C69A2C] transition-colors"
+                    className="w-full h-full pl-[16px] pr-10 bg-transparent border border-[rgba(162,161,168,0.5)] rounded-[10px] text-[16px] font-light text-[#16151C] placeholder:text-[rgba(22,21,28,0.2)] focus:outline-none focus:border-[#D4AF37]"
                   />
-                  <Search size={14} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 pointer-events-none" />
+                  <Search size={24} strokeWidth={1.5} className="absolute right-[16px] top-1/2 -translate-y-1/2 text-[#16151C] opacity-40 pointer-events-none" />
                 </div>
 
                 {/* Filter Button */}
                 <button
                   onClick={() => setFilterModalOpen(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[10px] text-[12.5px] font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/[0.06] transition-colors shadow-sm"
+                  className="flex items-center justify-center gap-[10px] w-[117px] h-[50px] bg-white border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[16px] font-light text-[#16151C] transition-colors hover:bg-gray-50"
                 >
-                  <Filter size={14} className="text-slate-500 dark:text-slate-400" />
+                  <Filter size={24} strokeWidth={1.5} />
                   <span>Filter</span>
                 </button>
-
-                {/* Export Button */}
-                <button
-                  onClick={handleExport}
-                  className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[10px] text-[12.5px] font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/[0.06] transition-colors shadow-sm"
-                >
-                  <Download size={14} className="text-slate-500 dark:text-slate-400" />
-                  <span>Export</span>
-                </button>
-
+              </div>
+              
+              <div className="flex items-center gap-[28px]">
                 {/* Create Campaign Primary Button */}
                 <button
                   onClick={() => { setWizardStep('details'); setCreateModalOpen(true); }}
-                  className="flex items-center gap-2 px-5 py-2 bg-[#C69A2C] hover:bg-[#b58b24] text-white rounded-[10px] text-[12.5px] font-bold transition-all shadow-sm"
+                  className="w-[179px] h-[40px] bg-[#D4AF37] hover:bg-[#b58b24] text-[#000000] opacity-80 rounded-[6px] text-[14px] font-normal capitalize transition-colors"
                 >
-                  <Plus size={15} strokeWidth={2.5} />
-                  <span>New Campaign</span>
+                  Create campaign
+                </button>
+                
+                {/* Export Button */}
+                <button
+                  onClick={handleExport}
+                  className="w-[116px] h-[40px] bg-transparent hover:bg-gray-50 border-[1.5px] border-[#D4AF37] text-[#D4AF37] opacity-80 rounded-[6px] text-[14px] font-normal capitalize transition-colors"
+                >
+                  Export
                 </button>
               </div>
             </div>
@@ -529,41 +535,51 @@ export default function CampaignsPage() {
             </div>
 
             {/* Pagination */}
-            <div className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-100 dark:border-white/10 text-[12px] text-slate-500 dark:text-slate-400 font-medium">
-              <div className="flex items-center gap-2">
-                <span>Showing</span>
-                <select
-                  value={pageSize}
-                  onChange={(e) => setPageSize(Number(e.target.value))}
-                  className="bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-lg px-2 py-1 text-slate-800 dark:text-slate-200 font-bold focus:outline-none focus:border-[#C69A2C]"
-                >
-                  <option value={5}>5</option>
-                  <option value={10}>10</option>
-                  <option value={20}>20</option>
-                </select>
+            <div className="w-full h-[46px] mt-[12px] flex items-center justify-between">
+              <div className="flex items-center gap-[20px]">
+                <span className="text-[14px] font-light text-[#A2A1A8]">Showing</span>
+                <div className="relative">
+                  <select
+                    value={pageSize}
+                    onChange={(e) => setPageSize(Number(e.target.value))}
+                    className="appearance-none bg-white w-[76px] h-[46px] border border-[rgba(162,161,168,0.2)] rounded-[10px] pl-[16px] pr-[32px] text-[14px] font-light text-[#16151C] focus:outline-none"
+                  >
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                  </select>
+                  <ChevronDown size={20} className="absolute right-[12px] top-1/2 -translate-y-1/2 text-[#16151C] pointer-events-none" />
+                </div>
               </div>
-
-              <div>
+              
+              <div className="text-[14px] font-light text-[#A2A1A8]">
                 Showing {filtered.length === 0 ? 0 : (currentPage - 1) * pageSize + 1} to {Math.min(currentPage * pageSize, filtered.length)} out of {filtered.length} records
               </div>
-
-              <div className="flex items-center gap-1.5">
+              
+              <div className="flex items-center gap-[5px]">
                 <button
                   onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
                   disabled={currentPage === 1}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/[0.06] disabled:opacity-40"
+                  className="w-[35px] h-[36px] flex items-center justify-center border border-[#D4AF37] rounded-[8px] text-[#D4AF37] disabled:opacity-40"
                 >
-                  &lt;
+                  <ChevronLeft size={20} />
                 </button>
-                <button className="w-7 h-7 flex items-center justify-center rounded-lg bg-[#C69A2C] text-white font-bold text-[12px] shadow-sm">
-                  {currentPage}
-                </button>
+                {Array.from({ length: Math.max(1, Math.ceil(filtered.length / pageSize)) }).map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentPage(i + 1)}
+                    className={`w-[33px] h-[36px] flex items-center justify-center rounded-[50px] text-[14px] font-light ${currentPage === i + 1 ? 'bg-[#D4AF37] text-white' : 'bg-white text-[#16151C]'}`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
                 <button
-                  onClick={() => setCurrentPage(p => p + 1)}
-                  disabled={currentPage * pageSize >= filtered.length}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/[0.06] disabled:opacity-40"
+                  onClick={() => setCurrentPage(p => Math.min(p + 1, Math.ceil(filtered.length / pageSize)))}
+                  disabled={currentPage >= Math.ceil(filtered.length / pageSize)}
+                  className="w-[35px] h-[36px] flex items-center justify-center border border-[rgba(162,161,168,0.2)] rounded-[8px] text-[#16151C] disabled:opacity-40"
                 >
-                  &gt;
+                  <ChevronRight size={20} />
                 </button>
               </div>
             </div>

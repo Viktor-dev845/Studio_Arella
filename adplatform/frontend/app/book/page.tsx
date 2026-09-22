@@ -443,7 +443,10 @@ function BookAdForm() {
                 )}
                 
                 <span className="text-[20px] font-medium text-[#101828] text-center flex-1">
-                  {step === 'billing' ? 'Billing' : step === 'card' || step === 'otp' || (step === 'success' && selectedPaymentMethod !== 'wallet') ? (selectedPaymentMethod === 'card' ? 'Pay with a new card' : `Pay with ${selectedPaymentMethod === 'wema_card' ? 'Wema' : selectedPaymentMethod === 'gtb_card' ? 'GTB' : ''} card`) : step === 'wallet' || (step === 'success' && selectedPaymentMethod === 'wallet') ? 'Pay from wallet' : ''}
+                  {step === 'billing' ? 'Billing' : 
+                   step === 'success' && selectedPaymentMethod !== 'wallet' ? 'Pay with card' : 
+                   step === 'card' || step === 'otp' ? (selectedPaymentMethod === 'card' ? 'Pay with a new card' : `Pay with ${selectedPaymentMethod === 'wema_card' ? 'Wema' : selectedPaymentMethod === 'gtb_card' ? 'GTB' : ''} card`) : 
+                   step === 'wallet' || (step === 'success' && selectedPaymentMethod === 'wallet') ? 'Pay from wallet' : ''}
                 </span>
                 
                 <button onClick={() => { if(step === 'success') { router.push('/bookings'); } else { setStep('form'); } }} className="hover:opacity-70 transition-opacity text-[#101828]">
@@ -669,21 +672,23 @@ function BookAdForm() {
                 )}
 
                 {step === 'success' && (
-                  <div className="w-full max-w-[468px] flex flex-col items-center h-full pt-20">
-                    <div className="relative flex items-center justify-center w-[70px] h-[70px] mb-12">
-                      <div className="absolute w-[142px] h-[142px] rounded-full blur-[5px] opacity-10" style={{ background: 'radial-gradient(116.28% 116.28% at 0% -16.28%, #443A18 4.69%, #D4AF37 98.31%)' }} />
-                      <div className="absolute w-[110px] h-[110px] rounded-full blur-[5px] opacity-15" style={{ background: 'radial-gradient(116.28% 116.28% at 0% -16.28%, #443A18 4.69%, #D4AF37 98.31%)' }} />
-                      <div className="relative w-full h-full rounded-full flex items-center justify-center" style={{ background: 'radial-gradient(116.28% 116.28% at 0% -16.28%, #443A18 4.69%, #D4AF37 98.31%)' }}>
-                        <Check size={30} className="text-white" strokeWidth={2.5} />
+                  <div className="w-full max-w-[468px] flex flex-col items-center h-full pt-[80px]">
+                    <div className="relative flex items-center justify-center w-[90px] h-[90px] mb-14">
+                      <div className="absolute w-[160px] h-[160px] rounded-full bg-[#D4AF37] opacity-10 blur-[20px]" />
+                      <div className="absolute w-[120px] h-[120px] rounded-full bg-[#D4AF37] opacity-20 blur-[10px]" />
+                      <div className="relative w-[90px] h-[90px] rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(180deg, #A47B2E 0%, #D4AF37 100%)' }}>
+                        <svg width="34" height="26" viewBox="0 0 34 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M2.5 13L12.5 23L31.5 2.5" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
                       </div>
                     </div>
                     
-                    <h3 className="text-[20px] font-semibold text-[#16151C]">Payment successful and Ad booked</h3>
+                    <h3 className="text-[22px] font-semibold text-[#16151C]">Payment successful and Ad booked</h3>
                     
-                    <div className="mt-12 w-full flex-1 flex flex-col justify-end">
+                    <div className="mt-16 w-full flex-1 flex flex-col justify-end">
                       <button 
                         onClick={() => router.push('/bookings')} 
-                        className="w-full h-[56px] bg-[#D4AF37] hover:bg-[#b58b24] text-[#000000] rounded-[6px] text-[16px] font-medium transition-colors flex items-center justify-center"
+                        className="w-full h-[56px] bg-[#D4AF37] hover:bg-[#b58b24] text-[#000000] rounded-[8px] text-[16px] font-medium transition-colors flex items-center justify-center"
                       >
                         Finish
                       </button>
