@@ -798,41 +798,44 @@ function BookingsPageContent() {
 
         {/* Review modal */}
         {reviewTarget && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[rgba(162,161,168,0.2)] backdrop-blur-[10px] p-4">
-            <div className="bg-white dark:bg-[#111111] rounded-[24px] w-full max-w-[420px] shadow-2xl relative animate-in fade-in zoom-in duration-200">
-              <div className="flex items-center justify-between p-6 pb-2">
-                <button onClick={() => setReviewTarget(null)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-white/[0.06] rounded-full transition-colors text-gray-900 dark:text-slate-50">
-                  <ArrowLeft size={18} />
+          <div className="fixed inset-0 z-[120] flex items-center justify-center bg-[rgba(162,161,168,0.2)] backdrop-blur-[10px]">
+            <div className="bg-white rounded-[32px] w-[625px] flex flex-col p-[32px] px-[57px] shadow-2xl relative animate-in fade-in zoom-in-95 duration-200">
+              
+              {/* Header */}
+              <div className="flex items-center justify-between w-full mb-[60px]">
+                <button onClick={() => setReviewTarget(null)} className="p-1 hover:bg-gray-100 rounded-full transition-colors text-[#101828]">
+                  <ArrowLeft size={24} />
                 </button>
-                <h2 className="text-[15px] font-bold text-gray-900 dark:text-slate-50">Send a review</h2>
-                <button onClick={() => setReviewTarget(null)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-white/[0.06] rounded-full transition-colors text-gray-900 dark:text-slate-50">
-                  <X size={18} />
+                <h2 className="text-[20px] font-medium text-[#101828] font-body text-center flex-1">
+                  Send a review
+                </h2>
+                <button onClick={() => setReviewTarget(null)} className="p-1 hover:bg-gray-100 rounded-full transition-colors text-[#101828]">
+                  <X size={24} />
                 </button>
               </div>
 
-              <div className="px-8 pb-10 pt-4 space-y-5">
-                <p className="text-[12.5px] text-gray-500 dark:text-slate-400">{reviewTarget.info}</p>
-
+              {/* Form */}
+              <div className="flex flex-col gap-[24px]">
                 <input
                   type="text"
-                  placeholder="Title of your review (optional)"
+                  placeholder="Title of your review"
                   value={reviewTitle}
                   onChange={(e) => setReviewTitle(e.target.value)}
-                  className="w-full px-4 py-3.5 bg-white dark:bg-[#111111] border border-gray-200 dark:border-white/10 rounded-[12px] text-[13px] font-medium text-gray-900 dark:text-slate-50 placeholder:text-[#94A3B8] placeholder:font-normal focus:outline-none focus:border-[#C69A2C] transition-colors"
+                  className="w-full h-[56px] px-[16px] bg-transparent border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[17px] font-light text-[#16151C] placeholder-[rgba(162,161,168,0.8)] focus:outline-none focus:border-[#D4AF37] font-body transition-colors"
                 />
-
+                
                 <textarea
                   placeholder="Type your review"
                   value={reviewBody}
                   onChange={(e) => setReviewBody(e.target.value)}
-                  rows={4}
-                  className="w-full px-4 py-3.5 bg-white dark:bg-[#111111] border border-gray-200 dark:border-white/10 rounded-[12px] text-[13px] font-medium text-gray-900 dark:text-slate-50 placeholder:text-[#94A3B8] placeholder:font-normal focus:outline-none focus:border-[#C69A2C] transition-colors resize-none"
+                  className="w-full h-[131px] p-[16px] bg-transparent border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[17px] font-light text-[#16151C] placeholder-[rgba(162,161,168,0.8)] focus:outline-none focus:border-[#D4AF37] font-body transition-colors resize-none"
                 />
-
-                <div>
-                  <p className="text-[12px] font-semibold text-gray-800 dark:text-slate-200 mb-2.5 text-left">Rate your experience</p>
-                  <div className="w-full border border-dashed border-gray-300 dark:border-white/20 rounded-[12px] py-6 flex flex-col items-center justify-center bg-white dark:bg-[#111111] transition-colors">
-                    <div className="flex gap-2.5 mb-2">
+                
+                <div className="flex flex-col gap-[16px] mt-[8px]">
+                  <p className="text-[16px] font-light text-[#16151C] font-body">Rate our service</p>
+                  
+                  <div className="w-full h-[122px] border border-dashed border-[#D4AF37] rounded-[10px] flex flex-col items-center justify-center gap-[10px] bg-white transition-colors">
+                    <div className="flex gap-[20px]">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <button
                           key={star}
@@ -840,34 +843,31 @@ function BookingsPageContent() {
                           className="focus:outline-none transition-transform hover:scale-110 active:scale-95"
                         >
                           <Star
-                            size={22}
-                            className={star <= reviewRating ? "fill-[#C69A2C] text-[#C69A2C]" : "text-[#C69A2C]/30"}
+                            size={32}
+                            className={star <= reviewRating ? "fill-[#D4AF37] text-[#D4AF37]" : "text-[#D4AF37]"}
                             strokeWidth={1.5}
                           />
                         </button>
                       ))}
                     </div>
-                    <p className="text-[12px] font-medium text-gray-700 dark:text-slate-200">
+                    <p className="text-[14px] font-light text-[#16151C] font-body mt-2">
                       {['Terrible', 'Poor', 'Average', 'Good', 'Excellent'][reviewRating - 1]}
                     </p>
                   </div>
                 </div>
-
-                <div className="pt-2">
-                  <button
-                    onClick={handleSubmitReview}
-                    disabled={submittingReview}
-                    className="w-full py-3.5 bg-[#C69A2C] hover:bg-[#b58b24] text-white text-[13px] font-bold rounded-[12px] transition-colors shadow-sm disabled:opacity-60 flex items-center justify-center gap-2"
-                  >
-                    {submittingReview && <Loader2 size={14} className="animate-spin" />}
-                    {submittingReview ? 'Sending…' : 'Send review'}
-                  </button>
-                </div>
               </div>
+
+              <button
+                onClick={handleSubmitReview}
+                disabled={submittingReview}
+                className="mt-[60px] w-full h-[56px] bg-[#D4AF37] hover:bg-[#b58b24] text-[#000000] text-[16px] font-medium rounded-[6px] transition-colors shadow-sm disabled:opacity-60 flex items-center justify-center gap-2 font-body"
+              >
+                {submittingReview && <Loader2 size={16} className="animate-spin" />}
+                {submittingReview ? 'Sending...' : 'Send review'}
+              </button>
             </div>
           </div>
         )}
-
         {/* Review success modal */}
         {reviewSuccess && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[rgba(162,161,168,0.2)] backdrop-blur-[10px] p-4">
