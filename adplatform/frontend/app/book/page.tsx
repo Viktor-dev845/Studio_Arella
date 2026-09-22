@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Calendar, Clock, Upload, ChevronDown, Check, X, ArrowLeft, ShoppingCart } from 'lucide-react';
+import { Calendar, Clock, Upload, ChevronDown, Check, X, ArrowLeft, ShoppingCart, Plus } from 'lucide-react';
 import Link from 'next/link';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { PageTransition } from '@/components/ui/Animations';
@@ -587,7 +587,7 @@ function BookAdForm() {
                     </div>
 
                     <p className="text-center text-[14px] leading-[1.6] text-[rgba(162,161,168,1)] mb-auto px-4 max-w-[400px]">
-                      To authorize this payment, enter the OTP sent to the email <span className="text-[#101828] font-medium">{user?.email || 'Bems.arella@gmail.com'}</span> attached to your studio arella account
+                      To authorize this payment, enter the OTP sent to the email <span className="text-[#101828] font-medium">Bems.arella@gmail.com</span> attached to your studio arella account
                     </p>
 
                     <div className="w-full mt-auto mb-8">
