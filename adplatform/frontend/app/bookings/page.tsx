@@ -119,8 +119,8 @@ function BookingsPageContent() {
 
   // Extend
   const [extendTarget, setExtendTarget] = useState<{ id: string; info: string; type: 'ad' | 'podcast' } | null>(null);
-  const [extendAmount, setExtendAmount] = useState('1');
-  const [extendUnit, setExtendUnit] = useState<ExtendUnit>('hours');
+  const [extendDuration, setExtendDuration] = useState('');
+  const [extendInfo, setExtendInfo] = useState('');
   const [extending, setExtending] = useState(false);
   const [extendSuccess, setExtendSuccess] = useState<{ info: string; cost: number } | null>(null);
 
@@ -231,19 +231,28 @@ function BookingsPageContent() {
 
   const handleExtend = async () => {
     if (!extendTarget) return;
-    const amount = Number(extendAmount);
-    if (!amount || amount <= 0) {
-      toast('Please enter a valid amount of time', 'error');
+    const match = extendDuration.toLowerCase().match(/(\d+)\s*(m|min|h|hour|hr|d|day|w|week|mo|month)/);
+    if (!match) {
+      toast('Please specify a valid duration, e.g. "2 hours"', 'error');
       return;
     }
-    const additionalMinutes = Math.round(amount * UNIT_MINUTES[extendUnit]);
+    const num = parseInt(match[1]);
+    const unit = match[2];
+    let mins = 0;
+    if (unit.startsWith('m') && unit !== 'mo' && unit !== 'month' && unit !== 'months') mins = num;
+    else if (unit.startsWith('h')) mins = num * 60;
+    else if (unit.startsWith('d')) mins = num * 60 * 24;
+    else if (unit.startsWith('w')) mins = num * 60 * 24 * 7;
+    else if (unit.startsWith('mo')) mins = num * 60 * 24 * 30;
+
+    const additionalMinutes = mins;
     const url = extendTarget.type === 'ad'
       ? `/bookings/${extendTarget.id}/extend`
       : `/podcasts/${extendTarget.id}/extend`;
 
     setExtending(true);
     try {
-      const res = await api.put(url, { additional_minutes: additionalMinutes });
+      const res = await api.put(url, { additional_minutes: additionalMinutes, additional_info: extendInfo });
       setExtendSuccess({ info: extendTarget.info, cost: res.data.additional_cost });
       setExtendTarget(null);
       fetchBookings();
@@ -523,7 +532,7 @@ function BookingsPageContent() {
                               <div className="flex items-center gap-4">
                                 {showExtend && (
                                   <button
-                                    onClick={() => { setExtendTarget({ id: b.id, info: b.info, type: bookingType }); setExtendAmount('1'); setExtendUnit('hours'); }}
+                                    onClick={() => { setExtendTarget({ id: b.id, info: b.info, type: bookingType }); setExtendDuration(''); setExtendInfo(''); }}
                                     className="text-[#D4AF37] hover:opacity-80 transition-colors"
                                   >
                                     Extend
@@ -717,57 +726,51 @@ function BookingsPageContent() {
 
         {/* Extend modal */}
         {extendTarget && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[rgba(162,161,168,0.2)] backdrop-blur-[10px] p-4">
-            <div className="bg-white dark:bg-[#111111] rounded-[24px] w-full max-w-[440px] shadow-2xl relative animate-in fade-in zoom-in duration-200">
-              <div className="flex items-center justify-between p-6 pb-2">
-                <button onClick={() => setExtendTarget(null)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-white/[0.06] rounded-full transition-colors text-gray-900 dark:text-slate-50">
-                  <ArrowLeft size={18} />
+          <div className="fixed inset-0 z-[120] flex items-center justify-center bg-[rgba(162,161,168,0.2)] backdrop-blur-[10px]">
+            <div className="bg-white rounded-[32px] w-[625px] flex flex-col p-[32px] px-[57px] shadow-2xl relative animate-in fade-in zoom-in-95 duration-200">
+              
+              {/* Header */}
+              <div className="flex items-center justify-between w-full mb-[60px]">
+                <button onClick={() => setExtendTarget(null)} className="p-1 hover:bg-gray-100 rounded-full transition-colors text-[#101828]">
+                  <ArrowLeft size={24} />
                 </button>
-                <h2 className="text-[15px] font-bold text-gray-900 dark:text-slate-50">Extend booking</h2>
-                <button onClick={() => setExtendTarget(null)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-white/[0.06] rounded-full transition-colors text-gray-900 dark:text-slate-50">
-                  <X size={18} />
-                </button>
-              </div>
-
-              <div className="px-8 pb-8 pt-4 space-y-5">
-                <p className="text-[12.5px] text-gray-500 dark:text-slate-400">{extendTarget.info}</p>
-
-                <div className="flex gap-3">
-                  <input
-                    type="number"
-                    min={1}
-                    value={extendAmount}
-                    onChange={(e) => setExtendAmount(e.target.value)}
-                    className="w-24 px-4 py-3 bg-white dark:bg-[#111111] border border-gray-200 dark:border-white/10 rounded-[12px] text-[14px] font-bold text-gray-900 dark:text-slate-50 text-center focus:outline-none focus:border-[#C69A2C]"
-                  />
-                  <select
-                    value={extendUnit}
-                    onChange={(e) => setExtendUnit(e.target.value as ExtendUnit)}
-                    className="flex-1 px-4 py-3 bg-white dark:bg-[#111111] border border-gray-200 dark:border-white/10 rounded-[12px] text-[13px] font-bold text-gray-900 dark:text-slate-50 focus:outline-none focus:border-[#C69A2C]"
-                  >
-                    <option value="minutes">Minutes</option>
-                    <option value="hours">Hours</option>
-                    <option value="days">Days</option>
-                  </select>
-                </div>
-
-                <p className="text-[11.5px] text-gray-400 dark:text-slate-500 leading-relaxed">
-                  This adds time immediately after your current booking ends. You'll be charged from your wallet for the extra time — the exact cost is confirmed when you extend, based on your booking's real rate.
-                </p>
-
-                <button
-                  onClick={handleExtend}
-                  disabled={extending}
-                  className="w-full py-3.5 bg-[#C69A2C] hover:bg-[#b58b24] text-white text-[14px] font-bold rounded-[14px] transition-colors shadow-sm disabled:opacity-60 flex items-center justify-center gap-2"
-                >
-                  {extending && <Loader2 size={15} className="animate-spin" />}
-                  {extending ? 'Extending…' : 'Extend & pay from wallet'}
+                <h2 className="text-[20px] font-medium text-[#101828] font-body text-center flex-1">
+                  Extend {extendTarget.type === 'podcast' ? 'studio session' : 'ad booking'}
+                </h2>
+                <button onClick={() => setExtendTarget(null)} className="p-1 hover:bg-gray-100 rounded-full transition-colors text-[#101828]">
+                  <X size={24} />
                 </button>
               </div>
+
+              {/* Form */}
+              <div className="flex flex-col gap-[24px]">
+                <input
+                  type="text"
+                  placeholder="Extend by? (e.g 2 hours, 2 weeks, 2 months)"
+                  value={extendDuration}
+                  onChange={(e) => setExtendDuration(e.target.value)}
+                  className="w-full h-[56px] px-[16px] bg-transparent border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[17px] font-light text-[#16151C] placeholder-[rgba(162,161,168,0.8)] focus:outline-none focus:border-[#D4AF37] font-body transition-colors"
+                />
+                
+                <textarea
+                  placeholder="Add any additional info"
+                  value={extendInfo}
+                  onChange={(e) => setExtendInfo(e.target.value)}
+                  className="w-full h-[131px] p-[16px] bg-transparent border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[17px] font-light text-[#16151C] placeholder-[rgba(162,161,168,0.8)] focus:outline-none focus:border-[#D4AF37] font-body transition-colors resize-none"
+                />
+              </div>
+
+              <button
+                onClick={handleExtend}
+                disabled={extending}
+                className="mt-[80px] w-full h-[56px] bg-[#D4AF37] hover:bg-[#b58b24] text-[#000000] text-[16px] font-medium rounded-[6px] transition-colors shadow-sm disabled:opacity-60 flex items-center justify-center gap-2 font-body"
+              >
+                {extending && <Loader2 size={16} className="animate-spin" />}
+                {extending ? 'Extending...' : `Extend ${extendTarget.type === 'podcast' ? 'studio session' : 'ad booking'}`}
+              </button>
             </div>
           </div>
         )}
-
         {/* Extend success modal */}
         {extendSuccess && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[rgba(162,161,168,0.2)] backdrop-blur-[10px]">
