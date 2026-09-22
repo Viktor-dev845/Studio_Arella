@@ -174,7 +174,7 @@ export default function BookPodcastSessionPage() {
             <span className="text-[12px] text-[#000] dark:text-white font-medium ml-[16px]">Book podcast slot</span>
           </div>
 
-          {!bookingId ? (
+          
             <div className="flex flex-col lg:flex-row gap-[100px]">
               {/* Form side */}
               <div className="flex-1 max-w-[850px] flex flex-col gap-[24px]">
@@ -307,58 +307,101 @@ export default function BookPodcastSessionPage() {
                 </button>
               </div>
             </div>
-          ) : (
-            /* Payment step — real, matches the pattern used at /cart */
-            <div style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: theme.radius.xl, padding: 28, display: 'flex', flexDirection: 'column', gap: 20 }}>
-              <div style={{ textAlign: 'center' }}>
-                <p style={{ margin: '0 0 4px', fontSize: 13, color: theme.color.text3, fontWeight: 700 }}>
-                  {selectedPackage.label} · {durationHours} hour{durationHours > 1 ? 's' : ''}
-                </p>
-                <p style={{ margin: 0, fontSize: 24, fontWeight: 900, color: theme.color.text1 }}>{naira(totalCost || 0)}</p>
-                <p style={{ margin: '4px 0 0', fontSize: 11, color: theme.color.text3 }}>Slot held for 5 minutes — complete payment to confirm.</p>
-              </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <div onClick={() => setPaymentMethod('wallet')} style={cardStyle(paymentMethod === 'wallet')}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 700, color: theme.color.text1 }}>
-                      <Wallet size={16} color={theme.color.gold} /> Pay from wallet
-                    </span>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: theme.color.text3 }}>
-                      {walletBalance !== null ? naira(walletBalance) : '—'}
-                    </span>
-                  </div>
-                </div>
-                <div onClick={() => setPaymentMethod('card')} style={cardStyle(paymentMethod === 'card')}>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 700, color: theme.color.text1 }}>
-                    <CreditCard size={16} color={theme.color.gold} /> Card / Bank Transfer
-                  </span>
-                </div>
-              </div>
-
-              {paymentMethod === 'wallet' && !hasSufficientBalance && (
-                <div style={{ background: theme.color.errorLight, borderRadius: 10, padding: '10px 14px', fontSize: 12, color: theme.color.error, fontWeight: 700 }}>
-                  Insufficient wallet balance. <Link href="/finances" style={{ color: theme.color.error, textDecoration: 'underline' }}>Fund your wallet</Link> or pay by card instead.
-                </div>
-              )}
-
-              <button
-                onClick={handlePay}
-                disabled={paying || (paymentMethod === 'wallet' && !hasSufficientBalance)}
-                style={{
-                  padding: '14px', borderRadius: 12, border: 'none', fontSize: 14, fontWeight: 800, fontFamily: F,
-                  background: (paymentMethod === 'wallet' && !hasSufficientBalance) ? theme.color.surface2 : theme.color.gold,
-                  color: (paymentMethod === 'wallet' && !hasSufficientBalance) ? theme.color.text3 : '#fff',
-                  cursor: (paying || (paymentMethod === 'wallet' && !hasSufficientBalance)) ? 'not-allowed' : 'pointer',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                }}>
-                {paying ? <Loader2 size={16} className="animate-spin" /> : null}
-                Pay {naira(totalCost || 0)}
-              </button>
-            </div>
-          )}
         </div>
 
+        {/* Billing Modal Overlay */}
+        {bookingId && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#16151C]/40 backdrop-blur-[10px] font-body">
+             <div className="w-[625px] bg-white rounded-[32px] pt-[32px] pb-[70px] relative flex flex-col items-center shadow-[0px_4px_40px_rgba(0,0,0,0.08)]">
+               
+               {/* Header */}
+               <div className="w-full flex items-center justify-center relative px-[32px]">
+                 <button type="button" onClick={() => setBookingId(null)} className="absolute left-[32px] top-1/2 -translate-y-1/2 cursor-pointer hover:opacity-70">
+                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                     <path d="M19 12H5M12 19l-7-7 7-7"/>
+                   </svg>
+                 </button>
+                 <h2 className="text-[20px] font-medium text-[#101828] tracking-[-0.01em]">Billing</h2>
+                 <button type="button" onClick={() => setBookingId(null)} className="absolute right-[32px] top-1/2 -translate-y-1/2 cursor-pointer hover:opacity-70">
+                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#344053" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                     <path d="M18 6L6 18M6 6l12 12"/>
+                   </svg>
+                 </button>
+               </div>
+
+               {/* Subtitle */}
+               <p className="text-[16px] font-bold text-[#101828] text-center max-w-[202px] leading-[21px] mt-[83px]">
+                 {durationHours} hour{durationHours > 1 ? 's' : ''} studio session at {naira(totalCost || 0)}
+               </p>
+
+               {/* Options container */}
+               <div className="flex flex-col gap-[16px] w-[468px] mt-[84px]">
+                 
+                 {/* Pay with card option */}
+                 <div 
+                   onClick={() => setPaymentMethod('card')}
+                   className={`w-full h-[127px] rounded-[16px] p-[24px_25px] cursor-pointer flex items-start gap-[14px] bg-white transition-colors ${paymentMethod === 'card' ? 'border-[#D4AF37] border-[2px]' : 'border-[#D7D7D7] border'}`}
+                 >
+                   <div className={`w-[16px] h-[16px] rounded-full shrink-0 mt-[2px] flex items-center justify-center ${paymentMethod === 'card' ? 'border-[#D4AF37] border-[2px]' : 'border-[#D7D7D7] border'}`}>
+                     {paymentMethod === 'card' && <div className="w-[8px] h-[8px] rounded-full bg-[#DF4308]" />}
+                   </div>
+                   <div className="flex flex-col gap-[12px] w-full">
+                      <span className="text-[16px] font-medium text-[#101828] leading-[21px]">Pay with card</span>
+                   </div>
+                 </div>
+
+                 {/* Pay from wallet option */}
+                 <div 
+                   onClick={() => setPaymentMethod('wallet')}
+                   className={`w-full h-[127px] rounded-[16px] p-[24px_25px] cursor-pointer flex items-start gap-[14px] bg-white transition-colors ${paymentMethod === 'wallet' ? 'border-[#D4AF37] border-[2px]' : 'border-[#D7D7D7] border'}`}
+                 >
+                   <div className={`w-[16px] h-[16px] rounded-full shrink-0 mt-[2px] flex items-center justify-center ${paymentMethod === 'wallet' ? 'border-[#D4AF37] border-[2px]' : 'border-[#D7D7D7] border'}`}>
+                     {paymentMethod === 'wallet' && <div className="w-[8px] h-[8px] rounded-full bg-[#DF4308]" />}
+                   </div>
+                   <div className="flex flex-col w-full relative h-full">
+                      <div className="flex items-center justify-between w-full h-[21px]">
+                        <span className="text-[16px] font-medium text-[#101828]">Pay from wallet</span>
+                        <Link href="/finances" className="flex items-center justify-center px-[10px] py-[3px] bg-[#FFFCF2] rounded-[8px] text-[14px] text-[#D4AF37] hover:opacity-80 transition-opacity">
+                          Fund wallet
+                        </Link>
+                      </div>
+                      
+                      <span className="text-[13px] font-medium text-[#101828] tracking-[0.02em] mt-[8px]">Wallet ID: 23cvo_23759ryi</span>
+                      
+                      <div className="flex items-center justify-between w-full mt-auto">
+                        <button type="button" onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText('23cvo_23759ryi'); toast('Copied Wallet ID!', 'success'); }} className="flex items-center gap-[4px] hover:opacity-70 text-[#D4AF37]">
+                           <span className="text-[12px] font-normal tracking-[0.03em]">Copy</span>
+                           <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
+                             <path d="M12.6666 0H5.99998C4.52722 0 3.33331 1.19391 3.33331 2.66667V3.33333H2.66665C1.19389 3.33333 0 4.52724 0 6V13.3333C0 14.8061 1.19389 16 2.66665 16H9.33331C10.8061 16 12 14.8061 12 13.3333V12.6667H12.6666C14.1394 12.6667 15.3333 11.4728 15.3333 10V2.66667C15.3333 1.19391 14.1394 0 12.6666 0ZM10.6666 13.3333C10.6666 14.0697 10.0697 14.6667 9.33331 14.6667H2.66665C1.93027 14.6667 1.33331 14.0697 1.33331 13.3333V6C1.33331 5.26362 1.93027 4.66667 2.66665 4.66667H3.33331V10C3.33331 11.4728 4.52722 12.6667 5.99998 12.6667H10.6666V13.3333ZM14 10C14 10.7364 13.403 11.3333 12.6666 11.3333H5.99998C5.2636 11.3333 4.66665 10.7364 4.66665 10V2.66667C4.66665 1.93029 5.2636 1.33333 5.99998 1.33333H12.6666C13.403 1.33333 14 1.93029 14 2.66667V10Z" />
+                           </svg>
+                        </button>
+                        <span className="text-[14px] font-medium text-[#101828]">NGN {walletBalance !== null ? walletBalance.toLocaleString('en-US', {minimumFractionDigits: 2}) : '0.00'}</span>
+                      </div>
+                   </div>
+                 </div>
+
+               </div>
+
+               {paymentMethod === 'wallet' && !hasSufficientBalance && (
+                 <div className="w-[468px] mt-[-6px] mb-[10px] bg-red-50 text-red-500 p-2 rounded text-[13px] font-medium text-center">
+                   Insufficient wallet balance.
+                 </div>
+               )}
+
+               {/* Continue Button */}
+               <button 
+                 type="button"
+                 onClick={handlePay}
+                 disabled={paying || (paymentMethod === 'wallet' && !hasSufficientBalance)}
+                 className="w-[468px] h-[56px] bg-[#D4AF37] rounded-[6px] text-[16px] font-medium text-[#000000] flex items-center justify-center mt-[32px] hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+               >
+                 {paying ? <Loader2 size={20} className="animate-spin mr-2" /> : null}
+                 Continue
+               </button>
+             </div>
+          </div>
+        )}
         {showSuccess && (
           <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.5)', backdropFilter: 'blur(4px)' }}>
             <div style={{ background: theme.color.surface, borderRadius: 24, padding: '36px 28px', textAlign: 'center', maxWidth: 380, width: '100%', margin: 16 }}>
