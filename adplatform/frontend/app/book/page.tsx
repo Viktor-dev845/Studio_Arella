@@ -222,7 +222,7 @@ function BookAdForm() {
 
   const inputClasses = "w-full px-5 py-4 bg-white border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[17px] font-light text-gray-800 placeholder:text-[rgba(162,161,168,0.8)] focus:outline-none focus:border-[#D4AF37] transition-colors font-body";
   const dropdownMenuClasses = "absolute top-full left-0 right-0 mt-2 bg-white rounded-[10px] shadow-[0px_30px_30px_rgba(184,184,184,0.25)] z-50 overflow-hidden py-4 px-3 border border-gray-100";
-  const dropdownItemClasses = "w-full text-left px-4 py-3 text-[15px] font-karla text-black hover:bg-gray-50 transition-colors rounded-lg flex justify-between items-center";
+  const dropdownItemClasses = "w-full text-left px-4 py-3 text-[15px] font-body text-black hover:bg-gray-50 transition-colors rounded-lg flex justify-between items-center";
 
   const handleOtpChange = (index: number, value: string) => {
     if (value.length > 1) value = value.slice(-1);
