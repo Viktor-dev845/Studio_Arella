@@ -582,7 +582,7 @@ function BookAdForm() {
                     </div>
 
                     <div className="flex items-center gap-1 mb-8 text-[14px]">
-                      <span className="text-[#8692A6]">Didn't get code?</span>
+                      <span className="text-[#8692A6]">Didn&apos;t get code?</span>
                       <button className="text-[#D4AF37] font-medium hover:underline">Resend</button>
                     </div>
 
