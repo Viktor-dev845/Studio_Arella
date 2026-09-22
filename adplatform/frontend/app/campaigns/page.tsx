@@ -563,7 +563,7 @@ export default function CampaignsPage() {
 
           {/* ─── CREATE CAMPAIGN: STEP 1 — DETAILS ─── */}
           {createModalOpen && wizardStep === 'details' && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px] p-4">
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[rgba(162,161,168,0.2)] backdrop-blur-[10px] p-4">
               <div className="bg-white dark:bg-[#111111] rounded-[24px] w-full max-w-[640px] shadow-2xl relative animate-in fade-in zoom-in-95 duration-150 overflow-hidden max-h-[90vh] flex flex-col">
                 <div className="flex items-center justify-between px-8 pt-7 pb-4 flex-shrink-0">
                   <button onClick={resetWizard} className="p-1 hover:bg-slate-100 dark:hover:bg-white/[0.06] rounded-full text-slate-900 dark:text-slate-50 transition-colors">
@@ -696,7 +696,7 @@ export default function CampaignsPage() {
 
           {/* ─── REQUEST AD CREATIVE SERVICES ─── */}
           {createModalOpen && wizardStep === 'creative-service' && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px] p-4">
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[rgba(162,161,168,0.2)] backdrop-blur-[10px] p-4">
               <div className="bg-white dark:bg-[#111111] rounded-[24px] w-full max-w-[400px] shadow-2xl relative animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
                 <div className="flex items-center justify-between px-6 pt-5 pb-2 border-b border-slate-100 dark:border-white/10">
                   <button onClick={() => setWizardStep('details')} className="p-1 text-slate-500 dark:text-slate-400">
@@ -760,7 +760,7 @@ export default function CampaignsPage() {
           )}
 
           {createModalOpen && wizardStep === 'creative-service-success' && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px] p-4">
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[rgba(162,161,168,0.2)] backdrop-blur-[10px] p-4">
               <div className="bg-white dark:bg-[#111111] rounded-[24px] w-full max-w-[400px] shadow-2xl relative animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
                 <div className="px-6 pt-10 pb-8 text-center">
                   <div className="w-16 h-16 rounded-full bg-[#C69A2C] flex items-center justify-center mx-auto mb-4">
@@ -780,7 +780,7 @@ export default function CampaignsPage() {
 
           {/* ─── CREATE CAMPAIGN: STEPS 3+ — BILLING ─── */}
           {createModalOpen && ['billing', 'card', 'card-confirm', 'wallet', 'otp', 'success'].includes(wizardStep) && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px] p-4">
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[rgba(162,161,168,0.2)] backdrop-blur-[10px] p-4">
               <div className="bg-white dark:bg-[#111111] rounded-[24px] w-full max-w-[400px] shadow-2xl relative animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
                 <div className="flex items-center justify-between px-6 pt-5 pb-2 border-b border-slate-100 dark:border-white/10">
                   {wizardStep !== 'billing' && wizardStep !== 'success' ? (
@@ -1080,7 +1080,7 @@ export default function CampaignsPage() {
 
           {/* ─── FILTER POPUP ─── */}
           {filterModalOpen && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px] p-4">
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[rgba(162,161,168,0.2)] backdrop-blur-[10px] p-4">
               <div className="bg-white dark:bg-[#111111] rounded-[24px] w-full max-w-[380px] shadow-2xl relative animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
                 <div className="flex items-center justify-between px-6 pt-6 pb-2">
                   <h3 className="text-[15px] font-bold text-slate-900 dark:text-slate-50">Filter Campaigns</h3>

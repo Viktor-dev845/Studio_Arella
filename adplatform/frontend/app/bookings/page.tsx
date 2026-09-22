@@ -686,7 +686,7 @@ function BookingsPageContent() {
 
         {/* Extend modal */}
         {extendTarget && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[rgba(162,161,168,0.2)] backdrop-blur-[10px] p-4">
             <div className="bg-white dark:bg-[#111111] rounded-[24px] w-full max-w-[440px] shadow-2xl relative animate-in fade-in zoom-in duration-200">
               <div className="flex items-center justify-between p-6 pb-2">
                 <button onClick={() => setExtendTarget(null)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-white/[0.06] rounded-full transition-colors text-gray-900 dark:text-slate-50">
@@ -739,7 +739,7 @@ function BookingsPageContent() {
 
         {/* Extend success modal */}
         {extendSuccess && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px]">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[rgba(162,161,168,0.2)] backdrop-blur-[10px]">
             <div className="bg-white dark:bg-[#111111] rounded-[24px] pt-10 pb-8 px-8 max-w-[360px] w-full mx-4 shadow-2xl flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-150">
               <div className="relative flex items-center justify-center w-36 h-36 mb-3">
                 <div className="absolute inset-0 bg-[#C69A2C]/25 blur-2xl rounded-full"></div>
@@ -764,7 +764,7 @@ function BookingsPageContent() {
 
         {/* Review modal */}
         {reviewTarget && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px] p-4">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[rgba(162,161,168,0.2)] backdrop-blur-[10px] p-4">
             <div className="bg-white dark:bg-[#111111] rounded-[24px] w-full max-w-[420px] shadow-2xl relative animate-in fade-in zoom-in duration-200">
               <div className="flex items-center justify-between p-6 pb-2">
                 <button onClick={() => setReviewTarget(null)} className="p-1.5 hover:bg-gray-100 dark:hover:bg-white/[0.06] rounded-full transition-colors text-gray-900 dark:text-slate-50">
@@ -836,7 +836,7 @@ function BookingsPageContent() {
 
         {/* Review success modal */}
         {reviewSuccess && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px] p-4">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[rgba(162,161,168,0.2)] backdrop-blur-[10px] p-4">
             <div className="bg-white dark:bg-[#111111] rounded-[24px] pt-10 pb-8 px-8 max-w-[360px] w-full mx-4 shadow-2xl flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-150">
               <div className="relative flex items-center justify-center w-36 h-36 mb-3">
                 <div className="absolute inset-0 bg-[#C69A2C]/25 blur-2xl rounded-full"></div>

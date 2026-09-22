@@ -56,14 +56,14 @@ function BookAdForm() {
   const [step, setStep] = useState<Step>('form');
   const [bookingId, setBookingId] = useState<string | null>(null);
   const [totalCost, setTotalCost] = useState(0);
-  const [walletBalance, setWalletBalance] = useState(0);
+  const [walletBalance, setWalletBalance] = useState(5215005.25);
   const [paying, setPaying] = useState(false);
   const [cardForm, setCardForm] = useState({ name: '', number: '', expiry: '', cvv: '' });
   const [adDesignRequested, setAdDesignRequested] = useState(false);
   const [showCreativeModal, setShowCreativeModal] = useState(false);
   const [showCancelCreativeModal, setShowCancelCreativeModal] = useState(false);
   const [showCreativeCancelSuccessModal, setShowCreativeCancelSuccessModal] = useState(false);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'card' | 'wallet'>('card');
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'gtb_card' | 'wema_card' | 'card' | 'wallet'>('wema_card');
 
   useEffect(() => {
     api.get('/finances/balance').then((res) => setWalletBalance(Number(res.data?.credits ?? 0))).catch(() => {});
@@ -396,8 +396,8 @@ function BookAdForm() {
 
         {/* ─── Billing / payment modals ─── */}
         {step !== 'form' && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/45 backdrop-blur-[2px] p-4">
-            <div className="bg-white rounded-[32px] w-full max-w-[625px] min-h-[500px] shadow-2xl relative animate-in fade-in zoom-in duration-200 flex flex-col font-body pt-8 pb-10">
+          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[rgba(162,161,168,0.2)] backdrop-blur-[10px] p-4">
+            <div className="bg-white rounded-[32px] w-full max-w-[625px] h-[836px] shadow-2xl relative animate-in fade-in zoom-in duration-200 flex flex-col font-body pt-8 pb-10">
               
               <div className="flex items-center justify-between px-10 pb-2 absolute top-8 left-0 right-0">
                 {step !== 'billing' && step !== 'success' ? (
@@ -423,53 +423,62 @@ function BookAdForm() {
                       {formatCurrency(totalCost, currency, rates)}
                     </p>
                     
-                    <div className="w-full space-y-6">
-                      {/* Card Option */}
+                    <div className="w-full space-y-4">
+                      {/* GTB Card Option */}
                       <div 
-                        onClick={() => setSelectedPaymentMethod('card')}
-                        className={`w-full h-[127px] rounded-[16px] border cursor-pointer transition-all flex flex-col justify-center px-6 relative ${selectedPaymentMethod === 'card' ? 'border-2 border-[#D4AF37]' : 'border border-[#D7D7D7]'}`}
+                        onClick={() => setSelectedPaymentMethod('gtb_card')}
+                        className={`w-full h-[127px] rounded-[16px] border cursor-pointer transition-all flex flex-col justify-center px-6 relative ${selectedPaymentMethod === 'gtb_card' ? 'border-2 border-[#D4AF37]' : 'border border-[#D7D7D7]'}`}
                       >
-                        <div className="flex items-center gap-4">
-                          <div className={`w-[16px] h-[16px] rounded-full border flex items-center justify-center shrink-0 ${selectedPaymentMethod === 'card' ? 'border-[#D4AF37]' : 'border-[#D7D7D7]'}`}>
-                            {selectedPaymentMethod === 'card' && <div className="w-[8px] h-[8px] rounded-full bg-[#DF4308]" />}
+                        <div className="flex items-center gap-4 mb-5">
+                          <div className={`w-[16px] h-[16px] rounded-full border flex items-center justify-center shrink-0 ${selectedPaymentMethod === 'gtb_card' ? 'border-[#D4AF37]' : 'border-[#D7D7D7]'}`}>
+                            {selectedPaymentMethod === 'gtb_card' && <div className="w-[8px] h-[8px] rounded-full bg-[#DF4308]" />}
                           </div>
-                          <span className="text-[16px] font-medium text-[#101828]">Pay with card</span>
+                          <span className="text-[16px] font-medium text-[#101828]">Pay with GTB card</span>
+                        </div>
+                        <div className="ml-[32px] flex items-center justify-between text-[#101828] pr-4">
+                          <span className="text-[14px] font-medium tracking-[0.05em]">*************528</span>
+                          <span className="text-[14px] font-medium">Lilian Okoro</span>
                         </div>
                       </div>
                       
-                      {/* Wallet Option */}
+                      {/* Wema Card Option */}
                       <div 
-                        onClick={() => setSelectedPaymentMethod('wallet')}
-                        className={`w-full h-[127px] rounded-[16px] border cursor-pointer transition-all flex flex-col justify-center px-6 relative ${selectedPaymentMethod === 'wallet' ? 'border-2 border-[#D4AF37]' : 'border border-[#D7D7D7]'}`}
+                        onClick={() => setSelectedPaymentMethod('wema_card')}
+                        className={`w-full h-[127px] rounded-[16px] border cursor-pointer transition-all flex flex-col justify-center px-6 relative ${selectedPaymentMethod === 'wema_card' ? 'border-2 border-[#D4AF37]' : 'border border-[#D7D7D7]'}`}
                       >
-                        <div className="flex items-center gap-4 mb-3">
-                          <div className={`w-[16px] h-[16px] rounded-full border flex items-center justify-center shrink-0 ${selectedPaymentMethod === 'wallet' ? 'border-[#D4AF37]' : 'border-[#D7D7D7]'}`}>
-                            {selectedPaymentMethod === 'wallet' && <div className="w-[8px] h-[8px] rounded-full bg-[#DF4308]" />}
+                        <div className="flex items-center gap-4 mb-5">
+                          <div className={`w-[16px] h-[16px] rounded-full border flex items-center justify-center shrink-0 ${selectedPaymentMethod === 'wema_card' ? 'border-[#D4AF37]' : 'border-[#D7D7D7]'}`}>
+                            {selectedPaymentMethod === 'wema_card' && <div className="w-[8px] h-[8px] rounded-full bg-[#DF4308]" />}
                           </div>
-                          <span className="text-[16px] font-medium text-[#101828]">Pay from wallet</span>
-                          <div className="ml-auto bg-[#FFFCF2] text-[#D4AF37] px-3 py-1 rounded-[8px] text-[14px] font-normal">Fund wallet</div>
+                          <span className="text-[16px] font-medium text-[#101828]">Pay with Wema card</span>
                         </div>
-                        <div className="ml-[32px] flex items-end justify-between">
-                          <div className="flex flex-col gap-1.5">
-                            <span className="text-[13px] font-medium text-[#101828] tracking-[0.02em]">Wallet ID: 23cvo_23759ryi</span>
-                            <button type="button" className="flex items-center gap-1.5 text-[#D4AF37] text-[12px] font-normal tracking-[0.03em]">
-                              Copy
-                              <svg width="13" height="16" viewBox="0 0 13 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M9 0H2C0.9 0 0 0.9 0 2V12H2V2H9V0ZM11 4H5C3.9 4 3 4.9 3 6V14C3 15.1 3.9 16 5 16H11C12.1 16 13 15.1 13 14V6C13 4.9 12.1 4 11 4ZM11 14H5V6H11V14Z" fill="#D4AF37"/>
-                              </svg>
-                            </button>
-                          </div>
-                          <span className="text-[14px] font-medium text-[#101828]">{formatCurrency(totalCost, currency, rates)}</span>
+                        <div className="ml-[32px] flex items-center justify-between text-[#101828] pr-4">
+                          <span className="text-[14px] font-medium tracking-[0.05em]">*************493</span>
+                          <span className="text-[14px] font-medium">Lilian Okoro</span>
                         </div>
                       </div>
                     </div>
 
+                    <div className="mt-8 flex justify-center">
+                      <button onClick={() => { setSelectedPaymentMethod('card'); setStep('card'); }} className="text-[#D4AF37] text-[15px] font-semibold hover:opacity-80 transition-opacity">
+                        Pay with a new bank card
+                      </button>
+                    </div>
+
                     <div className="mt-8 w-full flex-1 flex flex-col justify-end">
                       <button 
-                        onClick={() => setStep(selectedPaymentMethod)} 
-                        className="w-full h-[56px] bg-[#D4AF37] hover:bg-[#b58b24] text-[#000000] rounded-[6px] text-[16px] font-medium transition-colors"
+                        onClick={() => {
+                          if (selectedPaymentMethod === 'gtb_card' || selectedPaymentMethod === 'wema_card') {
+                            handlePayCard();
+                          } else {
+                            setStep(selectedPaymentMethod);
+                          }
+                        }}
+                        disabled={paying}
+                        className="w-full h-[56px] bg-[#D4AF37] hover:bg-[#b58b24] text-[#000000] rounded-[6px] text-[16px] font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
                       >
-                        Continue
+                        {paying && <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />}
+                        {paying ? 'Processing…' : 'Continue'}
                       </button>
                     </div>
                   </div>
@@ -545,7 +554,7 @@ function BookAdForm() {
 
         {/* Creative Services Modal */}
         {showCreativeModal && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/45 backdrop-blur-md p-4 animate-in fade-in duration-200">
+          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[rgba(162,161,168,0.2)] backdrop-blur-[10px] p-4 animate-in fade-in duration-200">
             <div className="bg-[#FFFFFF] rounded-[24px] w-full max-w-[625px] shadow-2xl relative flex flex-col pt-8 pb-10 px-10 max-h-[90vh]">
               {/* Header */}
               <div className="flex items-center justify-between mb-8">
