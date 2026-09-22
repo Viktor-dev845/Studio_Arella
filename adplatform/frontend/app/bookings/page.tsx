@@ -314,44 +314,44 @@ function BookingsPageContent() {
 
           {/* Header & Tabs */}
           <div className="mb-8">
-            <div className="flex items-center justify-between border-b border-gray-200 dark:border-white/10 mb-8">
+            <div className="flex items-center justify-between border-b border-[rgba(162,161,168,0.2)] dark:border-white/10 mb-8">
               <div className="flex items-center gap-8">
                 <button
                   onClick={() => setActiveTab('screen')}
-                  className={`flex items-center gap-2 pb-3 text-[13px] font-bold transition-colors relative ${
-                    activeTab === 'screen' ? 'text-[#C69A2C]' : 'text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300'
+                  className={`flex items-center gap-2 pb-3 text-[17px] font-body transition-colors relative ${
+                    activeTab === 'screen' ? 'text-[#D4AF37] font-semibold' : 'text-[#16151C] dark:text-slate-500 font-light'
                   }`}
                 >
-                  <Monitor size={16} />
+                  <Monitor size={20} />
                   Screen Ads
                   {activeTab === 'screen' && (
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#C69A2C] rounded-t-full" />
+                    <div className="absolute -bottom-[1px] left-0 right-0 h-[3px] bg-[#D4AF37]" />
                   )}
                 </button>
 
                 <button
                   onClick={() => setActiveTab('podcast')}
-                  className={`flex items-center gap-2 pb-3 text-[13px] font-bold transition-colors relative ${
-                    activeTab === 'podcast' ? 'text-[#C69A2C]' : 'text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300'
+                  className={`flex items-center gap-2 pb-3 text-[17px] font-body transition-colors relative ${
+                    activeTab === 'podcast' ? 'text-[#D4AF37] font-semibold' : 'text-[#16151C] dark:text-slate-500 font-light'
                   }`}
                 >
-                  <Mic size={16} />
+                  <Mic size={20} />
                   Podcast studio
                   {activeTab === 'podcast' && (
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#C69A2C] rounded-t-full" />
+                    <div className="absolute -bottom-[1px] left-0 right-0 h-[3px] bg-[#D4AF37]" />
                   )}
                 </button>
 
                 <button
                   onClick={() => setActiveTab('calendar')}
-                  className={`flex items-center gap-2 pb-3 text-[13px] font-bold transition-colors relative ${
-                    activeTab === 'calendar' ? 'text-[#C69A2C]' : 'text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300'
+                  className={`flex items-center gap-2 pb-3 text-[17px] font-body transition-colors relative ${
+                    activeTab === 'calendar' ? 'text-[#D4AF37] font-semibold' : 'text-[#16151C] dark:text-slate-500 font-light'
                   }`}
                 >
-                  <Calendar size={16} />
+                  <Calendar size={20} />
                   Calendar
                   {activeTab === 'calendar' && (
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#C69A2C] rounded-t-full" />
+                    <div className="absolute -bottom-[1px] left-0 right-0 h-[3px] bg-[#D4AF37]" />
                   )}
                 </button>
               </div>
@@ -364,20 +364,20 @@ function BookingsPageContent() {
             <>
               {/* Controls */}
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-                <h2 className="text-sm font-bold text-gray-900 dark:text-slate-50">
+                <h2 className="font-body text-[21px] font-medium leading-[27px] tracking-[0.01em] text-[#2B2E48] dark:text-slate-50">
                   {activeTab === 'podcast' ? 'All podcast bookings' : 'All Ad bookings'}
                 </h2>
 
                 <div className="flex items-center gap-3 w-full sm:w-auto">
                   {/* Search */}
-                  <div className="relative flex-1 sm:w-72">
-                    <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" />
+                  <div className="relative flex-1 sm:w-[261px]">
+                    <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" />
                     <input
                       type="text"
                       placeholder="Search"
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 bg-[#F9FAFB] dark:bg-[#111111] border border-transparent rounded-[12px] text-[13px] font-medium text-gray-900 dark:text-slate-50 placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-white/10 transition-all shadow-sm"
+                      className="w-full pl-11 pr-4 h-[50px] bg-transparent border border-[rgba(162,161,168,0.5)] rounded-[10px] text-[16px] font-light text-gray-900 dark:text-slate-50 placeholder:text-[rgba(22,21,28,0.3)] focus:outline-none focus:border-[#D4AF37] transition-all"
                     />
                   </div>
 
@@ -385,15 +385,15 @@ function BookingsPageContent() {
                   <div className="relative" ref={filterRef}>
                     <button
                       onClick={() => setShowFilter(!showFilter)}
-                      className="flex items-center justify-center w-10 h-10 bg-white dark:bg-[#111111] border border-gray-200 dark:border-white/10 rounded-[12px] text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-white/[0.06] transition-colors shadow-sm"
-                      title="Filter"
+                      className="flex items-center justify-center gap-2 px-[20px] h-[50px] bg-transparent border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[#16151C] dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-white/[0.06] transition-colors"
                     >
-                      <Filter size={16} />
+                      <Filter size={20} className="text-[#16151C] dark:text-slate-300" />
+                      <span className="font-body font-light text-[16px]">Filter</span>
                     </button>
 
                     {showFilter && (
                       <div 
-                        className="absolute right-0 top-[48px] z-50 bg-white shadow-2xl p-[24px] flex flex-col"
+                        className="absolute right-0 top-[60px] z-50 bg-white shadow-2xl p-[24px] flex flex-col"
                         style={{ width: '400px', borderRadius: '16px', border: '1px solid rgba(0,0,0,0.05)' }}
                       >
                         <h3 className="text-xl font-bold text-gray-900 mb-6 font-body">Filter</h3>
@@ -444,16 +444,15 @@ function BookingsPageContent() {
                   {/* Export */}
                   <button
                     onClick={handleExport}
-                    className="flex items-center gap-2 px-4 h-10 bg-white dark:bg-[#111111] border border-gray-200 dark:border-white/10 rounded-[12px] text-[13px] font-bold text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-white/[0.06] transition-colors shadow-sm"
+                    className="flex items-center justify-center w-[116px] h-[40px] bg-transparent border-[1.5px] border-[#D4AF37] rounded-[6px] text-[14px] font-normal text-[#D4AF37] hover:bg-[#D4AF37]/10 transition-colors"
                   >
-                    <Download size={15} />
                     Export
                   </button>
 
                   {/* Book Slot */}
                   <Link
                     href={activeTab === 'podcast' ? "/podcast/book" : "/book"}
-                    className="flex items-center justify-center px-6 h-10 bg-[#1A1A1A] dark:bg-white hover:bg-black dark:hover:bg-gray-100 text-white dark:text-[#1A1A1A] rounded-[12px] text-[13px] font-bold transition-all shadow-sm whitespace-nowrap ml-2"
+                    className="flex items-center justify-center w-[139px] h-[40px] bg-[#D4AF37] hover:bg-[#b58b24] text-[#000000] rounded-[6px] text-[14px] font-normal transition-colors"
                   >
                     {activeTab === 'podcast' ? 'Book Podcast Slot' : 'Book Ad Slot'}
                   </Link>
@@ -461,30 +460,30 @@ function BookingsPageContent() {
               </div>
 
               {/* Table */}
-              <div className="bg-white dark:bg-[#111111] rounded-2xl overflow-hidden shadow-sm border border-gray-100 dark:border-white/10">
+              <div className="bg-white dark:bg-[#111111] rounded-b-[8px] overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-gray-100 dark:border-white/10 bg-white dark:bg-[#111111]">
+                      <tr className="bg-[#F1F3F4] dark:bg-white/5 h-[50px]">
                         {(activeTab === 'podcast'
-                          ? ['SESSION INFO', 'SCHEDULE', 'BILLING (NGN)', 'DURATION', 'STATUS', 'ACTION']
-                          : ['CAMPAIGN INFO', 'SCHEDULE', 'BILLING (NGN)', 'DURATION', 'STATUS', 'ACTION']
+                          ? ['Session info', 'Schedule', 'Billing (NGN)', 'Duration', 'Status', 'Action']
+                          : ['Campaign info', 'Schedule', 'Billing (NGN)', 'Duration', 'Status', 'Action']
                         ).map((h) => (
-                          <th key={h} className="text-left px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">{h}</th>
+                          <th key={h} className="text-left px-[14px] py-[8px] text-[14px] font-normal text-[#7D7D7D] dark:text-slate-500 whitespace-nowrap">{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {loading ? (
                         <tr>
-                          <td colSpan={6} className="px-6 py-16 text-center text-gray-400 dark:text-slate-500">
+                          <td colSpan={6} className="px-[14px] py-16 text-center text-gray-400 dark:text-slate-500">
                             <Loader2 size={20} className="animate-spin inline-block mr-2" />
                             Loading bookings…
                           </td>
                         </tr>
                       ) : paginatedRows.length === 0 ? (
                         <tr>
-                          <td colSpan={6} className="px-6 py-16 text-center text-gray-400 dark:text-slate-500 text-[13px] font-medium">
+                          <td colSpan={6} className="px-[14px] py-16 text-center text-gray-400 dark:text-slate-500 text-[13px] font-medium">
                             {search
                               ? 'No bookings match your search.'
                               : activeTab === 'podcast'
@@ -500,27 +499,29 @@ function BookingsPageContent() {
                           && new Date(b.end_time).getTime() > Date.now();
                         const showReview = canReview(b);
                         return (
-                          <tr key={b.id} className="border-b border-gray-100 dark:border-white/10 last:border-0 hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-colors group">
-                            <td className="px-6 py-5 text-[14px] font-bold text-gray-900 dark:text-slate-50">{b.info}</td>
-                            <td className="px-6 py-5 text-[13px] font-medium text-gray-500 dark:text-slate-400">{formatSchedule(b.start_time, timezone)}</td>
-                            <td className="px-6 py-5 text-[14px] font-bold text-gray-900 dark:text-slate-50">{naira(b.billing)}</td>
-                            <td className="px-6 py-5 text-[13px] font-medium text-gray-500 dark:text-slate-400">{b.duration}</td>
-                            <td className="px-6 py-5">
-                              <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold tracking-wide uppercase ${
-                                b.status === 'active' || b.status === 'confirmed' ? 'bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400' :
-                                b.status === 'pending' || b.status === 'pending_payment' ? 'bg-orange-100 text-orange-700 dark:bg-orange-500/10 dark:text-orange-400' :
-                                b.status === 'cancelled' || b.status === 'failed' ? 'bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400' :
-                                'bg-gray-100 text-gray-700 dark:bg-white/10 dark:text-slate-300'
-                              }`}>
-                                {statusInfo.label}
-                              </span>
+                          <tr key={b.id} className="h-[50px] border-b border-[#DCDCDD] dark:border-white/10 bg-white dark:bg-[#111111] hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-colors">
+                            <td className="px-[14px] text-[16px] font-normal text-[#2B2E48] dark:text-slate-50 tracking-[0.01em]">{b.info}</td>
+                            <td className="px-[14px] text-[16px] font-normal text-[#2B2E48] dark:text-slate-50 tracking-[0.01em]">
+                              <div className="flex items-center gap-3 whitespace-nowrap">
+                                <span>{formatSchedule(b.start_time, timezone)}</span>
+                                {(b.status === 'pending' || b.status === 'pending_payment') && (
+                                  <button className="text-[14px] text-[#D4AF37] underline decoration-[#D4AF37] hover:opacity-80 transition-opacity">
+                                    Reschedule
+                                  </button>
+                                )}
+                              </div>
                             </td>
-                            <td className="px-6 py-5">
+                            <td className="px-[14px] text-[16px] font-normal text-[#2B2E48] dark:text-slate-50 tracking-[0.01em]">{naira(b.billing)}</td>
+                            <td className="px-[14px] text-[16px] font-normal text-[#2B2E48] dark:text-slate-50 tracking-[0.01em] whitespace-nowrap">{b.duration}</td>
+                            <td className="px-[14px] text-[16px] font-normal text-[#2B2E48] dark:text-slate-50 tracking-[0.01em]">
+                              {statusInfo.label}
+                            </td>
+                            <td className="px-[14px] text-[16px] font-normal tracking-[0.01em] whitespace-nowrap">
                               <div className="flex items-center gap-4">
                                 {showExtend && (
                                   <button
                                     onClick={() => { setExtendTarget({ id: b.id, info: b.info, type: bookingType }); setExtendAmount('1'); setExtendUnit('hours'); }}
-                                    className="text-[13px] font-bold text-[#1A1A1A] dark:text-white hover:text-gray-500 transition-colors"
+                                    className="text-[#D4AF37] hover:opacity-80 transition-colors"
                                   >
                                     Extend
                                   </button>
@@ -528,7 +529,7 @@ function BookingsPageContent() {
                                 {showCancel && (
                                   <button
                                     onClick={() => setCancelTarget({ id: b.id, info: b.info, type: bookingType })}
-                                    className="text-[13px] font-bold text-red-500 dark:text-red-400 hover:text-red-600 transition-colors"
+                                    className="text-[#FF4E2B] hover:opacity-80 transition-colors"
                                   >
                                     Cancel
                                   </button>
@@ -536,12 +537,20 @@ function BookingsPageContent() {
                                 {showReview && (
                                   <button
                                     onClick={() => { setReviewTarget({ id: b.id, info: b.info, type: bookingType }); setReviewTitle(''); setReviewBody(''); setReviewRating(4); }}
-                                    className="text-[13px] font-bold text-[#7C5DFA] hover:text-[#6a4de0] transition-colors"
+                                    className="text-[#7F77FF] hover:opacity-80 transition-colors"
                                   >
                                     Send a review
                                   </button>
                                 )}
-                                {!showExtend && !showCancel && !showReview && (
+                                {b.status === 'cancelled' && (
+                                  <Link
+                                    href={activeTab === 'podcast' ? "/podcast/book" : "/book"}
+                                    className="text-[#91C600] hover:opacity-80 transition-colors"
+                                  >
+                                    Book a slot
+                                  </Link>
+                                )}
+                                {!showExtend && !showCancel && !showReview && b.status !== 'cancelled' && (
                                   <span className="text-gray-300 dark:text-slate-600">
                                     <MoreHorizontal size={18} />
                                   </span>
@@ -557,23 +566,43 @@ function BookingsPageContent() {
               </div>
 
               {/* Pagination */}
-              {!loading && totalPages > 1 && (
-                <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <div className="text-[13px] text-gray-500 dark:text-slate-400 font-medium">
-                    Showing <span className="font-bold text-gray-900 dark:text-slate-50">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="font-bold text-gray-900 dark:text-slate-50">{Math.min(currentPage * itemsPerPage, filteredRows.length)}</span> of <span className="font-bold text-gray-900 dark:text-slate-50">{filteredRows.length}</span> results
+              {!loading && (
+                <div className="w-full mt-[20px] flex items-center justify-between">
+                  <div className="flex items-center gap-[20px]">
+                    <span className="text-[14px] font-light text-[#A2A1A8]">Showing</span>
+                    <div className="relative">
+                      <select
+                        value={itemsPerPage}
+                        onChange={(e) => {}}
+                        className="appearance-none bg-white dark:bg-[#111111] w-[76px] h-[46px] border border-[rgba(162,161,168,0.2)] rounded-[10px] pl-[16px] pr-[32px] text-[14px] font-light text-[#16151C] dark:text-slate-50 focus:outline-none"
+                      >
+                        <option value={8}>8</option>
+                        <option value={10}>10</option>
+                        <option value={20}>20</option>
+                        <option value={50}>50</option>
+                      </select>
+                      <span className="absolute right-[12px] top-1/2 -translate-y-1/2 text-[#16151C] dark:text-slate-50 pointer-events-none">
+                        <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </span>
+                    </div>
                   </div>
                   
-                  <div className="flex items-center gap-1">
+                  <div className="text-[14px] font-light text-[#A2A1A8]">
+                    Showing {filteredRows.length === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredRows.length)} out of {filteredRows.length} records
+                  </div>
+                  
+                  <div className="flex items-center gap-[5px]">
                     <button
                       onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
-                      className="flex items-center justify-center w-8 h-8 rounded-lg border border-gray-200 dark:border-white/10 text-gray-500 hover:bg-gray-50 dark:hover:bg-white/5 disabled:opacity-50 disabled:hover:bg-transparent transition-colors"
+                      className="w-[35px] h-[36px] flex items-center justify-center border border-[#D4AF37] rounded-[8px] text-[#D4AF37] disabled:opacity-40 transition-opacity"
                     >
-                      <ChevronLeft size={16} />
+                      <ChevronLeft size={20} />
                     </button>
                     
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => {
-                      // Simple pagination logic: show first, last, current, and adjacent
                       if (
                         page === 1 || 
                         page === totalPages || 
@@ -583,10 +612,10 @@ function BookingsPageContent() {
                           <button
                             key={page}
                             onClick={() => setCurrentPage(page)}
-                            className={`flex items-center justify-center w-8 h-8 rounded-lg text-[13px] font-bold transition-colors ${
+                            className={`w-[35px] h-[36px] flex items-center justify-center rounded-[8px] text-[15px] font-light transition-colors ${
                               currentPage === page 
-                                ? 'bg-[#1A1A1A] dark:bg-white text-white dark:text-[#1A1A1A]' 
-                                : 'text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-white/5'
+                                ? 'bg-[#D4AF37] text-white' 
+                                : 'bg-transparent text-[#16151C] dark:text-slate-50 hover:bg-gray-50 dark:hover:bg-white/5'
                             }`}
                           >
                             {page}
@@ -594,7 +623,6 @@ function BookingsPageContent() {
                         );
                       }
                       
-                      // Show ellipsis
                       if (
                         (page === 2 && currentPage > 3) || 
                         (page === totalPages - 1 && currentPage < totalPages - 2)
@@ -607,10 +635,10 @@ function BookingsPageContent() {
                     
                     <button
                       onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                      disabled={currentPage === totalPages}
-                      className="flex items-center justify-center w-8 h-8 rounded-lg border border-gray-200 dark:border-white/10 text-gray-500 hover:bg-gray-50 dark:hover:bg-white/5 disabled:opacity-50 disabled:hover:bg-transparent transition-colors"
+                      disabled={currentPage === totalPages || totalPages === 0}
+                      className="w-[35px] h-[36px] flex items-center justify-center border border-[#D4AF37] rounded-[8px] text-[#D4AF37] disabled:opacity-40 transition-opacity"
                     >
-                      <ChevronRight size={16} />
+                      <ChevronRight size={20} />
                     </button>
                   </div>
                 </div>
