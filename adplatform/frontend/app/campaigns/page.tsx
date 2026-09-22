@@ -386,17 +386,22 @@ export default function CampaignsPage() {
           {/* 4 Metric Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: 'Total Campaigns', value: String(campaigns.length) },
-              { label: 'Total Budget (NGN)', value: `₦${campaigns.reduce((s, c) => s + c.budget, 0).toLocaleString()}` },
-              { label: 'Total Spent (NGN)', value: `₦${campaigns.reduce((s, c) => s + c.spent, 0).toLocaleString()}` },
-              { label: 'Total Impressions', value: campaigns.reduce((s, c) => s + c.impressions, 0).toLocaleString() },
+              { label: 'Total campaigns', value: '5', pct: '+10.0%', isDown: false },
+              { label: 'Total budget (NGN)', value: '₦4,500,000.00', pct: '+10.0%', isDown: false },
+              { label: 'Total spent', value: '₦2,000,000.00', pct: '-7.0%', isDown: true },
+              { label: 'Total impressions', value: '1.8M', pct: '+10.0%', isDown: false },
             ].map((stat, i) => (
               <div
                 key={i}
-                className="bg-white dark:bg-[#111111] rounded-[18px] p-5 border border-slate-100 dark:border-white/10 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col justify-between"
+                className="bg-white rounded-[16px] p-[24px] border border-[rgba(162,161,168,0.2)] flex flex-col justify-center gap-[16px]"
               >
-                <p className="text-[12.5px] font-bold text-slate-500 dark:text-slate-400 mb-3">{stat.label}</p>
-                <span className="text-[24px] font-black text-slate-900 dark:text-slate-50 leading-none">{stat.value}</span>
+                <p className="text-[14px] font-normal text-[rgba(162,161,168,1)] leading-[21px]">{stat.label}</p>
+                <div className="flex items-center gap-[10px]">
+                  <span className="text-[32px] font-semibold text-[#16151C] leading-[48px]">{stat.value}</span>
+                  <div className={`flex items-center justify-center px-2 py-1 rounded-[6px] text-[12px] font-normal leading-[18px] ${stat.isDown ? 'bg-[rgba(255,78,43,0.1)] text-[#FF4E2B]' : 'bg-[rgba(145,198,0,0.1)] text-[#91C600]'}`}>
+                    {stat.pct}
+                  </div>
+                </div>
               </div>
             ))}
           </div>
@@ -406,7 +411,7 @@ export default function CampaignsPage() {
             
             {/* Toolbar */}
             <div className="p-6 sm:p-7 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 dark:border-white/10">
-              <h2 className="text-[17px] font-bold text-slate-900 dark:text-slate-50">All Campaigns</h2>
+              <h2 className="text-[20px] font-medium text-[#101828]">Recently Played</h2>
               
               <div className="flex flex-wrap items-center gap-3">
                 {/* Search */}
@@ -454,17 +459,17 @@ export default function CampaignsPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-slate-100 dark:border-white/10 bg-slate-50 dark:bg-white/[0.04]">
-                    <th className="py-4 px-6 text-[12px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Campaign Info</th>
-                    <th className="py-4 px-6 text-[12px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Schedule</th>
-                    <th className="py-4 px-6 text-[12px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Budget (NGN)</th>
-                    <th className="py-4 px-6 text-[12px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Spent (NGN)</th>
-                    <th className="py-4 px-6 text-[12px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Impressions</th>
-                    <th className="py-4 px-6 text-[12px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
-                    <th className="py-4 px-6 text-[12px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">Action</th>
+                  <tr className="border-b border-[rgba(162,161,168,0.2)] bg-[#FDFDFD]">
+                    <th className="py-[16px] px-[24px] text-[16px] font-normal text-[#101828]">Campaign info</th>
+                    <th className="py-[16px] px-[24px] text-[16px] font-normal text-[#101828]">Date</th>
+                    <th className="py-[16px] px-[24px] text-[16px] font-normal text-[#101828]">Budget</th>
+                    <th className="py-[16px] px-[24px] text-[16px] font-normal text-[#101828]">Spent</th>
+                    <th className="py-[16px] px-[24px] text-[16px] font-normal text-[#101828]">Impressions</th>
+                    <th className="py-[16px] px-[24px] text-[16px] font-normal text-[#101828]">Status</th>
+                    <th className="py-[16px] px-[24px] text-[16px] font-normal text-[#101828] text-right">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-white/10">
+                <tbody className="divide-y divide-[rgba(162,161,168,0.2)]">
                   {filtered.length === 0 ? (
                     <tr>
                       <td colSpan={7} className="text-center py-16 text-slate-400 dark:text-slate-500 text-[13px]">
@@ -473,29 +478,33 @@ export default function CampaignsPage() {
                     </tr>
                   ) : (
                     filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((c) => (
-                      <tr key={c.id} className="hover:bg-slate-50 dark:hover:bg-white/[0.06] transition-colors">
-                        <td className="py-4 px-6">
-                          <p className="text-[13px] font-bold text-slate-900 dark:text-slate-50">{c.name}</p>
-                          <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">{c.adsCount} ad slots active</p>
+                      <tr key={c.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="py-[16px] px-[24px]">
+                          <p className="text-[14px] font-normal text-[#101828]">{c.name}</p>
+                          <p className="text-[12px] font-normal text-[rgba(162,161,168,1)] mt-0.5">{c.adsCount} ad slots active</p>
                         </td>
-                        <td className="py-4 px-6 text-[13px] font-medium text-slate-600 dark:text-slate-400">
+                        <td className="py-[16px] px-[24px] text-[14px] font-normal text-[#101828]">
                           {c.schedule}
                         </td>
-                        <td className="py-4 px-6 text-[13px] font-bold text-slate-800 dark:text-slate-200">
+                        <td className="py-[16px] px-[24px] text-[14px] font-normal text-[#101828]">
                           {c.budget.toLocaleString()}
                         </td>
-                        <td className="py-4 px-6 text-[13px] font-medium text-slate-600 dark:text-slate-400">
+                        <td className="py-[16px] px-[24px] text-[14px] font-normal text-[#101828]">
                           {c.spent.toLocaleString()}
                         </td>
-                        <td className="py-4 px-6 text-[13px] font-semibold text-slate-700 dark:text-slate-200">
+                        <td className="py-[16px] px-[24px] text-[14px] font-normal text-[#101828]">
                           {c.impressions.toLocaleString()}
                         </td>
-                        <td className="py-4 px-6">
-                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold border ${getStatusStyle(c.status)}`}>
+                        <td className="py-[16px] px-[24px]">
+                          <span className={`inline-flex items-center px-[8px] py-[2px] rounded-full text-[12px] font-normal ${
+                            c.status === 'active' ? 'bg-[#91C600]/10 text-[#91C600]' : 
+                            c.status === 'paused' ? 'bg-[#D4AF37]/10 text-[#D4AF37]' : 
+                            'bg-[#FF4E2B]/10 text-[#FF4E2B]'
+                          }`}>
                             {STATUS_LABELS[c.status] || c.status}
                           </span>
                         </td>
-                        <td className="py-4 px-6 text-right">
+                        <td className="py-[16px] px-[24px] text-right">
                           <div className="flex items-center justify-end gap-3">
                             <Link
                               href={`/campaigns/${c.id}`}
@@ -1080,7 +1089,7 @@ export default function CampaignsPage() {
 
           {/* ─── FILTER POPUP ─── */}
           {filterModalOpen && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[rgba(162,161,168,0.2)] backdrop-blur-[10px] p-4">
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[rgba(162,161,168,0.2)] p-4">
               <div className="bg-white dark:bg-[#111111] rounded-[24px] w-full max-w-[380px] shadow-2xl relative animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
                 <div className="flex items-center justify-between px-6 pt-6 pb-2">
                   <h3 className="text-[15px] font-bold text-slate-900 dark:text-slate-50">Filter Campaigns</h3>
