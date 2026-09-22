@@ -164,7 +164,7 @@ export default function BookPodcastSessionPage() {
   return (
     <DashboardLayout>
       <PageTransition>
-        <div className="flex flex-col font-['DM_Sans'] w-full max-w-[1200px] mt-2 px-[24px]">
+        <div className="flex flex-col font-body w-full max-w-[1200px] mt-2 px-[24px]">
           {/* Header row */}
           <div className="flex items-center gap-[4px] text-[12px] text-[rgba(0,0,0,0.4)] dark:text-[rgba(255,255,255,0.4)] mb-[40px]">
             <Link href="/bookings" className="flex items-center gap-[4px] hover:text-[#000] dark:hover:text-white transition-colors">
@@ -214,14 +214,14 @@ export default function BookPodcastSessionPage() {
                           className="flex items-center justify-between cursor-pointer group"
                           onClick={() => { setBookingType('One time booking'); setShowTypeDropdown(false); }}
                         >
-                          <span className="font-['Karla'] text-[15px] text-[#000] group-hover:text-[#D4AF37] transition-colors">One time booking</span>
+                          <span className="font-body text-[15px] text-[#000] group-hover:text-[#D4AF37] transition-colors">One time booking</span>
                           {bookingType === 'One time booking' && <div className="w-[2px] h-[14px] bg-[#D4AF37] rounded-[20px]" />}
                         </div>
                         <div 
                           className="flex items-center justify-between cursor-pointer group"
                           onClick={() => { setBookingType('Recurring booking'); setShowTypeDropdown(false); }}
                         >
-                          <span className="font-['Karla'] text-[15px] text-[#000] group-hover:text-[#D4AF37] transition-colors">Recurring booking</span>
+                          <span className="font-body text-[15px] text-[#000] group-hover:text-[#D4AF37] transition-colors">Recurring booking</span>
                           {bookingType === 'Recurring booking' && <div className="w-[2px] h-[14px] bg-[#D4AF37] rounded-[20px]" />}
                         </div>
                       </div>
@@ -279,7 +279,7 @@ export default function BookPodcastSessionPage() {
                   <button
                     type="button"
                     onClick={() => router.push('/bookings')}
-                    className="w-[91px] h-[40px] flex items-center justify-center border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[16px] font-light text-[#16151C] dark:text-white font-['Lexend'] hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                    className="w-[91px] h-[40px] flex items-center justify-center border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[16px] font-light text-[#16151C] dark:text-white font-body hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
                   >
                     Cancel
                   </button>
@@ -287,7 +287,7 @@ export default function BookPodcastSessionPage() {
                     type="button"
                     onClick={handleReserve}
                     disabled={reserving || hasConflict || isPastStart || !startTime}
-                    className="w-[116px] h-[40px] flex items-center justify-center bg-[#D4AF37] rounded-[6px] text-[14px] text-black opacity-80 capitalize font-['Jost'] hover:opacity-100 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-[116px] h-[40px] flex items-center justify-center bg-[#D4AF37] rounded-[6px] text-[14px] text-black opacity-80 capitalize font-body hover:opacity-100 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {reserving ? 'Wait...' : 'Book Slot'}
                   </button>
@@ -296,12 +296,12 @@ export default function BookPodcastSessionPage() {
 
               {/* Promo Card side */}
               <div className="w-[245px] h-[162px] bg-[#232121] rounded-[15px] p-[31px_16px] relative shrink-0">
-                <p className="text-[12.6px] leading-[16px] text-white m-0 font-['DM_Sans']">
+                <p className="text-[12.6px] leading-[16px] text-white m-0 font-body">
                   we are running Ad space promo, get a discount for more than 3months booking
                 </p>
                 <button 
                   type="button"
-                  className="mt-[27px] w-[148px] h-[23.5px] bg-[#FBFF79] shadow-[0px_0px_7.08px_rgba(251,255,121,0.32)] rounded-[6px] flex items-center justify-center text-[9.4px] font-semibold text-[#051235] uppercase font-['DM_Sans'] hover:opacity-90 transition-opacity mx-auto"
+                  className="mt-[27px] w-[148px] h-[23.5px] bg-[#FBFF79] shadow-[0px_0px_7.08px_rgba(251,255,121,0.32)] rounded-[6px] flex items-center justify-center text-[9.4px] font-semibold text-[#051235] uppercase font-body hover:opacity-90 transition-opacity mx-auto"
                 >
                   Book podcast session
                 </button>
