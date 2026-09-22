@@ -58,7 +58,9 @@ function BookAdForm() {
   const [totalCost, setTotalCost] = useState(0);
   const [walletBalance, setWalletBalance] = useState(5215005.25);
   const [paying, setPaying] = useState(false);
-  const [cardForm, setCardForm] = useState({ name: '', number: '', expiry: '', cvv: '' });
+  const [cardForm, setCardForm] = useState({ name: '', number: '', expiry: '', cvv: '', amount: '' });
+  const [otpDigits, setOtpDigits] = useState(['', '', '', '']);
+  const [verifyingOtp, setVerifyingOtp] = useState(false);
   const [adDesignRequested, setAdDesignRequested] = useState(false);
   const [showCreativeModal, setShowCreativeModal] = useState(false);
   const [showCancelCreativeModal, setShowCancelCreativeModal] = useState(false);
@@ -192,11 +194,27 @@ function BookAdForm() {
     setPaying(true);
     try {
       await new Promise(r => setTimeout(r, 1500));
-      setStep('success');
+      setStep('otp');
     } catch (error) {
       toast('Payment failed', 'error');
     } finally {
       setPaying(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (otpDigits.join('').length < 4) {
+      toast('Please enter the complete OTP', 'error');
+      return;
+    }
+    setVerifyingOtp(true);
+    try {
+      await new Promise(r => setTimeout(r, 1500));
+      setStep('success');
+    } catch (error) {
+      toast('Invalid OTP', 'error');
+    } finally {
+      setVerifyingOtp(false);
     }
   };
 
@@ -205,6 +223,22 @@ function BookAdForm() {
   const inputClasses = "w-full px-5 py-4 bg-white border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[17px] font-light text-gray-800 placeholder:text-[rgba(162,161,168,0.8)] focus:outline-none focus:border-[#D4AF37] transition-colors font-body";
   const dropdownMenuClasses = "absolute top-full left-0 right-0 mt-2 bg-white rounded-[10px] shadow-[0px_30px_30px_rgba(184,184,184,0.25)] z-50 overflow-hidden py-4 px-3 border border-gray-100";
   const dropdownItemClasses = "w-full text-left px-4 py-3 text-[15px] font-karla text-black hover:bg-gray-50 transition-colors rounded-lg flex justify-between items-center";
+
+  const handleOtpChange = (index: number, value: string) => {
+    if (value.length > 1) value = value.slice(-1);
+    const newDigits = [...otpDigits];
+    newDigits[index] = value;
+    setOtpDigits(newDigits);
+    if (value && index < 3) {
+      document.getElementById(`otp-${index + 1}`)?.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && !otpDigits[index] && index > 0) {
+      document.getElementById(`otp-${index - 1}`)?.focus();
+    }
+  };
 
   return (
     <DashboardLayout>
@@ -400,14 +434,16 @@ function BookAdForm() {
             <div className="bg-white rounded-[32px] w-full max-w-[625px] h-[836px] shadow-2xl relative animate-in fade-in zoom-in duration-200 flex flex-col font-body pt-8 pb-10">
               
               <div className="flex items-center justify-between px-10 pb-2 absolute top-8 left-0 right-0">
-                {step !== 'billing' && step !== 'success' ? (
+                {step !== 'billing' && step !== 'success' && step !== 'otp' ? (
                   <button onClick={() => setStep('billing')} className="hover:opacity-70 transition-opacity text-[#101828]"><ArrowLeft size={28} strokeWidth={2.5} /></button>
+                ) : step === 'otp' ? (
+                  <button onClick={() => setStep('card')} className="hover:opacity-70 transition-opacity text-[#101828]"><ArrowLeft size={28} strokeWidth={2.5} /></button>
                 ) : (
                   <button onClick={() => setStep('form')} className="hover:opacity-70 transition-opacity text-[#101828]"><ArrowLeft size={28} strokeWidth={2.5} /></button>
                 )}
                 
                 <span className="text-[20px] font-medium text-[#101828] text-center flex-1">
-                  {step === 'billing' ? 'Billing' : step === 'card' || (step === 'success' && selectedPaymentMethod === 'card') ? `Pay with ${selectedPaymentMethod === 'wema_card' ? 'Wema' : selectedPaymentMethod === 'gtb_card' ? 'GTB' : ''} card` : step === 'wallet' || (step === 'success' && selectedPaymentMethod === 'wallet') ? 'Pay from wallet' : ''}
+                  {step === 'billing' ? 'Billing' : step === 'card' || step === 'otp' || (step === 'success' && selectedPaymentMethod !== 'wallet') ? `Pay with ${selectedPaymentMethod === 'wema_card' ? 'Wema' : selectedPaymentMethod === 'gtb_card' ? 'GTB' : ''} card` : step === 'wallet' || (step === 'success' && selectedPaymentMethod === 'wallet') ? 'Pay from wallet' : ''}
                 </span>
                 
                 <button onClick={() => { if(step === 'success') { router.push('/bookings'); } else { setStep('form'); } }} className="hover:opacity-70 transition-opacity text-[#101828]">
@@ -514,6 +550,50 @@ function BookAdForm() {
                       <button onClick={handlePayCard} disabled={paying} className="w-full h-[50px] bg-[#D4AF37] hover:bg-[#b58b24] text-[#000000] rounded-[6px] text-[16px] font-normal transition-colors flex items-center justify-center gap-2">
                         {paying && <div className="w-4 h-4 border-2 border-[rgba(0,0,0,0.3)] border-t-black rounded-full animate-spin" />}
                         {paying ? 'Processing...' : 'Pay'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {step === 'otp' && (
+                  <div className="w-full max-w-[468px] flex flex-col items-center h-full">
+                    <p className="text-center text-[16px] font-bold text-[#101828] mb-8">
+                      Enter code*
+                    </p>
+                    
+                    <div className="flex gap-4 justify-center mb-6 w-full">
+                      {[0, 1, 2, 3].map((index) => (
+                        <input
+                          key={index}
+                          id={`otp-${index}`}
+                          type="text"
+                          inputMode="numeric"
+                          value={otpDigits[index]}
+                          onChange={(e) => handleOtpChange(index, e.target.value.replace(/\D/g, ''))}
+                          onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                          className={`w-[70px] h-[66px] rounded-[8px] border bg-white text-center text-[24px] font-medium text-[#101828] focus:outline-none transition-colors ${
+                            otpDigits[index] || document.activeElement?.id === `otp-${index}` 
+                              ? 'border-[#D4AF37]' 
+                              : 'border-[rgba(134,146,166,0.5)]'
+                          }`}
+                          maxLength={1}
+                        />
+                      ))}
+                    </div>
+
+                    <div className="flex items-center gap-1 mb-8 text-[14px]">
+                      <span className="text-[#8692A6]">Didn't get code?</span>
+                      <button className="text-[#D4AF37] font-medium hover:underline">Resend</button>
+                    </div>
+
+                    <p className="text-center text-[14px] leading-[1.6] text-[rgba(162,161,168,1)] mb-auto px-4 max-w-[400px]">
+                      To authorize this payment, enter the OTP sent to the email <span className="text-[#101828] font-medium">{user?.email || 'Bems.arella@gmail.com'}</span> attached to your studio arella account
+                    </p>
+
+                    <div className="w-full mt-auto mb-8">
+                      <button onClick={handleVerifyOtp} disabled={verifyingOtp} className="w-full h-[50px] bg-[#D4AF37] hover:bg-[#b58b24] text-[#000000] rounded-[6px] text-[16px] font-normal transition-colors flex items-center justify-center gap-2">
+                        {verifyingOtp && <div className="w-4 h-4 border-2 border-[rgba(0,0,0,0.3)] border-t-black rounded-full animate-spin" />}
+                        {verifyingOtp ? 'Processing...' : 'Pay'}
                       </button>
                     </div>
                   </div>
