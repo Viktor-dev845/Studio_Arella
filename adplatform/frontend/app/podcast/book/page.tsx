@@ -60,6 +60,7 @@ export default function BookPodcastSessionPage() {
   const [walletBalance, setWalletBalance] = useState<number | null>(null);
   const [paying, setPaying] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showWalletConfirm, setShowWalletConfirm] = useState(false);
 
   const selectedPackage = PACKAGES.find(p => p.id === packageId)!;
   const estimatedCost = selectedPackage.ratePerHour * durationHours;
@@ -147,6 +148,14 @@ export default function BookPodcastSessionPage() {
       toast(err?.response?.data?.message || 'Payment failed. Please try again.', 'error');
     } finally {
       setPaying(false);
+    }
+  };
+
+  const handleContinue = () => {
+    if (paymentMethod === 'wallet') {
+      setShowWalletConfirm(true);
+    } else {
+      handlePay();
     }
   };
 
@@ -392,7 +401,7 @@ export default function BookPodcastSessionPage() {
                {/* Continue Button */}
                <button 
                  type="button"
-                 onClick={handlePay}
+                 onClick={handleContinue}
                  disabled={paying || (paymentMethod === 'wallet' && !hasSufficientBalance)}
                  className="w-[468px] h-[56px] bg-[#D4AF37] rounded-[6px] text-[16px] font-medium text-[#000000] flex items-center justify-center mt-[32px] hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
                >
@@ -402,6 +411,49 @@ export default function BookPodcastSessionPage() {
              </div>
           </div>
         )}
+        {/* Pay from Wallet Confirm Modal Overlay */}
+        {showWalletConfirm && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center bg-[#16151C]/40 backdrop-blur-[10px] font-body">
+             <div className="w-[625px] h-[565px] bg-white rounded-[32px] pt-[32px] relative flex flex-col items-center shadow-[0px_4px_40px_rgba(0,0,0,0.08)]">
+               
+               {/* Header */}
+               <div className="w-full flex items-center justify-center relative px-[32px]">
+                 <button type="button" onClick={() => setShowWalletConfirm(false)} className="absolute left-[32px] top-1/2 -translate-y-1/2 cursor-pointer hover:opacity-70">
+                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                     <path d="M19 12H5M12 19l-7-7 7-7"/>
+                   </svg>
+                 </button>
+                 <h2 className="text-[20px] font-medium text-[#101828] tracking-[-0.01em]">Pay from wallet</h2>
+                 <button type="button" onClick={() => setShowWalletConfirm(false)} className="absolute right-[32px] top-1/2 -translate-y-1/2 cursor-pointer hover:opacity-70">
+                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#344053" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                     <path d="M18 6L6 18M6 6l12 12"/>
+                   </svg>
+                 </button>
+               </div>
+
+               <div className="flex flex-col gap-[32px] w-[468px] mt-[130px]">
+                 
+                 {/* Card */}
+                 <div className="w-full h-[127px] rounded-[16px] px-[44px] flex items-center justify-between border-[2px] border-[#D4AF37]">
+                    <span className="text-[16px] font-medium text-[#101828]">Total amount</span>
+                    <span className="text-[14px] font-medium text-[#101828]">NGN {totalCost !== null ? totalCost.toLocaleString('en-US', {minimumFractionDigits: 2}) : '0.00'}</span>
+                 </div>
+
+                 {/* Pay Button */}
+                 <button 
+                   type="button"
+                   onClick={handlePay}
+                   disabled={paying}
+                   className="w-full h-[56px] bg-[#D4AF37] rounded-[6px] text-[16px] font-medium text-[#000000] flex items-center justify-center hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                 >
+                   {paying ? <Loader2 size={20} className="animate-spin mr-2" /> : null}
+                   Pay
+                 </button>
+               </div>
+             </div>
+          </div>
+        )}
+
         {showSuccess && (
           <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.5)', backdropFilter: 'blur(4px)' }}>
             <div style={{ background: theme.color.surface, borderRadius: 24, padding: '36px 28px', textAlign: 'center', maxWidth: 380, width: '100%', margin: 16 }}>
