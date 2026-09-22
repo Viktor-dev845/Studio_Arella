@@ -16,7 +16,7 @@ import { buildSlots, DurationUnit, CampaignType } from '@/lib/bookingSlots';
 
 const F = theme.font.body;
 
-type Step = 'form' | 'billing' | 'card' | 'wallet' | 'success';
+type Step = 'form' | 'billing' | 'card' | 'wallet' | 'otp' | 'success';
 
 export default function BookAdPage() {
   return (
