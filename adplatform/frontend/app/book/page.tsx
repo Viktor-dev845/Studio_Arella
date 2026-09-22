@@ -407,7 +407,7 @@ function BookAdForm() {
                 )}
                 
                 <span className="text-[20px] font-medium text-[#101828] text-center flex-1">
-                  {step === 'billing' ? 'Billing' : step === 'card' || (step === 'success' && selectedPaymentMethod === 'card') ? 'Pay with card' : step === 'wallet' || (step === 'success' && selectedPaymentMethod === 'wallet') ? 'Pay from wallet' : ''}
+                  {step === 'billing' ? 'Billing' : step === 'card' || (step === 'success' && selectedPaymentMethod === 'card') ? `Pay with ${selectedPaymentMethod === 'wema_card' ? 'Wema' : selectedPaymentMethod === 'gtb_card' ? 'GTB' : ''} card` : step === 'wallet' || (step === 'success' && selectedPaymentMethod === 'wallet') ? 'Pay from wallet' : ''}
                 </span>
                 
                 <button onClick={() => { if(step === 'success') { router.push('/bookings'); } else { setStep('form'); } }} className="hover:opacity-70 transition-opacity text-[#101828]">
@@ -457,15 +457,20 @@ function BookAdForm() {
                           <span className="text-[14px] font-medium">Lilian Okoro</span>
                         </div>
                       </div>
+
+                      {/* New Card Option */}
+                      <div 
+                        onClick={() => setSelectedPaymentMethod('card')}
+                        className={`w-full h-[60px] rounded-[16px] border border-dashed cursor-pointer transition-all flex items-center justify-center gap-2 ${selectedPaymentMethod === 'card' ? 'border-[#D4AF37] bg-[#D4AF37]/5' : 'border-[rgba(162,161,168,0.5)]'}`}
+                      >
+                        <div className="w-5 h-5 rounded-full border border-[#101828] flex items-center justify-center">
+                          <Plus size={14} className="text-[#101828]" />
+                        </div>
+                        <span className="text-[14px] font-medium text-[#101828]">Pay with a new bank card</span>
+                      </div>
                     </div>
 
-                    <div className="mt-8 flex justify-center">
-                      <button onClick={() => { setSelectedPaymentMethod('card'); setStep('card'); }} className="text-[#D4AF37] text-[15px] font-semibold hover:opacity-80 transition-opacity">
-                        Pay with a new bank card
-                      </button>
-                    </div>
-
-                    <div className="mt-8 w-full flex-1 flex flex-col justify-end">
+                    <div className="mt-auto w-full pt-10">
                       <button 
                         onClick={() => {
                           if (selectedPaymentMethod === 'gtb_card' || selectedPaymentMethod === 'wema_card') {
@@ -474,34 +479,43 @@ function BookAdForm() {
                             setStep(selectedPaymentMethod);
                           }
                         }}
-                        disabled={paying}
-                        className="w-full h-[56px] bg-[#D4AF37] hover:bg-[#b58b24] text-[#000000] rounded-[6px] text-[16px] font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
+                        className="w-full h-[50px] bg-[#D4AF37] hover:bg-[#b58b24] text-[#000000] rounded-[6px] text-[16px] font-normal transition-colors"
                       >
-                        {paying && <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />}
-                        {paying ? 'Processing…' : 'Continue'}
+                        Continue
                       </button>
                     </div>
                   </div>
                 )}
 
                 {step === 'card' && (
-                  <div className="space-y-4">
-                    <p className="text-center text-[14px] font-bold text-gray-900 dark:text-slate-50 mb-6">
-                      Total: <span className="text-[#C69A2C]">{formatCurrency(totalCost, currency, rates)}</span>
+                  <div className="w-full max-w-[468px] flex flex-col items-center h-full">
+                    <p className="text-center text-[16px] font-bold text-[#101828] mb-12">
+                      {durationCount} {durationUnit === 'hourly' ? 'hours' : durationUnit === 'weekly' ? 'weeks' : 'months'} Ad space at<br/>
+                      {formatCurrency(totalCost, currency, rates)}
                     </p>
-                    <div className="space-y-3 mb-8">
-                      <input placeholder="Card holder's name" value={cardForm.name} onChange={(e) => setCardForm({ ...cardForm, name: e.target.value })} className={inputClasses} />
-                      <input placeholder="Card number" value={cardForm.number} onChange={(e) => setCardForm({ ...cardForm, number: e.target.value })} className={inputClasses} />
-                      <div className="flex gap-3">
-                        <input placeholder="Expiry (MM/YY)" value={cardForm.expiry} onChange={(e) => setCardForm({ ...cardForm, expiry: e.target.value })} className={inputClasses} />
-                        <input placeholder="CVV" value={cardForm.cvv} onChange={(e) => setCardForm({ ...cardForm, cvv: e.target.value })} className={inputClasses} />
+                    <div className="w-full space-y-[20px] mb-[68px]">
+                      <input placeholder="Enter amount" className="w-full h-[60px] rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-[#FFFFFF] px-4 text-[16px] text-[#16151C] font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
+                      <input placeholder="Lilian Okoro" value={cardForm.name} onChange={(e) => setCardForm({...cardForm, name: e.target.value})} className="w-full h-[60px] rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-[#FFFFFF] px-4 text-[16px] text-[#16151C] font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
+                      <div className="relative w-full">
+                        <input placeholder="**** **** **** 0493" value={cardForm.number} onChange={(e) => setCardForm({...cardForm, number: e.target.value})} className="w-full h-[60px] rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-[#FFFFFF] px-4 text-[16px] text-[#16151C] font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center">
+                          <div className="w-[30px] h-[20px] relative flex items-center justify-center border rounded-[2px] bg-white overflow-hidden p-0.5">
+                            <div className="w-[12px] h-[12px] rounded-full bg-[#EA001B] absolute left-1 mix-blend-multiply opacity-90" />
+                            <div className="w-[12px] h-[12px] rounded-full bg-[#F79E1B] absolute right-1 mix-blend-multiply opacity-90" />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex gap-[20px]">
+                        <input placeholder="Expiry date (02/28)" value={cardForm.expiry} onChange={(e) => setCardForm({...cardForm, expiry: e.target.value})} className="w-full h-[60px] rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-[#FFFFFF] px-4 text-[16px] text-[#16151C] font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
+                        <input placeholder="346" value={cardForm.cvv} onChange={(e) => setCardForm({...cardForm, cvv: e.target.value})} className="w-full h-[60px] rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-[#FFFFFF] px-4 text-[16px] text-[#16151C] font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
                       </div>
                     </div>
-                    <button onClick={handlePayCard} disabled={paying} className="w-full py-4 bg-[#1A1A1A] dark:bg-white hover:bg-black dark:hover:bg-gray-100 text-white dark:text-[#1A1A1A] rounded-[14px] text-[14px] font-bold transition-all disabled:opacity-60 shadow-sm flex items-center justify-center gap-2">
-                      {paying && <div className="w-4 h-4 border-2 border-white/30 dark:border-black/30 border-t-white dark:border-t-black rounded-full animate-spin" />}
-                      {paying ? 'Redirecting…' : 'Proceed to Checkout'}
-                    </button>
-                    <p className="text-[11px] font-medium text-gray-400 text-center mt-4">You'll be redirected to a secure gateway to complete payment.</p>
+                    <div className="w-full mt-auto mb-8">
+                      <button onClick={handlePayCard} disabled={paying} className="w-full h-[50px] bg-[#D4AF37] hover:bg-[#b58b24] text-[#000000] rounded-[6px] text-[16px] font-normal transition-colors flex items-center justify-center gap-2">
+                        {paying && <div className="w-4 h-4 border-2 border-[rgba(0,0,0,0.3)] border-t-black rounded-full animate-spin" />}
+                        {paying ? 'Processing...' : 'Pay'}
+                      </button>
+                    </div>
                   </div>
                 )}
 
