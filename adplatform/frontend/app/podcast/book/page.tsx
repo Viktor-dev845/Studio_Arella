@@ -43,8 +43,11 @@ export default function BookPodcastSessionPage() {
   const [packageId, setPackageId] = useState<typeof PACKAGES[number]['id']>('Audio Only');
   const [notes, setNotes] = useState('');
   const [date, setDate] = useState(todayISODate());
-  const [startTime, setStartTime] = useState('10:00');
-  const [durationHours, setDurationHours] = useState(1);
+  const [startTime, setStartTime] = useState('');
+  const [durationText, setDurationText] = useState('');
+  const durationHours = parseInt(durationText.replace(/[^0-9]/g, '')) || 1;
+  const [bookingType, setBookingType] = useState('How would you run your studio session?');
+  const [showTypeDropdown, setShowTypeDropdown] = useState(false);
 
   const [dayBookings, setDayBookings] = useState<BookedSlot[]>([]);
   const [loadingAvailability, setLoadingAvailability] = useState(false);
@@ -62,7 +65,7 @@ export default function BookPodcastSessionPage() {
   const estimatedCost = selectedPackage.ratePerHour * durationHours;
 
   const { startIso, endIso } = useMemo(() => {
-    const start = new Date(`${date}T${startTime}:00`);
+    const start = new Date(`${date}T${startTime || '10:00'}:00`);
     const end = new Date(start.getTime() + durationHours * 60 * 60 * 1000);
     return { startIso: start.toISOString(), endIso: end.toISOString() };
   }, [date, startTime, durationHours]);
@@ -161,122 +164,146 @@ export default function BookPodcastSessionPage() {
   return (
     <DashboardLayout>
       <PageTransition>
-        <div style={{ fontFamily: F, maxWidth: 640, margin: '0 auto' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
-            <Link href="/bookings" style={{ display: 'flex', alignItems: 'center', gap: 4, color: theme.color.text3, fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>
-              <ChevronLeft size={16} /> Back
+        <div className="flex flex-col font-['DM_Sans'] w-full max-w-[1200px] mt-2 px-[24px]">
+          {/* Header row */}
+          <div className="flex items-center gap-[4px] text-[12px] text-[rgba(0,0,0,0.4)] dark:text-[rgba(255,255,255,0.4)] mb-[40px]">
+            <Link href="/bookings" className="flex items-center gap-[4px] hover:text-[#000] dark:hover:text-white transition-colors">
+              <ChevronLeft size={16} />
+              <span>Back</span>
             </Link>
-            <h1 style={{ fontSize: 20, fontWeight: 800, color: theme.color.text1, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Mic size={20} color={theme.color.gold} /> Book a podcast studio session
-            </h1>
+            <span className="text-[12px] text-[#000] dark:text-white font-medium ml-[16px]">Book podcast slot</span>
           </div>
 
           {!bookingId ? (
-            <div style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: theme.radius.xl, padding: 28, display: 'flex', flexDirection: 'column', gap: 22 }}>
-              {/* Package */}
-              <div>
-                <label style={{ fontSize: 12, fontWeight: 700, color: theme.color.text2, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 10, display: 'block' }}>
-                  Package
-                </label>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                  {PACKAGES.map(p => (
-                    <div key={p.id} onClick={() => setPackageId(p.id)} style={cardStyle(packageId === p.id)}>
-                      <p style={{ margin: '0 0 3px', fontSize: 14, fontWeight: 800, color: theme.color.text1 }}>{p.label}</p>
-                      <p style={{ margin: '0 0 6px', fontSize: 11, color: theme.color.text3 }}>{p.desc}</p>
-                      <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: theme.color.gold }}>{naira(p.ratePerHour)}/hour</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Session notes */}
-              <div>
-                <label style={{ fontSize: 12, fontWeight: 700, color: theme.color.text2, marginBottom: 6, display: 'block' }}>
-                  Describe your session <span style={{ fontWeight: 500, color: theme.color.text3, textTransform: 'none' }}>(optional)</span>
-                </label>
+            <div className="flex flex-col lg:flex-row gap-[100px]">
+              {/* Form side */}
+              <div className="flex-1 max-w-[850px] flex flex-col gap-[24px]">
+                {/* Textarea */}
                 <textarea
                   value={notes}
                   onChange={e => setNotes(e.target.value)}
-                  placeholder="What are you recording? Anything our studio team should know ahead of time?"
-                  rows={3}
-                  style={{ width: '100%', padding: '11px 14px', border: `1.5px solid ${theme.color.border}`, borderRadius: 10, fontSize: 13, fontFamily: F, boxSizing: 'border-box', resize: 'vertical' as const }}
+                  placeholder="Describe your session"
+                  className="w-full h-[131px] p-[16px] border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[17px] font-light text-[#16151C] dark:text-white placeholder:text-[rgba(162,161,168,0.8)] focus:outline-none focus:border-[#D4AF37] bg-transparent resize-none"
                 />
-              </div>
 
-              {/* Date / time / duration */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                <div>
-                  <label style={{ fontSize: 12, fontWeight: 700, color: theme.color.text2, marginBottom: 6, display: 'block' }}>Date</label>
-                  <input type="date" value={date} min={todayISODate()} onChange={e => setDate(e.target.value)}
-                    style={{ width: '100%', padding: '11px 14px', border: `1.5px solid ${theme.color.border}`, borderRadius: 10, fontSize: 13, fontFamily: F, boxSizing: 'border-box' }} />
-                </div>
-                <div>
-                  <label style={{ fontSize: 12, fontWeight: 700, color: theme.color.text2, marginBottom: 6, display: 'block' }}>Start time</label>
-                  <input type="time" value={startTime} onChange={e => setStartTime(e.target.value)}
-                    style={{ width: '100%', padding: '11px 14px', border: `1.5px solid ${theme.color.border}`, borderRadius: 10, fontSize: 13, fontFamily: F, boxSizing: 'border-box' }} />
-                </div>
-              </div>
+                {/* Row 2: Duration & Type */}
+                <div className="flex flex-col sm:flex-row gap-[20px]">
+                  <input
+                    type="text"
+                    value={durationText}
+                    onChange={e => setDurationText(e.target.value)}
+                    placeholder="Enter studio duration (e.g 2 hours)"
+                    className="w-full h-[56px] p-[16px] border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[17px] font-light text-[#16151C] dark:text-white placeholder:text-[rgba(162,161,168,0.8)] focus:outline-none focus:border-[#D4AF37] bg-transparent"
+                  />
 
-              <div>
-                <label style={{ fontSize: 12, fontWeight: 700, color: theme.color.text2, marginBottom: 8, display: 'block' }}>Duration</label>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  {DURATIONS_HOURS.map(h => (
-                    <button key={h} type="button" onClick={() => setDurationHours(h)}
-                      style={{
-                        flex: 1, padding: '10px 0', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: F,
-                        border: `1.5px solid ${durationHours === h ? theme.color.gold : theme.color.border}`,
-                        background: durationHours === h ? theme.color.gold : theme.color.surface,
-                        color: durationHours === h ? '#fff' : theme.color.text2,
-                      }}>
-                      {h} hour{h > 1 ? 's' : ''}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Availability for the day */}
-              <div style={{ background: theme.color.surface2, borderRadius: 12, padding: '12px 16px' }}>
-                <p style={{ margin: '0 0 6px', fontSize: 11, fontWeight: 700, color: theme.color.text3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                  Already booked this day
-                </p>
-                {loadingAvailability ? (
-                  <p style={{ margin: 0, fontSize: 12, color: theme.color.text3 }}>Checking availability…</p>
-                ) : dayBookings.length === 0 ? (
-                  <p style={{ margin: 0, fontSize: 12, color: theme.color.text3 }}>Nothing booked yet — the whole day is open.</p>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                    {dayBookings.map((b, i) => (
-                      <p key={i} style={{ margin: 0, fontSize: 12, color: theme.color.text2, fontWeight: 600 }}>
-                        {formatRange(b.start_time, b.end_time)}
-                      </p>
-                    ))}
+                  <div className="relative w-full">
+                    <div
+                      onClick={() => setShowTypeDropdown(!showTypeDropdown)}
+                      className="w-full h-[56px] p-[16px] border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[17px] font-light text-[rgba(162,161,168,0.8)] bg-transparent flex items-center justify-between cursor-pointer select-none"
+                    >
+                      <span className={bookingType !== 'How would you run your studio session?' ? 'text-[#16151C] dark:text-white' : ''}>
+                        {bookingType}
+                      </span>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 9L12 15L18 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </div>
+                    {showTypeDropdown && (
+                      <div className="absolute top-[64px] right-0 w-[200px] bg-white shadow-[-4.75px_30px_30px_rgba(184,184,184,0.25)] rounded-[10px] p-[23px_14px_5px_13px] z-10 flex flex-col gap-[11px]">
+                        <div 
+                          className="flex items-center justify-between cursor-pointer group"
+                          onClick={() => { setBookingType('One time booking'); setShowTypeDropdown(false); }}
+                        >
+                          <span className="font-['Karla'] text-[15px] text-[#000] group-hover:text-[#D4AF37] transition-colors">One time booking</span>
+                          {bookingType === 'One time booking' && <div className="w-[2px] h-[14px] bg-[#D4AF37] rounded-[20px]" />}
+                        </div>
+                        <div 
+                          className="flex items-center justify-between cursor-pointer group"
+                          onClick={() => { setBookingType('Recurring booking'); setShowTypeDropdown(false); }}
+                        >
+                          <span className="font-['Karla'] text-[15px] text-[#000] group-hover:text-[#D4AF37] transition-colors">Recurring booking</span>
+                          {bookingType === 'Recurring booking' && <div className="w-[2px] h-[14px] bg-[#D4AF37] rounded-[20px]" />}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
+
+                {/* Row 3: Date & Time */}
+                <div className="flex flex-col sm:flex-row gap-[20px]">
+                  <div className="relative w-full">
+                    <input
+                      type="date"
+                      value={date}
+                      min={todayISODate()}
+                      onChange={e => setDate(e.target.value)}
+                      className="w-full h-[56px] p-[16px] border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[17px] font-light text-[#16151C] dark:text-white placeholder:text-[rgba(162,161,168,0.8)] focus:outline-none focus:border-[#D4AF37] bg-transparent appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                    />
+                    <svg className="absolute right-[16px] top-[16px] pointer-events-none text-[#16151C] dark:text-white" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <circle cx="8" cy="14" r="1.5" fill="currentColor"/>
+                      <circle cx="12" cy="14" r="1.5" fill="currentColor"/>
+                      <circle cx="16" cy="14" r="1.5" fill="currentColor"/>
+                      <circle cx="8" cy="18" r="1.5" fill="currentColor"/>
+                      <circle cx="12" cy="18" r="1.5" fill="currentColor"/>
+                      <circle cx="16" cy="18" r="1.5" fill="currentColor"/>
+                    </svg>
+                  </div>
+                  
+                  <div className="relative w-full">
+                    <input
+                      type="time"
+                      value={startTime}
+                      onChange={e => setStartTime(e.target.value)}
+                      className="w-full h-[56px] p-[16px] border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[17px] font-light text-[#16151C] dark:text-white placeholder:text-[rgba(162,161,168,0.8)] focus:outline-none focus:border-[#D4AF37] bg-transparent appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                    />
+                    <svg className="absolute right-[16px] top-[16px] pointer-events-none text-[#16151C] dark:text-white" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
+                      <path d="M12 6V12L16 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Conflict Warning */}
                 {hasConflict && (
-                  <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 6, color: theme.color.error, fontSize: 12, fontWeight: 700 }}>
-                    <AlertTriangle size={13} /> This overlaps a booking above — pick a different time.
+                  <div className="flex items-center gap-2 text-red-500 text-[13px] font-medium mt-[-10px]">
+                    <AlertTriangle size={14} /> This overlaps an existing booking. Please pick a different time.
                   </div>
                 )}
+
+                {/* Action Buttons */}
+                <div className="flex justify-end gap-[20px] mt-[16px]">
+                  <button
+                    type="button"
+                    onClick={() => router.push('/bookings')}
+                    className="w-[91px] h-[40px] flex items-center justify-center border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[16px] font-light text-[#16151C] dark:text-white font-['Lexend'] hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleReserve}
+                    disabled={reserving || hasConflict || isPastStart || !startTime}
+                    className="w-[116px] h-[40px] flex items-center justify-center bg-[#D4AF37] rounded-[6px] text-[14px] text-black opacity-80 capitalize font-['Jost'] hover:opacity-100 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {reserving ? 'Wait...' : 'Book Slot'}
+                  </button>
+                </div>
               </div>
 
-              {/* Price + reserve */}
-              <div style={{ borderTop: `1px dashed ${theme.color.border}`, paddingTop: 18, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div>
-                  <p style={{ margin: '0 0 2px', fontSize: 11, color: theme.color.text3, fontWeight: 700, textTransform: 'uppercase' }}>Estimated total</p>
-                  <p style={{ margin: 0, fontSize: 22, fontWeight: 900, color: theme.color.gold }}>{naira(estimatedCost)}</p>
-                </div>
-                <button
-                  onClick={handleReserve}
-                  disabled={reserving || hasConflict || isPastStart}
-                  style={{
-                    padding: '13px 28px', borderRadius: 12, border: 'none', fontSize: 14, fontWeight: 800, fontFamily: F,
-                    background: (hasConflict || isPastStart) ? theme.color.surface2 : theme.color.gold,
-                    color: (hasConflict || isPastStart) ? theme.color.text3 : '#fff',
-                    cursor: (reserving || hasConflict || isPastStart) ? 'not-allowed' : 'pointer',
-                    display: 'flex', alignItems: 'center', gap: 8,
-                  }}>
-                  {reserving ? <Loader2 size={16} className="animate-spin" /> : <Clock size={16} />}
-                  Reserve slot
+              {/* Promo Card side */}
+              <div className="w-[245px] h-[162px] bg-[#232121] rounded-[15px] p-[31px_16px] relative shrink-0">
+                <p className="text-[12.6px] leading-[16px] text-white m-0 font-['DM_Sans']">
+                  we are running Ad space promo, get a discount for more than 3months booking
+                </p>
+                <button 
+                  type="button"
+                  className="mt-[27px] w-[148px] h-[23.5px] bg-[#FBFF79] shadow-[0px_0px_7.08px_rgba(251,255,121,0.32)] rounded-[6px] flex items-center justify-center text-[9.4px] font-semibold text-[#051235] uppercase font-['DM_Sans'] hover:opacity-90 transition-opacity mx-auto"
+                >
+                  Book podcast session
                 </button>
               </div>
             </div>
