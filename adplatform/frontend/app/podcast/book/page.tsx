@@ -132,10 +132,11 @@ export default function BookPodcastSessionPage() {
     if (!bookingId) return;
     setPaying(true);
     try {
-      if (paymentMethod === 'wallet') {
-        await api.post('/payments/wallet', { booking_id: bookingId, booking_type: 'podcast' });
-        setShowSuccess(true);
-      } else {
+        if (paymentMethod === 'wallet') {
+          await api.post('/payments/wallet', { booking_id: bookingId, booking_type: 'podcast' });
+          setShowWalletConfirm(false);
+          setShowSuccess(true);
+        } else {
         const res = await api.post('/payments/initialize', { booking_id: bookingId, booking_type: 'podcast' });
         const checkoutUrl = res.data?.checkout_url || res.data?.authorization_url;
         if (checkoutUrl) {
@@ -454,19 +455,52 @@ export default function BookPodcastSessionPage() {
           </div>
         )}
 
-        {showSuccess && (
-          <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.5)', backdropFilter: 'blur(4px)' }}>
-            <div style={{ background: theme.color.surface, borderRadius: 24, padding: '36px 28px', textAlign: 'center', maxWidth: 380, width: '100%', margin: 16 }}>
-              <div style={{ width: 64, height: 64, borderRadius: '50%', background: theme.color.gold, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
-                <Check size={28} color="#fff" strokeWidth={3} />
-              </div>
-              <h3 style={{ fontSize: 18, fontWeight: 800, color: theme.color.text1, margin: '0 0 24px' }}>Studio session booked</h3>
-              <button
-                onClick={() => router.push('/bookings')}
-                style={{ width: '100%', padding: 14, borderRadius: 12, border: 'none', background: theme.color.gold, color: '#fff', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: F }}>
-                View my bookings
-              </button>
-            </div>
+        {/* Success Modal Overlay */
+        showSuccess && (
+          <div className="fixed inset-0 z-[120] flex items-center justify-center bg-[#16151C]/40 backdrop-blur-[10px] font-body">
+             <div className="w-[625px] h-[565px] bg-white rounded-[32px] pt-[32px] relative flex flex-col items-center shadow-[0px_4px_40px_rgba(0,0,0,0.08)]">
+               
+               {/* Header */}
+               <div className="w-full flex items-center justify-center relative px-[32px]">
+                 <button type="button" onClick={() => setShowSuccess(false)} className="absolute left-[32px] top-1/2 -translate-y-1/2 cursor-pointer hover:opacity-70">
+                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                     <path d="M19 12H5M12 19l-7-7 7-7"/>
+                   </svg>
+                 </button>
+                 <h2 className="text-[20px] font-medium text-[#101828] tracking-[-0.01em]">Pay from wallet</h2>
+                 <button type="button" onClick={() => setShowSuccess(false)} className="absolute right-[32px] top-1/2 -translate-y-1/2 cursor-pointer hover:opacity-70">
+                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#344053" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                     <path d="M18 6L6 18M6 6l12 12"/>
+                   </svg>
+                 </button>
+               </div>
+
+               <div className="flex flex-col items-center w-full mt-[132px]">
+                 
+                 {/* Glowing Checkmark */}
+                 <div className="relative flex items-center justify-center w-[70px] h-[70px] mb-[60px]">
+                   <div className="absolute inset-[-20px] bg-[#D4AF37] opacity-15 blur-[10px] rounded-full"></div>
+                   <div className="absolute inset-[-10px] bg-[#D4AF37] opacity-30 blur-[5px] rounded-full"></div>
+                   <div className="relative w-[70px] h-[70px] bg-gradient-to-br from-[#443A18] to-[#D4AF37] rounded-full flex items-center justify-center z-10">
+                     <Check size={32} color="#fff" strokeWidth={3} />
+                   </div>
+                 </div>
+
+                 {/* Success Text */}
+                 <h3 className="text-[20px] font-semibold text-[#16151C] mb-[81px]">
+                   Payment successful and podcast booked
+                 </h3>
+
+                 {/* Finish Button */}
+                 <button 
+                   type="button"
+                   onClick={() => router.push('/bookings')}
+                   className="w-[468px] h-[56px] bg-[#D4AF37] rounded-[6px] text-[16px] font-medium text-[#000000] flex items-center justify-center hover:opacity-90 transition-opacity"
+                 >
+                   Finish
+                 </button>
+               </div>
+             </div>
           </div>
         )}
       </PageTransition>
