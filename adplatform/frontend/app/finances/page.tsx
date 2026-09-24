@@ -430,20 +430,22 @@ export default function FinancesPage() {
 
               {/* Card 3: Special Offer */}
               <div 
-                className="relative rounded-[15px] overflow-hidden p-4"
+                className="relative rounded-[15px] overflow-hidden p-4 flex flex-col justify-between items-start"
                 style={{ 
                   height: '134px',
                   backgroundColor: '#524007',
                 }}
               >
-                <div style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 400, fontSize: '12.6px', color: '#FFFFFF', marginBottom: '8px' }}>
-                  Special Offer: Book Ad slot from #1,000/min
-                </div>
-                <div style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '9px', color: '#D5E0ED', maxWidth: '140px', lineHeight: '150%' }}>
-                  Instant digital screen activation across high-traffic prime Lagos studios
+                <div className="z-10">
+                  <div style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 400, fontSize: '13px', color: '#FFFFFF', marginBottom: '8px' }}>
+                    Special Offer: Book Ad slot from #1,000/min
+                  </div>
+                  <div style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '11px', color: '#D5E0ED', maxWidth: '65%', lineHeight: '140%' }}>
+                    Instant digital screen activation across high-traffic prime Lagos studios
+                  </div>
                 </div>
                 
-                <div className="absolute right-2 top-2 w-[80px] h-[100px] flex justify-center items-center">
+                <div className="absolute right-2 top-2 w-[80px] h-[100px] flex justify-center items-center z-0">
                    <div className="w-[60px] h-[80px] bg-white/10 rounded-[6px] border border-white/20 backdrop-blur-md flex flex-col items-center justify-center p-1 transform rotate-6">
                       <div className="w-full h-[20px] bg-white rounded-[4px] mb-1"></div>
                       <span className="text-[4px] text-white/70 text-center leading-tight">Our billboard stand is in a strategic location...</span>
@@ -451,7 +453,7 @@ export default function FinancesPage() {
                 </div>
 
                 <button 
-                  className="absolute bottom-4 left-4 bg-[#FBFF79] rounded-[6px] px-[17px] py-[8px]"
+                  className="bg-[#FBFF79] rounded-[6px] px-[17px] py-[8px] z-10"
                   style={{ boxShadow: '0px 0px 7px rgba(251, 255, 121, 0.32)' }}
                 >
                   <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 600, fontSize: '9.4px', color: '#051235', textTransform: 'uppercase' }}>
