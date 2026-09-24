@@ -445,7 +445,7 @@ export default function FinancesPage() {
                   </div>
                 </div>
                 
-                <div className="absolute right-2 top-2 w-[80px] h-[100px] flex justify-center items-center z-0">
+                <div className="absolute right-[-10px] top-[20px] w-[80px] h-[100px] flex justify-center items-center z-0">
                    <div className="w-[60px] h-[80px] bg-white/10 rounded-[6px] border border-white/20 backdrop-blur-md flex flex-col items-center justify-center p-1 transform rotate-6">
                       <div className="w-full h-[20px] bg-white rounded-[4px] mb-1"></div>
                       <span className="text-[4px] text-white/70 text-center leading-tight">Our billboard stand is in a strategic location...</span>
