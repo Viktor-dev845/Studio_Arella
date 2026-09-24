@@ -34,7 +34,8 @@ import {
   Receipt,
   Building2,
   Globe,
-  Sparkles
+  Sparkles,
+  Wallet,
 } from 'lucide-react';
 import Link from 'next/link';
 import { theme } from '@/lib/theme';
@@ -347,797 +348,409 @@ export default function FinancesPage() {
   const dedicatedAcct = balance?.reserved_account_number || null;
 
   return (
-    <DashboardLayout>
-      <PageTransition>
-        <div style={{ fontFamily: F, display: 'flex', flexDirection: 'column', gap: 24, paddingBottom: 60 }}>
 
-          {loadError && (
-            <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 12, padding: '12px 16px', fontSize: 13, fontWeight: 600, color: '#B91C1C' }}>
-              Could not load your wallet data. Please refresh the page.
-            </div>
-          )}
-
-          {/* ─── PAGE HEADER ─── */}
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
+      <DashboardLayout>
+        <PageTransition>
+          <div className="flex flex-col gap-[32px] pb-[60px] max-w-[1080px] mx-auto w-full mt-6">
+            
+            {/* Header */}
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-                <h1 style={{ fontFamily: theme.font.display, fontSize: 24, fontWeight: 700, color: theme.color.text1, margin: 0, letterSpacing: '-0.3px' }}>
-                  Wallet
-                </h1>
-              </div>
-              <p style={{ fontSize: 13, color: theme.color.text3, margin: 0, fontWeight: 500 }}>
-                Manage your airtime credits, view real-time balances, and track financial transactions.
-              </p>
+              <h1 style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 700, fontSize: '24px', lineHeight: '31px', color: '#101828' }}>
+                Wallet
+              </h1>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <button
-                onClick={() => setShowLinkBankModal(true)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  background: theme.color.surface,
-                  border: `1px solid ${theme.color.border}`,
-                  borderRadius: 10,
-                  padding: '10px 18px',
-                  fontSize: 13,
-                  fontWeight: 700,
-                  color: theme.color.text2,
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  fontFamily: F
-                }}
-              >
-                <Building2 size={14} color="#C69A2C" />
-                <span>Link a bank</span>
-              </button>
-
-              <button
-                onClick={() => setShowReservedModal(true)}
-                style={{
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: 8, 
-                  background: theme.color.surface, 
-                  border: `1px solid ${theme.color.border}`, 
-                  borderRadius: 10, 
-                  padding: '10px 18px', 
-                  fontSize: 13, 
-                  fontWeight: 700, 
-                  color: theme.color.text2, 
-                  cursor: 'pointer', 
-                  transition: 'all 0.2s',
-                  fontFamily: F
-                }}
-              >
-                <Building2 size={14} color="#C69A2C" />
-                <span>Dedicated Bank Account</span>
-              </button>
-
-              <button 
-                onClick={openFundModal}
+            {/* Top 3 Cards Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              
+              {/* Card 1: Wallet Balance */}
+              <div 
+                className="relative rounded-[16px] overflow-hidden p-4 flex flex-col justify-between"
                 style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: 8, 
-                  background: '#C69A2C', 
-                  border: 'none', 
-                  borderRadius: 10, 
-                  padding: '10px 22px', 
-                  fontSize: 13, 
-                  fontWeight: 800, 
-                  color: '#FFFFFF', 
-                  cursor: 'pointer', 
-                  transition: 'all 0.2s',
-                  boxShadow: '0 4px 14px rgba(198, 154, 44, 0.25)',
-                  fontFamily: F
+                  height: '134px',
+                  background: 'linear-gradient(rgba(138, 158, 82, 0.9), rgba(138, 158, 82, 0.9)), url(/beautiful-abstract-seamless-pattern-design_174506-1310.jpg)',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
                 }}
               >
-                <Plus size={14} />
-                <span>+ Fund Wallet</span>
-              </button>
-            </div>
-          </div>
-
-          {/* ─── TOP 4 METRIC CARDS ─── */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: 16 }}>
-            {[
-              {
-                label: 'Available Balance',
-                value: formatCurrency(walletCredits, currency, rates),
-                subValue: currency === 'NGN' ? 'Real wallet balance' : `₦${walletCredits.toLocaleString()} actual balance`,
-                icon: CreditCard,
-                color: '#C69A2C',
-                bg: '#FFFDF5'
-              },
-              {
-                label: 'Total Spent',
-                value: formatCurrency(totalSpending, currency, rates),
-                subValue: 'Screen Ads & Studio',
-                icon: TrendingDown,
-                color: '#EF4444',
-                bg: '#FEF2F2'
-              },
-              {
-                label: 'Total Transactions',
-                value: transactions.length.toString(),
-                subValue: `${transactions.filter(t => t.type === 'credit' || t.type === 'refund').length} In · ${transactions.filter(t => t.type === 'debit').length} Out`,
-                icon: DollarSign,
-                color: '#10B981',
-                bg: '#F0FDF4'
-              },
-              {
-                label: 'Active Ad Slots',
-                value: `${adBookings.filter(b => b.status === 'active').length} Active`,
-                subValue: `of ${adBookings.length} total ad bookings`,
-                icon: Sparkles,
-                color: '#6366F1',
-                bg: '#EEF2FF'
-              },
-            ].map((stat, i) => (
-              <FadeCard key={stat.label} delay={i * 0.05} style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 16, padding: '20px 22px', position: 'relative', overflow: 'hidden' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: theme.color.text3 }}>{stat.label}</span>
-                  <div style={{ width: 34, height: 34, borderRadius: 10, background: stat.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <stat.icon size={16} color={stat.color} />
+                <div className="flex items-center gap-[10px]">
+                  <div className="w-[30px] h-[30px] rounded-full bg-white/20 flex items-center justify-center">
+                    <Wallet size={16} color="white" />
                   </div>
-                </div>
-                <p style={{ fontSize: 22, fontWeight: 800, color: theme.color.text1, margin: '0 0 4px', letterSpacing: '-0.5px' }}>
-                  {stat.value}
-                </p>
-                <p style={{ fontSize: 11, color: theme.color.text4, margin: 0, fontWeight: 600 }}>{stat.subValue}</p>
-              </FadeCard>
-            ))}
-          </div>
-
-          {/* ─── DUAL VISUAL CARDS ROW (Figma Signature Section) ─── */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 20 }}>
-            
-            {/* Card A: Dark Olive Promo Card */}
-            <FadeCard delay={0.15} style={{ background: 'linear-gradient(145deg, #4A401A 0%, #2A240E 100%)', borderRadius: 20, padding: '24px 28px', position: 'relative', overflow: 'hidden', minHeight: 180, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxShadow: '0 8px 24px rgba(42, 36, 14, 0.15)' }}>
-              {/* Golden ambient circle glow */}
-              <div style={{ position: 'absolute', bottom: -30, right: -30, width: 140, height: 140, background: 'rgba(212,175,55,0.25)', borderRadius: '50%', pointerEvents: 'none' }} />
-              <div style={{ position: 'absolute', top: -40, left: -40, width: 100, height: 100, background: 'rgba(212,175,55,0.1)', borderRadius: '50%', pointerEvents: 'none' }} />
-
-              <div style={{ position: 'relative', zIndex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                  <span style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#E3C762' }}>
-                    Special Broadcast Offer
-                  </span>
-                  <span style={{ fontSize: 11, background: 'rgba(255,255,255,0.15)', color: '#FFFFFF', padding: '2px 10px', borderRadius: 20, fontWeight: 700 }}>
-                    Instant Airtime
+                  <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '18px', color: '#FFFFFF' }}>
+                    Wallet Balance
                   </span>
                 </div>
-                <h3 style={{ fontSize: 20, fontWeight: 800, color: '#FFFFFF', margin: '0 0 6px', lineHeight: 1.3, letterSpacing: '-0.3px' }}>
-                  Book Ad slot from ₦1,000/min
-                </h3>
-                <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', margin: 0, fontWeight: 500 }}>
-                  Instant digital screen activation across high-traffic prime Lagos studios.
-                </p>
-              </div>
-
-              <div style={{ position: 'relative', zIndex: 1, marginTop: 18 }}>
-                <div style={{ borderTop: '1px dashed rgba(255,255,255,0.25)', paddingTop: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  {/* Triple golden dots */}
-                  <div style={{ display: 'flex', gap: 6 }}>
-                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#C69A2C' }} />
-                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'rgba(255,255,255,0.4)' }} />
-                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'rgba(255,255,255,0.2)' }} />
+                
+                <div className="flex justify-between items-end mt-auto">
+                  <div style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '24px', color: '#FFFFFF' }}>
+                    NGN 15,000
                   </div>
-
-                  <Link 
-                    href="/book"
-                    style={{ 
-                      display: 'inline-flex', 
-                      alignItems: 'center', 
-                      gap: 8, 
-                      padding: '8px 18px', 
-                      background: theme.color.surface, 
-                      color: theme.color.text1, 
-                      borderRadius: 10, 
-                      fontSize: 12, 
-                      fontWeight: 800, 
-                      textDecoration: 'none',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    <span>Book Ad Slot</span>
-                    <ArrowRight size={13} />
-                  </Link>
-                </div>
-              </div>
-            </FadeCard>
-
-            {/* Card B: Signature Gold Gradient Wallet Card */}
-            <FadeCard delay={0.2} style={{ background: 'linear-gradient(145deg, #D4AF37 0%, #B49020 100%)', borderRadius: 20, padding: '24px 28px', position: 'relative', overflow: 'hidden', minHeight: 180, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxShadow: '0 8px 24px rgba(180, 144, 32, 0.25)' }}>
-              {/* Bright yellow radial orb */}
-              <div style={{ position: 'absolute', bottom: -28, right: -28, width: 110, height: 110, background: '#FDE68A', borderRadius: '50%', opacity: 0.9, pointerEvents: 'none' }} />
-              
-              <div style={{ position: 'relative', zIndex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <CreditCard size={17} color="#FFFFFF" />
-                    <span style={{ fontSize: 13, color: '#FFFFFF', fontWeight: 800, letterSpacing: '0.02em' }}>
-                      Wallet Bal
-                    </span>
-                  </div>
-                  <span style={{ fontSize: 10, background: 'rgba(0,0,0,0.2)', color: '#FFFFFF', padding: '2px 8px', borderRadius: 10, fontWeight: 700, textTransform: 'uppercase' }}>
-                    Active
-                  </span>
-                </div>
-
-                <div style={{ borderTop: '1px dashed rgba(255,255,255,0.4)', margin: '8px 0 12px', width: '100%' }} />
-
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
-                  <p style={{ fontSize: 26, color: '#FFFFFF', fontWeight: 900, margin: 0, letterSpacing: '-0.5px' }}>
-                    {formatCurrency(walletCredits, currency, rates)}
-                  </p>
-                  {currency !== 'NGN' && (
-                    <span style={{ fontSize: 15, color: 'rgba(255,255,255,0.9)', fontWeight: 700 }}>
-                      / ₦{walletCredits.toLocaleString()}
-                    </span>
-                  )}
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10 }}>
-                  <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>
-                    Wallet ID: <code style={{ fontFamily: 'monospace', fontWeight: 700 }}>{walletId}</code>
-                  </span>
-                  <button
-                    onClick={() => handleCopyWalletId(walletId)}
-                    style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: 6, padding: '3px 8px', color: '#FFFFFF', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700 }}
-                    title="Copy Wallet ID"
-                  >
-                    {copiedWalletId ? <Check size={11} color="#A7F3D0" /> : <Copy size={11} />}
-                    <span>{copiedWalletId ? 'Copied' : 'Copy'}</span>
-                  </button>
-                </div>
-              </div>
-
-              <div style={{ position: 'relative', zIndex: 1, marginTop: 16, display: 'flex', gap: 10 }}>
-                <button 
-                  onClick={openFundModal}
-                  style={{ 
-                    flex: 1, 
-                    padding: '8px 14px', 
-                    background: theme.color.charcoal900, 
-                    color: '#FFFFFF', 
-                    border: 'none', 
-                    borderRadius: 8, 
-                    fontSize: 12, 
-                    fontWeight: 800, 
-                    cursor: 'pointer',
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center', 
-                    gap: 6 
-                  }}
-                >
-                  <Plus size={13} /> Fund Wallet
-                </button>
-                <button
-                  onClick={() => hasReservedAccount ? handleCopyBankAcct(dedicatedAcct!) : setShowReservedModal(true)}
-                  style={{
-                    flex: 1,
-                    padding: '8px 14px',
-                    background: 'rgba(255,255,255,0.25)',
-                    border: '1px solid rgba(255,255,255,0.3)',
-                    color: '#FFFFFF',
-                    borderRadius: 8,
-                    fontSize: 12,
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 6
-                  }}
-                >
-                  <Building2 size={13} /> {hasReservedAccount ? (copiedBankAcct ? 'Copied Acct' : 'Bank Acct') : 'Create Acct'}
-                </button>
-              </div>
-            </FadeCard>
-
-          </div>
-
-          {/* ─── DEDICATED VIRTUAL ACCOUNT BANNER ─── */}
-          <FadeCard delay={0.25} style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 16, padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-              <div style={{ width: 44, height: 44, borderRadius: 12, background: '#FFFDF5', border: '1px solid #FDE68A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Building2 size={20} color="#C69A2C" />
-              </div>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <p style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1, margin: 0 }}>
-                    Dedicated Virtual Bank Account
-                  </p>
-                  {hasReservedAccount && (
-                    <span style={{ fontSize: 10, background: '#ECFDF5', color: '#059669', padding: '2px 8px', borderRadius: 12, fontWeight: 700 }}>
-                      Zero Transfer Fees
-                    </span>
-                  )}
-                </div>
-                <p style={{ fontSize: 12, color: theme.color.text3, margin: '3px 0 0', fontWeight: 500 }}>
-                  {hasReservedAccount
-                    ? <>Bank: <strong style={{ color: theme.color.text1 }}>{dedicatedBank}</strong> · Account Name: <strong style={{ color: theme.color.text1 }}>{balance?.reserved_account_name || 'Studio Arella'}</strong></>
-                    : "You haven't generated a dedicated account yet — create one to top up by bank transfer."}
-                </p>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              {hasReservedAccount ? (
-                <>
-                  <div style={{ background: theme.color.bg, border: `1px solid ${theme.color.border}`, borderRadius: 10, padding: '8px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <span style={{ fontSize: 16, fontWeight: 800, color: theme.color.text1, letterSpacing: '1px', fontFamily: 'monospace' }}>
-                      {dedicatedAcct}
-                    </span>
-                    <button
-                      onClick={() => handleCopyBankAcct(dedicatedAcct!)}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: copiedBankAcct ? '#10B981' : '#C69A2C', display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 700 }}
-                    >
-                      {copiedBankAcct ? <Check size={14} /> : <Copy size={14} />}
-                      <span>{copiedBankAcct ? 'Copied' : 'Copy'}</span>
-                    </button>
-                  </div>
-                  <button
-                    onClick={() => setShowReservedModal(true)}
-                    style={{ background: 'none', border: 'none', color: theme.color.text3, fontSize: 12, fontWeight: 600, cursor: 'pointer', textDecoration: 'underline' }}
-                  >
-                    Change details
-                  </button>
-                </>
-              ) : (
-                <button
-                  onClick={() => setShowReservedModal(true)}
-                  style={{ background: '#C69A2C', border: 'none', color: '#FFFFFF', borderRadius: 10, padding: '10px 18px', fontSize: 12, fontWeight: 800, cursor: 'pointer' }}
-                >
-                  Generate Account
-                </button>
-              )}
-            </div>
-          </FadeCard>
-
-          {/* ─── TRANSACTION HISTORY SECTION ─── */}
-          <FadeCard delay={0.3} style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 20, boxShadow: '0 4px 24px rgba(0,0,0,0.02)', overflow: 'hidden' }}>
-            
-            {/* Toolbar Header */}
-            <div style={{ padding: '20px 24px', borderBottom: `1px solid ${theme.color.surface2}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
-              
-              {/* Title & Tabs */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
-                <h2 style={{ fontSize: 16, fontWeight: 800, color: theme.color.text1, margin: 0, letterSpacing: '-0.2px' }}>
-                  Transaction History
-                </h2>
-
-                <div style={{ display: 'inline-flex', background: theme.color.bg, padding: 3, borderRadius: 10, border: `1px solid ${theme.color.border}` }}>
-                  {[
-                    { id: 'all', label: 'All' },
-                    { id: 'credit', label: 'Money In (+)' },
-                    { id: 'debit', label: 'Money Out (-)' },
-                  ].map(tab => (
-                    <button
-                      key={tab.id}
-                      onClick={() => { setActiveTab(tab.id as any); setCurrentPage(1); }}
-                      style={{
-                        background: activeTab === tab.id ? '#FFFFFF' : 'transparent',
-                        color: activeTab === tab.id ? theme.color.text1 : theme.color.text3,
-                        border: 'none',
-                        borderRadius: 7,
-                        padding: '6px 14px',
-                        fontSize: 12,
-                        fontWeight: activeTab === tab.id ? 800 : 600,
-                        cursor: 'pointer',
-                        boxShadow: activeTab === tab.id ? '0 1px 3px rgba(0,0,0,0.05)' : 'none',
-                        transition: 'all 0.15s',
-                        fontFamily: F
-                      }}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Action Buttons: Search, Filter, Export */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                {/* Search */}
-                <div style={{ position: 'relative', width: 220 }}>
-                  <Search size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: theme.color.text4 }} />
-                  <input 
-                    type="text" 
-                    placeholder="Search transaction..." 
-                    value={searchQuery}
-                    onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-                    style={{ 
-                      width: '100%', 
-                      padding: '8px 12px 8px 34px', 
-                      background: theme.color.bg, 
-                      border: `1px solid ${theme.color.border}`, 
-                      borderRadius: 10, 
-                      fontSize: 12, 
-                      fontWeight: 500, 
-                      color: '#1E293B', 
-                      outline: 'none',
-                      fontFamily: F
-                    }}
-                  />
-                </div>
-
-                {/* Filter Popup Button */}
-                <div style={{ position: 'relative' }}>
                   <button 
-                    onClick={() => setShowFilterPopup(o => !o)}
-                    style={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      gap: 6, 
-                      background: filterStatus !== 'all' ? '#FFFDF5' : '#FFFFFF', 
-                      border: `1px solid ${filterStatus !== 'all' ? '#C69A2C' : theme.color.border}`, 
-                      borderRadius: 10, 
-                      padding: '8px 14px', 
-                      fontSize: 12, 
-                      fontWeight: 700, 
-                      color: filterStatus !== 'all' ? '#C69A2C' : '#475569', 
-                      cursor: 'pointer',
-                      fontFamily: F
-                    }}
+                    onClick={openFundModal}
+                    className="bg-white rounded-[11.8px] shadow-sm flex justify-center items-center px-[17px] py-[12px]"
                   >
-                    <Filter size={13} />
-                    <span>Filter</span>
+                    <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '13.6px', color: '#101828' }}>
+                      Fund wallet
+                    </span>
                   </button>
+                </div>
+              </div>
 
-                  <AnimatePresence>
-                    {showFilterPopup && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 8 }}
-                        transition={{ duration: 0.15 }}
-                        style={{
-                          position: 'absolute',
-                          top: '100%',
-                          right: 0,
-                          marginTop: 8,
-                          background: theme.color.surface,
-                          border: `1px solid ${theme.color.border}`,
-                          borderRadius: 14,
-                          boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
-                          padding: 16,
-                          width: 220,
-                          zIndex: 50
-                        }}
-                      >
-                        <p style={{ fontSize: 12, fontWeight: 800, color: theme.color.text1, margin: '0 0 10px' }}>Filter by Status</p>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                          {['all', 'successful', 'pending', 'failed'].map(st => (
-                            <button
-                              key={st}
-                              onClick={() => { setFilterStatus(st); setShowFilterPopup(false); setCurrentPage(1); }}
-                              style={{
-                                textAlign: 'left',
-                                padding: '6px 10px',
-                                background: filterStatus === st ? '#FFFDF5' : 'transparent',
-                                color: filterStatus === st ? '#C69A2C' : theme.color.text2,
-                                border: 'none',
-                                borderRadius: 6,
-                                fontSize: 12,
-                                fontWeight: filterStatus === st ? 700 : 500,
-                                cursor: 'pointer',
-                                textTransform: 'capitalize'
-                              }}
-                            >
-                              {st}
-                            </button>
-                          ))}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+              {/* Card 2: Total Spent */}
+              <div 
+                className="relative rounded-[16px] overflow-hidden p-4 flex flex-col justify-between"
+                style={{ 
+                  height: '134px',
+                  background: 'linear-gradient(rgba(212, 175, 55, 0.9), rgba(212, 175, 55, 0.9)), url(/depositphotos_5836112-stock-illustration-seamless-pattern.png)',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                }}
+              >
+                <div className="flex items-center gap-[10px]">
+                  <div className="w-[30px] h-[30px] rounded-full bg-white/20 flex items-center justify-center">
+                    <TrendingDown size={16} color="white" />
+                  </div>
+                  <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '18px', color: '#FFFFFF' }}>
+                    Total Spent
+                  </span>
+                </div>
+                
+                <div className="flex justify-between items-end mt-auto">
+                  <div style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '24px', color: '#FFFFFF' }}>
+                    NGN 25,000
+                  </div>
+                  <button className="bg-white rounded-[11.8px] shadow-sm flex justify-center items-center px-[17px] py-[12px]">
+                    <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '13.6px', color: '#101828' }}>
+                      View spending insight
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Card 3: Special Offer */}
+              <div 
+                className="relative rounded-[15px] overflow-hidden p-4"
+                style={{ 
+                  height: '134px',
+                  backgroundColor: '#524007',
+                }}
+              >
+                <div style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 400, fontSize: '12.6px', color: '#FFFFFF', marginBottom: '8px' }}>
+                  Special Offer: Book Ad slot from #1,000/min
+                </div>
+                <div style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '9px', color: '#D5E0ED', maxWidth: '140px', lineHeight: '150%' }}>
+                  Instant digital screen activation across high-traffic prime Lagos studios
+                </div>
+                
+                <div className="absolute right-2 top-2 w-[80px] h-[100px] flex justify-center items-center">
+                   <div className="w-[60px] h-[80px] bg-white/10 rounded-[6px] border border-white/20 backdrop-blur-md flex flex-col items-center justify-center p-1 transform rotate-6">
+                      <div className="w-full h-[20px] bg-white rounded-[4px] mb-1"></div>
+                      <span className="text-[4px] text-white/70 text-center leading-tight">Our billboard stand is in a strategic location...</span>
+                   </div>
                 </div>
 
-                {/* Export Button */}
                 <button 
-                  onClick={handleExportCSV}
-                  style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: 6, 
-                    background: theme.color.surface, 
-                    border: '1px solid #C69A2C', 
-                    color: '#C69A2C', 
-                    borderRadius: 10, 
-                    padding: '8px 16px', 
-                    fontSize: 12, 
-                    fontWeight: 700, 
-                    cursor: 'pointer',
-                    fontFamily: F
-                  }}
+                  className="absolute bottom-4 left-4 bg-[#FBFF79] rounded-[6px] px-[17px] py-[8px]"
+                  style={{ boxShadow: '0px 0px 7px rgba(251, 255, 121, 0.32)' }}
                 >
-                  <Download size={13} />
-                  <span>Export</span>
+                  <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 600, fontSize: '9.4px', color: '#051235', textTransform: 'uppercase' }}>
+                    BOOK AD SLOT
+                  </span>
                 </button>
+              </div>
+            </div>
+
+            {/* Middle Section (2 cards) */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              
+              {/* Total Transaction */}
+              <div className="bg-white rounded-[24px] p-[24px] flex flex-col justify-between relative shadow-sm border border-[#F0F0F0]" style={{ height: '176px' }}>
+                <div>
+                   <h3 style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '18px', color: '#101828' }}>Total Transaction</h3>
+                   <div className="w-[30px] h-[25px] flex items-center justify-center rounded-[8px] mt-[10px]" style={{ background: 'rgba(3, 197, 210, 0.2)' }}>
+                      <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#005055' }}>45</span>
+                   </div>
+                </div>
+                <div className="flex justify-between items-center w-full">
+                  <button className="flex items-center gap-[10px] w-full max-w-[287px] bg-[#FFFFFF] shadow-sm rounded-[14px] px-[20px] py-[14px] border border-[#F0F0F0] hover:bg-gray-50">
+                    <div className="w-[24px] h-[24px] bg-[#E5F9FA] rounded-full flex items-center justify-center">
+                      <Download size={14} color="#005055" />
+                    </div>
+                    <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '16px', color: '#101828' }}>Download transaction history</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Linked Bank Card */}
+              <div className="bg-white rounded-[24px] p-[24px] flex flex-col justify-between relative shadow-sm border border-[#F0F0F0]" style={{ height: '176px' }}>
+                <div>
+                   <h3 style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '18px', color: '#101828' }}>Linked Bank Card</h3>
+                   <div className="w-[30px] h-[25px] flex items-center justify-center rounded-[8px] mt-[10px]" style={{ background: 'rgba(227, 24, 24, 0.2)' }}>
+                      <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#E31818' }}>3</span>
+                   </div>
+                </div>
+                
+                <div className="flex justify-between items-center w-full">
+                  <button onClick={() => setShowLinkBankModal(true)} className="flex items-center justify-center w-full max-w-[287px] bg-[#101828] hover:bg-[#1a2538] shadow-sm rounded-[14px] px-[20px] py-[14px]">
+                    <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '16px', color: '#FFFFFF' }}>Add A Bank Card</span>
+                  </button>
+                  
+                  {/* Mastercard circles placeholder */}
+                  <div className="flex relative items-center h-[50px] w-[90px]">
+                     <div className="w-[44px] h-[44px] rounded-full bg-[#EA001B]/80 mix-blend-multiply absolute right-[40px]"></div>
+                     <div className="w-[44px] h-[44px] rounded-full bg-[#FFA200]/80 mix-blend-multiply absolute right-[20px]"></div>
+                     <div className="w-[44px] h-[44px] rounded-full border-2 border-[#101828]/10 right-[0px] absolute"></div>
+                  </div>
+                </div>
               </div>
 
             </div>
 
-            {/* Responsive Table */}
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse', textAlign: 'left' }}>
-                <thead>
-                  <tr style={{ background: theme.color.bg, borderBottom: `1px solid ${theme.color.border}` }}>
-                    {['Transaction / Info', 'Type', 'Payment Channel', 'Reference', 'Amount (NGN)', 'Status', 'Action'].map((h, i) => (
-                      <th 
-                        key={h} 
-                        style={{ 
-                          padding: '14px 20px', 
-                          color: theme.color.text3, 
-                          fontWeight: 700, 
-                          fontSize: 11, 
-                          textTransform: 'uppercase', 
-                          letterSpacing: '0.06em',
-                          textAlign: i === 4 ? 'right' : 'left'
-                        }}
-                      >
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {currentRecords.length === 0 ? (
-                    <tr>
-                      <td colSpan={7} style={{ padding: '60px 20px', textAlign: 'center' }}>
-                        <div style={{ width: 56, height: 56, borderRadius: 16, background: '#FFFDF5', border: '1px solid #FDE68A', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
-                          <DollarSign size={24} color="#C69A2C" />
-                        </div>
-                        <p style={{ fontSize: 15, fontWeight: 700, color: theme.color.text1, margin: '0 0 4px' }}>No transactions found</p>
-                        <p style={{ fontSize: 12, color: theme.color.text4, margin: 0 }}>Try clearing your search query or status filter.</p>
-                      </td>
-                    </tr>
-                  ) : (
-                    currentRecords.map(t => {
-                      const isCredit = t.type === 'credit' || t.type === 'refund';
-                      const isPending = t.type === 'pending';
-                      return (
-                        <tr 
-                          key={t.id}
-                          style={{ borderBottom: `1px solid ${theme.color.surface2}`, transition: 'background 0.15s' }}
-                          onMouseEnter={e => e.currentTarget.style.background = '#FBFDFE'}
-                          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                        >
-                          {/* Transaction Info */}
-                          <td style={{ padding: '16px 20px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                              <div style={{
-                                width: 34,
-                                height: 34,
-                                borderRadius: 10,
-                                background: isPending ? '#FFFBEB' : isCredit ? '#ECFDF5' : '#FEF2F2',
-                                border: `1px solid ${isPending ? '#FDE68A' : isCredit ? '#A7F3D0' : '#FECACA'}`,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center'
-                              }}>
-                                {isPending ? <Clock size={16} color="#D97706" /> : isCredit ? <ArrowDownLeft size={16} color="#059669" /> : <ArrowUpRight size={16} color="#DC2626" />}
-                              </div>
-                              <div>
-                                <p style={{ fontSize: 13, fontWeight: 700, color: theme.color.text1, margin: '0 0 2px' }}>
-                                  {t.source}
-                                </p>
-                                <p style={{ fontSize: 11, color: theme.color.text4, margin: 0 }}>
-                                  {new Date(t.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })} · {new Date(t.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
-                                </p>
-                              </div>
-                            </div>
-                          </td>
+            {/* Bottom Section: Transaction Table */}
+            <div className="bg-white rounded-[10px] shadow-sm border border-[#F0F0F0] overflow-hidden w-full overflow-x-auto">
+               
+               {/* Table Header Area */}
+               <div className="flex items-center justify-between px-[24px] py-[24px] border-b border-[#F0F0F0]" 
+                    style={{ background: 'linear-gradient(95.19deg, #D4AF37 29.12%, rgba(126, 84, 0, 0.33) 111.32%, rgba(217, 192, 28, 0.33) 111.32%)' }}>
+                  
+                  <div>
+                    <h2 style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 700, fontSize: '16px', color: '#FFFFFF', marginBottom: '4px' }}>Transaction history</h2>
+                    <p style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 400, fontSize: '14px', color: '#FFFFFF' }}>View your transaction history</p>
+                  </div>
 
-                          {/* Type */}
-                          <td style={{ padding: '16px 20px' }}>
-                            <span style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: 4,
-                              fontSize: 11,
-                              fontWeight: 700,
-                              padding: '3px 8px',
-                              borderRadius: 12,
-                              background: isPending ? '#FFFBEB' : isCredit ? '#ECFDF5' : theme.color.bg,
-                              color: isPending ? '#D97706' : isCredit ? '#059669' : theme.color.text3,
-                              border: `1px solid ${isPending ? '#FDE68A' : isCredit ? '#A7F3D0' : theme.color.border}`
-                            }}>
-                              {isPending ? <Clock size={11} /> : isCredit ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
-                              {isPending ? 'Pending' : t.type === 'refund' ? 'Refund' : isCredit ? 'Credit' : 'Debit'}
-                            </span>
-                          </td>
-
-                          {/* Payment Channel */}
-                          <td style={{ padding: '16px 20px', color: '#475569', fontSize: 13, fontWeight: 600 }}>
-                            {t.channel || 'Card / Monnify'}
-                          </td>
-
-                          {/* Reference */}
-                          <td style={{ padding: '16px 20px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                              <span style={{ fontSize: 11, color: theme.color.text3, fontFamily: 'monospace', fontWeight: 600 }}>
-                                {t.reference}
-                              </span>
-                              <button
-                                onClick={() => {
-                                  navigator.clipboard.writeText(t.reference);
-                                  toast('Reference copied', 'success');
-                                }}
-                                style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text4, padding: 2 }}
-                                title="Copy reference"
-                              >
-                                <Copy size={11} />
-                              </button>
-                            </div>
-                          </td>
-
-                          {/* Amount */}
-                          <td style={{ padding: '16px 20px', textAlign: 'right' }}>
-                            <span style={{
-                              fontSize: 14,
-                              fontWeight: 800,
-                              color: isPending ? '#D97706' : isCredit ? '#059669' : theme.color.text1,
-                              letterSpacing: '-0.3px'
-                            }}>
-                              {isPending ? '' : isCredit ? '+' : '-'}{formatCurrency(Number(t.amount), currency, rates)}
-                            </span>
-                          </td>
-
-                          {/* Status */}
-                          <td style={{ padding: '16px 20px' }}>
-                            <span style={{
-                              fontSize: 11,
-                              fontWeight: 700,
-                              padding: '4px 10px',
-                              borderRadius: 20,
-                              background: isPending ? '#FFFBEB' : '#F0FDF4',
-                              color: isPending ? '#D97706' : '#16A34A',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: 4
-                            }}>
-                              <span style={{ width: 5, height: 5, borderRadius: '50%', background: isPending ? '#D97706' : '#16A34A' }} />
-                              {isPending ? 'Pending' : 'Successful'}
-                            </span>
-                          </td>
-
-                          {/* Action / Receipt */}
-                          <td style={{ padding: '16px 20px' }}>
-                            <button
-                              onClick={() => setSelectedReceipt(t)}
-                              style={{ 
-                                background: '#FFFDF5', 
-                                border: '1px solid #FDE68A', 
-                                color: '#C69A2C', 
-                                borderRadius: 8, 
-                                padding: '5px 12px', 
-                                fontSize: 12, 
-                                fontWeight: 700, 
-                                cursor: 'pointer',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: 4,
-                                fontFamily: F
-                              }}
-                            >
-                              <Receipt size={12} />
-                              <span>Receipt</span>
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Pagination Controls */}
-            <div style={{ padding: '16px 24px', borderTop: `1px solid ${theme.color.surface2}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
-              {/* Left: Page Size Selector */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 12, color: theme.color.text3, fontWeight: 600 }}>Showing</span>
-                <select 
-                  value={pageSize}
-                  onChange={e => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
-                  style={{ 
-                    padding: '4px 8px', 
-                    borderRadius: 8, 
-                    border: `1px solid ${theme.color.border}`, 
-                    fontSize: 12, 
-                    fontWeight: 700, 
-                    color: theme.color.text1, 
-                    background: theme.color.surface,
-                    outline: 'none',
-                    fontFamily: F
-                  }}
-                >
-                  <option value={5}>5</option>
-                  <option value={10}>10</option>
-                  <option value={20}>20</option>
-                </select>
-              </div>
-
-              {/* Center: Range text */}
-              <div style={{ fontSize: 12, color: theme.color.text3, fontWeight: 600 }}>
-                Showing {totalRecords === 0 ? 0 : startIndex + 1} to {endIndex} out of {totalRecords} records
-              </div>
-
-              {/* Right: Page Buttons */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <button
-                  disabled={currentPage === 1}
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                  style={{
-                    width: 28,
-                    height: 28,
-                    borderRadius: 6,
-                    border: `1px solid ${theme.color.border}`,
-                    background: theme.color.surface,
-                    color: currentPage === 1 ? theme.color.border2 : theme.color.text2,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: currentPage === 1 ? 'not-allowed' : 'pointer'
-                  }}
-                >
-                  <ChevronLeft size={14} />
-                </button>
-
-                {Array.from({ length: totalPages }).map((_, idx) => {
-                  const pNum = idx + 1;
-                  const isActive = currentPage === pNum;
-                  return (
-                    <button
-                      key={pNum}
-                      onClick={() => setCurrentPage(pNum)}
-                      style={{
-                        width: 28,
-                        height: 28,
-                        borderRadius: 6,
-                        border: isActive ? '1px solid #C69A2C' : '1px solid transparent',
-                        background: isActive ? '#FFFDF5' : 'transparent',
-                        color: isActive ? '#C69A2C' : theme.color.text3,
-                        fontSize: 12,
-                        fontWeight: isActive ? 800 : 600,
-                        cursor: 'pointer',
-                        fontFamily: F
-                      }}
-                    >
-                      {pNum}
+                  <div className="flex items-center gap-[16px]">
+                    <button className="flex items-center gap-[10px] text-white">
+                       <Download size={20} />
+                       <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 400, fontSize: '14px' }}>Generate transaction statement</span>
                     </button>
-                  );
-                })}
+                    <button className="flex items-center gap-[10px] text-white ml-[20px]">
+                       <TrendingUp size={20} />
+                       <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 400, fontSize: '14px' }}>View spending insight</span>
+                    </button>
+                    <button className="w-[24px] h-[24px] border border-white rounded-[5px] flex items-center justify-center text-white ml-[10px]">
+                       <span className="text-[14px] leading-none mb-2">...</span>
+                    </button>
+                  </div>
+               </div>
 
-                <button
-                  disabled={currentPage === totalPages}
-                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                  style={{
-                    width: 28,
-                    height: 28,
-                    borderRadius: 6,
-                    border: `1px solid ${theme.color.border}`,
-                    background: theme.color.surface,
-                    color: currentPage === totalPages ? theme.color.border2 : theme.color.text2,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: currentPage === totalPages ? 'not-allowed' : 'pointer'
-                  }}
-                >
-                  <ChevronRight size={14} />
-                </button>
-              </div>
+               {/* Table */}
+               <table className="w-full text-left border-collapse min-w-[1000px]">
+                 <thead>
+                   <tr className="bg-white border-b border-[#F0F0F0]">
+                     <th className="px-[24px] py-[16px] text-[#5F6D7E] font-medium text-[13px]" style={{ fontFamily: 'var(--font-dm-sans)' }}>Service</th>
+                     <th className="px-[24px] py-[16px] text-[#5F6D7E] font-medium text-[13px]" style={{ fontFamily: 'var(--font-dm-sans)' }}>Account</th>
+                     <th className="px-[24px] py-[16px] text-[#5F6D7E] font-medium text-[13px]" style={{ fontFamily: 'var(--font-dm-sans)' }}>Ref</th>
+                     <th className="px-[24px] py-[16px] text-[#5F6D7E] font-medium text-[13px]" style={{ fontFamily: 'var(--font-inter)' }}>No. of Transactions</th>
+                     <th className="px-[24px] py-[16px] text-[#5F6D7E] font-medium text-[13px]" style={{ fontFamily: 'var(--font-inter)' }}>Estimated income</th>
+                     <th className="px-[24px] py-[16px] text-[#5F6D7E] font-medium text-[13px]" style={{ fontFamily: 'var(--font-inter)' }}>Status</th>
+                     <th className="px-[24px] py-[16px] text-[#5F6D7E] font-medium text-[13px]" style={{ fontFamily: 'var(--font-inter)' }}>Action</th>
+                   </tr>
+                 </thead>
+                 <tbody>
+                   <tr className="border-b border-[#F0F0F0] bg-white">
+                     <td className="px-[24px] py-[12px]">
+                       <div className="flex flex-col">
+                          <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>Podcast sponsorship wave</span>
+                          <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 400, fontSize: '14px', color: '#5F6D7E' }}>Campaign</span>
+                       </div>
+                     </td>
+                     <td className="px-[24px] py-[12px]">
+                        <div className="flex items-center relative h-[24px] w-[50px]">
+                           <div className="w-[24px] h-[24px] bg-[#E35205] rounded-full border-2 border-white absolute left-0 z-20 flex items-center justify-center text-[8px] text-white font-bold">GTB</div>
+                           <div className="w-[24px] h-[24px] bg-[#005055] rounded-full border-2 border-white absolute left-[12px] z-10 flex items-center justify-center text-[8px] text-white font-bold">ACC</div>
+                        </div>
+                     </td>
+                     <td className="px-[24px] py-[12px]" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>23f1335thu_o9</td>
+                     <td className="px-[24px] py-[12px] text-center" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>5</td>
+                     <td className="px-[24px] py-[12px]" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>NGN 28,000</td>
+                     <td className="px-[24px] py-[12px]">
+                        <span className="px-[10px] py-[3px] rounded-full" style={{ background: 'rgba(3, 197, 210, 0.2)', color: '#005055', fontFamily: 'var(--font-dm-sans)', fontSize: '10.7px' }}>SUCCESSFUL</span>
+                     </td>
+                     <td className="px-[24px] py-[12px]">
+                        <button className="w-[24px] h-[24px] flex items-center justify-center text-[#5F6D7E]">
+                           <span className="text-[14px] leading-none rotate-90 font-bold tracking-widest -mt-2">...</span>
+                        </button>
+                     </td>
+                   </tr>
+
+                   <tr className="border-b border-[#F0F0F0] bg-white">
+                     <td className="px-[24px] py-[12px]">
+                       <div className="flex flex-col">
+                          <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>Podcast sponsorship wave</span>
+                          <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 400, fontSize: '14px', color: '#5F6D7E' }}>Campaign</span>
+                       </div>
+                     </td>
+                     <td className="px-[24px] py-[12px]">
+                        <div className="flex items-center relative h-[24px] w-[50px]">
+                           <div className="w-[24px] h-[24px] bg-[#E35205] rounded-full flex items-center justify-center text-[8px] text-white font-bold">GTB</div>
+                        </div>
+                     </td>
+                     <td className="px-[24px] py-[12px]" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>23f1335thu_o9</td>
+                     <td className="px-[24px] py-[12px] text-center" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>2</td>
+                     <td className="px-[24px] py-[12px]" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>NGN 55,000</td>
+                     <td className="px-[24px] py-[12px]">
+                        <span className="px-[10px] py-[3px] rounded-full" style={{ background: 'rgba(3, 36, 210, 0.2)', color: '#005055', fontFamily: 'var(--font-dm-sans)', fontSize: '10.7px' }}>PENDING</span>
+                     </td>
+                     <td className="px-[24px] py-[12px]">
+                        <button className="w-[24px] h-[24px] flex items-center justify-center text-[#5F6D7E]">
+                           <span className="text-[14px] leading-none rotate-90 font-bold tracking-widest -mt-2">...</span>
+                        </button>
+                     </td>
+                   </tr>
+
+                   <tr className="border-b border-[#F0F0F0] bg-white">
+                     <td className="px-[24px] py-[12px]">
+                       <div className="flex flex-col">
+                          <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>Podcast sponsorship wave</span>
+                          <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 400, fontSize: '14px', color: '#5F6D7E' }}>Campaign</span>
+                       </div>
+                     </td>
+                     <td className="px-[24px] py-[12px]">
+                        <div className="flex items-center relative h-[24px] w-[80px]">
+                           <div className="w-[24px] h-[24px] bg-[#60269E] rounded-full border-2 border-white absolute left-0 z-30 flex items-center justify-center text-[8px] text-white font-bold">POL</div>
+                           <div className="w-[24px] h-[24px] bg-[#005055] rounded-full border-2 border-white absolute left-[12px] z-20 flex items-center justify-center text-[8px] text-white font-bold">ACC</div>
+                           <div className="w-[24px] h-[24px] bg-[#5C068C] rounded-full border-2 border-white absolute left-[24px] z-10 flex items-center justify-center text-[8px] text-white font-bold">FCMB</div>
+                        </div>
+                     </td>
+                     <td className="px-[24px] py-[12px]" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>23f1335thu_o9</td>
+                     <td className="px-[24px] py-[12px] text-center" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>50</td>
+                     <td className="px-[24px] py-[12px]" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>NGN 2,550,000</td>
+                     <td className="px-[24px] py-[12px]">
+                        <span className="px-[10px] py-[3px] rounded-full" style={{ background: 'rgba(243, 184, 164, 0.2)', color: '#E31818', fontFamily: 'var(--font-dm-sans)', fontSize: '10.7px' }}>FAILED</span>
+                     </td>
+                     <td className="px-[24px] py-[12px]">
+                        <button className="w-[24px] h-[24px] flex items-center justify-center text-[#5F6D7E]">
+                           <span className="text-[14px] leading-none rotate-90 font-bold tracking-widest -mt-2">...</span>
+                        </button>
+                     </td>
+                   </tr>
+
+                   <tr className="border-b border-[#F0F0F0] bg-white">
+                     <td className="px-[24px] py-[12px]">
+                       <div className="flex flex-col">
+                          <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>Podcast sponsorship wave</span>
+                          <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 400, fontSize: '14px', color: '#5F6D7E' }}>Ad</span>
+                       </div>
+                     </td>
+                     <td className="px-[24px] py-[12px]">
+                        <div className="flex items-center relative h-[24px] w-[50px]">
+                           <div className="w-[24px] h-[24px] bg-[#60269E] rounded-full flex items-center justify-center text-[8px] text-white font-bold">POL</div>
+                        </div>
+                     </td>
+                     <td className="px-[24px] py-[12px]" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>23f1335thu_o9</td>
+                     <td className="px-[24px] py-[12px] text-center" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>10</td>
+                     <td className="px-[24px] py-[12px]" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>NGN 258,000</td>
+                     <td className="px-[24px] py-[12px]">
+                        <span className="px-[10px] py-[3px] rounded-full" style={{ background: 'rgba(3, 197, 210, 0.2)', color: '#005055', fontFamily: 'var(--font-dm-sans)', fontSize: '10.7px' }}>SUCCESSFUL</span>
+                     </td>
+                     <td className="px-[24px] py-[12px]">
+                        <button className="w-[24px] h-[24px] flex items-center justify-center text-[#5F6D7E]">
+                           <span className="text-[14px] leading-none rotate-90 font-bold tracking-widest -mt-2">...</span>
+                        </button>
+                     </td>
+                   </tr>
+
+                   <tr className="border-b border-[#F0F0F0] bg-white">
+                     <td className="px-[24px] py-[12px]">
+                       <div className="flex flex-col">
+                          <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>Podcast sponsorship wave</span>
+                          <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 400, fontSize: '14px', color: '#5F6D7E' }}>Studio session</span>
+                       </div>
+                     </td>
+                     <td className="px-[24px] py-[12px]">
+                        <div className="flex items-center relative h-[24px] w-[50px]">
+                           <div className="w-[24px] h-[24px] bg-[#005055] rounded-full border-2 border-white absolute left-0 z-20 flex items-center justify-center text-[8px] text-white font-bold">ACC</div>
+                           <div className="w-[24px] h-[24px] bg-[#FF0000] rounded-full border-2 border-white absolute left-[12px] z-10 flex items-center justify-center text-[8px] text-white font-bold">ZEN</div>
+                        </div>
+                     </td>
+                     <td className="px-[24px] py-[12px]" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>23f1335thu_o9</td>
+                     <td className="px-[24px] py-[12px] text-center" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>6</td>
+                     <td className="px-[24px] py-[12px]" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>NGN 128,000</td>
+                     <td className="px-[24px] py-[12px]">
+                        <span className="px-[10px] py-[3px] rounded-full" style={{ background: 'rgba(3, 197, 210, 0.2)', color: '#005055', fontFamily: 'var(--font-dm-sans)', fontSize: '10.7px' }}>SUCCESSFUL</span>
+                     </td>
+                     <td className="px-[24px] py-[12px]">
+                        <button className="w-[24px] h-[24px] flex items-center justify-center text-[#5F6D7E]">
+                           <span className="text-[14px] leading-none rotate-90 font-bold tracking-widest -mt-2">...</span>
+                        </button>
+                     </td>
+                   </tr>
+
+                   <tr className="border-b border-[#F0F0F0] bg-white">
+                     <td className="px-[24px] py-[12px]">
+                       <div className="flex flex-col">
+                          <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>Podcast sponsorship wave</span>
+                          <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 400, fontSize: '14px', color: '#5F6D7E' }}>Studio session</span>
+                       </div>
+                     </td>
+                     <td className="px-[24px] py-[12px]">
+                        <div className="flex items-center relative h-[24px] w-[50px]">
+                           <div className="w-[24px] h-[24px] bg-[#5C068C] rounded-full flex items-center justify-center text-[8px] text-white font-bold">FCMB</div>
+                        </div>
+                     </td>
+                     <td className="px-[24px] py-[12px]" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>23f1335thu_o9</td>
+                     <td className="px-[24px] py-[12px] text-center" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>4</td>
+                     <td className="px-[24px] py-[12px]" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>NGN 218,000</td>
+                     <td className="px-[24px] py-[12px]">
+                        <span className="px-[10px] py-[3px] rounded-full" style={{ background: 'rgba(3, 36, 210, 0.2)', color: '#005055', fontFamily: 'var(--font-dm-sans)', fontSize: '10.7px' }}>PENDING</span>
+                     </td>
+                     <td className="px-[24px] py-[12px]">
+                        <button className="w-[24px] h-[24px] flex items-center justify-center text-[#5F6D7E]">
+                           <span className="text-[14px] leading-none rotate-90 font-bold tracking-widest -mt-2">...</span>
+                        </button>
+                     </td>
+                   </tr>
+
+                   <tr className="border-b border-[#F0F0F0] bg-white">
+                     <td className="px-[24px] py-[12px]">
+                       <div className="flex flex-col">
+                          <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>Podcast sponsorship wave</span>
+                          <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 400, fontSize: '14px', color: '#5F6D7E' }}>Ad</span>
+                       </div>
+                     </td>
+                     <td className="px-[24px] py-[12px]">
+                        <div className="flex items-center relative h-[24px] w-[50px]">
+                           <div className="w-[24px] h-[24px] bg-gray-200 rounded-full flex items-center justify-center text-[8px] text-gray-500 font-bold">BNK</div>
+                        </div>
+                     </td>
+                     <td className="px-[24px] py-[12px]" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>23f1335thu_o9</td>
+                     <td className="px-[24px] py-[12px] text-center" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>1</td>
+                     <td className="px-[24px] py-[12px]" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>NGN 33,000</td>
+                     <td className="px-[24px] py-[12px]">
+                        <span className="px-[10px] py-[3px] rounded-full" style={{ background: 'rgba(3, 36, 210, 0.2)', color: '#005055', fontFamily: 'var(--font-dm-sans)', fontSize: '10.7px' }}>PENDING</span>
+                     </td>
+                     <td className="px-[24px] py-[12px]">
+                        <button className="w-[24px] h-[24px] flex items-center justify-center text-[#5F6D7E]">
+                           <span className="text-[14px] leading-none rotate-90 font-bold tracking-widest -mt-2">...</span>
+                        </button>
+                     </td>
+                   </tr>
+
+                 </tbody>
+               </table>
+               
+               {/* Pagination Footer */}
+               <div className="flex items-center justify-between px-[24px] py-[12px] gap-[10px] bg-white">
+                 <button className="px-3 py-1 text-[#5F6D7E] text-[14px] flex items-center gap-1 border border-[#F0F0F0] rounded-[5px]">
+                    <ChevronLeft size={16} /> Previous
+                 </button>
+                 <div className="flex items-center gap-2 text-[14px] text-[#5F6D7E]">
+                    <span className="w-[30px] h-[30px] flex items-center justify-center rounded-[5px] bg-[#F0F0F0] text-black">1</span>
+                    <span className="w-[30px] h-[30px] flex items-center justify-center">2</span>
+                    <span className="w-[30px] h-[30px] flex items-center justify-center">3</span>
+                    <span className="w-[30px] h-[30px] flex items-center justify-center">4</span>
+                    <span className="w-[30px] h-[30px] flex items-center justify-center">5</span>
+                 </div>
+                 <button className="px-3 py-1 text-[#5F6D7E] text-[14px] flex items-center gap-1 border border-[#F0F0F0] rounded-[5px]">
+                    Next <ChevronRight size={16} />
+                 </button>
+               </div>
+               
             </div>
 
-          </FadeCard>
+          </div>
 
-        </div>
 
         {/* ─── MODAL 1: FUND WALLET ─── */}
         <AnimatePresence>
