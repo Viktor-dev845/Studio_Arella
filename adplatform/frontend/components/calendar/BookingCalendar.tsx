@@ -57,27 +57,27 @@ const CustomToolbar = (toolbar: any) => {
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 16 }}>
       {/* Today | Back | Next */}
-      <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #D9D9D9', borderRadius: '10px', overflow: 'hidden', padding: '10px', gap: '10px' }}>
-        <button onClick={goToCurrent} style={{ width: '149px', height: '60px', fontSize: '24px', fontFamily: 'var(--font-body)', background: 'transparent', border: 'none', cursor: 'pointer', transition: 'background 0.2s', borderRadius: '8px' }} onMouseOver={e => e.currentTarget.style.background = '#f5f5f5'} onMouseOut={e => e.currentTarget.style.background = 'transparent'}>Today</button>
-        <div style={{ width: '1px', height: '60px', background: '#D9D9D9' }} />
-        <button onClick={goToBack} style={{ width: '149px', height: '60px', fontSize: '24px', fontFamily: 'var(--font-body)', background: 'transparent', border: 'none', cursor: 'pointer', transition: 'background 0.2s', borderRadius: '8px' }} onMouseOver={e => e.currentTarget.style.background = '#f5f5f5'} onMouseOut={e => e.currentTarget.style.background = 'transparent'}>Back</button>
-        <div style={{ width: '1px', height: '60px', background: '#D9D9D9' }} />
-        <button onClick={goToNext} style={{ width: '149px', height: '60px', fontSize: '24px', fontFamily: 'var(--font-body)', background: 'transparent', border: 'none', cursor: 'pointer', transition: 'background 0.2s', borderRadius: '8px' }} onMouseOver={e => e.currentTarget.style.background = '#f5f5f5'} onMouseOut={e => e.currentTarget.style.background = 'transparent'}>Next</button>
+      <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #D9D9D9', borderRadius: '10px', overflow: 'hidden', padding: '6px', gap: '6px' }}>
+        <button onClick={goToCurrent} style={{ padding: '0 24px', height: '40px', fontSize: '15px', fontFamily: 'var(--font-body)', background: 'transparent', border: 'none', cursor: 'pointer', transition: 'background 0.2s', borderRadius: '8px' }} onMouseOver={e => e.currentTarget.style.background = '#f5f5f5'} onMouseOut={e => e.currentTarget.style.background = 'transparent'}>Today</button>
+        <div style={{ width: '1px', height: '24px', background: '#D9D9D9' }} />
+        <button onClick={goToBack} style={{ padding: '0 24px', height: '40px', fontSize: '15px', fontFamily: 'var(--font-body)', background: 'transparent', border: 'none', cursor: 'pointer', transition: 'background 0.2s', borderRadius: '8px' }} onMouseOver={e => e.currentTarget.style.background = '#f5f5f5'} onMouseOut={e => e.currentTarget.style.background = 'transparent'}>Back</button>
+        <div style={{ width: '1px', height: '24px', background: '#D9D9D9' }} />
+        <button onClick={goToNext} style={{ padding: '0 24px', height: '40px', fontSize: '15px', fontFamily: 'var(--font-body)', background: 'transparent', border: 'none', cursor: 'pointer', transition: 'background 0.2s', borderRadius: '8px' }} onMouseOver={e => e.currentTarget.style.background = '#f5f5f5'} onMouseOut={e => e.currentTarget.style.background = 'transparent'}>Next</button>
       </div>
 
       {/* Date-Range */}
-      <div style={{ fontSize: '24px', fontFamily: 'var(--font-body)', color: '#000000', fontWeight: 400 }}>
+      <div style={{ fontSize: '18px', fontFamily: 'var(--font-body)', color: '#000000', fontWeight: 600 }}>
         {toolbar.label}
       </div>
 
       {/* Month | Week | Day */}
-      <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #D9D9D9', borderRadius: '10px', overflow: 'hidden', padding: '10px', gap: '10px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #D9D9D9', borderRadius: '10px', overflow: 'hidden', padding: '6px', gap: '6px' }}>
         {['month', 'week', 'day'].map(v => (
           <button
             key={v}
             onClick={() => toolbar.onView(v)}
             style={{
-              width: '149px', height: '60px', fontSize: '24px', fontFamily: 'var(--font-body)',
+              padding: '0 24px', height: '40px', fontSize: '15px', fontFamily: 'var(--font-body)',
               textTransform: 'capitalize', border: 'none', borderRadius: '8px', cursor: 'pointer',
               transition: 'background 0.2s, color 0.2s',
               background: toolbar.view === v ? '#D4AF37' : 'transparent',
@@ -203,7 +203,7 @@ export default function BookingCalendar({ screenId }: { screenId?: string }) {
         {/* Filter button positioned absolutely to match Figma */}
         <button
           onClick={() => setFilterModalOpen(true)}
-          className="absolute right-0 -top-[70px] w-[117px] h-[50px] flex items-center justify-center gap-[10px] bg-transparent border border-[rgba(162,161,168,0.2)] rounded-[10px] cursor-pointer hover:bg-gray-50 transition-colors z-10"
+          className="absolute right-0 -top-[62px] w-[117px] h-[50px] flex items-center justify-center gap-[10px] bg-transparent border border-[rgba(162,161,168,0.2)] rounded-[10px] cursor-pointer hover:bg-gray-50 transition-colors z-10"
         >
           <Filter size={20} className="text-[#16151C]" />
           <span className="font-body font-light text-[16px] text-[#16151C]">Filter</span>
