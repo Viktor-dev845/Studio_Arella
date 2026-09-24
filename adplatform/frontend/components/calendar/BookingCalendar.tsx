@@ -207,7 +207,7 @@ export default function BookingCalendar({ screenId }: { screenId?: string }) {
         {/* Filter button positioned absolutely to match Figma */}
         <button
           onClick={() => setFilterModalOpen(true)}
-          className="absolute right-0 -top-[62px] w-[117px] h-[50px] flex items-center justify-center gap-[10px] bg-transparent border border-[rgba(162,161,168,0.2)] rounded-[10px] cursor-pointer hover:bg-gray-50 transition-colors z-10"
+          className="absolute right-0 -top-[62px] w-[117px] h-[50px] flex items-center justify-center gap-[10px] bg-white dark:bg-[#16151C] border border-[rgba(162,161,168,0.2)] rounded-[10px] cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors z-10"
         >
           <Filter size={20} className="text-[#16151C]" />
           <span className="font-body font-light text-[16px] text-[#16151C]">Filter</span>
