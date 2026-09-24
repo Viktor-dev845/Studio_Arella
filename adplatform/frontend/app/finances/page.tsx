@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState, useMemo } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -68,7 +68,7 @@ export default function FinancesPage() {
   const [loadingCards, setLoadingCards] = useState(false);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [paying, setPaying] = useState(false);
-  // Confirm-screen fields shown to match the design — charging a saved card
+  // Confirm-screen fields shown to match the design â€” charging a saved card
   // uses its stored authorization_code only, so name/number/expiry/cvv here
   // are never read or sent anywhere.
   const [confirmCardForm, setConfirmCardForm] = useState({ name: '', number: '', expiry: '', cvv: '' });
@@ -146,7 +146,7 @@ export default function FinancesPage() {
     setTimeout(() => setCopiedBankAcct(false), 3000);
   };
 
-  // ── Fund Wallet wizard: amount → choose/add a card → confirm → (OTP) → success ──
+  // â”€â”€ Fund Wallet wizard: amount â†’ choose/add a card â†’ confirm â†’ (OTP) â†’ success â”€â”€
   const resetFundModal = () => {
     setShowFundModal(false);
     setFundStep('cards');
@@ -177,7 +177,7 @@ export default function FinancesPage() {
 
   const handleFundWithSavedCard = async () => {
     if (!selectedCardId) { toast('Please choose a card', 'error'); return; }
-    if (!(parseFloat(amount) >= 1000)) { toast('Minimum top-up is ₦1,000', 'error'); return; }
+    if (!(parseFloat(amount) >= 1000)) { toast('Minimum top-up is â‚¦1,000', 'error'); return; }
     setPaying(true);
     try {
       const res = await api.post('/payments/topup/charge-authorization', { amount: parseFloat(amount), card_id: selectedCardId });
@@ -209,8 +209,8 @@ export default function FinancesPage() {
     }
   };
 
-  // "Add a bank card" — Paystack has no tokenize-only endpoint, so this charges
-  // a small ₦50 verification amount then immediately credits it back to the
+  // "Add a bank card" â€” Paystack has no tokenize-only endpoint, so this charges
+  // a small â‚¦50 verification amount then immediately credits it back to the
   // wallet (see backend addCardVerification), so adding a card is free in practice.
   const handleAddCard = async () => {
     const [expMonth, expYear] = newCardForm.expiry.split('/').map((s) => s.trim());
@@ -342,7 +342,7 @@ export default function FinancesPage() {
 
   const walletCredits = balance?.credits ?? 0;
   const totalSpending = balance?.total_revenue ?? 0;
-  const walletId = user?.id ? user.id.slice(0, 13) : '—';
+  const walletId = user?.id ? user.id.slice(0, 13) : 'â€”';
   const hasReservedAccount = Boolean(balance?.reserved_account_number);
   const dedicatedBank = balance?.reserved_account_bank || null;
   const dedicatedAcct = balance?.reserved_account_number || null;
@@ -754,7 +754,7 @@ export default function FinancesPage() {
           </div>
 
 
-        {/* ─── MODAL 1: FUND WALLET ─── */}
+        {/* â”€â”€â”€ MODAL 1: FUND WALLET â”€â”€â”€ */}
         <AnimatePresence>
           {showFundModal && (
             <>
@@ -795,7 +795,7 @@ export default function FinancesPage() {
                       <h2 style={{ fontSize: 20, fontWeight: 500, fontFamily: 'var(--font-dm-sans)', color: '#101828', margin: 0, letterSpacing: '-0.01em' }}>
                         {fundStep === 'cards' && 'Fund wallet'}
                         {fundStep === 'confirm' && `Fund with ${savedCards.find((c) => c.id === selectedCardId)?.bank || savedCards.find((c) => c.id === selectedCardId)?.card_type || 'card'} card`}
-                        {fundStep === 'otp' && 'Verify payment'}
+                        {fundStep === 'otp' && `Pay with ${savedCards.find((c) => c.id === selectedCardId)?.bank || savedCards.find((c) => c.id === selectedCardId)?.card_type || 'Wema'} card`}
                         {fundStep === 'success' && ''}
                         {fundStep === 'add-card' && 'Add a bank card'}
                         {fundStep === 'add-card-otp' && 'Verify card'}
@@ -980,42 +980,67 @@ export default function FinancesPage() {
                       </div>
                     )}
                     {fundStep === 'otp' && (
-                      <>
-                        <p style={{ textAlign: 'center', fontSize: 13, fontWeight: 700, color: theme.color.text1, margin: '0 0 1px' }}>Enter code*</p>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, margin: '16px 0' }}>
-                          {otpDigits.map((d, i) => (
-                            <input
-                              key={i}
-                              id={`fund-otp-${i}`}
-                              value={d}
-                              maxLength={1}
-                              inputMode="numeric"
-                              onChange={(e) => {
-                                const v = e.target.value.replace(/\D/g, '').slice(-1);
-                                const next = [...otpDigits]; next[i] = v; setOtpDigits(next);
-                                if (v && i < 3) document.getElementById(`fund-otp-${i + 1}`)?.focus();
-                              }}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Backspace' && !otpDigits[i] && i > 0) document.getElementById(`fund-otp-${i - 1}`)?.focus();
-                              }}
-                              style={{ width: 48, height: 48, textAlign: 'center', fontSize: 18, fontWeight: 800, borderRadius: 10, border: `1px solid ${theme.color.border}`, background: theme.color.surface, color: theme.color.text1, fontFamily: F }}
-                            />
-                          ))}
+                      <div style={{ display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '492px', margin: '0 auto', boxSizing: 'border-box' }}>
+                        
+                        <div style={{ alignSelf: 'center', width: '100%', maxWidth: '415px', marginTop: 30, position: 'relative' }}>
+                          <p style={{ fontSize: 16, color: '#696F79', fontFamily: 'var(--font-dm-sans)', margin: '0 0 16px 0', alignSelf: 'flex-start' }}>Enter code*</p>
+                          
+                          <div style={{ display: 'flex', gap: 45, justifyContent: 'center' }}>
+                            {otpDigits.map((d, i) => (
+                              <input
+                                key={i}
+                                id={`fund-otp-${i}`}
+                                value={d}
+                                maxLength={1}
+                                inputMode="numeric"
+                                onChange={(e) => {
+                                  const v = e.target.value.replace(/\D/g, '').slice(-1);
+                                  const next = [...otpDigits]; next[i] = v; setOtpDigits(next);
+                                  if (v && i < 3) document.getElementById(`fund-otp-${i + 1}`)?.focus();
+                                }}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Backspace' && !otpDigits[i] && i > 0) {
+                                      const prev = document.getElementById(`fund-otp-${i - 1}`);
+                                      if (prev) {
+                                          prev.focus();
+                                          const next = [...otpDigits]; next[i - 1] = ''; setOtpDigits(next);
+                                      }
+                                  }
+                                }}
+                                style={{
+                                  width: 70, height: 66, boxSizing: 'border-box', textAlign: 'center', 
+                                  fontSize: 24, fontWeight: 600, color: '#D4AF37', fontFamily: 'var(--font-dm-sans)', 
+                                  borderRadius: 8, 
+                                  border: d ? '1px solid #D4AF37' : '1px solid rgba(134, 146, 166, 0.5)', 
+                                  background: '#FFFFFF', outline: 'none'
+                                }}
+                              />
+                            ))}
+                          </div>
+                          
+                          <p style={{ textAlign: 'right', margin: '16px 0 0 0', fontSize: 12, fontFamily: 'var(--font-dm-sans)', color: '#696F79' }}>
+                            Didnâ€™t get code? <button type="button" onClick={() => toast("If you didn't receive a code, please try paying again.", 'info')} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: '#D4AF37', fontSize: 12, fontFamily: 'var(--font-dm-sans)' }}>Resend</button>
+                          </p>
                         </div>
-                        <p style={{ textAlign: 'center', fontSize: 11.5, color: theme.color.text4, margin: '0 0 4px' }}>
-                          <button type="button" onClick={() => toast("If you didn't receive a code, please try paying again.", 'info')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#C69A2C', fontWeight: 700, fontSize: 11.5 }}>
-                            Didn&apos;t get code? Resend
-                          </button>
-                        </p>
-                        <p style={{ textAlign: 'center', fontSize: 12, color: theme.color.text3, margin: '16px 0 20px' }}>
-                          To authorize this payment, enter the OTP sent to {user?.email ? <strong>{user.email}</strong> : 'the email'} attached to your Studio Arella account
-                        </p>
-                        <Button loading={verifyingOtp} loadingText="Verifying…" onClick={handleSubmitFundOtp} variant="primary" style={{ width: '100%', background: '#C69A2C' }}>
-                          Pay
-                        </Button>
-                      </>
-                    )}
 
+                        <p style={{ textAlign: 'center', fontSize: 20, fontWeight: 600, color: '#16151C', fontFamily: 'var(--font-dm-sans)', lineHeight: '30px', margin: '60px 0 80px', padding: '0 10px' }}>
+                          To authorize this payment, enter the OTP sent to the email <strong>{user?.email || 'Bems.arella@gmail.com'}</strong> attached to your studio arella account
+                        </p>
+
+                        <button
+                          onClick={handleSubmitFundOtp}
+                          disabled={verifyingOtp}
+                          style={{
+                            width: '100%', maxWidth: '468px', height: 56, background: '#D4AF37',
+                            borderRadius: 6, border: 'none', cursor: verifyingOtp ? 'not-allowed' : 'pointer',
+                            fontFamily: 'var(--font-dm-sans)', fontSize: 16, fontWeight: 500,
+                            color: '#000000', margin: '0 auto', alignSelf: 'center'
+                          }}
+                        >
+                          {verifyingOtp ? 'Verifying...' : 'Pay'}
+                        </button>
+                      </div>
+                    )}
                     {fundStep === 'success' && (
                       <div style={{ textAlign: 'center' }}>
                         <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#C69A2C', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
@@ -1031,7 +1056,7 @@ export default function FinancesPage() {
                     {fundStep === 'add-card' && (
                       <>
                         <p style={{ fontSize: 12, color: theme.color.text3, margin: '0 0 16px', lineHeight: 1.5 }}>
-                          We&apos;ll charge ₦{CARD_VERIFICATION_AMOUNT} to verify this card, then credit it straight back to your wallet — adding a card is free.
+                          We&apos;ll charge â‚¦{CARD_VERIFICATION_AMOUNT} to verify this card, then credit it straight back to your wallet â€” adding a card is free.
                         </p>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 18 }}>
                           <select
@@ -1048,7 +1073,7 @@ export default function FinancesPage() {
                             <input placeholder="CVV" value={newCardForm.cvv} onChange={(e) => setNewCardForm({ ...newCardForm, cvv: e.target.value })} style={{ width: '50%', padding: '12px 14px', borderRadius: 12, border: `1px solid ${theme.color.border}`, background: theme.color.surface, color: theme.color.text1, fontSize: 13, fontFamily: F }} />
                           </div>
                         </div>
-                        <Button loading={addingCard} loadingText="Adding…" onClick={handleAddCard} variant="primary" style={{ width: '100%', background: '#C69A2C' }}>
+                        <Button loading={addingCard} loadingText="Addingâ€¦" onClick={handleAddCard} variant="primary" style={{ width: '100%', background: '#C69A2C' }}>
                           Add card
                         </Button>
                       </>
@@ -1080,7 +1105,7 @@ export default function FinancesPage() {
                         <p style={{ textAlign: 'center', fontSize: 12, color: theme.color.text3, margin: '16px 0 20px' }}>
                           To authorize this card, enter the OTP sent to {user?.email ? <strong>{user.email}</strong> : 'the email'} attached to your Studio Arella account
                         </p>
-                        <Button loading={verifyingOtp} loadingText="Verifying…" onClick={handleSubmitAddCardOtp} variant="primary" style={{ width: '100%', background: '#C69A2C' }}>
+                        <Button loading={verifyingOtp} loadingText="Verifyingâ€¦" onClick={handleSubmitAddCardOtp} variant="primary" style={{ width: '100%', background: '#C69A2C' }}>
                           Pay
                         </Button>
                       </>
@@ -1105,7 +1130,7 @@ export default function FinancesPage() {
           )}
         </AnimatePresence>
 
-        {/* ─── MODAL 2: DEDICATED PERMANENT ACCOUNT (KYC) ─── */}
+        {/* â”€â”€â”€ MODAL 2: DEDICATED PERMANENT ACCOUNT (KYC) â”€â”€â”€ */}
         <AnimatePresence>
           {showReservedModal && (
             <>
@@ -1223,7 +1248,7 @@ export default function FinancesPage() {
           )}
         </AnimatePresence>
 
-        {/* ─── MODAL 3: TRANSACTION RECEIPT ─── */}
+        {/* â”€â”€â”€ MODAL 3: TRANSACTION RECEIPT â”€â”€â”€ */}
         <AnimatePresence>
           {selectedReceipt && (
             <>
@@ -1263,7 +1288,7 @@ export default function FinancesPage() {
                         <Check size={24} color="#16A34A" />
                       </div>
                       <p style={{ fontSize: 26, fontWeight: 900, color: theme.color.text1, margin: '0 0 4px', letterSpacing: '-0.5px' }}>
-                        ₦{Number(selectedReceipt.amount).toLocaleString()}
+                        â‚¦{Number(selectedReceipt.amount).toLocaleString()}
                       </p>
                       <span style={{ fontSize: 11, background: '#ECFDF5', color: '#059669', padding: '3px 10px', borderRadius: 20, fontWeight: 700, textTransform: 'uppercase' }}>
                         {selectedReceipt.type === 'pending' ? 'Pending' : 'Successful'}
@@ -1291,7 +1316,7 @@ export default function FinancesPage() {
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
                         <span style={{ color: theme.color.text3, fontWeight: 600 }}>Service Fee</span>
-                        <strong style={{ color: '#059669' }}>₦0.00 (Free)</strong>
+                        <strong style={{ color: '#059669' }}>â‚¦0.00 (Free)</strong>
                       </div>
                     </div>
 
@@ -1299,15 +1324,15 @@ export default function FinancesPage() {
                       <Button
                         onClick={() => {
                           const lines = [
-                            'STUDIO ARELLA — TRANSACTION RECEIPT',
+                            'STUDIO ARELLA â€” TRANSACTION RECEIPT',
                             '',
-                            `Amount: ₦${Number(selectedReceipt.amount).toLocaleString()}`,
+                            `Amount: â‚¦${Number(selectedReceipt.amount).toLocaleString()}`,
                             `Status: ${selectedReceipt.type === 'pending' ? 'Pending' : 'Successful'}`,
                             `Description: ${selectedReceipt.source}`,
                             `Payment Method: ${selectedReceipt.channel || 'Wallet Airtime'}`,
                             `Transaction Ref: ${selectedReceipt.reference}`,
                             `Date & Time: ${new Date(selectedReceipt.created_at).toLocaleDateString('en-GB')} ${new Date(selectedReceipt.created_at).toLocaleTimeString('en-GB')}`,
-                            `Service Fee: ₦0.00 (Free)`,
+                            `Service Fee: â‚¦0.00 (Free)`,
                           ];
                           const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
                           const url = URL.createObjectURL(blob);
@@ -1344,7 +1369,7 @@ export default function FinancesPage() {
 
         {showLinkBankModal && <LinkBankModal onClose={() => setShowLinkBankModal(false)} />}
 
-        {/* ─── FLOATING "CHAT WITH ARELLA 🌐" WIDGET ─── */}
+        {/* â”€â”€â”€ FLOATING "CHAT WITH ARELLA ðŸŒ" WIDGET â”€â”€â”€ */}
         <div className="chat-fab-widget" style={{ position: 'fixed', bottom: 32, right: 32, zIndex: 90 }}>
           <div style={{ position: 'relative' }}>
             <Link
