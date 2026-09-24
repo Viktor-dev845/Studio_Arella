@@ -796,13 +796,13 @@ export default function FinancesPage() {
                         {fundStep === 'cards' && 'Fund wallet'}
                         {fundStep === 'confirm' && `Fund with ${savedCards.find((c) => c.id === selectedCardId)?.bank || savedCards.find((c) => c.id === selectedCardId)?.card_type || 'card'} card`}
                         {fundStep === 'otp' && `Pay with ${savedCards.find((c) => c.id === selectedCardId)?.bank || savedCards.find((c) => c.id === selectedCardId)?.card_type || 'Wema'} card`}
-                        {fundStep === 'success' && ''}
+                        {fundStep === 'success' && 'Fund wallet'}
                         {fundStep === 'add-card' && 'Add a bank card'}
                         {fundStep === 'add-card-otp' && 'Verify card'}
                         {fundStep === 'add-card-success' && ''}
                       </h2>
                       
-                      {fundStep !== 'success' && fundStep !== 'add-card-success' ? (
+                      {fundStep !== 'add-card-success' ? (
                         <button
                           onClick={resetFundModal}
                           style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#101828', padding: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -1042,14 +1042,30 @@ export default function FinancesPage() {
                       </div>
                     )}
                     {fundStep === 'success' && (
-                      <div style={{ textAlign: 'center' }}>
-                        <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#C69A2C', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-                          <Check size={28} color="#fff" />
+                      <div style={{ display: 'flex', flexDirection: 'column', width: '100%', maxWidth: '468px', margin: '0 auto', boxSizing: 'border-box' }}>
+                        <div style={{ position: 'relative', width: 70, height: 70, margin: '80px auto 40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <div style={{ position: 'absolute', inset: -36, background: 'radial-gradient(116.28% 116.28% at 0% -16.28%, #443A18 4.69%, #D4AF37 98.31%)', opacity: 0.1, filter: 'blur(5px)', borderRadius: '50%' }} />
+                          <div style={{ position: 'absolute', inset: -20, background: 'radial-gradient(116.28% 116.28% at 0% -16.28%, #443A18 4.69%, #D4AF37 98.31%)', opacity: 0.15, filter: 'blur(5px)', borderRadius: '50%' }} />
+                          <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(116.28% 116.28% at 0% -16.28%, #443A18 4.69%, #D4AF37 98.31%)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <span style={{ fontFamily: 'Montserrat, sans-serif', fontSize: 25, fontWeight: 400, color: '#FFFFFF' }}>✓</span>
+                          </div>
                         </div>
-                        <p style={{ fontSize: 15, fontWeight: 800, color: theme.color.text1, margin: '0 0 24px' }}>{fundSuccessMessage}</p>
-                        <Button onClick={resetFundModal} variant="primary" style={{ width: '100%', background: '#C69A2C' }}>
+                        
+                        <p style={{ textAlign: 'center', fontSize: 20, fontWeight: 600, color: '#16151C', fontFamily: 'var(--font-dm-sans)', lineHeight: '30px', margin: '40px auto 80px', maxWidth: '415px' }}>
+                          Wallet funded with successfully. #{amount ? Number(amount).toLocaleString() : '30, 000'} has been added to your wallet balance
+                        </p>
+
+                        <button
+                          onClick={resetFundModal}
+                          style={{
+                            width: '100%', maxWidth: '468px', height: 56, background: '#D4AF37',
+                            borderRadius: 6, border: 'none', cursor: 'pointer',
+                            fontFamily: 'var(--font-dm-sans)', fontSize: 16, fontWeight: 500,
+                            color: '#000000', margin: '0 auto'
+                          }}
+                        >
                           Finish
-                        </Button>
+                        </button>
                       </div>
                     )}
 
