@@ -53,48 +53,43 @@ const CustomToolbar = (toolbar: any) => {
   const goToBack = () => toolbar.onNavigate('PREV');
   const goToNext = () => toolbar.onNavigate('NEXT');
   const goToCurrent = () => toolbar.onNavigate('TODAY');
-  const hover = (bg: string, color: string) => (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.currentTarget.style.background = bg; e.currentTarget.style.color = color; e.currentTarget.style.borderColor = bg === 'transparent' ? theme.color.border2 : bg;
-  };
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 16 }}>
-      {/* Today / Back / Next — grouped together on the left */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <button onClick={goToCurrent} style={pillBtn}
-          onMouseOver={hover(theme.color.gold, '#111')}
-          onMouseOut={hover('transparent', theme.color.text1)}>
-          Today
-        </button>
-        <button onClick={goToBack} style={{ ...pillBtn, padding: '8px 10px', display: 'flex' }}
-          onMouseOver={hover(theme.color.surface2, theme.color.text1)}
-          onMouseOut={hover('transparent', theme.color.text1)}>
-          <ChevronLeft size={15} strokeWidth={2.5} />
-        </button>
-        <button onClick={goToNext} style={{ ...pillBtn, padding: '8px 10px', display: 'flex' }}
-          onMouseOver={hover(theme.color.surface2, theme.color.text1)}
-          onMouseOut={hover('transparent', theme.color.text1)}>
-          <ChevronRight size={15} strokeWidth={2.5} />
-        </button>
+      {/* Today | Back | Next */}
+      <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #D9D9D9', borderRadius: '10px', overflow: 'hidden', padding: '10px', gap: '10px' }}>
+        <button onClick={goToCurrent} style={{ width: '149px', height: '60px', fontSize: '24px', fontFamily: 'var(--font-body)', background: 'transparent', border: 'none', cursor: 'pointer', transition: 'background 0.2s', borderRadius: '8px' }} onMouseOver={e => e.currentTarget.style.background = '#f5f5f5'} onMouseOut={e => e.currentTarget.style.background = 'transparent'}>Today</button>
+        <div style={{ width: '1px', height: '60px', background: '#D9D9D9' }} />
+        <button onClick={goToBack} style={{ width: '149px', height: '60px', fontSize: '24px', fontFamily: 'var(--font-body)', background: 'transparent', border: 'none', cursor: 'pointer', transition: 'background 0.2s', borderRadius: '8px' }} onMouseOver={e => e.currentTarget.style.background = '#f5f5f5'} onMouseOut={e => e.currentTarget.style.background = 'transparent'}>Back</button>
+        <div style={{ width: '1px', height: '60px', background: '#D9D9D9' }} />
+        <button onClick={goToNext} style={{ width: '149px', height: '60px', fontSize: '24px', fontFamily: 'var(--font-body)', background: 'transparent', border: 'none', cursor: 'pointer', transition: 'background 0.2s', borderRadius: '8px' }} onMouseOver={e => e.currentTarget.style.background = '#f5f5f5'} onMouseOut={e => e.currentTarget.style.background = 'transparent'}>Next</button>
       </div>
 
-      {/* Current range — correctly formatted for whichever view is active */}
-      <span style={{ fontSize: 16, fontWeight: 800, color: theme.color.text1, letterSpacing: '-0.2px', textAlign: 'center', flex: '1 1 auto' }}>
+      {/* Date-Range */}
+      <div style={{ fontSize: '24px', fontFamily: 'var(--font-body)', color: '#000000', fontWeight: 400 }}>
         {toolbar.label}
-      </span>
+      </div>
 
-      {/* Month / Week / Day */}
-      <div style={{ display: 'flex', border: `1px solid ${theme.color.border}`, borderRadius: 8, padding: 2, background: '#fff' }}>
+      {/* Month | Week | Day */}
+      <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #D9D9D9', borderRadius: '10px', overflow: 'hidden', padding: '10px', gap: '10px' }}>
         {['month', 'week', 'day'].map(v => (
           <button
             key={v}
             onClick={() => toolbar.onView(v)}
             style={{
-              padding: '6px 20px', background: toolbar.view === v ? theme.color.gold : 'transparent',
-              color: toolbar.view === v ? '#fff' : theme.color.text2,
-              border: 'none', borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: 'pointer',
-              textTransform: 'capitalize', transition: 'all 0.2s'
-            }}>
+              width: '149px', height: '60px', fontSize: '24px', fontFamily: 'var(--font-body)',
+              textTransform: 'capitalize', border: 'none', borderRadius: '8px', cursor: 'pointer',
+              transition: 'background 0.2s, color 0.2s',
+              background: toolbar.view === v ? '#D4AF37' : 'transparent',
+              color: toolbar.view === v ? '#FFFFFF' : '#000000',
+            }}
+            onMouseOver={e => {
+              if (toolbar.view !== v) e.currentTarget.style.background = '#f5f5f5';
+            }}
+            onMouseOut={e => {
+              if (toolbar.view !== v) e.currentTarget.style.background = 'transparent';
+            }}
+          >
             {v}
           </button>
         ))}
@@ -103,20 +98,15 @@ const CustomToolbar = (toolbar: any) => {
   );
 };
 
-// Week/day column header — real per-day booking count, not the library's
-// bare day-of-week label, matching the mockup's "Sunday 08/10 · N booking(s)".
 const makeWeekHeader = (visibleEvents: CalEvent[]) => function WeekHeader({ date }: { date: Date }) {
   const count = visibleEvents.filter(e => {
     const d = new Date(e.start);
     return d.getFullYear() === date.getFullYear() && d.getMonth() === date.getMonth() && d.getDate() === date.getDate();
   }).length;
   return (
-    <div style={{ padding: '8px 0' }}>
-      <div style={{ fontSize: 13, fontWeight: 500, color: theme.color.text1 }}>
-        {format(date, 'EEEE MM/dd')}
-      </div>
-      <div style={{ fontSize: 11, fontWeight: 400, color: theme.color.text3, marginTop: 4 }}>
-        {count} Tasks
+    <div style={{ padding: '20px 10px', width: '100%', borderBottom: 'none' }}>
+      <div style={{ fontSize: '20px', fontFamily: 'var(--font-body)', color: '#000000', fontWeight: 400, textAlign: 'center' }}>
+        {format(date, 'EEEE MM/dd')}<br/>{count} Task(s)
       </div>
     </div>
   );
@@ -124,15 +114,33 @@ const makeWeekHeader = (visibleEvents: CalEvent[]) => function WeekHeader({ date
 
 const CustomEvent = ({ event }: { event: CalEvent }) => {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 4, padding: '4px', height: '100%', overflow: 'hidden' }}>
-      <span style={{ fontSize: 10, fontWeight: 500, opacity: 0.9 }}>
-        {format(event.start, 'hh:mm a')} - {format(event.end, 'hh:mm a')}
-      </span>
-      <span style={{ fontSize: 11, fontWeight: 600, lineHeight: 1.2, whiteSpace: 'pre-wrap', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-        {event.title}
-      </span>
+    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '10px', height: '100%', overflow: 'hidden' }}>
+      <div style={{ fontSize: '16px', fontFamily: 'var(--font-body)', fontWeight: 400, color: '#FFFFFF', lineHeight: '21px' }}>
+        {format(event.start, 'hh:mm a')} - {format(event.end, 'hh:mm a')} {event.title}
+      </div>
     </div>
   );
+};
+
+const PODCAST_COLORS = ['#5DC6E7', '#3776D4', '#3776D5'];
+const AD_COLORS = ['#9E1212', '#E75D5D', '#D35DE7', '#F29D38', '#00BF86', '#D35DE7'];
+
+const eventPropGetter = (event: CalEvent) => {
+  const isPodcast = event.resource.type === 'podcast';
+  const hash = String(event.id).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const colorArray = isPodcast ? PODCAST_COLORS : AD_COLORS;
+  const bg = colorArray[hash % colorArray.length];
+  
+  return {
+    style: {
+      background: bg,
+      color: '#fff',
+      border: 'none',
+      borderRadius: '0px',
+      opacity: event.resource.status === 'cancelled' ? 0.6 : 1,
+      padding: '4px'
+    }
+  };
 };
 
 export default function BookingCalendar({ screenId }: { screenId?: string }) {
@@ -185,26 +193,23 @@ export default function BookingCalendar({ screenId }: { screenId?: string }) {
   useEffect(() => { fetchBookings(); }, [fetchBookings]);
 
   return (
-    <div className={styles.calendar} style={{ fontFamily: F }}>
+    <div className={styles.calendar} style={{ fontFamily: F, position: 'relative' }}>
       <style>{`
         @media (max-width: 900px) {
           .calendar-scroll-hint { display: block !important; }
         }
       `}</style>
-      {/* Legend */}
-      <div style={{ display: 'flex', gap: 14, marginBottom: 16, flexWrap: 'wrap' }}>
-        {/* We removed the explicit status-to-color mapping here to match the dynamic Figma colors, 
-            but kept the filter button and count. */}
-        <span style={{ fontSize: 13, color: theme.color.text2, fontWeight: 500 }}>{visibleEvents.length} Tasks shown</span>
+      
+        {/* Filter button positioned absolutely to match Figma */}
         <button
           onClick={() => setFilterModalOpen(true)}
-          style={{ display: 'flex', alignItems: 'center', gap: 6, background: theme.color.surface, border: `1px solid ${theme.color.border}`, color: theme.color.text2, padding: '5px 12px', borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: 'pointer', fontFamily: F }}
+          className="absolute right-0 -top-[70px] w-[117px] h-[50px] flex items-center justify-center gap-[10px] bg-transparent border border-[rgba(162,161,168,0.2)] rounded-[10px] cursor-pointer hover:bg-gray-50 transition-colors z-10"
         >
-          <Filter size={12} /> Filter
+          <Filter size={20} className="text-[#16151C]" />
+          <span className="font-body font-light text-[16px] text-[#16151C]">Filter</span>
         </button>
-      </div>
 
-      {loading ? (
+{loading ? (
         <div style={{ height: 420, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ width: 28, height: 28, border: `2.5px solid ${theme.color.goldMid}`, borderTopColor: theme.color.gold, borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
         </div>

@@ -11,14 +11,15 @@
 
 .calendar :global(.rbc-header) {
   background: transparent;
-  border-bottom: 2px solid var(--border-2);
+  border-bottom: 1px solid #DEDEDE;
+  border-left: 1px solid #DEDEDE !important;
+  border-right: 1px solid #DEDEDE !important;
   color: var(--text-3);
   font-size: 11px;
   font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  padding: 10px 0;
-  border-left: none;
+  text-transform: none;
+  letter-spacing: normal;
+  padding: 0;
   height: auto;
 }
 
@@ -45,7 +46,7 @@
 }
 
 .calendar :global(.rbc-day-bg) {
-  border-left: 1px solid var(--border-2);
+  border-left: 1px solid #DEDEDE;
   transition: background 0.2s ease;
 }
 
@@ -54,7 +55,7 @@
 }
 
 .calendar :global(.rbc-month-row) {
-  border-top: 1px solid var(--border-2);
+  border-top: 1px solid #DEDEDE;
 }
 .calendar :global(.rbc-month-row:first-child) {
   border-top: none;
@@ -120,11 +121,11 @@
   border-top: none;
 }
 .calendar :global(.rbc-time-content) > * + * > * {
-  border-left: 1px dashed var(--border-2);
+  border-left: 1px solid #DEDEDE;
 }
 
 .calendar :global(.rbc-timeslot-group) {
-  border-bottom: 1px dashed var(--surface-2);
+  border-bottom: 1px solid #DEDEDE;
 }
 
 .calendar :global(.rbc-time-gutter .rbc-label) {
@@ -154,16 +155,16 @@
 }
 
 .calendar :global(.rbc-agenda-view table.rbc-agenda-table thead > tr > th) {
-  border-bottom: 2px solid var(--border-2);
+  border-bottom: 1px solid #DEDEDE;
   color: var(--text-3);
   font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+  text-transform: none;
+  letter-spacing: normal;
   padding: 14px 10px;
 }
 
 .calendar :global(.rbc-agenda-view table.rbc-agenda-table tbody > tr > td) {
-  border-top: 1px solid var(--border-2);
+  border-top: 1px solid #DEDEDE;
   color: var(--text-2);
   font-size: 13px;
   padding: 12px 10px;
@@ -175,7 +176,7 @@
 }
 
 .calendar :global(.rbc-event) {
-  border-radius: 8px !important;
+  border-radius: 0px !important;
   font-size: 11px !important;
   font-weight: 800 !important;
   padding: 4px 6px !important;
@@ -191,4 +192,52 @@
 
 .calendar :global(.rbc-day-bg:hover) {
   background: var(--surface-2);
+}
+
+.calendar :global(.rbc-time-gutter .rbc-timeslot-group) {
+  border-bottom: 1px solid #DEDEDE;
+  border-right: 1px solid #DEDEDE;
+  border-left: 1px solid #DEDEDE;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.calendar :global(.rbc-time-gutter .rbc-label) {
+  color: #000000;
+  font-size: 20px;
+  font-weight: 400;
+  font-family: var(--font-body);
+  padding: 0 10px;
+}
+
+.calendar :global(.rbc-time-gutter .rbc-timeslot-group) {
+  border-bottom: 1px solid #DEDEDE;
+  border-right: 1px solid #DEDEDE;
+  border-left: 1px solid #DEDEDE;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.calendar :global(.rbc-time-gutter .rbc-label) {
+  color: #000000;
+  font-size: 20px;
+  font-weight: 400;
+  font-family: var(--font-body);
+  padding: 0 10px;
+}
+
+.calendar :global(.rbc-time-gutter .rbc-timeslot-group) {
+  border-bottom: 1px solid #DEDEDE;
+  border-right: 1px solid #DEDEDE;
+  border-left: 1px solid #DEDEDE;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.calendar :global(.rbc-time-gutter .rbc-label) {
+  color: #000000;
+  font-size: 20px;
+  font-weight: 400;
+  font-family: var(--font-body);
+  padding: 0 10px;
 }
