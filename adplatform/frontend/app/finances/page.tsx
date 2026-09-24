@@ -773,31 +773,27 @@ export default function FinancesPage() {
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.96, y: 10 }}
                   transition={{ duration: 0.2 }}
-                  style={{ width: '100%', maxWidth: 440, pointerEvents: 'auto' }}
+                  style={{ width: '100%', maxWidth: 625, pointerEvents: 'auto', minHeight: '633px' }}
                 >
-                  <div style={{ background: theme.color.surface, borderRadius: 24, padding: '28px 24px', boxShadow: '0 20px 40px rgba(0,0,0,0.15)', fontFamily: F }}>
+                  <div style={{ background: '#FFFFFF', borderRadius: 32, padding: '32px 32px 64px', boxShadow: '0 20px 40px rgba(0,0,0,0.15)', fontFamily: F }}>
 
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                      {['confirm', 'otp', 'add-card', 'add-card-otp'].includes(fundStep) ? (
-                        <button
-                          onClick={() => {
-                            if (fundStep === 'confirm' || fundStep === 'otp') setFundStep('cards');
-                            else if (fundStep === 'add-card-otp') setFundStep('add-card');
-                            else if (fundStep === 'add-card') setFundStep('cards');
-                          }}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text3, padding: 4, display: 'flex' }}
-                        >
-                          <ArrowLeft size={18} />
-                        </button>
-                      ) : (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <div style={{ width: 36, height: 36, borderRadius: 10, background: '#FFFDF5', border: '1px solid #FDE68A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <CreditCard size={18} color="#C69A2C" />
-                          </div>
-                        </div>
-                      )}
-                      <h2 style={{ fontSize: 16, fontWeight: 800, color: theme.color.text1, margin: 0 }}>
-                        {fundStep === 'cards' && 'Fund Wallet'}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 }}>
+                      <button
+                        onClick={() => {
+                          if (fundStep === 'confirm' || fundStep === 'otp') setFundStep('cards');
+                          else if (fundStep === 'add-card-otp') setFundStep('add-card');
+                          else if (fundStep === 'add-card') setFundStep('cards');
+                          else resetFundModal();
+                        }}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#101828', padding: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      >
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M15 18L9 12L15 6" stroke="#101828" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </button>
+                      
+                      <h2 style={{ fontSize: 20, fontWeight: 500, fontFamily: 'var(--font-dm-sans)', color: '#101828', margin: 0, letterSpacing: '-0.01em' }}>
+                        {fundStep === 'cards' && 'Fund wallet'}
                         {fundStep === 'confirm' && `Fund with ${savedCards.find((c) => c.id === selectedCardId)?.bank || savedCards.find((c) => c.id === selectedCardId)?.card_type || 'card'} card`}
                         {fundStep === 'otp' && 'Verify payment'}
                         {fundStep === 'success' && ''}
@@ -805,84 +801,97 @@ export default function FinancesPage() {
                         {fundStep === 'add-card-otp' && 'Verify card'}
                         {fundStep === 'add-card-success' && ''}
                       </h2>
+                      
                       {fundStep !== 'success' && fundStep !== 'add-card-success' ? (
                         <button
                           onClick={resetFundModal}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text4, padding: 4 }}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#101828', padding: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                         >
-                          <X size={18} />
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M18 6L6 18M6 6L18 18" stroke="#101828" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
                         </button>
-                      ) : <span style={{ width: 26 }} />}
+                      ) : <span style={{ width: 32 }} />}
                     </div>
 
                     {fundStep === 'cards' && (
-                      <>
+                      <div className="flex flex-col items-center">
                         {loadingCards ? (
-                          <p style={{ textAlign: 'center', fontSize: 12.5, color: theme.color.text3, padding: '16px 0' }}>Loading your saved cards…</p>
+                          <p style={{ textAlign: 'center', fontSize: 14, color: theme.color.text3, padding: '16px 0' }}>Loading your saved cards...</p>
                         ) : savedCards.length > 0 ? (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14 }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 40, width: '100%', maxWidth: '468px', marginTop: 10 }}>
                             {savedCards.map((c) => (
                               <div
                                 key={c.id}
                                 onClick={() => setSelectedCardId(c.id)}
                                 style={{
-                                  padding: '12px 16px', borderRadius: 12, cursor: 'pointer',
-                                  border: selectedCardId === c.id ? '1.5px solid #C69A2C' : `1px solid ${theme.color.border}`,
-                                  background: selectedCardId === c.id ? '#FFFDF5' : theme.color.surface,
+                                  padding: '24px 32px 24px 24px', 
+                                  borderRadius: 16, 
+                                  cursor: 'pointer',
+                                  border: selectedCardId === c.id ? '2px solid #D4AF37' : `1px solid #D7D7D7`,
+                                  background: '#FFFFFF',
+                                  height: '100px',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  justifyContent: 'center',
+                                  position: 'relative',
+                                  boxSizing: 'border-box'
                                 }}
                               >
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                                   <span style={{
-                                    width: 16, height: 16, borderRadius: '50%', flexShrink: 0,
-                                    border: `2px solid ${selectedCardId === c.id ? '#C69A2C' : theme.color.border2}`,
+                                    width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
+                                    border: selectedCardId === c.id ? '2px solid #D4AF37' : '2px solid #D7D7D7',
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    background: '#FFFFFF'
                                   }}>
-                                    {selectedCardId === c.id && <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#C69A2C' }} />}
+                                    {selectedCardId === c.id && <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#DF4308' }} />}
                                   </span>
-                                  <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: theme.color.text1 }}>Fund with {c.bank || c.card_type || 'card'}</p>
-                                </div>
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 26 }}>
-                                  <span style={{ fontSize: 11.5, color: theme.color.text4, fontFamily: 'monospace' }}>•••••••••••{c.last4 || '••••'}</span>
-                                  {c.cardholder_name && <span style={{ fontSize: 11.5, color: theme.color.text3 }}>{c.cardholder_name}</span>}
+                                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                                     <p style={{ margin: 0, fontFamily: 'var(--font-dm-sans)', fontSize: 16, fontWeight: 500, color: '#101828' }}>
+                                        Fund with {c.bank || c.card_type || 'card'}
+                                     </p>
+                                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
+                                       <span style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 13, fontWeight: 500, color: '#101828', letterSpacing: '0.02em', opacity: 0.7 }}>
+                                         ************{c.last4 || '****'}
+                                       </span>
+                                       {c.cardholder_name && (
+                                          <span style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 13, fontWeight: 500, color: '#101828', letterSpacing: '0.02em', opacity: 0.7 }}>
+                                             {c.cardholder_name}
+                                          </span>
+                                       )}
+                                     </div>
+                                  </div>
                                 </div>
                               </div>
                             ))}
                           </div>
                         ) : (
-                          <p style={{ textAlign: 'center', fontSize: 12.5, color: theme.color.text3, marginBottom: 14 }}>You have no saved cards yet.</p>
+                          <p style={{ textAlign: 'center', fontSize: 14, color: theme.color.text3, marginBottom: 40, marginTop: 10 }}>You have no saved cards yet.</p>
                         )}
 
                         <button
                           type="button"
                           onClick={() => setFundStep('add-card')}
-                          style={{ display: 'block', width: '100%', textAlign: 'center', background: 'none', border: 'none', cursor: 'pointer', fontSize: 12.5, fontWeight: 700, color: '#C69A2C', marginBottom: 16 }}
+                          style={{ display: 'block', width: '100%', textAlign: 'center', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-dm-sans)', fontSize: 16, fontWeight: 500, color: '#D4AF37', marginBottom: 40 }}
                         >
                           Add a bank card
                         </button>
 
-                        {savedCards.length > 0 && (
-                          <Button
-                            onClick={() => {
-                              if (!selectedCardId) { toast('Please choose a card', 'error'); return; }
-                              const c = savedCards.find((x) => x.id === selectedCardId);
-                              setConfirmCardForm({
-                                name: c?.cardholder_name || '',
-                                number: c?.last4 ? `•••• •••• •••• ${c.last4}` : '',
-                                expiry: c?.exp_month && c?.exp_year ? `${c.exp_month}/${c.exp_year}` : '',
-                                cvv: '',
-                              });
-                              setFundStep('confirm');
-                            }}
-                            disabled={!selectedCardId}
-                            variant="primary"
-                            style={{ width: '100%', background: '#C69A2C' }}
-                          >
-                            Continue
-                          </Button>
-                        )}
-                      </>
+                        <button 
+                          disabled={!selectedCardId} 
+                          onClick={() => setFundStep('confirm')}
+                          style={{ 
+                             width: '100%', maxWidth: '468px', height: '56px', background: '#D4AF37', borderRadius: 8, 
+                             border: 'none', cursor: selectedCardId ? 'pointer' : 'not-allowed', 
+                             fontFamily: 'var(--font-dm-sans)', fontSize: 16, fontWeight: 500, color: '#000000',
+                             opacity: selectedCardId ? 1 : 0.6
+                          }}
+                        >
+                          Continue
+                        </button>
+                      </div>
                     )}
-
                     {fundStep === 'confirm' && (
                       <>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 18 }}>
@@ -1071,9 +1080,9 @@ export default function FinancesPage() {
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.96, y: 10 }} 
                   transition={{ duration: 0.2 }}
-                  style={{ width: '100%', maxWidth: 440, pointerEvents: 'auto' }}
+                  style={{ width: '100%', maxWidth: 625, pointerEvents: 'auto', minHeight: '633px' }}
                 >
-                  <div style={{ background: theme.color.surface, borderRadius: 24, padding: '28px 24px', boxShadow: '0 20px 40px rgba(0,0,0,0.15)', fontFamily: F }}>
+                  <div style={{ background: '#FFFFFF', borderRadius: 32, padding: '32px 32px 64px', boxShadow: '0 20px 40px rgba(0,0,0,0.15)', fontFamily: F }}>
                     
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -1189,9 +1198,9 @@ export default function FinancesPage() {
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.96, y: 10 }} 
                   transition={{ duration: 0.2 }}
-                  style={{ width: '100%', maxWidth: 440, pointerEvents: 'auto' }}
+                  style={{ width: '100%', maxWidth: 625, pointerEvents: 'auto', minHeight: '633px' }}
                 >
-                  <div style={{ background: theme.color.surface, borderRadius: 24, padding: '28px 24px', boxShadow: '0 20px 40px rgba(0,0,0,0.15)', fontFamily: F }}>
+                  <div style={{ background: '#FFFFFF', borderRadius: 32, padding: '32px 32px 64px', boxShadow: '0 20px 40px rgba(0,0,0,0.15)', fontFamily: F }}>
                     
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
                       <span style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#C69A2C' }}>
