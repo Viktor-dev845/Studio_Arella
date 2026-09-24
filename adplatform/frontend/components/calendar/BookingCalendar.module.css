@@ -204,7 +204,7 @@
 }
 .calendar :global(.rbc-time-gutter .rbc-label) {
   color: #000000;
-  font-size: 20px;
+  font-size: 13px;
   font-weight: 400;
   font-family: var(--font-body);
   padding: 0 10px;
@@ -220,7 +220,7 @@
 }
 .calendar :global(.rbc-time-gutter .rbc-label) {
   color: #000000;
-  font-size: 20px;
+  font-size: 13px;
   font-weight: 400;
   font-family: var(--font-body);
   padding: 0 10px;
@@ -236,7 +236,7 @@
 }
 .calendar :global(.rbc-time-gutter .rbc-label) {
   color: #000000;
-  font-size: 20px;
+  font-size: 13px;
   font-weight: 400;
   font-family: var(--font-body);
   padding: 0 10px;
