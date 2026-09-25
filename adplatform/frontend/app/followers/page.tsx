@@ -1,236 +1,160 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { PageTransition } from '@/components/ui/Animations';
-import { useToast } from '@/components/ui/ToastProvider';
-import api from '@/lib/api';
 import { theme } from '@/lib/theme';
 
-const F = theme.font.body;
-
-interface Profile {
-  id: string;
-  name: string;
-  avatar: string | null;
-  role: string;
-  roleLabel: string;
-  bio: string | null;
-  businessName: string | null;
-  followerCount: number;
-  iFollowBack: boolean;
-  isNew?: boolean;
-}
-
-const getInitials = (name: string) =>
-  name.split(' ').filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase()).join('') || '?';
-
-function Avatar({ profile, size = 44 }: { profile: Profile; size?: number }) {
-  if (profile.avatar) {
-    return <img src={profile.avatar} alt={profile.name} style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />;
-  }
-  return (
-    <div style={{
-      width: size, height: size, borderRadius: '50%', flexShrink: 0,
-      background: theme.color.goldLight, color: theme.color.goldDark,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontWeight: 800, fontSize: size * 0.36,
-    }}>
-      {getInitials(profile.name)}
-    </div>
-  );
-}
-
-function subtitleFor(p: Profile) {
-  const bits: string[] = [];
-  if (p.bio) bits.push(p.bio);
-  else if (p.businessName) bits.push(p.businessName);
-  else bits.push(p.roleLabel);
-  bits.push(`${p.followerCount.toLocaleString()} follower${p.followerCount === 1 ? '' : 's'}`);
-  return bits.join(' · ');
-}
-
 export default function FollowersPage() {
-  const { toast } = useToast();
   const [tab, setTab] = useState<'followers' | 'following'>('followers');
-  const [followers, setFollowers] = useState<Profile[]>([]);
-  const [following, setFollowing] = useState<Profile[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [pending, setPending] = useState<Record<string, boolean>>({});
-
-  const fetchFollowers = async () => {
-    try {
-      const res = await api.get('/follows/followers');
-      setFollowers(res.data?.followers || []);
-    } catch {
-      toast('Could not load followers. Please refresh.', 'error');
-    }
-  };
-
-  const fetchFollowing = async () => {
-    try {
-      const res = await api.get('/follows/following');
-      setFollowing(res.data?.following || []);
-    } catch {
-      toast('Could not load who you follow. Please refresh.', 'error');
-    }
-  };
-
-  useEffect(() => {
-    setLoading(true);
-    Promise.all([fetchFollowers(), fetchFollowing()]).finally(() => setLoading(false));
-  }, []);
-
-  const follow = async (userId: string) => {
-    setPending((p) => ({ ...p, [userId]: true }));
-    try {
-      await api.post(`/follows/${userId}`);
-      setFollowers((prev) => prev.map((f) => (f.id === userId ? { ...f, iFollowBack: true } : f)));
-      const target = followers.find((f) => f.id === userId);
-      if (target) setFollowing((prev) => (prev.some((f) => f.id === userId) ? prev : [{ ...target, iFollowBack: true }, ...prev]));
-    } catch (err: any) {
-      toast(err?.response?.data?.message || 'Could not follow this user. Please try again.', 'error');
-    } finally {
-      setPending((p) => ({ ...p, [userId]: false }));
-    }
-  };
-
-  const unfollow = async (userId: string) => {
-    setPending((p) => ({ ...p, [userId]: true }));
-    try {
-      await api.delete(`/follows/${userId}`);
-      setFollowers((prev) => prev.map((f) => (f.id === userId ? { ...f, iFollowBack: false } : f)));
-      setFollowing((prev) => prev.filter((f) => f.id !== userId));
-    } catch (err: any) {
-      toast(err?.response?.data?.message || 'Could not unfollow this user. Please try again.', 'error');
-    } finally {
-      setPending((p) => ({ ...p, [userId]: false }));
-    }
-  };
-
-  const FollowButton = ({ p }: { p: Profile }) => (
-    <button
-      onClick={() => (p.iFollowBack ? unfollow(p.id) : follow(p.id))}
-      disabled={!!pending[p.id]}
-      style={{
-        padding: '7px 18px',
-        borderRadius: theme.radius.pill,
-        fontSize: 12,
-        fontWeight: 800,
-        cursor: pending[p.id] ? 'not-allowed' : 'pointer',
-        opacity: pending[p.id] ? 0.6 : 1,
-        border: p.iFollowBack ? `1px solid ${theme.color.border}` : 'none',
-        background: p.iFollowBack ? theme.color.surface : theme.color.gold,
-        color: p.iFollowBack ? theme.color.text2 : theme.color.charcoal900,
-        whiteSpace: 'nowrap',
-      }}
-    >
-      {p.iFollowBack ? 'Following' : 'Follow'}
-    </button>
-  );
-
-  const newFollowers = followers.filter((f) => f.isNew);
 
   return (
     <DashboardLayout>
       <PageTransition>
-        <div style={{ fontFamily: F, maxWidth: 900, margin: '0 auto', padding: '8px 4px' }}>
-          <h1 style={{ fontSize: 20, fontWeight: 800, color: theme.color.text1, margin: '0 0 20px' }}>Followers</h1>
+        <div className="w-full max-w-[850px] mx-auto pt-[40px] pb-[100px] font-sans">
+          <h1 className="text-[14px] font-semibold text-[#181818] mb-[40px]" style={{ fontFamily: 'var(--font-dm-sans)' }}>Followers</h1>
 
-          {/* Tabs */}
-          <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-            {(['followers', 'following'] as const).map((t) => (
-              <button
-                key={t}
-                onClick={() => setTab(t)}
-                style={{
-                  flex: 1,
-                  padding: '10px 0',
-                  borderRadius: theme.radius.sm,
-                  border: 'none',
-                  fontSize: 12.5,
-                  fontWeight: 800,
-                  letterSpacing: '0.04em',
-                  textTransform: 'uppercase',
-                  cursor: 'pointer',
-                  background: tab === t ? theme.color.gold : theme.color.surface2,
-                  color: tab === t ? theme.color.charcoal900 : theme.color.text3,
-                }}
-              >
-                {t}
-              </button>
-            ))}
+          {/* Tabs Area */}
+          <div className="flex w-full relative h-[50px] items-end" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+            <button 
+              onClick={() => setTab('followers')}
+              className={`w-[240px] uppercase text-[12px] flex items-center justify-center transition-all ${tab === 'followers' ? 'h-[50px] bg-[#D4AF37] rounded-t-[4px] text-[#000000]' : 'h-[40px] bg-white border border-[#E7E7E7] text-[#181818]'}`}
+            >
+              Followers
+            </button>
+            <button 
+              onClick={() => setTab('following')}
+              className={`w-[240px] uppercase text-[12px] flex items-center justify-center transition-all ${tab === 'following' ? 'h-[50px] bg-[#D4AF37] rounded-t-[4px] text-[#000000]' : 'h-[40px] bg-white border border-[#E7E7E7] text-[#181818]'}`}
+            >
+              Following
+            </button>
           </div>
 
-          {loading ? (
-            <p style={{ textAlign: 'center', color: theme.color.text3, padding: '40px 0' }}>Loading…</p>
-          ) : tab === 'followers' ? (
-            <>
-              {newFollowers.length > 0 && (
-                <>
-                  <p style={{ fontSize: 12, fontWeight: 800, color: theme.color.gold, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 12 }}>
-                    You have {newFollowers.length} new follower{newFollowers.length === 1 ? '' : 's'}
-                  </p>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
-                    {newFollowers.map((p) => (
-                      <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: theme.radius.md }}>
-                        <Avatar profile={p} />
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <p style={{ margin: 0, fontSize: 13.5, fontWeight: 700, color: theme.color.text1 }}>{p.name}</p>
-                          <p style={{ margin: '2px 0 0', fontSize: 12, color: theme.color.text3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{subtitleFor(p)}</p>
-                        </div>
-                        <FollowButton p={p} />
-                      </div>
-                    ))}
+          {/* Gradient Under Tabs */}
+          <div className="w-full h-[50px] border-t border-[#E7E7E7]" style={{ background: 'linear-gradient(180deg, rgba(255, 252, 241, 0.8) 0%, rgba(255, 252, 241, 0) 100%)' }}></div>
+
+          {tab === 'followers' && (
+            <div style={{ fontFamily: 'var(--font-dm-sans)' }}>
+              {/* New Followers Divider */}
+              <div className="flex items-center gap-[16px] my-[30px]">
+                <div className="flex-1 h-[1px] bg-[#E7E7E7]"></div>
+                <span className="text-[12px] uppercase text-[#181818] font-medium tracking-wide">
+                  YOU HAVE <span className="text-[#D4AF37]">2 NEW FOLLOWERS</span>
+                </span>
+                <div className="flex-1 h-[1px] bg-[#E7E7E7]"></div>
+              </div>
+
+              {/* New Followers List */}
+              <div className="flex flex-col gap-[20px]">
+                
+                {/* Brandon Wilson */}
+                <div className="w-full min-h-[95px] bg-white rounded-[4px] flex items-center px-[30px] py-[20px] relative">
+                  <div className="w-[52px] h-[52px] rounded-full bg-gray-200 flex-shrink-0 overflow-hidden">
+                     {/* Placeholder image for Brandon */}
+                     <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80" alt="Brandon Wilson" className="w-full h-full object-cover" />
                   </div>
-                  <hr style={{ border: 'none', borderTop: `1px solid ${theme.color.border}`, margin: '0 0 20px' }} />
-                </>
-              )}
+                  <div className="ml-[16px] flex flex-col w-[160px]">
+                    <span className="text-[14px] font-semibold text-[#181818]">Brandon Wilson</span>
+                    <span className="text-[10px] text-[#181818] mt-[2px]">Senior UX designer</span>
+                    <span className="text-[10px] text-[#15411F] mt-[2px]">623 followers</span>
+                  </div>
+                  
+                  <div className="ml-[40px] flex items-center gap-[16px] flex-1">
+                    <div className="w-[2px] h-[42px] bg-[#D4AF37]"></div>
+                    <p className="text-[10px] text-[#181818]/60 max-w-[300px] leading-[150%]">
+                      Hey, I saw your works. I like it! Can we do something together? Or maybe you have project for podcast at the moment?
+                    </p>
+                  </div>
 
-              <p style={{ textAlign: 'center', fontSize: 11.5, fontWeight: 800, color: theme.color.text3, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 16 }}>
-                Your followers
-              </p>
+                  <button className="w-[91px] h-[32px] bg-[#D4AF37] rounded-[4px] text-[12px] text-[#000000]">
+                    Follow
+                  </button>
+                </div>
 
-              {followers.length === 0 ? (
-                <p style={{ textAlign: 'center', color: theme.color.text3, padding: '30px 0' }}>No one follows you yet.</p>
-              ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 14 }}>
-                  {followers.map((p) => (
-                    <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                      <Avatar profile={p} />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ margin: 0, fontSize: 13.5, fontWeight: 700, color: theme.color.text1 }}>{p.name}</p>
-                        <p style={{ margin: '2px 0 0', fontSize: 11.5, color: theme.color.text3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{subtitleFor(p)}</p>
-                      </div>
-                      <FollowButton p={p} />
-                    </div>
-                  ))}
+                {/* Theresa Steward */}
+                <div className="w-full min-h-[95px] bg-white rounded-[4px] flex items-center px-[30px] py-[20px] relative">
+                  <div className="w-[52px] h-[52px] rounded-full bg-gray-200 flex-shrink-0 overflow-hidden">
+                     <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80" alt="Theresa Steward" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="ml-[16px] flex flex-col w-[160px]">
+                    <span className="text-[14px] font-semibold text-[#181818]">Theresa Steward</span>
+                    <span className="text-[10px] text-[#181818] mt-[2px]">iOS developer</span>
+                    <span className="text-[10px] text-[#15411F] mt-[2px]">481 followers</span>
+                  </div>
+
+                  <div className="flex-1"></div>
+
+                  <button className="w-[91px] h-[32px] bg-[#D4AF37] rounded-[4px] text-[12px] text-[#000000]">
+                    Follow
+                  </button>
                 </div>
-              )}
-            </>
-          ) : (
-            <>
-              <p style={{ textAlign: 'center', fontSize: 11.5, fontWeight: 800, color: theme.color.text3, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 16 }}>
-                Following
-              </p>
-              {following.length === 0 ? (
-                <p style={{ textAlign: 'center', color: theme.color.text3, padding: '30px 0' }}>You&apos;re not following anyone yet — follow someone back from your Followers tab.</p>
-              ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 14 }}>
-                  {following.map((p) => (
-                    <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                      <Avatar profile={p} />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ margin: 0, fontSize: 13.5, fontWeight: 700, color: theme.color.text1 }}>{p.name}</p>
-                        <p style={{ margin: '2px 0 0', fontSize: 11.5, color: theme.color.text3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{subtitleFor(p)}</p>
-                      </div>
-                      <FollowButton p={p} />
-                    </div>
-                  ))}
+
+              </div>
+
+              {/* Your Followers Divider */}
+              <div className="flex items-center gap-[16px] mt-[60px] mb-[30px]">
+                <div className="flex-1 h-[1px] bg-[#E7E7E7]"></div>
+                <span className="text-[12px] uppercase text-[#181818] font-medium tracking-wide">YOUR FOLLOWES</span>
+                <div className="flex-1 h-[1px] bg-[#E7E7E7]"></div>
+              </div>
+
+              {/* Old Followers Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-[20px] gap-y-[20px]">
+                
+                {/* Audrey Alexander */}
+                <div className="w-full h-[95px] bg-white rounded-[4px] flex items-center px-[30px]">
+                  <div className="w-[52px] h-[52px] rounded-full bg-gray-200 flex-shrink-0 overflow-hidden">
+                     <img src="https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?auto=format&fit=crop&w=100&q=80" alt="Audrey Alexander" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="ml-[16px] flex flex-col">
+                    <span className="text-[14px] font-semibold text-[#181818]">Audrey Alexander</span>
+                    <span className="text-[10px] text-[#181818] mt-[2px]">Team lead at Google</span>
+                  </div>
                 </div>
-              )}
-            </>
+
+                {/* Kyle Fisher */}
+                <div className="w-full h-[95px] bg-white rounded-[4px] flex items-center px-[30px]">
+                  <div className="w-[52px] h-[52px] rounded-full bg-gray-200 flex-shrink-0 overflow-hidden">
+                     <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80" alt="Kyle Fisher" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="ml-[16px] flex flex-col">
+                    <span className="text-[14px] font-semibold text-[#181818]">Kyle Fisher</span>
+                    <span className="text-[10px] text-[#181818] mt-[2px]">Product designer at Commandor Corp</span>
+                  </div>
+                </div>
+
+                {/* Darlene Black */}
+                <div className="w-full h-[95px] bg-white rounded-[4px] flex items-center px-[30px]">
+                  <div className="w-[52px] h-[52px] rounded-full bg-gray-200 flex-shrink-0 overflow-hidden">
+                     <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80" alt="Darlene Black" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="ml-[16px] flex flex-col">
+                    <span className="text-[14px] font-semibold text-[#181818]">Darlene Black</span>
+                    <span className="text-[10px] text-[#181818] mt-[2px]">HR-manager, 10 000 connections</span>
+                  </div>
+                </div>
+
+                {/* Eduardo Russell */}
+                <div className="w-full h-[95px] bg-white rounded-[4px] flex items-center px-[30px]">
+                  <div className="w-[52px] h-[52px] rounded-full bg-gray-200 flex-shrink-0 overflow-hidden">
+                     <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=100&q=80" alt="Eduardo Russell" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="ml-[16px] flex flex-col">
+                    <span className="text-[14px] font-semibold text-[#181818]">Eduardo Russell</span>
+                    <span className="text-[10px] text-[#181818] mt-[2px]">Full stack developer at Yandex</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
           )}
+
+          {tab === 'following' && (
+            <div className="flex items-center justify-center h-[200px] text-[#181818]/60 text-[14px]" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+               You are not following anyone yet.
+            </div>
+          )}
+
         </div>
       </PageTransition>
     </DashboardLayout>
