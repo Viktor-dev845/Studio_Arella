@@ -97,7 +97,7 @@ export default function BlogPage() {
       <PageTransition>
         <div className="flex flex-col items-center w-full min-h-screen bg-[#FFFFFF] rounded-[24px]">
           
-          <div className="w-full max-w-[1204px] mt-[40px] mb-[20px] px-[23px] lg:px-[23px]">
+          <div className="w-full max-w-[1204px] mt-[40px] mb-[20px] px-[60px] lg:px-[60px]">
             <h1 className="text-[#000000] font-bold text-[24px] tracking-[-0.02em] leading-[40px]" style={{ fontFamily: 'var(--font-dm-sans), DM Sans, sans-serif' }}>
               Blog
             </h1>
@@ -112,7 +112,7 @@ export default function BlogPage() {
                   {/* Featured Image */}
                   <div 
                     className="w-full lg:w-[515px] h-[250px] lg:h-[325px] rounded-[10px] bg-cover bg-center shrink-0" 
-                    style={{ backgroundImage: `url(${featured.imageUrl})`, backgroundColor: '#f0f0f0' }} 
+                    style={{ backgroundImage: `url('${featured.imageUrl || "https://images.unsplash.com/photo-1466611653911-95081537e5b7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"}')`, backgroundColor: '#f0f0f0' }} 
                   />
                   
                   {/* Featured Content */}
@@ -180,7 +180,7 @@ export default function BlogPage() {
                       
                       <div 
                         className="w-full h-[185px] rounded-[10px] bg-cover bg-center shrink-0" 
-                        style={{ backgroundImage: `url(${p.imageUrl})`, backgroundColor: '#f0f0f0' }} 
+                        style={{ backgroundImage: `url('${p.imageUrl || "https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"}')`, backgroundColor: '#f0f0f0' }} 
                       />
                       
                       <div className="flex flex-col items-start gap-[16px] w-full h-[110px]">

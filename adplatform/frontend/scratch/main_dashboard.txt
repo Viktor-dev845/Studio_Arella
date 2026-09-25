@@ -1,0 +1,217 @@
+        <div style={{ fontFamily: F }} className="max-w-[1360px] mx-auto p-6 sm:p-10 flex flex-col gap-8 relative">
+          
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-[20px] font-bold text-slate-900 dark:text-slate-50 tracking-tight">Campaigns</h1>
+              <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-0.5">Manage your advertising campaigns, budgets, and impressions</p>
+            </div>
+            <button className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-lg text-[12px] font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/[0.06] transition-colors shadow-sm">
+              <span>Today</span>
+              <ChevronDown size={14} className="text-slate-400 dark:text-slate-500" />
+            </button>
+          </div>
+
+          {/* 4 Metric Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { label: 'Total campaigns', value: '5', pct: '+10.0%', isDown: false },
+              { label: 'Total budget (NGN)', value: '₦4,500,000.00', pct: '+10.0%', isDown: false },
+              { label: 'Total spent', value: '₦2,000,000.00', pct: '-7.0%', isDown: true },
+              { label: 'Total impressions', value: '1.8M', pct: '+10.0%', isDown: false },
+            ].map((stat, i) => (
+              <div
+                key={i}
+                className="bg-white rounded-[16px] p-[24px] border border-[rgba(162,161,168,0.2)] flex flex-col justify-center gap-[16px]"
+              >
+                <p className="text-[14px] font-normal text-[rgba(162,161,168,1)] leading-[21px]">{stat.label}</p>
+                <div className="flex items-center gap-[10px]">
+                  <span className="text-[32px] font-semibold text-[#16151C] leading-[48px]">{stat.value}</span>
+                  <div className={`flex items-center justify-center px-2 py-1 rounded-[6px] text-[12px] font-normal leading-[18px] ${stat.isDown ? 'bg-[rgba(255,78,43,0.1)] text-[#FF4E2B]' : 'bg-[rgba(145,198,0,0.1)] text-[#91C600]'}`}>
+                    {stat.pct}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Main Card: Toolbar + Table */}
+          <div className="bg-white dark:bg-[#111111] rounded-[24px] border border-slate-100 dark:border-white/10 shadow-[0_2px_16px_rgba(0,0,0,0.03)] overflow-hidden">
+            
+            {/* Toolbar */}
+            <div className="flex items-center gap-[104px] pt-[24px] pb-[8px]">
+              <h2 className="text-[14px] font-semibold text-[#000000] leading-[32px] w-full max-w-[967px]">Recently Played</h2>
+              <button className="flex items-center justify-center gap-[4px] min-w-[70px] h-[24px] border border-[rgba(214,214,214,0.7)] rounded-[8px] px-[8px]">
+                <span className="text-[12px] font-normal text-[#000000]">Sort</span>
+                <ChevronDown size={16} className="text-[rgba(0,0,0,0.4)]" />
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between mt-8 mb-6">
+              <div className="flex items-center gap-[10px]">
+                {/* Search */}
+                <div className="relative w-[261px] h-[50px]">
+                  <input
+                    type="text"
+                    placeholder="Search campaign name..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="w-full h-full pl-[16px] pr-10 bg-transparent border border-[rgba(162,161,168,0.5)] rounded-[10px] text-[16px] font-light text-[#16151C] placeholder:text-[rgba(22,21,28,0.2)] focus:outline-none focus:border-[#D4AF37]"
+                  />
+                  <Search size={24} strokeWidth={1.5} className="absolute right-[16px] top-1/2 -translate-y-1/2 text-[#16151C] opacity-40 pointer-events-none" />
+                </div>
+
+                {/* Filter Button */}
+                <button
+                  onClick={() => setFilterModalOpen(true)}
+                  className="flex items-center justify-center gap-[10px] w-[117px] h-[50px] bg-white border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[16px] font-light text-[#16151C] transition-colors hover:bg-gray-50"
+                >
+                  <Filter size={24} strokeWidth={1.5} />
+                  <span>Filter</span>
+                </button>
+              </div>
+              
+              <div className="flex items-center gap-[28px]">
+                {/* Create Campaign Primary Button */}
+                <button
+                  onClick={() => { setWizardStep('details'); setCreateModalOpen(true); }}
+                  className="w-[179px] h-[40px] bg-[#D4AF37] hover:bg-[#b58b24] text-[#000000] opacity-80 rounded-[6px] text-[14px] font-normal capitalize transition-colors"
+                >
+                  Create campaign
+                </button>
+                
+                {/* Export Button */}
+                <button
+                  onClick={handleExport}
+                  className="w-[116px] h-[40px] bg-transparent hover:bg-gray-50 border-[1.5px] border-[#D4AF37] text-[#D4AF37] opacity-80 rounded-[6px] text-[14px] font-normal capitalize transition-colors"
+                >
+                  Export
+                </button>
+              </div>
+            </div>
+
+            {/* Table */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-[rgba(162,161,168,0.2)] bg-[#FDFDFD]">
+                    <th className="py-[16px] px-[24px] text-[16px] font-normal text-[#101828]">Campaign info</th>
+                    <th className="py-[16px] px-[24px] text-[16px] font-normal text-[#101828]">Date</th>
+                    <th className="py-[16px] px-[24px] text-[16px] font-normal text-[#101828]">Budget</th>
+                    <th className="py-[16px] px-[24px] text-[16px] font-normal text-[#101828]">Spent</th>
+                    <th className="py-[16px] px-[24px] text-[16px] font-normal text-[#101828]">Impressions</th>
+                    <th className="py-[16px] px-[24px] text-[16px] font-normal text-[#101828]">Status</th>
+                    <th className="py-[16px] px-[24px] text-[16px] font-normal text-[#101828] text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[rgba(162,161,168,0.2)]">
+                  {filtered.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="text-center py-16 text-slate-400 dark:text-slate-500 text-[13px]">
+                        {loadingCampaigns ? 'Loading campaigns…' : 'No campaigns found matching your query'}
+                      </td>
+                    </tr>
+                  ) : (
+                    filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((c) => (
+                      <tr key={c.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="py-[16px] px-[24px]">
+                          <p className="text-[14px] font-normal text-[#101828]">{c.name}</p>
+                          <p className="text-[12px] font-normal text-[rgba(162,161,168,1)] mt-0.5">{c.adsCount} ad slots active</p>
+                        </td>
+                        <td className="py-[16px] px-[24px] text-[14px] font-normal text-[#101828]">
+                          {c.schedule}
+                        </td>
+                        <td className="py-[16px] px-[24px] text-[14px] font-normal text-[#101828]">
+                          {c.budget.toLocaleString()}
+                        </td>
+                        <td className="py-[16px] px-[24px] text-[14px] font-normal text-[#101828]">
+                          {c.spent.toLocaleString()}
+                        </td>
+                        <td className="py-[16px] px-[24px] text-[14px] font-normal text-[#101828]">
+                          {c.impressions.toLocaleString()}
+                        </td>
+                        <td className="py-[16px] px-[24px]">
+                          <span className={`inline-flex items-center px-[8px] py-[2px] rounded-full text-[12px] font-normal ${
+                            c.status === 'active' ? 'bg-[#91C600]/10 text-[#91C600]' : 
+                            c.status === 'paused' ? 'bg-[#D4AF37]/10 text-[#D4AF37]' : 
+                            'bg-[#FF4E2B]/10 text-[#FF4E2B]'
+                          }`}>
+                            {STATUS_LABELS[c.status] || c.status}
+                          </span>
+                        </td>
+                        <td className="py-[16px] px-[24px] text-right">
+                          <div className="flex items-center justify-end gap-3">
+                            <Link
+                              href={`/campaigns/${c.id}`}
+                              className="text-[12px] font-bold text-[#C69A2C] hover:underline"
+                            >
+                              View
+                            </Link>
+                            <button
+                              onClick={() => handleDeleteCampaign(c.id)}
+                              className="text-slate-400 dark:text-slate-500 hover:text-rose-600 transition-colors p-1"
+                              title="Delete Campaign"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination */}
+            <div className="w-full h-[46px] mt-[12px] flex items-center justify-between">
+              <div className="flex items-center gap-[20px]">
+                <span className="text-[14px] font-light text-[#A2A1A8]">Showing</span>
+                <div className="relative">
+                  <select
+                    value={pageSize}
+                    onChange={(e) => setPageSize(Number(e.target.value))}
+                    className="appearance-none bg-white w-[76px] h-[46px] border border-[rgba(162,161,168,0.2)] rounded-[10px] pl-[16px] pr-[32px] text-[14px] font-light text-[#16151C] focus:outline-none"
+                  >
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                  </select>
+                  <ChevronDown size={20} className="absolute right-[12px] top-1/2 -translate-y-1/2 text-[#16151C] pointer-events-none" />
+                </div>
+              </div>
+              
+              <div className="text-[14px] font-light text-[#A2A1A8]">
+                Showing {filtered.length === 0 ? 0 : (currentPage - 1) * pageSize + 1} to {Math.min(currentPage * pageSize, filtered.length)} out of {filtered.length} records
+              </div>
+              
+              <div className="flex items-center gap-[5px]">
+                <button
+                  onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="w-[35px] h-[36px] flex items-center justify-center border border-[#D4AF37] rounded-[8px] text-[#D4AF37] disabled:opacity-40"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                {Array.from({ length: Math.max(1, Math.ceil(filtered.length / pageSize)) }).map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentPage(i + 1)}
+                    className={`w-[33px] h-[36px] flex items-center justify-center rounded-[50px] text-[14px] font-light ${currentPage === i + 1 ? 'bg-[#D4AF37] text-white' : 'bg-white text-[#16151C]'}`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setCurrentPage(p => Math.min(p + 1, Math.ceil(filtered.length / pageSize)))}
+                  disabled={currentPage >= Math.ceil(filtered.length / pageSize)}
+                  className="w-[35px] h-[36px] flex items-center justify-center border border-[rgba(162,161,168,0.2)] rounded-[8px] text-[#16151C] disabled:opacity-40"
+                >
+                  <ChevronRight size={20} />
+                </button>
+              </div>
+            </div>
+
+          </div>
+

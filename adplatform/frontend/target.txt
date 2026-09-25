@@ -1,0 +1,49 @@
+﻿          ) : (
+            /* Payment step â€” real, matches the pattern used at /cart */
+            <div style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: theme.radius.xl, padding: 28, display: 'flex', flexDirection: 'column', gap: 20 }}>
+              <div style={{ textAlign: 'center' }}>
+                <p style={{ margin: '0 0 4px', fontSize: 13, color: theme.color.text3, fontWeight: 700 }}>
+                  {selectedPackage.label} Â· {durationHours} hour{durationHours > 1 ? 's' : ''}
+                </p>
+                <p style={{ margin: 0, fontSize: 24, fontWeight: 900, color: theme.color.text1 }}>{naira(totalCost || 0)}</p>
+                <p style={{ margin: '4px 0 0', fontSize: 11, color: theme.color.text3 }}>Slot held for 5 minutes â€” complete payment to confirm.</p>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div onClick={() => setPaymentMethod('wallet')} style={cardStyle(paymentMethod === 'wallet')}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 700, color: theme.color.text1 }}>
+                      <Wallet size={16} color={theme.color.gold} /> Pay from wallet
+                    </span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: theme.color.text3 }}>
+                      {walletBalance !== null ? naira(walletBalance) : 'â€”'}
+                    </span>
+                  </div>
+                </div>
+                <div onClick={() => setPaymentMethod('card')} style={cardStyle(paymentMethod === 'card')}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 700, color: theme.color.text1 }}>
+                    <CreditCard size={16} color={theme.color.gold} /> Card / Bank Transfer
+                  </span>
+                </div>
+              </div>
+
+              {paymentMethod === 'wallet' && !hasSufficientBalance && (
+                <div style={{ background: theme.color.errorLight, borderRadius: 10, padding: '10px 14px', fontSize: 12, color: theme.color.error, fontWeight: 700 }}>
+                  Insufficient wallet balance. <Link href="/finances" style={{ color: theme.color.error, textDecoration: 'underline' }}>Fund your wallet</Link> or pay by card instead.
+                </div>
+              )}
+
+              <button
+                onClick={handlePay}
+                disabled={paying || (paymentMethod === 'wallet' && !hasSufficientBalance)}
+                style={{
+                  padding: '14px', borderRadius: 12, border: 'none', fontSize: 14, fontWeight: 800, fontFamily: F,
+                  background: (paymentMethod === 'wallet' && !hasSufficientBalance) ? theme.color.surface2 : theme.color.gold,
+                  color: (paymentMethod === 'wallet' && !hasSufficientBalance) ? theme.color.text3 : '#fff',
+                  cursor: (paying || (paymentMethod === 'wallet' && !hasSufficientBalance)) ? 'not-allowed' : 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                }}>
+                {paying ? <Loader2 size={16} className="animate-spin" /> : null}
+                Pay {naira(totalCost || 0)}
+              </button>
+            </div>
