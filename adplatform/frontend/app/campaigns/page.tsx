@@ -234,7 +234,7 @@ export default function CampaignsPage() {
     api.get('/payments/cards').then((r) => setSavedCards(r.data?.cards || [])).catch(() => {}).finally(() => setLoadingCards(false));
     setShowNewCardForm(false);
     setSelectedCardId(null);
-    setWizardStep('card');
+    setWizardStep('card-confirm');
   };
 
   const handlePayWallet = async () => {
@@ -387,8 +387,8 @@ export default function CampaignsPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
               { label: 'Total campaigns', value: '5', pct: '+10.0%', isDown: false },
-              { label: 'Total budget (NGN)', value: '₦4,500,000.00', pct: '+10.0%', isDown: false },
-              { label: 'Total spent', value: '₦2,000,000.00', pct: '-7.0%', isDown: true },
+              { label: 'Total budget (NGN)', value: '#4,500,000.00', pct: '+10.0%', isDown: false },
+              { label: 'Total spent', value: '#2,000,000.00', pct: '-7.0%', isDown: true },
               { label: 'Total impressions', value: '1.8M', pct: '+10.0%', isDown: false },
             ].map((stat, i) => (
               <div
@@ -464,17 +464,17 @@ export default function CampaignsPage() {
             {/* Table */}
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-[rgba(162,161,168,0.2)] bg-[#FDFDFD]">
-                    <th className="py-[16px] px-[24px] text-[16px] font-normal text-[#101828]">Campaign info</th>
-                    <th className="py-[16px] px-[24px] text-[16px] font-normal text-[#101828]">Date</th>
-                    <th className="py-[16px] px-[24px] text-[16px] font-normal text-[#101828]">Budget</th>
-                    <th className="py-[16px] px-[24px] text-[16px] font-normal text-[#101828]">Spent</th>
-                    <th className="py-[16px] px-[24px] text-[16px] font-normal text-[#101828]">Impressions</th>
-                    <th className="py-[16px] px-[24px] text-[16px] font-normal text-[#101828]">Status</th>
-                    <th className="py-[16px] px-[24px] text-[16px] font-normal text-[#101828] text-right">Action</th>
-                  </tr>
-                </thead>
+                <thead className="bg-[#F1F3F4] text-[#7D7D7D] font-dm-sans h-[50px]">
+                    <tr>
+                      <th className="px-[14px] py-[8px] text-[14px] font-normal text-left rounded-tl-[8px]">Campaign info</th>
+                      <th className="px-[14px] py-[8px] text-[14px] font-normal text-left">Scheduled For</th>
+                      <th className="px-[14px] py-[8px] text-[14px] font-normal text-left">Budget (NGN)</th>
+                      <th className="px-[14px] py-[8px] text-[14px] font-normal text-left">Spent (NGN)</th>
+                      <th className="px-[14px] py-[8px] text-[14px] font-normal text-left">Impressions</th>
+                      <th className="px-[14px] py-[8px] text-[14px] font-normal text-left">Status</th>
+                      <th className="px-[14px] py-[8px] text-[14px] font-normal text-left rounded-tr-[8px]">Action</th>
+                    </tr>
+                  </thead>
                 <tbody className="divide-y divide-[rgba(162,161,168,0.2)]">
                   {filtered.length === 0 ? (
                     <tr>
@@ -594,7 +594,7 @@ export default function CampaignsPage() {
                   <button onClick={resetWizard} className="p-1 hover:bg-slate-100 dark:hover:bg-white/[0.06] rounded-full text-slate-900 dark:text-slate-50 transition-colors">
                     <ArrowLeft size={20} strokeWidth={2.5} />
                   </button>
-                  <h3 className="text-[17px] font-bold text-slate-900 dark:text-slate-50 absolute left-1/2 -translate-x-1/2">Create campaign</h3>
+                  <h3 className="text-[17px] font-bold text-slate-900 dark:text-slate-50 absolute left-1/2 -translate-x-1/2">Create New Campaign</h3>
                   <button onClick={resetWizard} className="p-1 hover:bg-slate-100 dark:hover:bg-white/[0.06] rounded-full text-slate-900 dark:text-slate-50 transition-colors">
                     <X size={20} strokeWidth={2.5} />
                   </button>
@@ -813,6 +813,85 @@ export default function CampaignsPage() {
           )}
 
           
+          
+          {/* ─── CREATE CAMPAIGN: STEP 3 — CARD CONFIRM (WEMA) ─── */}
+          {createModalOpen && wizardStep === 'card-confirm' && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[rgba(162,161,168,0.2)] backdrop-blur-[10px] p-4">
+              <div 
+                className="bg-[#FFFFFF] rounded-[32px] w-[625px] shadow-2xl relative animate-in fade-in zoom-in-95 duration-150 flex flex-col"
+                style={{ height: '836px', fontFamily: 'var(--font-dm-sans)' }}
+              >
+                {/* Header */}
+                <div className="flex items-center justify-between w-full px-[40px] pt-[40px]">
+                  <button onClick={() => setWizardStep('card')} className="text-black hover:opacity-70 transition-opacity">
+                    <ArrowLeft size={24} strokeWidth={2} />
+                  </button>
+                  <span className="text-[20px] font-medium text-black">Pay with Wema card</span>
+                  <button onClick={resetWizard} className="text-black hover:opacity-70 transition-opacity">
+                    <X size={24} strokeWidth={2} />
+                  </button>
+                </div>
+
+                {/* Body */}
+                <div className="flex flex-col items-center w-full px-[60px] pt-[80px]">
+                  <p className="text-[16px] font-bold text-black text-center mb-[60px] leading-[26px]">
+                    {billingHeader || '3 months Ad space'} at<br/>
+                    #{budgetAmount.toLocaleString()}
+                  </p>
+                  
+                  <div className="w-full flex flex-col gap-[20px]">
+                    <input 
+                      type="text" 
+                      placeholder="Enter amount" 
+                      className="w-full h-[54px] px-[20px] rounded-[12px] border border-[rgba(162,161,168,0.2)] text-[16px] text-black focus:outline-none focus:border-[#D4AF37] placeholder:text-[rgba(22,21,28,0.3)] font-light"
+                    />
+                    
+                    <input 
+                      type="text" 
+                      placeholder="Lilian Okoro" 
+                      className="w-full h-[54px] px-[20px] rounded-[12px] border border-[rgba(162,161,168,0.2)] text-[16px] text-black focus:outline-none focus:border-[#D4AF37] placeholder:text-[rgba(22,21,28,0.3)] font-light"
+                    />
+                    
+                    <div className="relative w-full">
+                      <input 
+                        type="text" 
+                        placeholder="**** **** **** 0493" 
+                        className="w-full h-[54px] px-[20px] rounded-[12px] border border-[rgba(162,161,168,0.2)] text-[16px] text-black focus:outline-none focus:border-[#D4AF37] placeholder:text-[rgba(22,21,28,0.3)] font-light pr-[50px]"
+                      />
+                      <div className="absolute right-[20px] top-[17px] w-[24px] h-[20px] flex items-center justify-center">
+                        <div className="w-[12px] h-[12px] bg-[#EB001B] rounded-full absolute left-0 z-10 opacity-90"></div>
+                        <div className="w-[12px] h-[12px] bg-[#F79E1B] rounded-full absolute left-[8px] z-0 opacity-90"></div>
+                      </div>
+                    </div>
+
+                    <div className="flex w-full gap-[20px]">
+                      <input 
+                        type="text" 
+                        placeholder="Expiry date (02/28)" 
+                        className="w-full h-[54px] px-[20px] rounded-[12px] border border-[rgba(162,161,168,0.2)] text-[16px] text-black focus:outline-none focus:border-[#D4AF37] placeholder:text-[rgba(22,21,28,0.3)] font-light"
+                      />
+                      <input 
+                        type="text" 
+                        placeholder="346" 
+                        className="w-full h-[54px] px-[20px] rounded-[12px] border border-[rgba(162,161,168,0.2)] text-[16px] text-black focus:outline-none focus:border-[#D4AF37] placeholder:text-[rgba(22,21,28,0.3)] font-light"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                        toast('Payment successful', 'success');
+                        setWizardStep('success');
+                    }}
+                    className="w-full h-[54px] mt-[60px] bg-[#D4AF37] hover:bg-[#b58b24] text-[#000000] text-[16px] font-normal rounded-[8px] transition-colors"
+                  >
+                    Pay
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* ─── CREATE CAMPAIGN: STEP 3 — BILLING (NEW DESIGN) ─── */}
           {createModalOpen && wizardStep === 'billing' && (
             <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[rgba(162,161,168,0.2)] backdrop-blur-[10px] p-4">
@@ -895,7 +974,7 @@ export default function CampaignsPage() {
           )}
 
           {/* ─── CREATE CAMPAIGN: STEPS 3+ — BILLING ─── */}
-          {createModalOpen && ['card', 'card-confirm', 'wallet', 'otp', 'success'].includes(wizardStep) && (
+          {createModalOpen && ['card', 'wallet', 'otp', 'success'].includes(wizardStep) && (
             <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[rgba(162,161,168,0.2)] backdrop-blur-[10px] p-4">
               <div className="bg-white dark:bg-[#111111] rounded-[24px] w-full max-w-[400px] shadow-2xl relative animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
                 <div className="flex items-center justify-between px-6 pt-5 pb-2 border-b border-slate-100 dark:border-white/10">
@@ -903,7 +982,7 @@ export default function CampaignsPage() {
                     <button
                       onClick={() => {
                         if (wizardStep === 'card' && showNewCardForm) { setShowNewCardForm(false); return; }
-                        if (wizardStep === 'card-confirm') { setWizardStep('card'); return; }
+                        if (wizardStep === 'card-confirm') { setWizardStep('card-confirm'); return; }
                         setWizardStep('billing');
                       }}
                       className="p-1 text-slate-500 dark:text-slate-400"
@@ -914,7 +993,7 @@ export default function CampaignsPage() {
                   <span className="text-[15px] font-bold text-slate-900 dark:text-slate-50">
                     
                     {wizardStep === 'card' && (showNewCardForm ? 'Pay with a new card' : 'Pay with card')}
-                    {wizardStep === 'card-confirm' && `Pay with ${savedCards.find((c) => c.id === selectedCardId)?.bank || savedCards.find((c) => c.id === selectedCardId)?.card_type || 'card'} card`}
+                    
                     {wizardStep === 'wallet' && 'Pay from wallet'}
                     {wizardStep === 'otp' && 'Verify payment'}
                   </span>
@@ -990,51 +1069,7 @@ export default function CampaignsPage() {
                     </>
                   )}
 
-                  {wizardStep === 'card-confirm' && (
-                    <>
-                      <div className="flex flex-col gap-3 mb-4">
-                        <input
-                          placeholder="Enter amount"
-                          value={formatCurrency(budgetAmount, currency, rates)}
-                          disabled
-                          className="w-full px-4 py-3 bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 rounded-[12px] text-[13px] text-slate-500 dark:text-slate-400 cursor-not-allowed"
-                        />
-                        <input
-                          placeholder="Card holder's name"
-                          value={confirmCardForm.name}
-                          onChange={(e) => setConfirmCardForm({ ...confirmCardForm, name: e.target.value })}
-                          className="w-full px-4 py-3 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[12px] text-[13px] text-slate-900 dark:text-slate-50 focus:outline-none focus:border-[#C69A2C]"
-                        />
-                        <input
-                          placeholder="Card number"
-                          value={confirmCardForm.number}
-                          onChange={(e) => setConfirmCardForm({ ...confirmCardForm, number: e.target.value })}
-                          className="w-full px-4 py-3 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[12px] text-[13px] text-slate-900 dark:text-slate-50 focus:outline-none focus:border-[#C69A2C]"
-                        />
-                        <div className="flex gap-2.5">
-                          <input
-                            placeholder="Expiry date (MM/YY)"
-                            value={confirmCardForm.expiry}
-                            onChange={(e) => setConfirmCardForm({ ...confirmCardForm, expiry: e.target.value })}
-                            className="w-1/2 px-4 py-3 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[12px] text-[13px] text-slate-900 dark:text-slate-50 focus:outline-none focus:border-[#C69A2C]"
-                          />
-                          <input
-                            placeholder="CVV"
-                            value={confirmCardForm.cvv}
-                            onChange={(e) => setConfirmCardForm({ ...confirmCardForm, cvv: e.target.value })}
-                            className="w-1/2 px-4 py-3 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[12px] text-[13px] text-slate-900 dark:text-slate-50 focus:outline-none focus:border-[#C69A2C]"
-                          />
-                        </div>
-                      </div>
-                      <button
-                        onClick={handlePaySavedCard}
-                        disabled={paying}
-                        className="w-full px-6 py-3 bg-[#C69A2C] hover:bg-[#b58b24] text-white text-[13.5px] font-bold rounded-[10px] transition-all shadow-sm disabled:opacity-50"
-                      >
-                        {paying ? 'Paying…' : 'Pay'}
-                      </button>
-                    </>
-                  )}
+                  
 
                   {wizardStep === 'card' && showNewCardForm && (
                     <>
