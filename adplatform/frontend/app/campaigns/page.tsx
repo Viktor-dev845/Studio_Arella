@@ -1045,7 +1045,7 @@ export default function CampaignsPage() {
           )}
 
           {/* ─── CREATE CAMPAIGN: STEPS 3+ — BILLING ─── */}
-          {createModalOpen && ['card', 'wallet', 'success'].includes(wizardStep) && (
+          {createModalOpen && ['card', 'wallet'].includes(wizardStep) && (
             <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[rgba(162,161,168,0.2)] backdrop-blur-[10px] p-4">
               <div className="bg-white dark:bg-[#111111] rounded-[24px] w-full max-w-[400px] shadow-2xl relative animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
                 <div className="flex items-center justify-between px-6 pt-5 pb-2 border-b border-slate-100 dark:border-white/10">
@@ -1192,67 +1192,60 @@ export default function CampaignsPage() {
                     </>
                   )}
 
-                  {wizardStep === 'otp' && (
-                    <>
-                      <p className="text-center text-[13px] font-bold text-slate-900 dark:text-slate-50 mb-1">Enter code*</p>
-                      <div className="flex items-center justify-center gap-2.5 my-4">
-                        {otpDigits.map((d, i) => (
-                          <input
-                            key={i}
-                            id={`campaign-otp-${i}`}
-                            value={d}
-                            maxLength={1}
-                            inputMode="numeric"
-                            onChange={(e) => {
-                              const v = e.target.value.replace(/\D/g, '').slice(-1);
-                              const next = [...otpDigits]; next[i] = v; setOtpDigits(next);
-                              if (v && i < 3) document.getElementById(`campaign-otp-${i + 1}`)?.focus();
-                            }}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Backspace' && !otpDigits[i] && i > 0) document.getElementById(`campaign-otp-${i - 1}`)?.focus();
-                            }}
-                            className="w-12 h-12 text-center text-[18px] font-bold border border-slate-200 dark:border-white/10 rounded-[10px] bg-white dark:bg-[#111111] text-slate-900 dark:text-slate-50 focus:outline-none focus:border-[#C69A2C]"
-                          />
-                        ))}
-                      </div>
-                      <p className="text-center text-[11.5px] text-slate-400 dark:text-slate-500 mb-1">
-                        <button type="button" onClick={() => toast("If you didn't receive a code, please try paying again.", 'info')} className="text-[#C69A2C] font-bold hover:underline">
-                          Didn&apos;t get code? Resend
-                        </button>
-                      </p>
-                      <p className="text-center text-[12px] text-slate-500 dark:text-slate-400 mb-5 mt-4">
-                        To authorize this payment, enter the OTP sent to {user?.email ? <strong>{user.email}</strong> : 'the email'} attached to your Studio Arella account
-                      </p>
-                      <button
-                        onClick={handleSubmitOtp}
-                        disabled={verifyingOtp}
-                        className="w-full px-6 py-3 bg-[#C69A2C] hover:bg-[#b58b24] text-white text-[13.5px] font-bold rounded-[10px] transition-all shadow-sm disabled:opacity-50"
-                      >
-                        {verifyingOtp ? 'Verifying…' : 'Pay'}
-                      </button>
-                    </>
-                  )}
+                  
 
-                  {wizardStep === 'success' && (
-                    <div className="text-center">
-                      <div className="w-16 h-16 rounded-full bg-[#C69A2C] flex items-center justify-center mx-auto mb-4">
-                        <Check size={28} className="text-white" />
-                      </div>
-                      <p className="text-[15px] font-bold text-slate-900 dark:text-slate-50 mb-6">{successMessage}</p>
-                      <button
-                        onClick={resetWizard}
-                        className="w-full px-6 py-3 bg-[#C69A2C] hover:bg-[#b58b24] text-white text-[13.5px] font-bold rounded-[10px] transition-all shadow-sm"
-                      >
-                        Finish
-                      </button>
-                    </div>
-                  )}
+                  
                 </div>
               </div>
             </div>
           )}
 
-          {/* ─── FILTER POPUP ─── */}
+          
+          {/* ─── CREATE CAMPAIGN: STEP 5 — SUCCESS ─── */}
+          {createModalOpen && wizardStep === 'success' && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[rgba(162,161,168,0.2)] backdrop-blur-[10px] p-4">
+              <div 
+                className="bg-[#FFFFFF] rounded-[32px] w-[625px] h-[565px] shadow-2xl relative animate-in fade-in zoom-in-95 duration-150 flex flex-col"
+                style={{ fontFamily: 'var(--font-dm-sans)' }}
+              >
+                {/* Header */}
+                <div className="flex items-center justify-between w-full px-[40px] pt-[40px]">
+                  <button onClick={() => setWizardStep('otp')} className="text-black hover:opacity-70 transition-opacity">
+                    <ArrowLeft size={24} strokeWidth={2} />
+                  </button>
+                  <span className="text-[20px] font-medium text-black">Pay with Wema card</span>
+                  <button onClick={resetWizard} className="text-black hover:opacity-70 transition-opacity">
+                    <X size={24} strokeWidth={2} />
+                  </button>
+                </div>
+
+                {/* Body */}
+                <div className="flex flex-col items-center w-full px-[60px] pt-[80px]">
+                  
+                  {/* Success Icon with Glow */}
+                  <div className="relative flex items-center justify-center w-[160px] h-[160px] mb-[40px]">
+                    <div className="absolute inset-0 bg-[#D4AF37] opacity-20 rounded-full blur-[20px] filter"></div>
+                    <div className="relative w-[84px] h-[84px] bg-[#D4AF37] rounded-full flex items-center justify-center shadow-sm">
+                      <Check size={36} className="text-white" strokeWidth={3} />
+                    </div>
+                  </div>
+
+                  <p className="text-[20px] font-bold text-black text-center max-w-[480px] leading-[32px] mb-[60px]">
+                    Payment successful and campaign booked
+                  </p>
+
+                  <button
+                    onClick={resetWizard}
+                    className="w-full h-[54px] bg-[#D4AF37] hover:bg-[#b58b24] text-[#000000] text-[16px] font-medium rounded-[8px] transition-colors"
+                  >
+                    Finish
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+            {/* ─── FILTER POPUP ─── */}
           {filterModalOpen && (
             <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[rgba(162,161,168,0.2)] p-4">
               <div className="bg-white dark:bg-[#111111] rounded-[24px] w-full max-w-[380px] shadow-2xl relative animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
