@@ -65,7 +65,7 @@ const MOCK_POSTS: BlogPost[] = [
     excerpt: null,
     category: 'Health',
     authorName: 'Admin',
-    imageUrl: 'https://images.unsplash.com/photo-1576091160550-2173ff9e5eb8?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1532938911079-1b06ac7ceec7?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
     publishedAt: '2023-10-07T00:00:00.000Z',
     likesCount: 10000,
     commentsCount: 124
@@ -97,7 +97,7 @@ export default function BlogPage() {
       <PageTransition>
         <div className="flex flex-col items-center w-full min-h-screen bg-[#FFFFFF] rounded-[24px]">
           
-          <div className="w-full max-w-[1204px] mt-[40px] mb-[20px] px-[23px] lg:px-[0px]">
+          <div className="w-full max-w-[1204px] mt-[40px] mb-[20px] px-[23px] lg:px-[23px]">
             <h1 className="text-[#000000] font-bold text-[24px] tracking-[-0.02em] leading-[40px]" style={{ fontFamily: 'var(--font-dm-sans), DM Sans, sans-serif' }}>
               Blog
             </h1>
