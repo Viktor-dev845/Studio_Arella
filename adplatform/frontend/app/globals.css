@@ -150,6 +150,7 @@ html, body {
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  zoom: 0.9; /* Global 10% scale down to match 1440px Figma designs on smaller screens */
 }
 
 /* ── Scrollbar ── */
