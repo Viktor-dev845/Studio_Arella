@@ -85,14 +85,14 @@ export default function AdsPage() {
           <div className="px-8 pb-12">
             <div className="flex flex-wrap gap-[28px]">
               {ALL_ADS.map((ad, idx) => (
-                <div key={idx} className="flex flex-col w-[154px]">
+                  <Link href={`/ads/${idx + 1}`} key={idx} className="flex flex-col w-[154px] cursor-pointer hover:opacity-90 transition-opacity">
                   <div className="w-[154px] h-[154px] bg-slate-100 rounded-[6px] mb-3 overflow-hidden relative">
                     <img src={`https://picsum.photos/seed/ad${idx}/300/300`} alt={ad.title} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.style.background = '#F1F3F4'; }} />
                   </div>
                   <h3 className="text-[16px] text-[#000000] font-normal leading-[20px] mb-1 truncate">{ad.title}</h3>
                   <p className="text-[14px] text-black/40 leading-[20px] mb-1 truncate">{ad.subtitle}</p>
                   <span className={`text-[14px] ${ad.statusColor} leading-[20px]`}>{ad.status}</span>
-                </div>
+                  </Link>
               ))}
             </div>
           </div>
