@@ -23,8 +23,8 @@ export default function LoginPage() {
   const router = useRouter();
 
   const inputStyle: React.CSSProperties = {
-    width: '100%', height: 64, padding: '0 24px', background: '#FFFFFF',
-    border: '1px solid #8692A6', borderRadius: 6, fontSize: 14,
+    width: '100%', height: 48, padding: '0 16px', background: '#FFFFFF',
+      border: '1px solid #8692A6', borderRadius: 6, fontSize: 14,
     fontFamily: 'inherit', color: '#494949', outline: 'none', boxSizing: 'border-box',
     transition: 'all 0.2s', fontWeight: 400
   };
@@ -38,8 +38,8 @@ export default function LoginPage() {
   };
 
   const labelStyle: React.CSSProperties = {
-    fontSize: 16, fontWeight: 400, color: '#696F79', display: 'block',
-    marginBottom: 8,
+    fontSize: 14, fontWeight: 400, color: '#696F79', display: 'block',
+      marginBottom: 6,
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -122,8 +122,8 @@ export default function LoginPage() {
 
           {pendingToken ? (
             <>
-              <h1 style={{ fontSize: 32, fontWeight: 800, color: theme.color.text1, margin: '0 0 8px', letterSpacing: '-0.5px' }}>Two-factor code</h1>
-              <p style={{ fontSize: 15, color: theme.color.text3, margin: '0 0 32px', fontWeight: 500 }}>
+              <h1 style={{ fontSize: 28, fontWeight: 800, color: theme.color.text1, margin: '0 0 8px', letterSpacing: '-0.5px' }}>Two-factor code</h1>
+              <p style={{ fontSize: 14, color: theme.color.text3, margin: '0 0 32px', fontWeight: 500 }}>
                 Enter the 6-digit code from your authenticator app.
               </p>
               <form onSubmit={handleVerify2FA} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -154,8 +154,8 @@ export default function LoginPage() {
             </>
           ) : (
             <>
-              <h1 style={{ fontSize: 30, fontWeight: 700, color: '#000000', margin: '0 0 8px' }}>Log in</h1>
-              <p style={{ fontSize: 18, color: '#8692A6', margin: '0 0 32px', fontWeight: 400 }}>
+              <h1 style={{ fontSize: 28, fontWeight: 700, color: '#000000', margin: '0 0 8px' }}>Log in</h1>
+              <p style={{ fontSize: 15, color: '#8692A6', margin: '0 0 32px', fontWeight: 400 }}>
                 Don't have an account?{' '}
                 <Link href="/auth/register" style={{ color: '#D4AF37', fontWeight: 400, textDecoration: 'none' }}>Sign up</Link>
               </p>
@@ -170,7 +170,7 @@ export default function LoginPage() {
                 <div style={{ flex: 1, height: 1, background: '#DBDBDB' }} />
               </div>
 
-              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
                 <div>
                   <label style={labelStyle}>Email address*</label>
@@ -201,7 +201,7 @@ export default function LoginPage() {
                   type="submit"
                   loading={loading}
                   loadingText="Logging in..."
-                  style={{ width: '100%', height: 64, background: '#D4AF37', color: '#121212', borderRadius: 6, fontSize: 16, fontWeight: 300, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 8 }}
+                  style={{ width: '100%', height: 48, background: '#D4AF37', color: '#121212', borderRadius: 6, fontSize: 15, fontWeight: 300, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 8 }}
                 >
                   Login
                 </AnimatedButton>

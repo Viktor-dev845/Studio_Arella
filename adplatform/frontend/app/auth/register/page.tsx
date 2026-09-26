@@ -68,8 +68,8 @@ export default function RegisterPage() {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const inputStyle: React.CSSProperties = {
-    width: '100%', height: 64, padding: '0 24px', background: '#FFFFFF',
-    border: '1px solid #8692A6', borderRadius: 6, fontSize: 14,
+    width: '100%', height: 48, padding: '0 16px', background: '#FFFFFF',
+      border: '1px solid #8692A6', borderRadius: 6, fontSize: 14,
     fontFamily: 'inherit', color: '#494949', outline: 'none', boxSizing: 'border-box',
     transition: 'all 0.2s', fontWeight: 400
   };
@@ -83,8 +83,8 @@ export default function RegisterPage() {
   };
 
   const labelStyle: React.CSSProperties = {
-    fontSize: 16, fontWeight: 400, color: '#696F79', display: 'block',
-    marginBottom: 8,
+    fontSize: 14, fontWeight: 400, color: '#696F79', display: 'block',
+      marginBottom: 6,
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -207,8 +207,8 @@ export default function RegisterPage() {
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}
           className="w-full max-w-[440px]">
 
-          <h1 style={{ fontSize: 32, fontWeight: 800, color: theme.color.text1, margin: '0 0 8px', letterSpacing: '-0.5px' }}>Create Your Account!</h1>
-          <p style={{ fontSize: 15, color: theme.color.text3, margin: '0 0 32px', fontWeight: 500 }}>
+          <h1 style={{ fontSize: 28, fontWeight: 800, color: theme.color.text1, margin: '0 0 8px', letterSpacing: '-0.5px' }}>Create Your Account!</h1>
+          <p style={{ fontSize: 14, color: theme.color.text3, margin: '0 0 32px', fontWeight: 500 }}>
             Getting started is easy. Already have an account?{' '}
             <Link href="/auth/login" style={{ color: '#D4AF37', fontWeight: 600, textDecoration: 'none' }}>Sign in</Link>
           </p>
@@ -223,7 +223,7 @@ export default function RegisterPage() {
             <div style={{ flex: 1, height: 1, background: '#DBDBDB' }} />
           </div>
 
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             <div>
               <label style={labelStyle}>Your fullname*</label>
               <input type="text" placeholder="Invictus Innocent" value={form.fullname} onChange={e => setForm({ ...form, fullname: e.target.value })} required autoFocus style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
@@ -254,12 +254,12 @@ export default function RegisterPage() {
                   {form.agreeToTerms && <FaCheck size={12} color="#fff" />}
                 </div>
                 <input type="checkbox" checked={form.agreeToTerms} onChange={(e) => setForm({ ...form, agreeToTerms: e.target.checked })} style={{ display: 'none' }} />
-                <span style={{ fontSize: 16, color: '#696F79', fontWeight: 400 }}>
+                <span style={{ fontSize: 14, color: '#696F79', fontWeight: 400 }}>
                   I agree to terms & conditions. Read terms & conditions <span style={{ color: '#D4AF37' }}>here</span>
                 </span>
               </label>
             </div>
-            <AnimatedButton type="submit" loading={isLoading} loadingText="Creating account..." style={{ width: '100%', height: 64, background: '#D4AF37', color: '#121212', borderRadius: 6, fontSize: 16, fontWeight: 300, border: 'none', cursor: 'pointer', transition: 'all 0.2s' }}>
+            <AnimatedButton type="submit" loading={isLoading} loadingText="Creating account..." style={{ width: '100%', height: 48, background: '#D4AF37', color: '#121212', borderRadius: 6, fontSize: 15, fontWeight: 300, border: 'none', cursor: 'pointer', transition: 'all 0.2s' }}>
               Register Account
             </AnimatedButton>
           </form>
