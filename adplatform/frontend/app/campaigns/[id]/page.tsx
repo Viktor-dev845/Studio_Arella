@@ -15,7 +15,7 @@ const MOCK_CAMPAIGNS = {
     status: "Active",
     statusBg: "bg-[rgba(152,255,197,0.5)]",
     statusColor: "text-[#07BC56]",
-    showCancel: false,
+    actionButton: null,
   },
   pending: {
     title: "Podcast sponsorship wave",
@@ -23,7 +23,17 @@ const MOCK_CAMPAIGNS = {
     status: "Pending",
     statusBg: "bg-[rgba(255,240,190,0.5)]",
     statusColor: "text-[#D4AF37]",
-    showCancel: true,
+    actionButton: "Cancel",
+    buttonWidth: "w-[116px]",
+  },
+  ended: {
+    title: "Podcast sponsorship wave",
+    subtitle: "4,000 impressions",
+    status: "Ended",
+    statusBg: "bg-[rgba(251,189,178,0.5)]",
+    statusColor: "text-[#D44F37]",
+    actionButton: "Restart Campaign",
+    buttonWidth: "w-[143px]",
   }
 };
 
@@ -36,7 +46,16 @@ export default function CampaignDetailsPage() {
   const [modalState, setModalState] = useState<'none' | 'confirm' | 'success'>('none');
   
   // For demonstration: map IDs to different states.
-  const campaign = id % 2 === 0 ? MOCK_CAMPAIGNS.pending : MOCK_CAMPAIGNS.active;
+  const campaign = id % 3 === 0 ? MOCK_CAMPAIGNS.ended : (id % 2 === 0 ? MOCK_CAMPAIGNS.pending : MOCK_CAMPAIGNS.active);
+
+  const handleAction = () => {
+    if (campaign.actionButton === 'Cancel') {
+      setModalState('confirm');
+    } else if (campaign.actionButton === 'Restart Campaign') {
+      // Just an example redirect back for now
+      router.push('/campaigns');
+    }
+  };
 
   return (
     <DashboardLayout>
@@ -72,12 +91,12 @@ export default function CampaignDetailsPage() {
             <div className={`${campaign.statusBg} rounded-[40px] px-[14px] py-[4px] flex items-center justify-center mt-2`}>
               <span className={`${campaign.statusColor} text-[12px] font-semibold leading-[16px]`}>{campaign.status}</span>
             </div>
-            {campaign.showCancel && (
+            {campaign.actionButton && (
               <button 
-                onClick={() => setModalState('confirm')}
-                className="w-[116px] h-[40px] mt-[10px] bg-[#D4AF37] rounded-[6px] text-[rgba(0,0,0,0.8)] text-[14px] font-medium flex items-center justify-center hover:bg-[#c9a32c] transition-colors"
+                onClick={handleAction}
+                className={`${campaign.buttonWidth} h-[40px] mt-[10px] bg-[#D4AF37] rounded-[6px] text-[rgba(0,0,0,0.8)] text-[14px] font-medium flex items-center justify-center hover:bg-[#c9a32c] transition-colors`}
               >
-                Cancel
+                {campaign.actionButton}
               </button>
             )}
           </div>
