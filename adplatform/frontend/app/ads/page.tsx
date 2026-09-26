@@ -83,15 +83,7 @@ export default function AdsPage() {
               {ALL_ADS.map((ad, idx) => (
                 <div key={idx} className="flex flex-col w-[154px]">
                   <div className="w-[154px] h-[154px] bg-slate-100 rounded-[6px] mb-3 overflow-hidden relative">
-                    <img 
-                      src={`/images/ad${(idx % 5) + 1}.png`} 
-                      alt={ad.title} 
-                      className="w-full h-full object-cover" 
-                      onError={(e) => { 
-                        e.currentTarget.style.display = 'none'; 
-                        e.currentTarget.parentElement!.style.background = '#F1F3F4';
-                      }} 
-                    />
+                    <img src={`https://picsum.photos/seed/ad${idx}/300/300`} alt={ad.title} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.style.background = '#F1F3F4'; }} />
                   </div>
                   <h3 className="text-[16px] text-[#000000] font-normal leading-[20px] mb-1 truncate">{ad.title}</h3>
                   <p className="text-[14px] text-black/40 leading-[20px] mb-1 truncate">{ad.subtitle}</p>
@@ -198,3 +190,4 @@ export default function AdsPage() {
     </DashboardLayout>
   );
 }
+
