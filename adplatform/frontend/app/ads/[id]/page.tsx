@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Check } from 'lucide-react';
 import { useRouter, useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -33,10 +33,9 @@ export default function AdDetailsPage() {
   const idStr = Array.isArray(params?.id) ? params.id[0] : params?.id;
   const id = parseInt(idStr || '1');
   
-  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [modalState, setModalState] = useState<'none' | 'confirm' | 'success'>('none');
   
   // For demonstration: map IDs to different states.
-  // We'll map odd IDs to Active, even IDs to Pending.
   const ad = id % 2 === 0 ? MOCK_ADS.pending : MOCK_ADS.active;
 
   return (
@@ -62,7 +61,7 @@ export default function AdDetailsPage() {
             <button 
               onClick={() => {
                 if (ad.buttonText === 'Cancel Ad') {
-                  setShowCancelModal(true);
+                  setModalState('confirm');
                 }
               }}
               className="w-[139px] h-[40px] bg-[#D4AF37] rounded-[6px] text-[rgba(0,0,0,0.8)] text-[14px] font-medium flex items-center justify-center hover:bg-[#c9a32c] transition-colors"
@@ -106,45 +105,89 @@ export default function AdDetailsPage() {
         </div>
       </div>
 
-      {/* Cancel Modal */}
+      {/* Modals */}
       <AnimatePresence>
-        {showCancelModal && (
+        {modalState !== 'none' && (
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(162,161,168,0.2)] backdrop-blur-[10px]"
           >
-            <motion.div 
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="relative w-[383px] h-[320px] bg-[#FFFFFF] rounded-[20px] shadow-lg"
-              style={{ fontFamily: F }}
-            >
-              {/* Text Content */}
-              <div className="absolute top-[40px] left-[20px] w-[343px]">
-                <p className="text-[#16151C] text-[20px] font-semibold leading-[30px] text-center">
-                  Are you sure you want to cancel this Ad? Ad cancelled is non-refundable after 72hrs of booking. Read Studio Arella <span className="text-[#D4AF37]">terms & condition</span>
-                </p>
-              </div>
+            {modalState === 'confirm' && (
+              <motion.div 
+                key="confirm"
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                className="relative w-[383px] h-[320px] bg-[#FFFFFF] rounded-[20px] shadow-lg"
+                style={{ fontFamily: F }}
+              >
+                {/* Text Content */}
+                <div className="absolute top-[40px] left-[20px] w-[343px]">
+                  <p className="text-[#16151C] text-[20px] font-semibold leading-[30px] text-center">
+                    Are you sure you want to cancel this Ad? Ad cancelled is non-refundable after 72hrs of booking. Read Studio Arella <span className="text-[#D4AF37]">terms & condition</span>
+                  </p>
+                </div>
 
-              {/* Buttons */}
-              <div className="absolute top-[217px] left-[20px] flex gap-[11px]">
+                {/* Buttons */}
+                <div className="absolute top-[217px] left-[20px] flex gap-[11px]">
+                  <button 
+                    onClick={() => setModalState('none')}
+                    className="w-[166px] h-[50px] border border-[rgba(162,161,168,0.2)] rounded-[10px] flex items-center justify-center text-[#16151C] text-[16px] font-normal hover:bg-gray-50 transition-colors"
+                  >
+                    No
+                  </button>
+                  <button 
+                    onClick={() => setModalState('success')}
+                    className="w-[166px] h-[50px] bg-[#D4AF37] rounded-[6px] flex items-center justify-center text-[#000000] text-[16px] font-normal hover:bg-[#c9a32c] transition-colors"
+                  >
+                    Yes
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {modalState === 'success' && (
+              <motion.div 
+                key="success"
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                className="relative w-[383px] h-[433px] bg-[#FFFFFF] rounded-[20px] shadow-lg"
+                style={{ fontFamily: F }}
+              >
+                {/* Top Line */}
+                <div className="absolute top-[66px] left-[20px] w-[343px] border-t border-[rgba(162,161,168,0.1)]" />
+
+                {/* Success Icon */}
+                <div className="absolute top-[94px] left-[156.5px] w-[70px] h-[70px]">
+                  <div className="absolute inset-[-36px] bg-gradient-to-br from-[#443A18] to-[#D4AF37] opacity-10 blur-[5px] rounded-full" />
+                  <div className="absolute inset-[-20px] bg-gradient-to-br from-[#443A18] to-[#D4AF37] opacity-15 blur-[5px] rounded-full" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#443A18] to-[#D4AF37] rounded-full flex items-center justify-center shadow-md">
+                    <Check className="text-white w-8 h-8" strokeWidth={3} />
+                  </div>
+                </div>
+
+                {/* Title */}
+                <div className="absolute top-[224px] w-full text-center">
+                  <h3 className="text-[#16151C] text-[20px] font-semibold leading-[30px] px-[20px]">
+                    {ad.title} cancelled
+                  </h3>
+                </div>
+
+                {/* Finish Button */}
                 <button 
-                  onClick={() => setShowCancelModal(false)}
-                  className="w-[166px] h-[50px] border border-[rgba(162,161,168,0.2)] rounded-[10px] flex items-center justify-center text-[#16151C] text-[16px] font-normal hover:bg-gray-50 transition-colors"
+                  onClick={() => {
+                    setModalState('none');
+                    router.push('/ads');
+                  }}
+                  className="absolute top-[307px] left-[108.5px] w-[166px] h-[50px] bg-[#D4AF37] rounded-[6px] text-[#000000] text-[16px] font-normal hover:bg-[#c9a32c] transition-colors flex items-center justify-center"
                 >
-                  No
+                  Finish
                 </button>
-                <button 
-                  onClick={() => setShowCancelModal(false)}
-                  className="w-[166px] h-[50px] bg-[#D4AF37] rounded-[6px] flex items-center justify-center text-[#000000] text-[16px] font-normal hover:bg-[#c9a32c] transition-colors"
-                >
-                  Yes
-                </button>
-              </div>
-            </motion.div>
+              </motion.div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
