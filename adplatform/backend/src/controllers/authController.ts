@@ -60,8 +60,8 @@ export const register: RequestHandler = async (req, res) => {
   try {
     const { first_name, last_name, email, password, business_name, phone, role } = req.body;
 
-    if (!first_name || !last_name || !email || !password || !phone) {
-      res.status(400).json({ message: 'First name, last name, email, password, and phone are required' });
+    if (!first_name || !last_name || !email || !password) {
+      res.status(400).json({ message: 'First name, last name, email, and password are required' });
       return;
     }
     if (password.length < 6) {
@@ -113,11 +113,17 @@ export const register: RequestHandler = async (req, res) => {
       [user.id, code]
     );
 
+    try {
+      await sendVerificationEmail(email, user.first_name, code);
+    } catch (emailErr) {
+      console.error('Failed to send initial verification email:', emailErr);
+    }
+
     const jwtToken = await issueSessionToken({ id: user.id, email: user.email, role: user.role, name: user.name }, req);
     res.status(201).json({
       token: jwtToken,
       user: { ...user, email_verified: false },
-      message: 'Account created! Please choose a verification method.',
+      message: 'Account created! Verification code sent to your email.',
     });
   } catch (err: any) {
     console.error('Register error:', err);
