@@ -369,7 +369,7 @@ export default function CampaignsPage() {
   return (
     <DashboardLayout>
       <PageTransition>
-        <div style={{ fontFamily: F }} className="max-w-[1360px] mx-auto p-6 sm:p-10 flex flex-col gap-8 relative">
+        <div style={{ fontFamily: F }} className="w-full p-6 sm:p-8 flex flex-col gap-8 relative">
           
           {/* Header */}
           <div className="flex items-center justify-between">
@@ -407,11 +407,11 @@ export default function CampaignsPage() {
           </div>
 
           {/* Main Card: Toolbar + Table */}
-          <div className="bg-white dark:bg-[#111111] rounded-[24px] border border-slate-100 dark:border-white/10 shadow-[0_2px_16px_rgba(0,0,0,0.03)] overflow-hidden">
+          <div className="bg-white dark:bg-[#111111] rounded-[24px] border border-slate-100 dark:border-white/10 shadow-[0_2px_16px_rgba(0,0,0,0.03)] overflow-hidden px-4 sm:px-[40px] pb-10">
             
             {/* Toolbar */}
-            <div className="flex items-center gap-[104px] pt-[24px] pb-[8px]">
-              <h2 className="text-[14px] font-semibold text-[#000000] leading-[32px] w-full max-w-[967px]">Recently Played</h2>
+            <div className="flex items-center justify-between pt-[24px] pb-[8px]">
+              <h2 className="text-[14px] font-semibold text-[#000000] leading-[32px]">Recently Played</h2>
               <button className="flex items-center justify-center gap-[4px] min-w-[70px] h-[24px] border border-[rgba(214,214,214,0.7)] rounded-[8px] px-[8px]">
                 <span className="text-[12px] font-normal text-[#000000]">Sort</span>
                 <ChevronDown size={16} className="text-[rgba(0,0,0,0.4)]" />
@@ -1323,3 +1323,4 @@ export default function CampaignsPage() {
     </DashboardLayout>
   );
 }
+
