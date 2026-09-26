@@ -142,7 +142,7 @@ export default function CampaignDetailsPage() {
                 {/* Text Content */}
                 <div className="absolute top-[40px] left-[20px] w-[343px]">
                   <p className="text-[#16151C] text-[20px] font-semibold leading-[30px] text-center">
-                    Are you sure you want to cancel this Campaign? Campaign cancelled is non-refundable after 72hrs of booking. Read Studio Arella <span className="text-[#D4AF37]">terms & condition</span>
+                    Are you sure you want to cancel this campaign? Ad cancelled is non-refundable after 72hrs of booking. Read Studio Arella <span className="text-[#DCA92A]">terms & condition</span>
                   </p>
                 </div>
 
@@ -156,7 +156,7 @@ export default function CampaignDetailsPage() {
                   </button>
                   <button 
                     onClick={() => setModalState('success')}
-                    className="w-[166px] h-[50px] bg-[#D4AF37] rounded-[6px] flex items-center justify-center text-[#000000] text-[16px] font-normal hover:bg-[#c9a32c] transition-colors"
+                    className="w-[166px] h-[50px] bg-[#DCA92A] rounded-[6px] flex items-center justify-center text-[#000000] text-[16px] font-normal hover:opacity-90 transition-colors"
                   >
                     Yes
                   </button>
@@ -198,7 +198,7 @@ export default function CampaignDetailsPage() {
                     setModalState('none');
                     router.push('/campaigns');
                   }}
-                  className="absolute top-[307px] left-[108.5px] w-[166px] h-[50px] bg-[#D4AF37] rounded-[6px] text-[#000000] text-[16px] font-normal hover:bg-[#c9a32c] transition-colors flex items-center justify-center"
+                  className="absolute top-[307px] left-[108.5px] w-[166px] h-[50px] bg-[#DCA92A] rounded-[6px] text-[#000000] text-[16px] font-normal hover:opacity-90 transition-colors flex items-center justify-center"
                 >
                   Finish
                 </button>
