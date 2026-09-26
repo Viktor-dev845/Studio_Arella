@@ -3,12 +3,38 @@
 import React from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { ChevronLeft } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 
 const F = 'var(--font-dm-sans)';
 
+const MOCK_ADS = {
+  active: {
+    title: "So clean Advert",
+    subtitle: "Ends in 2hrs",
+    status: "Active",
+    statusBg: "bg-[rgba(152,255,197,0.5)]",
+    statusColor: "text-[#07BC56]",
+    buttonText: "Extend Slot",
+  },
+  pending: {
+    title: "Monnify Advert",
+    subtitle: "Goes live in 24hrs",
+    status: "Pending",
+    statusBg: "bg-[rgba(212,175,55,0.37)]",
+    statusColor: "text-[#D4AF37]",
+    buttonText: "Cancel Ad",
+  }
+};
+
 export default function AdDetailsPage() {
   const router = useRouter();
+  const params = useParams();
+  const idStr = Array.isArray(params?.id) ? params.id[0] : params?.id;
+  const id = parseInt(idStr || '1');
+  
+  // For demonstration: map IDs to different states.
+  // We'll map odd IDs to Active, even IDs to Pending.
+  const ad = id % 2 === 0 ? MOCK_ADS.pending : MOCK_ADS.active;
 
   return (
     <DashboardLayout>
@@ -31,22 +57,22 @@ export default function AdDetailsPage() {
             </div>
             
             <button className="w-[139px] h-[40px] bg-[#D4AF37] rounded-[6px] text-[rgba(0,0,0,0.8)] text-[14px] font-medium flex items-center justify-center hover:bg-[#c9a32c] transition-colors">
-              Extend Slot
+              {ad.buttonText}
             </button>
           </div>
 
           {/* Main Hero Image */}
           <div 
             className="w-full h-[434px] rounded-[20px] bg-cover bg-center border-[1px] border-[rgba(0,0,0,0.05)] mb-[30px]"
-            style={{ backgroundImage: `url('https://picsum.photos/seed/ad-hero/1200/600')` }}
+            style={{ backgroundImage: `url('https://picsum.photos/seed/ad-hero-${id}/1200/600')` }}
           />
 
           {/* Ad Info */}
           <div className="flex flex-col items-center gap-[12px] mb-[60px]">
-            <h2 className="text-[25px] font-bold text-[#000000] leading-[24px]">So clean Advert</h2>
-            <p className="text-[18px] text-[rgba(0,0,0,0.4)] leading-[20px]">Ends in 2hrs</p>
-            <div className="bg-[rgba(152,255,197,0.5)] rounded-[40px] px-[14px] py-[4px] flex items-center justify-center mt-2">
-              <span className="text-[#07BC56] text-[12px] font-semibold leading-[16px]">Active</span>
+            <h2 className="text-[25px] font-bold text-[#000000] leading-[24px]">{ad.title}</h2>
+            <p className="text-[18px] text-[rgba(0,0,0,0.4)] leading-[20px]">{ad.subtitle}</p>
+            <div className={`${ad.statusBg} rounded-[40px] px-[14px] py-[4px] flex items-center justify-center mt-2`}>
+              <span className={`${ad.statusColor} text-[12px] font-semibold leading-[16px]`}>{ad.status}</span>
             </div>
           </div>
           
@@ -59,7 +85,7 @@ export default function AdDetailsPage() {
                 <div key={item} className="flex flex-col gap-[12px] min-w-[154px]">
                   <div 
                     className="w-[154px] h-[154px] rounded-[6px] bg-cover bg-center border border-[rgba(0,0,0,0.05)]"
-                    style={{ backgroundImage: `url('https://picsum.photos/seed/ad-mat-${item}/300/300')` }}
+                    style={{ backgroundImage: `url('https://picsum.photos/seed/ad-mat-${id}-${item}/300/300')` }}
                   />
                   <span className="text-[14px] text-[#000000] font-medium">Banner graphics</span>
                 </div>
