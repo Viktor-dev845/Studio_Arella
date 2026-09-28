@@ -118,7 +118,7 @@ export default function PublicBlogLayout({ children }: { children: React.ReactNo
             <div className="flex flex-col gap-4">
               <h4 className="text-white font-bold tracking-widest text-[13px] mb-2 border-b-2 border-blue-600 pb-2 inline-block w-fit">SECTIONS</h4>
               {['Home', 'Politics', 'Business', 'Sports', 'Technology', 'Health'].map(link => (
-                <Link key={link} href="#" className="text-gray-400 hover:text-[#D4AF37] text-sm transition-colors">{link}</Link>
+                  <Link key={link} href={link === 'Home' ? '/blog' : `/blog?category=${link.toUpperCase()}`} className="text-gray-400 hover:text-[#D4AF37] text-sm transition-colors">{link}</Link>
               ))}
             </div>
 
@@ -126,16 +126,22 @@ export default function PublicBlogLayout({ children }: { children: React.ReactNo
             <div className="flex flex-col gap-4">
               <h4 className="text-white font-bold tracking-widest text-[13px] mb-2 border-b-2 border-blue-600 pb-2 inline-block w-fit">MORE NEWS</h4>
               {['Fashion', 'Education', 'Travel', 'Science', 'Lifestyle', 'Economy'].map(link => (
-                <Link key={link} href="#" className="text-gray-400 hover:text-[#D4AF37] text-sm transition-colors">{link}</Link>
+                  <Link key={link} href={`/blog?category=${link.toUpperCase()}`} className="text-gray-400 hover:text-[#D4AF37] text-sm transition-colors">{link}</Link>
               ))}
             </div>
 
             {/* Column 4: Company */}
             <div className="flex flex-col gap-4">
               <h4 className="text-white font-bold tracking-widest text-[13px] mb-2 border-b-2 border-blue-600 pb-2 inline-block w-fit">COMPANY</h4>
-              {['About Us', 'Our Team', 'Advertise', 'Contact Us', 'Careers'].map(link => (
-                <Link key={link} href="#" className="text-gray-400 hover:text-[#D4AF37] text-sm transition-colors">{link}</Link>
-              ))}
+              {['About Us', 'Our Team', 'Advertise', 'Contact Us', 'Careers'].map(link => {
+                  let href = '/';
+                  if (link === 'Advertise') href = '/book-ad';
+                  if (link === 'About Us') href = '/about';
+                  if (link === 'Our Team') href = '/team';
+                  if (link === 'Contact Us') href = '/contact';
+                  if (link === 'Careers') href = '/careers';
+                  return <Link key={link} href={href} className="text-gray-400 hover:text-[#D4AF37] text-sm transition-colors">{link}</Link>;
+                })}
             </div>
 
             {/* Column 5: Subscribe */}

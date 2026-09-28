@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import PublicBlogLayout from '@/components/layout/PublicBlogLayout';
@@ -24,8 +24,15 @@ function formatCount(n: number) {
   return String(n);
 }
 
-
 export default function BlogPage() {
+  return (
+    <Suspense fallback={<PublicBlogLayout><div className="flex items-center justify-center min-h-screen"><div className="animate-pulse text-gray-400 text-lg">Loading...</div></div></PublicBlogLayout>}>
+      <BlogPageInner />
+    </Suspense>
+  );
+}
+
+function BlogPageInner() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const searchParams = useSearchParams();

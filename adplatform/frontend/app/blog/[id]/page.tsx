@@ -26,8 +26,7 @@ interface BlogPost {
 type Block = { type: 'h2' | 'p' | 'img'; text: string; src?: string; alt?: string };
 
 function parseContent(content: string): Block[] {
-  const lines = content.split('
-');
+  const lines = content.split('\n');
   const blocks: Block[] = [];
   let buf: string[] = [];
   const flush = () => { if (buf.length) { blocks.push({ type: 'p', text: buf.join(' ') }); buf = []; } };
