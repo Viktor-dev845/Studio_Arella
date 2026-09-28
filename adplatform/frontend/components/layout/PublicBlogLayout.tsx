@@ -21,7 +21,7 @@ export default function PublicBlogLayout({ children }: { children: React.ReactNo
         zIndex: 100
       }}>
         <Link href="/blog">
-          <img src="/logo-black.png" alt="Studio Arella Logo" style={{ height: 40, objectFit: 'contain' }} />
+          <img src="/logo.png" alt="Studio Arella Logo" style={{ height: 40, objectFit: 'contain' }} />
         </Link>
         <div style={{ display: 'flex', gap: 16 }}>
           <Link href="/" style={{
