@@ -17,26 +17,45 @@ export default function PublicBlogLayout({ children }: { children: React.ReactNo
       <header style={{ 
         width: '100%', 
         padding: '20px 5%', 
-        borderBottom: `1px solid ${theme.color.border}`,
         display: 'flex', 
         alignItems: 'center', 
         justifyContent: 'space-between',
-        background: '#FFFFFF',
+        background: '#0A0A0A',
         position: 'sticky',
         top: 0,
         zIndex: 100
       }}>
-        <Link href="/blog">
-          <img src="/logo.png" alt="Studio Arella Logo" style={{ height: 40, objectFit: 'contain' }} />
-        </Link>
-        <div style={{ display: 'flex', gap: 16 }}>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+          <Link href="/blog">
+            <img src="/logo-white.png" alt="Studio Arella Logo" style={{ height: 40, objectFit: 'contain' }} />
+          </Link>
+        </div>
+
+        {/* Center Categories (Hidden on very small mobile) */}
+        <div className="hidden md:flex" style={{ gap: '30px', alignItems: 'center' }}>
+          {['HOME', 'BUSINESS', 'CREATORS', 'TECHNOLOGY', 'CULTURE'].map((cat) => (
+            <Link key={cat} href={cat === 'HOME' ? '/blog' : `/blog?category=${cat.toLowerCase()}`} style={{
+              color: '#FFFFFF',
+              fontSize: '13px',
+              fontWeight: 600,
+              letterSpacing: '1px',
+              textDecoration: 'none',
+              transition: 'color 0.2s',
+            }}
+            >
+              {cat}
+            </Link>
+          ))}
+        </div>
+
+        <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', gap: 16 }}>
           {mounted && user ? (
             <>
               <Link href="/" style={{
                 padding: '10px 20px',
                 borderRadius: 6,
-                background: '#F1F5F9',
-                color: '#0F172A',
+                background: '#262626',
+                color: '#FFFFFF',
                 fontSize: 14,
                 fontWeight: 600,
                 textDecoration: 'none'
