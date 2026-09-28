@@ -1,13 +1,15 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import passport from '../middleware/passport';
 import { upload, avatarUpload } from '../middleware/upload';
-import { authenticate } from '../middleware/auth';
+import { authenticate, optionalAuthenticate } from '../middleware/auth';
 import { otpGuessLimiter, otpRequestLimiter, authLimiter, chatLimiter } from '../middleware/rateLimit';
 
 // Auth
 import { register, login, getMe, updateProfile, uploadAvatar, changePassword, deleteAccount, becomeScreenOwner, verifyEmail, resendVerification, forgotPassword, resetPassword, acceptTerms, markTourSeen, setup2FA, verifySetup2FA, disable2FA, verify2FALogin, getSessions, revokeSession, updateNotificationPreferences, updateDisplayPreferences } from '../controllers/authController';
 import { getExchangeRates } from '../controllers/exchangeRateController';
-import { googleCallback } from '../controllers/googleAuthController';
+import { googleCallback, googleOneTap } from '../controllers/googleAuthController';
+import { submitLead, getLeads } from '../controllers/leadController';
+
 
 // Features
 import { getCampaigns, getCampaign, createCampaign, updateCampaign, deleteCampaign, fundCampaignWallet } from '../controllers/campaignController';
@@ -71,9 +73,9 @@ router.get('/follows/following', authenticate, getFollowing);
 router.post('/follows/:userId', authenticate, followUser);
 router.delete('/follows/:userId', authenticate, unfollowUser);
 
-router.get('/blog/posts', authenticate, getBlogPosts);
+router.get('/blog/posts', optionalAuthenticate, getBlogPosts);
 router.get('/blog/posts/admin', authenticate, getAllBlogPostsAdmin);
-router.get('/blog/posts/:id', authenticate, getBlogPost);
+router.get('/blog/posts/:id', optionalAuthenticate, getBlogPost);
 router.post('/blog/posts', authenticate, createBlogPost);
 router.put('/blog/posts/:id', authenticate, updateBlogPost);
 router.delete('/blog/posts/:id', authenticate, deleteBlogPost);
@@ -129,6 +131,8 @@ router.get('/auth/google/callback',
   passport.authenticate('google', { failureRedirect: '/auth/login', session: false }),
   googleCallback
 );
+// One Tap: verifies the credential JWT posted directly from the browser
+router.post('/auth/google/one-tap', googleOneTap);
 
 // ── Dashboard & analytics ─────────────────────────────────────────────────────
 router.get('/dashboard/stats', authenticate, getDashboardStats);
@@ -226,5 +230,10 @@ router.get('/admin/podcasts', authenticate, getAllPodcastBookings);
 router.get('/admin/campaigns', authenticate, getAllCampaigns);
 router.get('/admin/screens', authenticate, getAllScreens);
 router.get('/admin/transactions', authenticate, getAllTransactions);
+
+
+// Ad Leads
+router.post('/leads', submitLead);
+router.get('/leads/admin', authenticate, getLeads);
 
 export default router;
