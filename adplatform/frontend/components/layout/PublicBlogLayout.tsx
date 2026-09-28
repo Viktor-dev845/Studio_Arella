@@ -7,6 +7,10 @@ import { useAuthStore } from '@/store/authStore';
 import { useState, useEffect } from 'react';
 
 export default function PublicBlogLayout({ children }: { children: React.ReactNode }) {
+  const { user, logout } = useAuthStore();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   return (
     <div style={{ minHeight: '100vh', background: '#FFFFFF', display: 'flex', flexDirection: 'column', fontFamily: theme.font.body }}>
       {/* Header */}
