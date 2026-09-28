@@ -1,4 +1,6 @@
 import { Request, Response } from 'express';
+import { OAuth2Client } from 'google-auth-library';
+import pool from '../db/pool';
 import { issueSessionToken } from '../utils/session';
 
 // This is called after Passport successfully authenticates with Google.
@@ -33,6 +35,81 @@ export const googleCallback = async (req: Request, res: Response, next: any): Pr
     res.redirect(redirectUrl);
   } catch (error) {
     console.error('Error in googleCallback:', error);
+    next(error);
+  }
+};
+
+const oauthClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+// ── Google One Tap ────────────────────────────────────────────────────────────
+// Receives the credential JWT that Google One Tap posts back to the page,
+// verifies it server-side, upserts the user (same logic as the Passport
+// strategy), then returns a session token as JSON so the frontend can
+// store it directly without any page redirect.
+export const googleOneTap = async (req: Request, res: Response, next: any): Promise<void> => {
+  try {
+    const { credential } = req.body;
+    if (!credential) {
+      res.status(400).json({ message: 'Missing Google credential' });
+      return;
+    }
+
+    // Verify the ID token with Google's public keys
+    const ticket = await oauthClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+    if (!payload || !payload.email) {
+      res.status(401).json({ message: 'Invalid Google token' });
+      return;
+    }
+
+    const email = payload.email;
+    const name = payload.name || email.split('@')[0];
+    const avatar = payload.picture || null;
+    const googleId = payload.sub;
+
+    // Upsert user — same logic as the Passport strategy
+    const existing = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    let user: any;
+    let isNew = false;
+
+    if (existing.rows.length > 0) {
+      const result = await pool.query(
+        `UPDATE users
+         SET avatar = COALESCE(avatar, $1),
+             google_id = COALESCE(google_id, $2),
+             email_verified = true
+         WHERE email = $3
+         RETURNING id, name, first_name, last_name, email, role, credits, avatar, terms_accepted, has_seen_tour`,
+        [avatar, googleId, email]
+      );
+      user = result.rows[0];
+    } else {
+      const result = await pool.query(
+        `INSERT INTO users (name, email, avatar, google_id, role, password, email_verified)
+         VALUES ($1, $2, $3, $4, 'advertiser', '', true)
+         RETURNING id, name, first_name, last_name, email, role, credits, avatar, terms_accepted, has_seen_tour`,
+        [name, email, avatar, googleId]
+      );
+      user = result.rows[0];
+      isNew = true;
+    }
+
+    if (user.suspended) {
+      res.status(403).json({ message: 'Your account has been suspended. Please contact support.' });
+      return;
+    }
+
+    const token = await issueSessionToken(
+      { id: user.id, email: user.email, role: user.role, name: user.name },
+      req
+    );
+
+    res.json({ token, user, isNew });
+  } catch (error) {
+    console.error('Error in googleOneTap:', error);
     next(error);
   }
 };

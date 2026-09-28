@@ -88,3 +88,32 @@ export const requireAdmin: RequestHandler = (
   }
   next();
 };
+
+
+export const optionalAuthenticate: RequestHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  const token = req.headers.authorization?.split(' ')[1];
+
+  if (!token) {
+    return next();
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret') as any;
+    
+    // Check if token is blacklisted (logged out)
+    const blacklistCheck = await pool.query('SELECT * FROM token_blacklist WHERE jti = $1', [decoded.jti]);
+    if (blacklistCheck.rows.length > 0) {
+      return next();
+    }
+
+    req = req as AuthRequest;
+    (req as any).user = decoded;
+    return next();
+  } catch (err) {
+    return next();
+  }
+};
