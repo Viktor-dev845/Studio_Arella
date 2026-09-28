@@ -23,18 +23,23 @@ interface BlogPost {
   liked?: boolean;
 }
 
-type Block = { type: 'h2' | 'p'; text: string };
+type Block = { type: 'h2' | 'p' | 'img'; text: string; src?: string; alt?: string };
 
 function parseContent(content: string): Block[] {
-  const lines = content.split('\n');
+  const lines = content.split('
+');
   const blocks: Block[] = [];
   let buf: string[] = [];
   const flush = () => { if (buf.length) { blocks.push({ type: 'p', text: buf.join(' ') }); buf = []; } };
   for (const raw of lines) {
     const line = raw.trim();
+    const imgMatch = line.match(/^!\[(.*?)\]\((.*?)\)$/);
     if (line.startsWith('## ')) {
       flush();
       blocks.push({ type: 'h2', text: line.slice(3).trim() });
+    } else if (imgMatch) {
+      flush();
+      blocks.push({ type: 'img', text: '', alt: imgMatch[1], src: imgMatch[2] });
     } else if (line === '') {
       flush();
     } else {
@@ -177,25 +182,39 @@ export default function BlogPostPage() {
             {/* Left Column (Article Text) */}
             <div className="flex flex-col flex-1 py-[40px] px-[20px] lg:py-[60px] lg:px-[80px] w-full relative">
                <div className={`flex flex-col relative w-full ${!expanded ? 'max-h-[600px] overflow-hidden' : ''}`}>
-                 {blocks.map((b, i) =>
-                   b.type === 'h2' ? (
-                     <h2 
-                       key={i} 
-                       className="text-[#000000] font-medium text-[16px] leading-[150%] tracking-[-0.03em] mt-[32px] mb-[12px]" 
-                       style={{ fontFamily: 'var(--font-dm-sans), DM Sans, sans-serif' }}
-                     >
-                       {b.text}
-                     </h2>
-                   ) : (
-                     <p 
-                       key={i} 
-                       className="text-[rgba(0,0,0,0.4)] font-normal text-[16px] leading-[150%] tracking-[-0.03em] mb-[16px]" 
-                       style={{ fontFamily: 'var(--font-dm-sans), DM Sans, sans-serif' }}
-                     >
-                       {b.text}
-                     </p>
-                   )
-                 )}
+                 {blocks.map((b, i) => {
+                     if (b.type === 'h2') {
+                       return (
+                         <h2 
+                           key={i} 
+                           className="text-[#000000] font-medium text-[20px] leading-[150%] tracking-[-0.03em] mt-[40px] mb-[16px]" 
+                           style={{ fontFamily: 'var(--font-dm-sans), DM Sans, sans-serif' }}
+                         >
+                           {b.text}
+                         </h2>
+                       );
+                     } else if (b.type === 'img') {
+                       return (
+                         <img 
+                           key={i} 
+                           src={b.src} 
+                           alt={b.alt} 
+                           className="w-full rounded-lg my-8 object-cover shadow-sm border border-gray-100"
+                           style={{ maxHeight: '500px' }}
+                         />
+                       );
+                     } else {
+                       return (
+                         <p 
+                           key={i} 
+                           className="text-gray-700 font-normal text-[17px] leading-[170%] tracking-[-0.02em] mb-[20px]" 
+                           style={{ fontFamily: 'var(--font-dm-sans), DM Sans, sans-serif' }}
+                         >
+                           {b.text}
+                         </p>
+                       );
+                     }
+                   })}
                  
                  {/* Fade Out Overlay */}
                  {!expanded && (
