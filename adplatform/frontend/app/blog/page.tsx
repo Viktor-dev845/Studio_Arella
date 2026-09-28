@@ -2,10 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Heart, Send } from 'lucide-react';
 import PublicBlogLayout from '@/components/layout/PublicBlogLayout';
 import { PageTransition } from '@/components/ui/Animations';
-import { useToast } from '@/components/ui/ToastProvider';
 import api from '@/lib/api';
 
 interface BlogPost {
@@ -27,7 +25,6 @@ function formatCount(n: number) {
 
 
 export default function BlogPage() {
-  const { toast } = useToast();
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
 

@@ -24,9 +24,9 @@ export default function BookAdPage() {
     try {
       await api.post('/leads', formData);
       setSuccess(true);
-      toast.success('Request submitted successfully. We will contact you soon!');
+      toast('Request submitted successfully. We will contact you soon!', 'success');
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to submit request');
+      toast(err.response?.data?.message || 'Failed to submit request', 'error');
     } finally {
       setLoading(false);
     }
