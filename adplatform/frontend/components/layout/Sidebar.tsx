@@ -22,6 +22,8 @@ import {
   Monitor,
   DollarSign,
   X
+,
+  FileText
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useThemeStore } from '@/store/themeStore';
