@@ -25,66 +25,19 @@ function formatCount(n: number) {
   return String(n);
 }
 
-const MOCK_POSTS: BlogPost[] = [
-  {
-    id: '1',
-    title: 'Global Climate Summit Addresses Urgent Climate Action',
-    excerpt: 'World leaders gathered at the Global Climate Summit to discuss urgent climate action, emissions reductions, and renewable energy targets.',
-    category: 'Environment',
-    authorName: 'Jane Smith',
-    imageUrl: 'https://images.unsplash.com/photo-1466611653911-95081537e5b7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
-    publishedAt: '2023-10-10T00:00:00.000Z',
-    likesCount: 14000,
-    commentsCount: 204
-  },
-  {
-    id: '2',
-    title: 'A Decisive Victory for Progressive Policies',
-    excerpt: null,
-    category: 'Politics',
-    authorName: 'Admin',
-    imageUrl: 'https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-    publishedAt: '2023-10-09T00:00:00.000Z',
-    likesCount: 2200,
-    commentsCount: 60
-  },
-  {
-    id: '3',
-    title: 'Tech Giants Unveil Cutting-Edge AI Innovations',
-    excerpt: null,
-    category: 'Technology',
-    authorName: 'Admin',
-    imageUrl: 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-    publishedAt: '2023-10-08T00:00:00.000Z',
-    likesCount: 6000,
-    commentsCount: 92
-  },
-  {
-    id: '4',
-    title: 'The Rise of Artificial Intelligence In Healthcare',
-    excerpt: null,
-    category: 'Health',
-    authorName: 'Admin',
-    imageUrl: 'https://images.unsplash.com/photo-1532938911079-1b06ac7ceec7?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-    publishedAt: '2023-10-07T00:00:00.000Z',
-    likesCount: 10000,
-    commentsCount: 124
-  }
-];
 
 export default function BlogPage() {
   const { toast } = useToast();
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+useEffect(() => {
     api.get('/blog/posts?limit=20')
       .then((res) => {
-        const fetchedPosts = res.data?.posts || [];
-        setPosts(fetchedPosts.length > 0 ? fetchedPosts : MOCK_POSTS);
+        setPosts(res.data?.posts || []);
       })
       .catch(() => {
-        setPosts(MOCK_POSTS);
+        setPosts([]);
       })
       .finally(() => setLoading(false));
   }, []);
