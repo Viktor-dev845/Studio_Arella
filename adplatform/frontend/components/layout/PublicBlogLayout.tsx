@@ -76,7 +76,7 @@ export default function PublicBlogLayout({ children }: { children: React.ReactNo
               </button>
             </>
           ) : mounted ? (
-            <Link href="/auth/login" style={{
+            <Link href="/book-ad" style={{
               padding: '10px 20px',
               borderRadius: 6,
               background: '#D4AF37',
@@ -163,10 +163,10 @@ export default function PublicBlogLayout({ children }: { children: React.ReactNo
           <div className="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-gray-800 text-xs text-gray-500">
             <p>&copy; {new Date().getFullYear()} Studio Arella. All Rights Reserved</p>
             <div className="flex gap-6 mt-4 md:mt-0 font-medium tracking-wide">
-              <Link href="#" className="hover:text-white">Privacy</Link>
-              <Link href="#" className="hover:text-white">Terms</Link>
-              <Link href="#" className="hover:text-white">Cookies</Link>
-              <Link href="#" className="hover:text-white">Sitemap</Link>
+              <Link href="/privacy" className="hover:text-white">Privacy</Link>
+              <Link href="/terms" className="hover:text-white">Terms</Link>
+              <Link href="/cookies" className="hover:text-white">Cookies</Link>
+              <Link href="/sitemap" className="hover:text-white">Sitemap</Link>
             </div>
           </div>
         </div>
