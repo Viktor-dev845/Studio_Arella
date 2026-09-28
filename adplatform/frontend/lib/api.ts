@@ -19,7 +19,10 @@ api.interceptors.response.use(
     if (err.response?.status === 401 && typeof window !== 'undefined') {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      window.location.href = '/auth/login';
+      // Prevent infinite redirect loops on public pages like /blog
+      if (!window.location.pathname.startsWith('/blog')) {
+        window.location.href = '/auth/login';
+      }
     }
     return Promise.reject(err);
   }
