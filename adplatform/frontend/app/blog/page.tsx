@@ -39,12 +39,20 @@ function BlogPageInner() {
   const categoryFilter = searchParams.get('category');
 
 useEffect(() => {
-    api.get('/blog/posts?limit=20')
-      .then((res) => {
-        setPosts(res.data?.posts || []);
+    // Use internal DB route first (always fresh), fall back to Render backend
+    fetch('/api/blog-fallback')
+      .then(res => res.json())
+      .then(data => {
+        if (data.posts?.length) {
+          setPosts(data.posts);
+        } else {
+          return api.get('/blog/posts?limit=20').then(res => setPosts(res.data?.posts || []));
+        }
       })
       .catch(() => {
-        setPosts([]);
+        api.get('/blog/posts?limit=20')
+          .then(res => setPosts(res.data?.posts || []))
+          .catch(() => setPosts([]));
       })
       .finally(() => setLoading(false));
   }, []);
