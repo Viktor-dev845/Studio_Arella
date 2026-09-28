@@ -97,12 +97,6 @@ export default function BlogPage() {
       <PageTransition>
         <div className="flex flex-col items-center w-full min-h-screen bg-[#FFFFFF] rounded-[24px]">
           
-          <div className="w-full max-w-[1204px] mt-[20px] mb-[10px] px-[60px] lg:px-[60px]">
-            <h1 className="text-[#000000] font-bold text-[24px] tracking-[-0.02em] leading-[40px]" style={{ fontFamily: 'var(--font-dm-sans), DM Sans, sans-serif' }}>
-              Blog
-            </h1>
-          </div>
-
 
           {loading ? (
             <p className="text-center text-gray-500 py-10">Loading...</p>
