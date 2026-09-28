@@ -3,6 +3,8 @@
 import React from 'react';
 import Link from 'next/link';
 import { theme } from '@/lib/theme';
+import { useAuthStore } from '@/store/authStore';
+import { useState, useEffect } from 'react';
 
 export default function PublicBlogLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -24,28 +26,45 @@ export default function PublicBlogLayout({ children }: { children: React.ReactNo
           <img src="/logo.png" alt="Studio Arella Logo" style={{ height: 40, objectFit: 'contain' }} />
         </Link>
         <div style={{ display: 'flex', gap: 16 }}>
-          <Link href="/" style={{
-            padding: '10px 20px',
-            borderRadius: 6,
-            background: '#F1F5F9',
-            color: '#0F172A',
-            fontSize: 14,
-            fontWeight: 600,
-            textDecoration: 'none'
-          }}>
-            Dashboard
-          </Link>
-          <Link href="/auth/login" style={{
-            padding: '10px 20px',
-            borderRadius: 6,
-            background: '#D4AF37',
-            color: '#121212',
-            fontSize: 14,
-            fontWeight: 600,
-            textDecoration: 'none'
-          }}>
-            Sign In
-          </Link>
+          {mounted && user ? (
+            <>
+              <Link href="/" style={{
+                padding: '10px 20px',
+                borderRadius: 6,
+                background: '#F1F5F9',
+                color: '#0F172A',
+                fontSize: 14,
+                fontWeight: 600,
+                textDecoration: 'none'
+              }}>
+                Dashboard
+              </Link>
+              <button onClick={() => { logout(); window.location.reload(); }} style={{
+                padding: '10px 20px',
+                borderRadius: 6,
+                background: '#FEE2E2',
+                color: '#991B1B',
+                fontSize: 14,
+                fontWeight: 600,
+                border: 'none',
+                cursor: 'pointer'
+              }}>
+                Sign Out
+              </button>
+            </>
+          ) : mounted ? (
+            <Link href="/auth/login" style={{
+              padding: '10px 20px',
+              borderRadius: 6,
+              background: '#D4AF37',
+              color: '#121212',
+              fontSize: 14,
+              fontWeight: 600,
+              textDecoration: 'none'
+            }}>
+              Sign In
+            </Link>
+          ) : null}
         </div>
       </header>
 
