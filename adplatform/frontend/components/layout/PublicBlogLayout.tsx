@@ -85,7 +85,7 @@ export default function PublicBlogLayout({ children }: { children: React.ReactNo
               fontWeight: 600,
               textDecoration: 'none'
             }}>
-              Sign In
+              Advertise
             </Link>
           ) : null}
         </div>
