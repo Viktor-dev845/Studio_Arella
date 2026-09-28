@@ -1,98 +1,15 @@
-'use client';
+import re
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { Heart, Send } from 'lucide-react';
-import PublicBlogLayout from '@/components/layout/PublicBlogLayout';
-import { PageTransition } from '@/components/ui/Animations';
-import { useToast } from '@/components/ui/ToastProvider';
-import api from '@/lib/api';
+filepath = r'app\blog\page.tsx'
+with open(filepath, 'r', encoding='utf-8') as f:
+    content = f.read()
 
-interface BlogPost {
-  id: string;
-  title: string;
-  excerpt: string | null;
-  category: string | null;
-  authorName: string | null;
-  imageUrl: string | null;
-  publishedAt: string;
-  likesCount: number;
-  commentsCount: number;
-}
+# Replacement for the main layout to include:
+# 1. Blurred background
+# 2. Expanded width (max-w-[1800px] or full width)
+# 3. Increased heights and card sizes
 
-function formatCount(n: number) {
-  if (n >= 1000) return `${(n / 1000).toFixed(n % 1000 === 0 ? 0 : 1)}k`;
-  return String(n);
-}
-
-const MOCK_POSTS: BlogPost[] = [
-  {
-    id: '1',
-    title: 'Global Climate Summit Addresses Urgent Climate Action',
-    excerpt: 'World leaders gathered at the Global Climate Summit to discuss urgent climate action, emissions reductions, and renewable energy targets.',
-    category: 'Environment',
-    authorName: 'Jane Smith',
-    imageUrl: 'https://images.unsplash.com/photo-1466611653911-95081537e5b7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
-    publishedAt: '2023-10-10T00:00:00.000Z',
-    likesCount: 14000,
-    commentsCount: 204
-  },
-  {
-    id: '2',
-    title: 'A Decisive Victory for Progressive Policies',
-    excerpt: null,
-    category: 'Politics',
-    authorName: 'Admin',
-    imageUrl: 'https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-    publishedAt: '2023-10-09T00:00:00.000Z',
-    likesCount: 2200,
-    commentsCount: 60
-  },
-  {
-    id: '3',
-    title: 'Tech Giants Unveil Cutting-Edge AI Innovations',
-    excerpt: null,
-    category: 'Technology',
-    authorName: 'Admin',
-    imageUrl: 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-    publishedAt: '2023-10-08T00:00:00.000Z',
-    likesCount: 6000,
-    commentsCount: 92
-  },
-  {
-    id: '4',
-    title: 'The Rise of Artificial Intelligence In Healthcare',
-    excerpt: null,
-    category: 'Health',
-    authorName: 'Admin',
-    imageUrl: 'https://images.unsplash.com/photo-1532938911079-1b06ac7ceec7?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-    publishedAt: '2023-10-07T00:00:00.000Z',
-    likesCount: 10000,
-    commentsCount: 124
-  }
-];
-
-export default function BlogPage() {
-  const { toast } = useToast();
-  const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    api.get('/blog/posts?limit=20')
-      .then((res) => {
-        const fetchedPosts = res.data?.posts || [];
-        setPosts(fetchedPosts.length > 0 ? fetchedPosts : MOCK_POSTS);
-      })
-      .catch(() => {
-        setPosts(MOCK_POSTS);
-      })
-      .finally(() => setLoading(false));
-  }, []);
-
-  const [featured, ...rest] = posts;
-
-return (
-    <PublicBlogLayout>
+new_layout = """
       <PageTransition>
         <div className="relative flex flex-col items-center w-full min-h-screen pb-[100px] overflow-hidden">
           
@@ -163,13 +80,8 @@ return (
                           {featured.excerpt}
                         </p>
                         
-                        <div className="flex items-center gap-4 text-gray-300 text-base font-semibold tracking-wide mt-2">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-black overflow-hidden border-2 border-gray-500 shadow-md flex items-center justify-center p-1.5">
-                               <img src="/logo-white.png" alt="Author" className="w-full h-full object-contain opacity-90" />
-                            </div>
-                            <span>{featured.authorName || 'Studio Arella'}</span>
-                          </div>
+                        <div className="flex items-center gap-4 text-gray-300 text-base font-semibold tracking-wide">
+                          <span>{featured.authorName || 'Studio Arella'}</span>
                           <span className="text-gray-500">•</span>
                           <span>{featured.publishedAt ? new Date(featured.publishedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : ''}</span>
                         </div>
@@ -184,7 +96,7 @@ return (
                       
                       <div className="flex flex-col gap-6 overflow-y-auto pr-2 pb-4" style={{ flex: 1 }}>
                         {rest.slice(0, 4).map((post) => (
-                          <Link key={post.id} href={`/blog/${post.id}`} className="group flex gap-5 items-center bg-white/40 p-3 rounded-sm hover:bg-white/90 hover:-translate-y-1 hover:shadow-xl transition-all duration-300 shadow-sm backdrop-blur-md">
+                          <Link key={post.id} href={`/blog/${post.id}`} className="group flex gap-5 items-center bg-white/40 p-3 rounded-sm hover:bg-white/80 transition-colors shadow-sm backdrop-blur-md">
                             <div className="relative w-[140px] lg:w-[180px] h-[110px] lg:h-[135px] flex-shrink-0 overflow-hidden bg-gray-200 shadow-inner">
                               <img 
                                 src={post.imageUrl || ""} 
@@ -209,18 +121,9 @@ return (
                           </Link>
                         ))}
                       </div>
-                      
-                      {/* Advertising CTA */}
-                      <Link href="/book-ad" className="group flex flex-col items-center justify-center bg-gradient-to-br from-[#1A1A1A] to-[#0A0A0A] p-6 rounded-sm hover:-translate-y-1 hover:shadow-2xl transition-all duration-300 shadow-lg border border-[#D4AF37]/20 relative overflow-hidden mt-2 shrink-0">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-[#D4AF37]/10 rounded-full blur-2xl transform translate-x-1/2 -translate-y-1/2" />
-                        <h4 className="text-[#D4AF37] font-bold text-[19px] mb-2 text-center z-10 uppercase tracking-widest drop-shadow-md">Grow Your Business</h4>
-                        <p className="text-gray-300 text-[14px] text-center mb-5 z-10 leading-relaxed max-w-[250px]">Advertise on Umuahia's premier digital screen. Book a slot instantly.</p>
-                        <span className="bg-[#D4AF37] text-black text-[13px] font-bold px-5 py-2.5 rounded-sm z-10 group-hover:bg-white transition-colors shadow-md">Book Ad Slot &rarr;</span>
-                      </Link>
                     </div>
 
                   </div>
-
                 )}
 
                 {/* EDITOR CHOICE (Masonry or standard grid) */}
@@ -229,7 +132,7 @@ return (
                     <h3 className="text-3xl font-bold border-b-4 border-black pb-3 mb-10 inline-block">Editor's Choice</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 lg:gap-12">
                       {rest.slice(4).map((post) => (
-                        <Link key={post.id} href={`/blog/${post.id}`} className="group flex flex-col gap-5 bg-white/40 p-4 rounded-sm hover:bg-white/90 hover:-translate-y-1 hover:shadow-xl transition-all duration-300 shadow-sm backdrop-blur-md">
+                        <Link key={post.id} href={`/blog/${post.id}`} className="group flex flex-col gap-5 bg-white/40 p-4 rounded-sm hover:bg-white/80 transition-colors shadow-sm backdrop-blur-md">
                           <div className="relative w-full aspect-[4/3] overflow-hidden bg-gray-200 shadow-md">
                             <img 
                               src={post.imageUrl || ""} 
@@ -263,6 +166,15 @@ return (
           </div>
         </div>
       </PageTransition>
-    </PublicBlogLayout>
-  );
-}
+"""
+
+content = re.sub(
+    r'<PageTransition>[\s\S]*?</PageTransition>',
+    new_layout.strip(),
+    content
+)
+
+with open(filepath, 'w', encoding='utf-8') as f:
+    f.write(content)
+
+print("Updated app/blog/page.tsx with full width layout and blurred background")

@@ -27,7 +27,8 @@ export function middleware(request: NextRequest) {
     isStaticImage ||
     url.pathname.startsWith('/_next') ||
     url.pathname.startsWith('/api') ||
-    url.pathname.startsWith('/blog'); // Allow /blog and /blog/*
+    url.pathname.startsWith('/blog') ||
+    url.pathname.startsWith('/book-ad');
 
   if (isAllowedPath) {
     return NextResponse.next();
