@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import DashboardLayout from '@/components/layout/DashboardLayout';
+
 import api from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
 import { theme } from '@/lib/theme';
@@ -89,7 +89,7 @@ export default function AdminBlogPage() {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <div style={{ padding: '40px', fontFamily: theme.font.body, maxWidth: 1200, margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 30 }}>
           <h1 style={{ fontSize: 24, fontWeight: 700 }}>Blog Manager</h1>
@@ -197,6 +197,6 @@ export default function AdminBlogPage() {
           </div>
         )}
       </div>
-    </DashboardLayout>
+    </>
   );
 }

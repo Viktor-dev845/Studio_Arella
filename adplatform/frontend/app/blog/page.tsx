@@ -81,16 +81,16 @@ export default function BlogPage() {
     api.get('/blog/posts?limit=20')
       .then((res) => {
         const fetchedPosts = res.data?.posts || [];
-        setPosts(fetchedPosts.length > 0 ? fetchedPosts : MOCK_POSTS);
+        setPosts(fetchedPosts);
       })
       .catch(() => {
         // Fallback to beautiful mock data to match Figma if API fails
-        setPosts(MOCK_POSTS);
+        setPosts([]);
       })
       .finally(() => setLoading(false));
   }, []);
 
-  const [featured, ...rest] = posts.length > 0 ? posts : MOCK_POSTS;
+  const [featured, ...rest] = posts;
 
   return (
     <PublicBlogLayout>
@@ -103,9 +103,16 @@ export default function BlogPage() {
             </h1>
           </div>
 
+
           {loading ? (
             <p className="text-center text-gray-500 py-10">Loading...</p>
+          ) : posts.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 opacity-50">
+               <h2 className="text-2xl font-bold mb-2 text-black">Stay Tuned!</h2>
+               <p className="text-gray-500">We are currently preparing some amazing content. Check back soon.</p>
+            </div>
           ) : (
+
             <>
               {featured && (
                 <div className="flex flex-col lg:flex-row items-center border-t border-[rgba(38,38,38,0.2)] py-[60px] lg:pl-[23px] lg:pr-[80px] gap-[40px] w-full max-w-[1204px] px-[20px]">
