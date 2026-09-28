@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import PublicBlogLayout from '@/components/layout/PublicBlogLayout';
 import { PageTransition } from '@/components/ui/Animations';
 import api from '@/lib/api';
@@ -27,6 +28,8 @@ function formatCount(n: number) {
 export default function BlogPage() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const searchParams = useSearchParams();
+  const categoryFilter = searchParams.get('category');
 
 useEffect(() => {
     api.get('/blog/posts?limit=20')
@@ -39,7 +42,10 @@ useEffect(() => {
       .finally(() => setLoading(false));
   }, []);
 
-  const [featured, ...rest] = posts;
+  const filteredPosts = categoryFilter 
+    ? posts.filter(p => p.category?.toUpperCase() === categoryFilter.toUpperCase()) 
+    : posts;
+  const [featured, ...rest] = filteredPosts;
 
 return (
     <PublicBlogLayout>
