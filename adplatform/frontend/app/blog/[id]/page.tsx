@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { Heart, Eye, Send, ChevronDown } from 'lucide-react';
-import DashboardLayout from '@/components/layout/DashboardLayout';
+import PublicBlogLayout from '@/components/layout/PublicBlogLayout';
 import { PageTransition } from '@/components/ui/Animations';
 import { useToast } from '@/components/ui/ToastProvider';
 import api from '@/lib/api';
@@ -135,13 +135,13 @@ export default function BlogPostPage() {
 
   if (loading) {
     return (
-      <DashboardLayout>
+      <PublicBlogLayout>
         <PageTransition>
           <div className="flex justify-center items-center h-screen bg-[#FFFFFF] rounded-[24px]">
             <p className="text-[rgba(0,0,0,0.4)] font-normal text-[16px]" style={{ fontFamily: 'var(--font-dm-sans), DM Sans, sans-serif' }}>Loading...</p>
           </div>
         </PageTransition>
-      </DashboardLayout>
+      </PublicBlogLayout>
     );
   }
 
@@ -150,7 +150,7 @@ export default function BlogPostPage() {
   const toc = blocks.filter((b) => b.type === 'h2').map((b) => b.text);
 
   return (
-    <DashboardLayout>
+    <PublicBlogLayout>
       <PageTransition>
         <div className="flex flex-col items-start w-full min-h-screen bg-[#FFFFFF] rounded-[24px]">
           
@@ -301,6 +301,6 @@ export default function BlogPostPage() {
           </div>
         </div>
       </PageTransition>
-    </DashboardLayout>
+    </PublicBlogLayout>
   );
 }

@@ -39,6 +39,7 @@ const adminNav = [
   { href: '/admin/podcasts', label: 'All Podcasts', icon: Mic },
   { href: '/admin/screens', label: 'Screen Settings', icon: Monitor },
   { href: '/admin/finances', label: 'Revenue', icon: DollarSign },
+  { href: '/admin/blog', label: 'Blog Manager', icon: FileText },
 ];
 
 /**
