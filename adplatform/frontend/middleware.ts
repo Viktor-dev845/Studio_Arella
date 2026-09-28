@@ -20,12 +20,13 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  const isStaticImage = /\.(png|jpe?g|svg|webp|gif|ico)$/i.test(url.pathname);
+
   // 3. Allow Next.js static assets, API routes, and the Blog itself
   const isAllowedPath = 
+    isStaticImage ||
     url.pathname.startsWith('/_next') ||
     url.pathname.startsWith('/api') ||
-    url.pathname.startsWith('/favicon.ico') ||
-    url.pathname.startsWith('/public') ||
     url.pathname.startsWith('/blog'); // Allow /blog and /blog/*
 
   if (isAllowedPath) {
