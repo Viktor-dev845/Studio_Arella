@@ -176,10 +176,10 @@ export default function BlogPostPage() {
           </div>
 
           {/* 2-Column Section */}
-          <div className="flex flex-col lg:flex-row items-start w-full max-w-[1228px]">
+          <div className="flex flex-col lg:flex-row items-start w-full max-w-[1228px] mx-auto">
             
             {/* Left Column (Article Text) */}
-            <div className="flex flex-col flex-1 py-[40px] px-[20px] lg:py-[60px] lg:px-[80px] w-full relative">
+            <div className="flex flex-col flex-1 py-[40px] px-[20px] lg:py-[60px] lg:px-[40px] w-full relative">
                <div className={`flex flex-col relative w-full ${!expanded ? 'max-h-[600px] overflow-hidden' : ''}`}>
                  {blocks.map((b, i) => {
                      if (b.type === 'h2') {
@@ -231,10 +231,10 @@ export default function BlogPostPage() {
             </div>
 
             {/* Right Column (Sidebar) */}
-            <div className="flex flex-col w-full lg:w-[570px] shrink-0 lg:border-l lg:border-[rgba(38,38,38,0.2)]">
+            <div className="flex flex-col w-full lg:w-[400px] shrink-0 lg:border-l lg:border-[rgba(38,38,38,0.2)]">
                
                {/* 3 Buttons Row */}
-               <div className="flex flex-row items-center py-[40px] px-[20px] lg:px-[60px] gap-[14px] lg:border-t lg:border-b lg:border-[rgba(38,38,38,0.2)] lg:border-t-transparent border-b border-[rgba(38,38,38,0.2)] w-full">
+               <div className="flex flex-row items-center justify-between py-[40px] px-[20px] lg:px-[40px] gap-[14px] lg:border-t lg:border-b lg:border-[rgba(38,38,38,0.2)] lg:border-t-transparent border-b border-[rgba(38,38,38,0.2)] w-full">
                   <button 
                      onClick={toggleLike}
                      disabled={liking}
@@ -262,7 +262,7 @@ export default function BlogPostPage() {
                </div>
 
                {/* Details & TOC */}
-               <div className="flex flex-col items-start p-[40px_20px] lg:p-[60px_80px_60px_60px] gap-[40px] w-full">
+               <div className="flex flex-col items-start p-[40px_20px] lg:p-[40px] gap-[40px] w-full">
                   {/* Metadata Grid */}
                   <div className="flex flex-col gap-[20px] w-full max-w-[430px]">
                     <div className="flex flex-row items-start gap-[20px] w-full h-auto lg:h-[54px]">
