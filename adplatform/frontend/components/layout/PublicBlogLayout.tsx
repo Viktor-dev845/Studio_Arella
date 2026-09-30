@@ -148,7 +148,7 @@ export default function PublicBlogLayout({ children }: { children: React.ReactNo
             <div className="xl:col-span-1 flex flex-col gap-4">
               <h4 className="text-white font-bold tracking-widest text-[13px] mb-2 border-b-2 border-[#D4AF37] pb-2 inline-block w-fit">STAY NOTIFIED</h4>
               <p className="text-gray-400 text-sm mb-2">Get email alerts when news is posted in your category.</p>
-              <form className="flex flex-col gap-3" onSubmit={async (e) => { 
+              <form className="flex flex-col gap-3" onSubmit={async (e: any) => { 
   e.preventDefault(); 
   const form = e.target; 
   const firstName = form.elements[0].value; 
