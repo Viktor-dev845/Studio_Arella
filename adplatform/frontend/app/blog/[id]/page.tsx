@@ -164,7 +164,7 @@ export default function BlogPostPage() {
             style={{ 
               backgroundImage: `linear-gradient(180deg, rgba(20, 20, 20, 0) 0%, rgba(20, 20, 20, 0.880208) 75.52%, #141414 100%), url(${currentPost.imageUrl || FALLBACK_POST.imageUrl})`, 
               backgroundSize: 'cover', 
-              backgroundPosition: 'center' 
+              backgroundPosition: 'center 20%' 
             }}
           >
             <h1 
