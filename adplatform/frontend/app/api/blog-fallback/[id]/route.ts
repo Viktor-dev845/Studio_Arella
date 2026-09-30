@@ -6,8 +6,9 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false }
 });
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
   try {
+    const params = await context.params;
     const id = params.id;
     const result = await pool.query(`SELECT * FROM blog_posts WHERE id = $1`, [id]);
     
