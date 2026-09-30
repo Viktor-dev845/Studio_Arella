@@ -110,15 +110,28 @@ export default function BlogPostPage() {
   const [liking, setLiking] = useState(false);
 
   useEffect(() => {
-    api.get(`/blog/posts/${params.id}`)
-      .then((res) => {
-         if (res.data) setPost(res.data);
-         else setPost(FALLBACK_POST);
+    // Try fast internal DB route first to bypass slow Render backend wakeups
+    fetch(`/api/blog-fallback/${params.id}`)
+      .then(res => {
+        if (!res.ok) throw new Error('Not found in internal DB');
+        return res.json();
+      })
+      .then(data => {
+        setPost(data);
+        setLoading(false);
       })
       .catch(() => {
-         setPost(FALLBACK_POST);
-      })
-      .finally(() => setLoading(false));
+        // Fallback to Render API
+        api.get(`/blog/posts/${params.id}`)
+          .then((res) => {
+             if (res.data) setPost(res.data);
+             else setPost(FALLBACK_POST);
+          })
+          .catch(() => {
+             setPost(FALLBACK_POST);
+          })
+          .finally(() => setLoading(false));
+      });
   }, [params.id]);
 
   const toggleLike = async () => {
