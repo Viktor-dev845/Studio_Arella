@@ -9,6 +9,7 @@ import { register, login, getMe, updateProfile, uploadAvatar, changePassword, de
 import { getExchangeRates } from '../controllers/exchangeRateController';
 import { googleCallback, googleOneTap } from '../controllers/googleAuthController';
 import { submitLead, getLeads } from '../controllers/leadController';
+import { subscribeNewsletter } from '../controllers/newsletterController';
 
 
 // Features
@@ -235,5 +236,8 @@ router.get('/admin/transactions', authenticate, getAllTransactions);
 // Ad Leads
 router.post('/leads', submitLead);
 router.get('/leads/admin', authenticate, getLeads);
+
+// Newsletter
+router.post('/newsletter', subscribeNewsletter);
 
 export default router;
