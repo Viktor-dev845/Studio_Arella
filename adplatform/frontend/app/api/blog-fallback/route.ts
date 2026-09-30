@@ -5,6 +5,7 @@ const pool = new Pool({
   connectionString: 'postgresql://postgres.hobmhiaouplaoxzzcrgv:Krav20%23pool@aws-0-eu-central-1.pooler.supabase.com:5432/postgres',
   ssl: { rejectUnauthorized: false }
 });
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
   try {
