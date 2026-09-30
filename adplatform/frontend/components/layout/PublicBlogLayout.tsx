@@ -148,7 +148,28 @@ export default function PublicBlogLayout({ children }: { children: React.ReactNo
             <div className="xl:col-span-1 flex flex-col gap-4">
               <h4 className="text-white font-bold tracking-widest text-[13px] mb-2 border-b-2 border-[#D4AF37] pb-2 inline-block w-fit">STAY NOTIFIED</h4>
               <p className="text-gray-400 text-sm mb-2">Get email alerts when news is posted in your category.</p>
-              <form className="flex flex-col gap-3" onSubmit={(e) => { e.preventDefault(); alert('Subscribed to Newsletter!'); }}>
+              <form className="flex flex-col gap-3" onSubmit={async (e) => { 
+  e.preventDefault(); 
+  const form = e.target; 
+  const firstName = form.elements[0].value; 
+  const email = form.elements[1].value; 
+  const category = form.elements[2].value; 
+  try { 
+    const res = await fetch('https://studio-arella.onrender.com/api/newsletter', { 
+      method: 'POST', 
+      headers: { 'Content-Type': 'application/json' }, 
+      body: JSON.stringify({ firstName, email, category }) 
+    }); 
+    if (res.ok) { 
+      alert('Subscribed to Newsletter!'); 
+      form.reset(); 
+    } else { 
+      alert('Failed to subscribe. Please try again.'); 
+    } 
+  } catch (err) { 
+    alert('An error occurred. Please try again.'); 
+  } 
+}}>
                 <input type="text" placeholder="First name" className="bg-[#1A1A1A] border border-gray-800 p-2.5 text-sm rounded-sm text-white focus:border-[#D4AF37] outline-none" required />
                 <input type="email" placeholder="Email address" className="bg-[#1A1A1A] border border-gray-800 p-2.5 text-sm rounded-sm text-white focus:border-[#D4AF37] outline-none" required />
                 <select className="bg-[#1A1A1A] border border-gray-800 p-2.5 text-sm rounded-sm text-gray-400 focus:border-[#D4AF37] outline-none">
