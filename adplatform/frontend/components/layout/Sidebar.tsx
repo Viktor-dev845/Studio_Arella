@@ -253,8 +253,8 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
 
               <SidebarSectionLabel>Pages</SidebarSectionLabel>
               <div className="space-y-0.5">
-                <SidebarExpandable href="/settings" onClick={onClose} icon={IdCard} label="User Profile" active={pathname.startsWith('/settings') || pathname.startsWith('/podcast') || pathname === '/campaigns' || pathname === '/ads' || pathname === '/followers'} />
-                <SidebarSubLink href="/dashboard" onClick={onClose} label="Overview" active={false} />
+                <SidebarExpandable href="/user-profile/overview" onClick={onClose} icon={IdCard} label="User Profile" active={pathname.startsWith('/user-profile') || pathname.startsWith('/settings') || pathname.startsWith('/podcast') || pathname === '/campaigns' || pathname === '/ads' || pathname === '/followers'} />
+                <SidebarSubLink href="/user-profile/overview" onClick={onClose} label="Overview" active={pathname === '/user-profile/overview'} />
                 <SidebarSubLink href="/podcast" onClick={onClose} label="Podcasts" active={pathname.startsWith('/podcast')} />
                 <SidebarSubLink href="/campaigns" onClick={onClose} label="Campaigns" active={pathname === '/campaigns'} />
                 <SidebarSubLink href="/ads" onClick={onClose} label="Ads" active={pathname === '/ads'} />
