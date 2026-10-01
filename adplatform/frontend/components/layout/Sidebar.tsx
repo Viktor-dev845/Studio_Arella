@@ -207,10 +207,6 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                     active={isActive(item.href)}
                   />
                 ))}
-                
-                <div className="my-4 border-t border-neutral-200 dark:border-white/10" />
-                <SidebarSectionLabel>Switch View</SidebarSectionLabel>
-                <SidebarLink href="/dashboard" onClick={onClose} icon={LayoutDashboard} label="Client Dashboard" active={false} />
               </div>
             </>
           ) : (
@@ -267,14 +263,6 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                 
                 <SidebarExpandable href="/finances" onClick={onClose} icon={Wallet} label="Wallet" active={pathname === '/finances'} />
                 <SidebarExpandable href="/blog" onClick={onClose} icon={BookOpen} label="Blog" active={pathname === '/blog'} />
-
-                {isAdmin && (
-                  <>
-                    <div className="my-4 border-t border-neutral-200 dark:border-white/10" />
-                    <SidebarSectionLabel>Switch View</SidebarSectionLabel>
-                    <SidebarLink href="/admin" onClick={onClose} icon={Shield} label="Admin Panel" active={false} />
-                  </>
-                )}
               </div>
             </>
           )}
