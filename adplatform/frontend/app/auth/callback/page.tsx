@@ -78,7 +78,7 @@ export default function AuthCallbackPage() {
       window.history.replaceState(null, '', window.location.pathname);
     }
     
-    router.replace(isNew ? '/onboarding' : user.role === 'admin' ? '/admin' : '/dashboard');
+    router.replace(isNew ? '/onboarding' : '/dashboard');
   }, [router, updateUser]);
 
   const btnStyle = (primary: boolean): React.CSSProperties => ({

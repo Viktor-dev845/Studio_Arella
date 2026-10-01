@@ -66,7 +66,7 @@ export default function GoogleOneTap() {
             loadFromStorage();
             updateUser(user);
 
-            router.replace(isNew ? '/onboarding' : user.role === 'admin' ? '/admin' : '/dashboard');
+            router.replace(isNew ? '/onboarding' : '/dashboard');
           } catch (err) {
             console.error('One Tap error:', err);
           }
