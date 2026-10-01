@@ -55,7 +55,7 @@ export default function LoginPage() {
         setLoading(false);
         return;
       }
-      router.push((result as any)?.role === 'admin' ? '/admin' : '/dashboard');
+      router.push('/dashboard');
     } catch (err: any) {
       toast(err?.response?.data?.message || 'Incorrect email or password', 'error');
       setLoading(false);
@@ -68,7 +68,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const user = await completeTwoFactorLogin(pendingToken, twoFactorCode);
-      router.push((user as any)?.role === 'admin' ? '/admin' : '/dashboard');
+      router.push('/dashboard');
     } catch (err: any) {
       toast(err?.response?.data?.message || 'Incorrect code. Please try again.', 'error');
       setLoading(false);
