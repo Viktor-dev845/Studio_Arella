@@ -24,7 +24,7 @@ export default function DashboardPage() {
     // token set without the matching user record) — fetch it for real
     // instead of spinning forever waiting for a value that will never arrive.
     if (!user) { checkAuth(); return; }
-    if (user.role === 'admin') { router.push('/admin'); }
+    // Auto-redirect removed to allow admins to view the dashboard
   }, [ready, user, router, checkAuth]);
 
   if (!ready || !user) return (
