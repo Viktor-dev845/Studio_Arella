@@ -141,6 +141,7 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
   const { theme: colorMode } = useThemeStore();
   
   const isAdmin = user?.role === 'admin';
+  const showAdminSidebar = isAdmin && pathname.startsWith('/admin');
   const isActive = (href: string) =>
     pathname === href || (href !== '/dashboard' && href !== '/admin' && pathname.startsWith(href + '/'));
 
@@ -192,7 +193,7 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
         </div>
 
         <div className="flex-1 overflow-y-auto px-3 pb-4">
-          {isAdmin ? (
+          {showAdminSidebar ? (
             <>
               <SidebarSectionLabel>Admin Panel</SidebarSectionLabel>
               <div className="space-y-0.5">
@@ -206,6 +207,10 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                     active={isActive(item.href)}
                   />
                 ))}
+                
+                <div className="my-4 border-t border-neutral-200 dark:border-white/10" />
+                <SidebarSectionLabel>Switch View</SidebarSectionLabel>
+                <SidebarLink href="/dashboard" onClick={onClose} icon={LayoutDashboard} label="Client Dashboard" active={false} />
               </div>
             </>
           ) : (
@@ -262,6 +267,14 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                 
                 <SidebarExpandable href="/finances" onClick={onClose} icon={Wallet} label="Wallet" active={pathname === '/finances'} />
                 <SidebarExpandable href="/blog" onClick={onClose} icon={BookOpen} label="Blog" active={pathname === '/blog'} />
+
+                {isAdmin && (
+                  <>
+                    <div className="my-4 border-t border-neutral-200 dark:border-white/10" />
+                    <SidebarSectionLabel>Switch View</SidebarSectionLabel>
+                    <SidebarLink href="/admin" onClick={onClose} icon={Shield} label="Admin Panel" active={false} />
+                  </>
+                )}
               </div>
             </>
           )}
