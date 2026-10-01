@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
+  // TEMPORARILY DISABLED: Allow full access to the main platform for development
+  return NextResponse.next();
+
   const url = request.nextUrl.clone();
 
   // 1. Developer Bypass Mechanism
