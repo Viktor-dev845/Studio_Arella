@@ -121,7 +121,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
     if (pathname.includes('/campaigns')) return 'Pages / Campaigns';
     if (pathname.includes('/finances')) return 'Pages / Wallet';
     if (pathname.includes('/cart')) return 'Dashboards / Cart';
-    if (pathname.includes('/settings')) return 'Pages / User Profile';
+    if (pathname.includes('/user-profile') || pathname.includes('/settings')) return 'Pages / User Profile';
     if (pathname.includes('/analytics')) return 'Pages / Analytics';
     if (pathname.includes('/creative')) return 'Pages / Creative Studio';
     if (pathname.includes('/ads')) return 'Pages / Ads';
@@ -308,7 +308,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
                     <p className="text-[13px] font-bold text-neutral-900 dark:text-white m-0 leading-tight">{user?.name || 'Creator'}</p>
                     <p className="text-[11px] font-medium text-neutral-500 m-0 mt-0.5">{user?.email || 'creator@example.com'}</p>
                   </div>
-                  {[{ label: 'My Dashboard', href: '/dashboard' }, { label: 'Settings', href: '/settings' }, { label: 'Support', href: '/support' }].map(({ label, href }) => (
+                  {[{ label: 'My Dashboard', href: '/dashboard' }, { label: 'Profile', href: '/user-profile/overview' }, { label: 'Support', href: '/support' }].map(({ label, href }) => (
                     <Link key={href} href={href} onClick={() => setDropOpen(false)}
                       className="block px-3 py-2 text-[13px] font-bold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-white/5 rounded-lg transition-colors">
                       {label}
