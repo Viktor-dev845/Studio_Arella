@@ -7,7 +7,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useThemeStore } from '@/store/themeStore';
 import { FaArrowRightFromBracket } from 'react-icons/fa6';
 import NotificationBell from '@/components/ui/NotificationBell';
-import { Search, Star, Sun, Moon, History, PanelLeft, Loader2 } from 'lucide-react';
+import { Search, Star, Sun, Moon, History, PanelLeft, Loader2, LayoutDashboard, User, LifeBuoy } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '@/lib/api';
 import { theme } from '@/lib/theme';
@@ -303,21 +303,26 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
               <>
                 <div className="fixed inset-0 z-[9]" onClick={() => setDropOpen(false)} />
                 <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 6 }} transition={{ duration: 0.15 }}
-                  className="absolute top-full right-0 mt-2 bg-white dark:bg-[#111111] border border-neutral-200 dark:border-white/10 rounded-xl p-2 min-w-[200px] shadow-lg z-10 text-left">
-                  <div className="px-3 py-2 border-b border-neutral-100 dark:border-white/10 mb-1.5">
-                    <p className="text-[13px] font-bold text-neutral-900 dark:text-white m-0 leading-tight">{user?.name || 'Creator'}</p>
-                    <p className="text-[11px] font-medium text-neutral-500 m-0 mt-0.5">{user?.email || 'creator@example.com'}</p>
+                  className="absolute top-full right-0 mt-3 bg-white dark:bg-[#111111] border border-neutral-200 dark:border-white/10 rounded-[14px] p-2 min-w-[240px] shadow-xl z-10 text-left">
+                  <div className="px-3 py-3 border-b border-neutral-100 dark:border-white/10 mb-1.5">
+                    <p className="text-[15px] font-bold text-neutral-900 dark:text-white m-0 leading-tight">{user?.name || 'Creator'}</p>
+                    <p className="text-[13px] font-medium text-neutral-500 m-0 mt-1 truncate">{user?.email || 'creator@example.com'}</p>
                   </div>
-                  {[{ label: 'My Dashboard', href: '/dashboard' }, { label: 'Profile', href: '/user-profile/overview' }, { label: 'Support', href: '/support' }].map(({ label, href }) => (
+                  {[
+                    { label: 'My Dashboard', href: '/dashboard', icon: LayoutDashboard },
+                    { label: 'Profile Details', href: '/user-profile/overview', icon: User },
+                    { label: 'Help & Support', href: '/support', icon: LifeBuoy }
+                  ].map(({ label, href, icon: Icon }) => (
                     <Link key={href} href={href} onClick={() => setDropOpen(false)}
-                      className="block px-3 py-2 text-[13px] font-bold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-white/5 rounded-lg transition-colors">
+                      className="flex items-center gap-3 px-3 py-2.5 text-[14px] font-semibold text-neutral-700 dark:text-neutral-300 hover:text-[#D4AF37] dark:hover:text-[#D4AF37] hover:bg-amber-50 dark:hover:bg-amber-500/10 rounded-[10px] transition-all">
+                      <Icon size={16} strokeWidth={2} />
                       {label}
                     </Link>
                   ))}
                   <div className="border-t border-neutral-100 dark:border-white/10 mt-1.5 pt-1.5">
                     <button onClick={handleLogout}
-                      className="w-full flex items-center gap-2 px-3 py-2 text-[13px] font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors">
-                      <FaArrowRightFromBracket size={13} /> Sign out
+                      className="w-full flex items-center gap-3 px-3 py-2.5 text-[14px] font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-[10px] transition-all">
+                      <FaArrowRightFromBracket size={15} /> Sign out
                     </button>
                   </div>
                 </motion.div>
