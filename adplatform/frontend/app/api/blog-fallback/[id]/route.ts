@@ -29,9 +29,9 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
       status: row.status,
       publishedAt: row.published_at,
       readingTimeMinutes: row.reading_time_minutes,
-      likesCount: row.likes_count,
-      viewsCount: row.views_count,
-      commentsCount: row.comments_count,
+      likesCount: Number(row.likes_count || 0),
+      viewsCount: Number(row.views_count || 0),
+      commentsCount: Number(row.comments_count || 0),
       liked: false // Default to false for public view
     };
 

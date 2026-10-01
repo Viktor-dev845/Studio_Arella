@@ -175,7 +175,7 @@ export default function BlogPostPage() {
           <div 
             className="relative w-full h-[439px] shrink-0" 
             style={{ 
-              backgroundImage: `linear-gradient(180deg, rgba(20, 20, 20, 0) 0%, rgba(20, 20, 20, 0.880208) 75.52%, #141414 100%), url(${currentPost.imageUrl || FALLBACK_POST.imageUrl})`, 
+              backgroundImage: `linear-gradient(180deg, rgba(20, 20, 20, 0) 0%, rgba(20, 20, 20, 0.880208) 75.52%, #141414 100%), url('${currentPost.imageUrl || FALLBACK_POST.imageUrl}')`, 
               backgroundSize: 'cover', 
               backgroundPosition: 'center 20%' 
             }}
