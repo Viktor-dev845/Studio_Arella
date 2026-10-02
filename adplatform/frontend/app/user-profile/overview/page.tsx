@@ -6,13 +6,8 @@ import { PageTransition } from '@/components/ui/Animations';
 import { useAuthStore } from '@/store/authStore';
 import { 
   Briefcase, 
-  Mail, 
   Edit2, 
   User, 
-  UserCheck, 
-  RefreshCcw, 
-  Users,
-  FileText,
   ChevronLeft,
   ChevronDown,
   Camera,
@@ -22,7 +17,6 @@ import {
   Bell,
   SlidersHorizontal
 } from 'lucide-react';
-import { theme } from '@/lib/theme';
 
 export default function UserProfileOverview() {
   const { user } = useAuthStore();
