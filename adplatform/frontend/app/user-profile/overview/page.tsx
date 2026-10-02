@@ -358,8 +358,50 @@ export default function UserProfileOverview() {
                   )}
 
                   {activeSettingsTab === 'preferences' && (
-                    <div className="py-12 text-center text-gray-500 font-light">
-                      This section is under construction.
+                    <div className="flex flex-col gap-[33px]">
+                      
+                      {/* Language */}
+                      <div className="flex flex-col gap-[13px] w-full max-w-[460px]">
+                        <label className="text-[16px] font-medium text-[#16151C]">Language</label>
+                        <div className="relative">
+                          <select 
+                            className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#A2A1A8]/80 appearance-none outline-none focus:border-[#D4AF37]"
+                            defaultValue="English"
+                          >
+                            <option value="English">English</option>
+                          </select>
+                          <ChevronDown size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#16151C]" />
+                        </div>
+                      </div>
+
+                      {/* Currency */}
+                      <div className="flex flex-col gap-[13px] w-full max-w-[460px]">
+                        <label className="text-[16px] font-medium text-[#16151C]">Currency</label>
+                        <div className="relative">
+                          <select 
+                            className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#A2A1A8]/80 appearance-none outline-none focus:border-[#D4AF37]"
+                            defaultValue="Naira (NGN)"
+                          >
+                            <option value="Naira (NGN)">Naira (NGN)</option>
+                          </select>
+                          <ChevronDown size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#16151C]" />
+                        </div>
+                      </div>
+
+                      {/* Theme */}
+                      <div className="flex flex-col gap-[13px] w-full max-w-[460px]">
+                        <label className="text-[16px] font-medium text-[#16151C]">Theme</label>
+                        <div className="relative">
+                          <select 
+                            className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#A2A1A8]/80 appearance-none outline-none focus:border-[#D4AF37]"
+                            defaultValue="Light"
+                          >
+                            <option value="Light">Light</option>
+                          </select>
+                          <ChevronDown size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#16151C]" />
+                        </div>
+                      </div>
+
                     </div>
                   )}
                 </>
