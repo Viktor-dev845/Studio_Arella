@@ -15,7 +15,12 @@ import {
   FileText,
   ChevronLeft,
   ChevronDown,
-  Camera
+  Camera,
+  Settings,
+  Shield,
+  Headset,
+  Bell,
+  SlidersHorizontal
 } from 'lucide-react';
 import { theme } from '@/lib/theme';
 
@@ -23,7 +28,16 @@ export default function UserProfileOverview() {
   const { user } = useAuthStore();
   const [activeSidebar, setActiveSidebar] = useState('profile');
   const [activeTab, setActiveTab] = useState('personal');
+  const [activeSettingsTab, setActiveSettingsTab] = useState('notifications');
   const [editingMode, setEditingMode] = useState<'personal' | 'business' | null>(null);
+
+  // Notification toggles state
+  const [notifState, setNotifState] = useState({
+    email: true,
+    booking: true,
+    campaign: false,
+    promo: false
+  });
 
   // Fallbacks to match the Figma design precisely if user data is missing
   const firstName = user?.first_name || 'Robert';
@@ -100,10 +114,22 @@ export default function UserProfileOverview() {
                       : 'bg-transparent text-[#16151C] font-light hover:bg-gray-50'
                   }`}
                 >
-                  <UserCheck size={20} strokeWidth={activeSidebar === 'settings' ? 2 : 1.5} />
+                  <Settings size={20} strokeWidth={activeSidebar === 'settings' ? 2 : 1.5} />
                   <span className="text-[16px]">Settings</span>
                 </button>
                 
+                <button 
+                  onClick={() => setActiveSidebar('security')}
+                  className={`w-full flex items-center gap-3 px-5 py-4 transition-colors ${
+                    activeSidebar === 'security' 
+                      ? 'bg-[#D4AF37] text-black font-semibold' 
+                      : 'bg-transparent text-[#16151C] font-light hover:bg-gray-50'
+                  }`}
+                >
+                  <Shield size={20} strokeWidth={activeSidebar === 'security' ? 2 : 1.5} />
+                  <span className="text-[16px]">Security</span>
+                </button>
+
                 <button 
                   onClick={() => setActiveSidebar('support')}
                   className={`w-full flex items-center gap-3 px-5 py-4 transition-colors ${
@@ -112,20 +138,8 @@ export default function UserProfileOverview() {
                       : 'bg-transparent text-[#16151C] font-light hover:bg-gray-50'
                   }`}
                 >
-                  <RefreshCcw size={20} strokeWidth={activeSidebar === 'support' ? 2 : 1.5} />
+                  <Headset size={20} strokeWidth={activeSidebar === 'support' ? 2 : 1.5} />
                   <span className="text-[16px]">Support</span>
-                </button>
-
-                <button 
-                  onClick={() => setActiveSidebar('retirement')}
-                  className={`w-full flex items-center gap-3 px-5 py-4 transition-colors ${
-                    activeSidebar === 'retirement' 
-                      ? 'bg-[#D4AF37] text-black font-semibold' 
-                      : 'bg-transparent text-[#16151C] font-light hover:bg-gray-50'
-                  }`}
-                >
-                  <Users size={20} strokeWidth={activeSidebar === 'retirement' ? 2 : 1.5} />
-                  <span className="text-[16px]">Retirement</span>
                 </button>
               </div>
             </div>
@@ -133,8 +147,10 @@ export default function UserProfileOverview() {
             {/* Content Area */}
             <div className="flex-1 max-w-[768px]">
               
-              {/* Tabs */}
-              <div className="flex flex-wrap gap-8 border-b border-[#A2A1A8]/20 mb-8 relative">
+              {activeSidebar === 'profile' && (
+                <>
+                  {/* Tabs */}
+                  <div className="flex flex-wrap gap-8 border-b border-[#A2A1A8]/20 mb-8 relative">
                 <button 
                   onClick={() => setActiveTab('personal')}
                   className={`flex items-center gap-2.5 pb-3 relative transition-colors ${
@@ -250,6 +266,105 @@ export default function UserProfileOverview() {
                   This section is under construction.
                 </div>
               )}
+              </>
+              )}
+
+              {activeSidebar === 'settings' && (
+                <>
+                  <div className="flex flex-wrap gap-8 border-b border-[#A2A1A8]/20 mb-8 relative">
+                    <button 
+                      onClick={() => setActiveSettingsTab('notifications')}
+                      className={`flex items-center gap-2.5 pb-3 relative transition-colors ${
+                        activeSettingsTab === 'notifications' ? 'text-[#D4AF37] font-semibold text-[17px]' : 'text-[#16151C] font-light text-[17px] hover:text-gray-600'
+                      }`}
+                    >
+                      <Bell size={20} strokeWidth={activeSettingsTab === 'notifications' ? 2 : 1.5} />
+                      Notifications
+                      {activeSettingsTab === 'notifications' && (
+                        <div className="absolute bottom-[-1px] left-0 w-full h-[3px] bg-[#D4AF37]"></div>
+                      )}
+                    </button>
+                    
+                    <button 
+                      onClick={() => setActiveSettingsTab('preferences')}
+                      className={`flex items-center gap-2.5 pb-3 relative transition-colors ${
+                        activeSettingsTab === 'preferences' ? 'text-[#D4AF37] font-semibold text-[17px]' : 'text-[#16151C] font-light text-[17px] hover:text-gray-600'
+                      }`}
+                    >
+                      <SlidersHorizontal size={20} strokeWidth={activeSettingsTab === 'preferences' ? 2 : 1.5} />
+                      Preferences
+                      {activeSettingsTab === 'preferences' && (
+                        <div className="absolute bottom-[-1px] left-0 w-full h-[3px] bg-[#D4AF37]"></div>
+                      )}
+                    </button>
+                  </div>
+
+                  {activeSettingsTab === 'notifications' && (
+                    <div className="flex flex-col gap-10">
+                      
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-[16px] font-medium text-[#16151C] mb-1">Email Notifications</div>
+                          <div className="text-[14px] text-[#16151C] font-light">Receive updates about your account and bookings.</div>
+                        </div>
+                        <button 
+                          onClick={() => setNotifState(s => ({...s, email: !s.email}))}
+                          className={`w-[54px] h-[23px] rounded-[10px] flex items-center px-[1px] transition-colors duration-300 ${notifState.email ? 'bg-[#D4AF37] justify-end' : 'bg-[#D4AF37]/40 justify-start'}`}
+                        >
+                          <div className={`w-[22px] h-[20px] rounded-[10px] bg-white mx-[5px]`} />
+                        </button>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-[16px] font-medium text-[#16151C] mb-1">Booking Updates</div>
+                          <div className="text-[14px] text-[#16151C] font-light">Get notified when a booking is confirmed, changed or cancelled.</div>
+                        </div>
+                        <button 
+                          onClick={() => setNotifState(s => ({...s, booking: !s.booking}))}
+                          className={`w-[54px] h-[23px] rounded-[10px] flex items-center px-[1px] transition-colors duration-300 ${notifState.booking ? 'bg-[#D4AF37] justify-end' : 'bg-[#D4AF37]/40 justify-start'}`}
+                        >
+                          <div className={`w-[22px] h-[20px] rounded-[10px] bg-white mx-[5px]`} />
+                        </button>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-[16px] font-medium text-[#16151C] mb-1">Campaign Updates</div>
+                          <div className="text-[14px] text-[#16151C] font-light">Receive updates about your campaigns.</div>
+                        </div>
+                        <button 
+                          onClick={() => setNotifState(s => ({...s, campaign: !s.campaign}))}
+                          className={`w-[54px] h-[23px] rounded-[10px] flex items-center px-[1px] transition-colors duration-300 ${notifState.campaign ? 'bg-[#D4AF37] justify-end' : 'bg-[#D4AF37]/40 justify-start'}`}
+                        >
+                          <div className={`w-[22px] h-[20px] rounded-[10px] bg-white mx-[5px]`} />
+                        </button>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-[16px] font-medium text-[#16151C] mb-1">Promotional Emails</div>
+                          <div className="text-[14px] text-[#16151C] font-light">Receive offers, news and updates from Studio Arella.</div>
+                        </div>
+                        <button 
+                          onClick={() => setNotifState(s => ({...s, promo: !s.promo}))}
+                          className={`w-[54px] h-[23px] rounded-[10px] flex items-center px-[1px] transition-colors duration-300 ${notifState.promo ? 'bg-[#D4AF37] justify-end' : 'bg-[#D4AF37]/40 justify-start'}`}
+                        >
+                          <div className={`w-[22px] h-[20px] rounded-[10px] bg-white mx-[5px]`} />
+                        </button>
+                      </div>
+
+                    </div>
+                  )}
+
+                  {activeSettingsTab === 'preferences' && (
+                    <div className="py-12 text-center text-gray-500 font-light">
+                      This section is under construction.
+                    </div>
+                  )}
+                </>
+              )}
+
             </div>
           </div>
           </>
