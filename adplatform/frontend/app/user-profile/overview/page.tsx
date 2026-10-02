@@ -12,7 +12,9 @@ import {
   UserCheck, 
   RefreshCcw, 
   Users,
-  FileText 
+  FileText,
+  ChevronLeft,
+  ChevronDown
 } from 'lucide-react';
 import { theme } from '@/lib/theme';
 
@@ -20,6 +22,7 @@ export default function UserProfileOverview() {
   const { user } = useAuthStore();
   const [activeSidebar, setActiveSidebar] = useState('profile');
   const [activeTab, setActiveTab] = useState('personal');
+  const [isEditingBusiness, setIsEditingBusiness] = useState(false);
 
   // Fallbacks to match the Figma design precisely if user data is missing
   const firstName = user?.first_name || 'Robert';
@@ -32,7 +35,9 @@ export default function UserProfileOverview() {
     <DashboardLayout>
       <PageTransition>
         <div className="w-full max-w-[1200px] mx-auto p-6 lg:p-10 pb-24">
-          <h1 className="text-[24px] font-semibold text-[#16151C] mb-8">Profile Details</h1>
+          {!isEditingBusiness ? (
+            <>
+              <h1 className="text-[24px] font-semibold text-[#16151C] mb-8">Profile Details</h1>
 
           {/* Avatar & Header Section */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
@@ -57,7 +62,10 @@ export default function UserProfileOverview() {
               </div>
             </div>
             
-            <button className="flex items-center justify-center gap-2 bg-[#D4AF37] hover:bg-[#c29f31] transition-colors text-black h-[50px] px-6 rounded-[6px] text-[16px] font-light shadow-sm">
+            <button 
+              onClick={() => activeTab === 'business' ? setIsEditingBusiness(true) : null}
+              className="flex items-center justify-center gap-2 bg-[#D4AF37] hover:bg-[#c29f31] transition-colors text-black h-[50px] px-6 rounded-[6px] text-[16px] font-light shadow-sm"
+            >
               <Edit2 size={20} strokeWidth={1.5} />
               Edit Profile
             </button>
@@ -243,6 +251,85 @@ export default function UserProfileOverview() {
               )}
             </div>
           </div>
+          </>
+          ) : (
+            <div className="flex-1 max-w-[850px]">
+              <div className="flex items-center gap-4 mb-10">
+                <button 
+                  onClick={() => setIsEditingBusiness(false)} 
+                  className="flex items-center gap-2 text-[#16151C] font-semibold text-[16px] hover:text-gray-600 transition-colors"
+                >
+                  <ChevronLeft size={20} strokeWidth={2} /> 
+                  Back
+                </button>
+                <h2 className="text-[16px] font-semibold text-[#16151C]">Edit profile (Business information)</h2>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 mb-10">
+                <input 
+                  type="text" 
+                  placeholder="Business name"
+                  className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37]"
+                />
+                <input 
+                  type="email" 
+                  placeholder="Business email"
+                  className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37]"
+                />
+                <input 
+                  type="tel" 
+                  placeholder="Business phone"
+                  className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37]"
+                />
+                <input 
+                  type="text" 
+                  placeholder="Business address"
+                  className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37]"
+                />
+                
+                <div className="relative">
+                  <select 
+                    className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#A2A1A8]/80 appearance-none outline-none focus:border-[#D4AF37]"
+                    defaultValue=""
+                  >
+                    <option value="" disabled>Industry</option>
+                    <option value="tech" className="text-[#16151C]">Tech</option>
+                    <option value="advertising" className="text-[#16151C]">Advertising</option>
+                    <option value="finance" className="text-[#16151C]">Finance</option>
+                  </select>
+                  <ChevronDown size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#16151C]" />
+                </div>
+
+                <div className="relative">
+                  <select 
+                    className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#A2A1A8]/80 appearance-none outline-none focus:border-[#D4AF37]"
+                    defaultValue=""
+                  >
+                    <option value="" disabled>State</option>
+                    <option value="abia" className="text-[#16151C]">Abia</option>
+                    <option value="adamawa" className="text-[#16151C]">Adamawa</option>
+                    <option value="akwa_ibom" className="text-[#16151C]">Akwa Ibom</option>
+                  </select>
+                  <ChevronDown size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#16151C]" />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-5">
+                <button 
+                  onClick={() => setIsEditingBusiness(false)}
+                  className="h-[40px] px-5 rounded-[10px] border border-[#A2A1A8]/20 text-[16px] font-light text-[#16151C] hover:bg-gray-50 transition-colors flex items-center justify-center min-w-[91px]"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={() => setIsEditingBusiness(false)}
+                  className="h-[40px] px-8 rounded-[6px] bg-[#D4AF37] text-[14px] text-black hover:bg-[#c29f31] transition-colors flex items-center justify-center min-w-[116px]"
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </PageTransition>
     </DashboardLayout>
