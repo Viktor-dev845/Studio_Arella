@@ -6,6 +6,7 @@ import { PageTransition } from '@/components/ui/Animations';
 import { useAuthStore } from '@/store/authStore';
 import { 
   Briefcase, 
+  Mail,
   Edit2, 
   User, 
   ChevronLeft,
