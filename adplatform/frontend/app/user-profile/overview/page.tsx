@@ -14,7 +14,8 @@ import {
   Users,
   FileText,
   ChevronLeft,
-  ChevronDown
+  ChevronDown,
+  Camera
 } from 'lucide-react';
 import { theme } from '@/lib/theme';
 
@@ -22,7 +23,7 @@ export default function UserProfileOverview() {
   const { user } = useAuthStore();
   const [activeSidebar, setActiveSidebar] = useState('profile');
   const [activeTab, setActiveTab] = useState('personal');
-  const [isEditingBusiness, setIsEditingBusiness] = useState(false);
+  const [editingMode, setEditingMode] = useState<'personal' | 'business' | null>(null);
 
   // Fallbacks to match the Figma design precisely if user data is missing
   const firstName = user?.first_name || 'Robert';
@@ -35,7 +36,7 @@ export default function UserProfileOverview() {
     <DashboardLayout>
       <PageTransition>
         <div className="w-full max-w-[1200px] mx-auto p-6 lg:p-10 pb-24">
-          {!isEditingBusiness ? (
+          {!editingMode ? (
             <>
               <h1 className="text-[24px] font-semibold text-[#16151C] mb-8">Profile Details</h1>
 
@@ -63,7 +64,7 @@ export default function UserProfileOverview() {
             </div>
             
             <button 
-              onClick={() => activeTab === 'business' ? setIsEditingBusiness(true) : null}
+              onClick={() => setEditingMode(activeTab as 'personal' | 'business')}
               className="flex items-center justify-center gap-2 bg-[#D4AF37] hover:bg-[#c29f31] transition-colors text-black h-[50px] px-6 rounded-[6px] text-[16px] font-light shadow-sm"
             >
               <Edit2 size={20} strokeWidth={1.5} />
@@ -252,11 +253,11 @@ export default function UserProfileOverview() {
             </div>
           </div>
           </>
-          ) : (
+          ) : editingMode === 'business' ? (
             <div className="flex-1 max-w-[850px]">
               <div className="flex items-center gap-4 mb-10">
                 <button 
-                  onClick={() => setIsEditingBusiness(false)} 
+                  onClick={() => setEditingMode(null)} 
                   className="flex items-center gap-2 text-[#16151C] font-semibold text-[16px] hover:text-gray-600 transition-colors"
                 >
                   <ChevronLeft size={20} strokeWidth={2} /> 
@@ -316,13 +317,122 @@ export default function UserProfileOverview() {
 
               <div className="flex items-center gap-5">
                 <button 
-                  onClick={() => setIsEditingBusiness(false)}
+                  onClick={() => setEditingMode(null)}
                   className="h-[40px] px-5 rounded-[10px] border border-[#A2A1A8]/20 text-[16px] font-light text-[#16151C] hover:bg-gray-50 transition-colors flex items-center justify-center min-w-[91px]"
                 >
                   Cancel
                 </button>
                 <button 
-                  onClick={() => setIsEditingBusiness(false)}
+                  onClick={() => setEditingMode(null)}
+                  className="h-[40px] px-8 rounded-[6px] bg-[#D4AF37] text-[14px] text-black hover:bg-[#c29f31] transition-colors flex items-center justify-center min-w-[116px]"
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex-1 max-w-[850px]">
+              <div className="flex items-center gap-4 mb-10">
+                <button 
+                  onClick={() => setEditingMode(null)} 
+                  className="flex items-center gap-2 text-[#16151C] font-semibold text-[16px] hover:text-gray-600 transition-colors"
+                >
+                  <ChevronLeft size={20} strokeWidth={2} /> 
+                  Back
+                </button>
+                <h2 className="text-[16px] font-semibold text-[#16151C]">Edit profile (Personal information)</h2>
+              </div>
+
+              <div className="mb-10">
+                <div className="w-[100px] h-[100px] rounded-[10px] border border-dashed border-[#A2A1A8]/60 bg-[#A2A1A8]/5 flex flex-col items-center justify-center mb-3">
+                  <Camera size={24} strokeWidth={1.5} className="text-[#16151C]" />
+                </div>
+                <div className="text-[17px] font-light text-[#16151C]">Add profile photo</div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 mb-10">
+                <input 
+                  type="text" 
+                  placeholder="First name"
+                  className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37]"
+                />
+                <input 
+                  type="text" 
+                  placeholder="Last name"
+                  className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37]"
+                />
+                <input 
+                  type="tel" 
+                  placeholder="Mobile number"
+                  className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37]"
+                />
+                <input 
+                  type="email" 
+                  placeholder="Email address"
+                  className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37]"
+                />
+                
+                <div className="relative">
+                  <select 
+                    className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#A2A1A8]/80 appearance-none outline-none focus:border-[#D4AF37]"
+                    defaultValue=""
+                  >
+                    <option value="" disabled>Gender</option>
+                    <option value="male" className="text-[#16151C]">Male</option>
+                    <option value="female" className="text-[#16151C]">Female</option>
+                    <option value="other" className="text-[#16151C]">Other</option>
+                  </select>
+                  <ChevronDown size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#16151C]" />
+                </div>
+                
+                <input 
+                  type="text" 
+                  placeholder="Nationality (e.g Nigerian)"
+                  className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37]"
+                />
+
+                <input 
+                  type="text" 
+                  placeholder="Address"
+                  className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37]"
+                />
+
+                <div className="relative">
+                  <select 
+                    className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#A2A1A8]/80 appearance-none outline-none focus:border-[#D4AF37]"
+                    defaultValue=""
+                  >
+                    <option value="" disabled>City</option>
+                    <option value="umuahia" className="text-[#16151C]">Umuahia</option>
+                    <option value="aba" className="text-[#16151C]">Aba</option>
+                    <option value="lagos" className="text-[#16151C]">Lagos</option>
+                  </select>
+                  <ChevronDown size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#16151C]" />
+                </div>
+
+                <div className="relative">
+                  <select 
+                    className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#A2A1A8]/80 appearance-none outline-none focus:border-[#D4AF37]"
+                    defaultValue=""
+                  >
+                    <option value="" disabled>State</option>
+                    <option value="abia" className="text-[#16151C]">Abia</option>
+                    <option value="adamawa" className="text-[#16151C]">Adamawa</option>
+                    <option value="akwa_ibom" className="text-[#16151C]">Akwa Ibom</option>
+                  </select>
+                  <ChevronDown size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#16151C]" />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-5">
+                <button 
+                  onClick={() => setEditingMode(null)}
+                  className="h-[40px] px-5 rounded-[10px] border border-[#A2A1A8]/20 text-[16px] font-light text-[#16151C] hover:bg-gray-50 transition-colors flex items-center justify-center min-w-[91px]"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={() => setEditingMode(null)}
                   className="h-[40px] px-8 rounded-[6px] bg-[#D4AF37] text-[14px] text-black hover:bg-[#c29f31] transition-colors flex items-center justify-center min-w-[116px]"
                 >
                   Save
