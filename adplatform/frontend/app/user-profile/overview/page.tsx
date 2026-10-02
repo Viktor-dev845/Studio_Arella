@@ -84,27 +84,27 @@ export default function UserProfileOverview() {
                 </button>
                 
                 <button 
-                  onClick={() => setActiveSidebar('security')}
+                  onClick={() => setActiveSidebar('settings')}
                   className={`w-full flex items-center gap-3 px-5 py-4 transition-colors ${
-                    activeSidebar === 'security' 
+                    activeSidebar === 'settings' 
                       ? 'bg-[#D4AF37] text-black font-semibold' 
                       : 'bg-transparent text-[#16151C] font-light hover:bg-gray-50'
                   }`}
                 >
-                  <UserCheck size={20} strokeWidth={activeSidebar === 'security' ? 2 : 1.5} />
-                  <span className="text-[16px]">Security & privacy</span>
+                  <UserCheck size={20} strokeWidth={activeSidebar === 'settings' ? 2 : 1.5} />
+                  <span className="text-[16px]">Settings</span>
                 </button>
                 
                 <button 
-                  onClick={() => setActiveSidebar('transfers')}
+                  onClick={() => setActiveSidebar('support')}
                   className={`w-full flex items-center gap-3 px-5 py-4 transition-colors ${
-                    activeSidebar === 'transfers' 
+                    activeSidebar === 'support' 
                       ? 'bg-[#D4AF37] text-black font-semibold' 
                       : 'bg-transparent text-[#16151C] font-light hover:bg-gray-50'
                   }`}
                 >
-                  <RefreshCcw size={20} strokeWidth={activeSidebar === 'transfers' ? 2 : 1.5} />
-                  <span className="text-[16px]">Transfers</span>
+                  <RefreshCcw size={20} strokeWidth={activeSidebar === 'support' ? 2 : 1.5} />
+                  <span className="text-[16px]">Support</span>
                 </button>
 
                 <button 
@@ -140,27 +140,14 @@ export default function UserProfileOverview() {
                 </button>
                 
                 <button 
-                  onClick={() => setActiveTab('security_tab')}
+                  onClick={() => setActiveTab('business')}
                   className={`flex items-center gap-2.5 pb-3 relative transition-colors ${
-                    activeTab === 'security_tab' ? 'text-[#D4AF37] font-semibold text-[17px]' : 'text-[#16151C] font-light text-[17px] hover:text-gray-600'
+                    activeTab === 'business' ? 'text-[#D4AF37] font-semibold text-[17px]' : 'text-[#16151C] font-light text-[17px] hover:text-gray-600'
                   }`}
                 >
-                  <FileText size={20} strokeWidth={activeTab === 'security_tab' ? 2 : 1.5} />
-                  Security & privacy
-                  {activeTab === 'security_tab' && (
-                    <div className="absolute bottom-[-1px] left-0 w-full h-[3px] bg-[#D4AF37]"></div>
-                  )}
-                </button>
-
-                <button 
-                  onClick={() => setActiveTab('details')}
-                  className={`flex items-center gap-2.5 pb-3 relative transition-colors ${
-                    activeTab === 'details' ? 'text-[#D4AF37] font-semibold text-[17px]' : 'text-[#16151C] font-light text-[17px] hover:text-gray-600'
-                  }`}
-                >
-                  <RefreshCcw size={20} strokeWidth={activeTab === 'details' ? 2 : 1.5} />
-                  Details
-                  {activeTab === 'details' && (
+                  <Briefcase size={20} strokeWidth={activeTab === 'business' ? 2 : 1.5} />
+                  Business Information
+                  {activeTab === 'business' && (
                     <div className="absolute bottom-[-1px] left-0 w-full h-[3px] bg-[#D4AF37]"></div>
                   )}
                 </button>
@@ -221,7 +208,35 @@ export default function UserProfileOverview() {
                 </div>
               )}
 
-              {activeTab !== 'personal' && (
+              {activeTab === 'business' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+                  <div className="border-b border-[#A2A1A8]/10 pb-2">
+                    <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Business Name</label>
+                    <div className="text-[16px] text-[#16151C] font-light">Acme Digital Ltd</div>
+                  </div>
+                  <div className="border-b border-[#A2A1A8]/10 pb-2">
+                    <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Business email</label>
+                    <div className="text-[16px] text-[#16151C] font-light">hello@acme.com</div>
+                  </div>
+                  
+                  <div className="border-b border-[#A2A1A8]/10 pb-2">
+                    <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Business Phone</label>
+                    <div className="text-[16px] text-[#16151C] font-light">Nil</div>
+                  </div>
+                  <div className="border-b border-[#A2A1A8]/10 pb-2">
+                    <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Business Address</label>
+                    <div className="text-[16px] text-[#16151C] font-light">Nil</div>
+                  </div>
+
+                  <div className="border-b border-[#A2A1A8]/10 pb-2">
+                    <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Industry</label>
+                    <div className="text-[16px] text-[#16151C] font-light">Nil</div>
+                  </div>
+                </div>
+              )}
+
+              {/* Catch-all for other tabs if they get added */}
+              {activeTab !== 'personal' && activeTab !== 'business' && (
                 <div className="py-12 text-center text-gray-500 font-light">
                   This section is under construction.
                 </div>
