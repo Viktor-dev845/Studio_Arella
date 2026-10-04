@@ -16,7 +16,7 @@ import {
   Shield,
   Headset,
   Bell,
-  SlidersHorizontal,
+  Type,
   ArrowRight,
   ArrowLeft,
   X,
@@ -573,7 +573,7 @@ export default function UserProfileOverview() {
                         supportTab === 'report' ? 'text-[#D4AF37]' : 'text-[#16151C]'
                       }`}
                     >
-                      <SlidersHorizontal size={20} className={supportTab === 'report' ? "text-[#D4AF37]" : "text-[#16151C]"} strokeWidth={2} />
+                      <Type size={20} className={supportTab === 'report' ? "text-[#D4AF37]" : "text-[#16151C]"} strokeWidth={2} />
                       <span className={`font-semibold text-[17px] ${supportTab === 'report' ? 'text-[#D4AF37]' : 'text-[#16151C]'}`}>Report a problem</span>
                       {supportTab === 'report' && (
                         <div className="absolute bottom-[-1px] left-0 w-full h-[3px] bg-[#D4AF37]"></div>
@@ -597,8 +597,15 @@ export default function UserProfileOverview() {
                   )}
 
                   {supportTab === 'report' && (
-                    <div className="text-[16px] font-light text-[#16151C]">
-                      Report a problem form goes here.
+                    <div className="flex flex-col gap-[13px] w-full max-w-[575px]">
+                      <div className="text-[16px] font-medium text-[#16151C] leading-[150%]">Message us</div>
+                      <textarea 
+                        placeholder="Enter message"
+                        className="w-full h-[232px] p-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37] resize-none"
+                      ></textarea>
+                      <button className="mt-2 w-fit h-[40px] px-6 bg-[#D4AF37] hover:bg-[#c29f31] text-[#16151C] font-normal text-[14px] capitalize rounded-[6px] transition-colors">
+                        Send Message
+                      </button>
                     </div>
                   )}
                 </>
