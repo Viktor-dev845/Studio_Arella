@@ -16,7 +16,8 @@ import {
   Shield,
   Headset,
   Bell,
-  SlidersHorizontal
+  SlidersHorizontal,
+  ArrowRight
 } from 'lucide-react';
 
 export default function UserProfileOverview() {
@@ -399,6 +400,44 @@ export default function UserProfileOverview() {
 
                     </div>
                   )}
+                </>
+              )}
+
+              {activeSidebar === 'security' && (
+                <>
+                  <div className="flex flex-wrap gap-8 border-b border-[#A2A1A8]/20 mb-8 relative">
+                    <div className="flex items-center gap-2.5 pb-3 relative">
+                      <Bell size={24} className="text-[#D4AF37]" strokeWidth={1.5} />
+                      <span className="text-[#D4AF37] font-semibold text-[17px]">Security & privacy</span>
+                      <div className="absolute bottom-[-1px] left-0 w-full h-[3px] bg-[#D4AF37]"></div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-[33px]">
+                    <div className="flex items-center justify-between cursor-pointer group">
+                      <div>
+                        <div className="text-[16px] font-medium text-[#16151C] mb-1">Change password</div>
+                        <div className="text-[14px] text-[#16151C] font-light">Reset your password details</div>
+                      </div>
+                      <ArrowRight size={20} className="text-[#5F6D7E] group-hover:text-black transition-colors" />
+                    </div>
+
+                    <div className="flex items-center justify-between cursor-pointer group">
+                      <div>
+                        <div className="text-[16px] font-medium text-[#16151C] mb-1">Login activity</div>
+                        <div className="text-[14px] text-[#16151C] font-light">View recent devices and sessions.</div>
+                      </div>
+                      <ArrowRight size={20} className="text-[#5F6D7E] group-hover:text-black transition-colors" />
+                    </div>
+
+                    <div className="flex items-center justify-between cursor-pointer group">
+                      <div>
+                        <div className="text-[16px] font-medium text-[#16151C] mb-1">Log out of all devices</div>
+                        <div className="text-[14px] text-[#16151C] font-light">Disconnect your account from all devices you are logged into</div>
+                      </div>
+                      <ArrowRight size={20} className="text-[#5F6D7E] group-hover:text-black transition-colors" />
+                    </div>
+                  </div>
                 </>
               )}
 
