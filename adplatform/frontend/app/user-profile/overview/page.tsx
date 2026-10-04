@@ -28,6 +28,7 @@ export default function UserProfileOverview() {
   const [activeSidebar, setActiveSidebar] = useState('profile');
   const [activeTab, setActiveTab] = useState('personal');
   const [activeSettingsTab, setActiveSettingsTab] = useState('notifications');
+  const [supportTab, setSupportTab] = useState<'contact' | 'report'>('contact');
   const [editingMode, setEditingMode] = useState<'personal' | 'business' | null>(null);
   const [securityView, setSecurityView] = useState<'main' | 'change-password' | 'login-activity'>('main');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -549,6 +550,59 @@ export default function UserProfileOverview() {
                 </>
               )}
 
+              {activeSidebar === 'support' && (
+                <>
+                  {/* Tabs */}
+                  <div className="flex flex-wrap gap-8 border-b border-[#A2A1A8]/20 mb-8 relative">
+                    <button 
+                      onClick={() => setSupportTab('contact')}
+                      className={`flex items-center gap-2.5 pb-3 relative hover:opacity-80 transition-opacity ${
+                        supportTab === 'contact' ? 'text-[#D4AF37]' : 'text-[#16151C]'
+                      }`}
+                    >
+                      <Bell size={20} className={supportTab === 'contact' ? "text-[#D4AF37]" : "text-[#16151C]"} strokeWidth={2} />
+                      <span className={`font-semibold text-[17px] ${supportTab === 'contact' ? 'text-[#D4AF37]' : 'text-[#16151C]'}`}>Contact support</span>
+                      {supportTab === 'contact' && (
+                        <div className="absolute bottom-[-1px] left-0 w-full h-[3px] bg-[#D4AF37]"></div>
+                      )}
+                    </button>
+                    
+                    <button 
+                      onClick={() => setSupportTab('report')}
+                      className={`flex items-center gap-2.5 pb-3 relative hover:opacity-80 transition-opacity ${
+                        supportTab === 'report' ? 'text-[#D4AF37]' : 'text-[#16151C]'
+                      }`}
+                    >
+                      <SlidersHorizontal size={20} className={supportTab === 'report' ? "text-[#D4AF37]" : "text-[#16151C]"} strokeWidth={2} />
+                      <span className={`font-semibold text-[17px] ${supportTab === 'report' ? 'text-[#D4AF37]' : 'text-[#16151C]'}`}>Report a problem</span>
+                      {supportTab === 'report' && (
+                        <div className="absolute bottom-[-1px] left-0 w-full h-[3px] bg-[#D4AF37]"></div>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Tab Content */}
+                  {supportTab === 'contact' && (
+                    <div className="flex flex-wrap gap-y-8 gap-x-32 w-full max-w-[700px]">
+                      <div className="flex flex-col gap-[5px] w-full max-w-[280px]">
+                        <div className="text-[14px] font-light text-[#A2A1A8]">Phone number</div>
+                        <div className="text-[16px] font-light text-[#16151C] pb-2 border-b border-[#A2A1A8]/10">02034567890</div>
+                      </div>
+
+                      <div className="flex flex-col gap-[5px] w-full max-w-[280px]">
+                        <div className="text-[14px] font-light text-[#A2A1A8]">Email</div>
+                        <div className="text-[16px] font-light text-[#16151C] pb-2 border-b border-[#A2A1A8]/10">hello@studioarella.com</div>
+                      </div>
+                    </div>
+                  )}
+
+                  {supportTab === 'report' && (
+                    <div className="text-[16px] font-light text-[#16151C]">
+                      Report a problem form goes here.
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           </div>
           </>
