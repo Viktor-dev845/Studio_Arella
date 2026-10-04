@@ -29,7 +29,7 @@ export default function UserProfileOverview() {
   const [activeTab, setActiveTab] = useState('personal');
   const [activeSettingsTab, setActiveSettingsTab] = useState('notifications');
   const [editingMode, setEditingMode] = useState<'personal' | 'business' | null>(null);
-  const [securityView, setSecurityView] = useState<'main' | 'change-password'>('main');
+  const [securityView, setSecurityView] = useState<'main' | 'change-password' | 'login-activity'>('main');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   // Notification toggles state
@@ -430,7 +430,10 @@ export default function UserProfileOverview() {
                       <ArrowRight size={20} className="text-[#5F6D7E] group-hover:text-black transition-colors" />
                     </div>
 
-                    <div className="flex items-center justify-between cursor-pointer group">
+                    <div 
+                      className="flex items-center justify-between cursor-pointer group"
+                      onClick={() => setSecurityView('login-activity')}
+                    >
                       <div>
                         <div className="text-[16px] font-medium text-[#16151C] mb-1">Login activity</div>
                         <div className="text-[14px] text-[#16151C] font-light">View recent devices and sessions.</div>
@@ -499,6 +502,44 @@ export default function UserProfileOverview() {
                     >
                       Reset Password
                     </button>
+                  </div>
+                </>
+              )}
+
+              {activeSidebar === 'security' && securityView === 'login-activity' && (
+                <>
+                  <div className="flex flex-wrap gap-8 border-b border-[#A2A1A8]/20 mb-10 relative">
+                    <button 
+                      onClick={() => setSecurityView('main')}
+                      className="flex items-center gap-2.5 pb-3 relative hover:opacity-80 transition-opacity"
+                    >
+                      <ArrowLeft size={20} className="text-[#D4AF37]" strokeWidth={2} />
+                      <span className="text-[#D4AF37] font-semibold text-[17px]">Login activity</span>
+                      <div className="absolute bottom-[-1px] left-0 w-full h-[3px] bg-[#D4AF37]"></div>
+                    </button>
+                  </div>
+
+                  <div className="flex flex-col gap-8 w-full max-w-[660px]">
+                    <div className="flex items-center justify-between">
+                      <div className="flex flex-col gap-1">
+                        <div className="text-[16px] font-medium text-[#16151C]">Windows</div>
+                        <div className="text-[14px] font-light text-[#16151C]">Logged in 3days ago</div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="flex flex-col gap-1">
+                        <div className="text-[16px] font-medium text-[#16151C]">MacOs</div>
+                        <div className="text-[14px] font-light text-[#16151C]">Logged in August 15, 2026</div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div className="flex flex-col gap-1">
+                        <div className="text-[16px] font-medium text-[#16151C]">MacOs</div>
+                        <div className="text-[14px] font-light text-[#16151C]">Logged in August 15, 2026</div>
+                      </div>
+                    </div>
                   </div>
                 </>
               )}
