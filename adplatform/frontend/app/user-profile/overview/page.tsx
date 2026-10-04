@@ -17,7 +17,8 @@ import {
   Headset,
   Bell,
   SlidersHorizontal,
-  ArrowRight
+  ArrowRight,
+  ArrowLeft
 } from 'lucide-react';
 
 export default function UserProfileOverview() {
@@ -26,6 +27,7 @@ export default function UserProfileOverview() {
   const [activeTab, setActiveTab] = useState('personal');
   const [activeSettingsTab, setActiveSettingsTab] = useState('notifications');
   const [editingMode, setEditingMode] = useState<'personal' | 'business' | null>(null);
+  const [securityView, setSecurityView] = useState<'main' | 'change-password'>('main');
 
   // Notification toggles state
   const [notifState, setNotifState] = useState({
@@ -403,7 +405,7 @@ export default function UserProfileOverview() {
                 </>
               )}
 
-              {activeSidebar === 'security' && (
+              {activeSidebar === 'security' && securityView === 'main' && (
                 <>
                   <div className="flex flex-wrap gap-8 border-b border-[#A2A1A8]/20 mb-8 relative">
                     <div className="flex items-center gap-2.5 pb-3 relative">
@@ -414,7 +416,10 @@ export default function UserProfileOverview() {
                   </div>
 
                   <div className="flex flex-col gap-[33px]">
-                    <div className="flex items-center justify-between cursor-pointer group">
+                    <div 
+                      className="flex items-center justify-between cursor-pointer group"
+                      onClick={() => setSecurityView('change-password')}
+                    >
                       <div>
                         <div className="text-[16px] font-medium text-[#16151C] mb-1">Change password</div>
                         <div className="text-[14px] text-[#16151C] font-light">Reset your password details</div>
@@ -437,6 +442,57 @@ export default function UserProfileOverview() {
                       </div>
                       <ArrowRight size={20} className="text-[#5F6D7E] group-hover:text-black transition-colors" />
                     </div>
+                  </div>
+                </>
+              )}
+
+              {activeSidebar === 'security' && securityView === 'change-password' && (
+                <>
+                  <div className="flex flex-wrap gap-8 border-b border-[#A2A1A8]/20 mb-10 relative">
+                    <button 
+                      onClick={() => setSecurityView('main')}
+                      className="flex items-center gap-2.5 pb-3 relative hover:opacity-80 transition-opacity"
+                    >
+                      <ArrowLeft size={20} className="text-[#D4AF37]" strokeWidth={2} />
+                      <span className="text-[#D4AF37] font-semibold text-[17px]">Change password</span>
+                      <div className="absolute bottom-[-1px] left-0 w-full h-[3px] bg-[#D4AF37]"></div>
+                    </button>
+                  </div>
+
+                  <div className="flex flex-col gap-8">
+                    {/* Current password */}
+                    <div className="flex flex-col gap-3 w-full max-w-[460px]">
+                      <label className="text-[16px] font-medium text-[#16151C]">Current password</label>
+                      <input 
+                        type="password"
+                        placeholder="Enter current password"
+                        className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37]"
+                      />
+                    </div>
+
+                    {/* New password */}
+                    <div className="flex flex-col gap-3 w-full max-w-[460px]">
+                      <label className="text-[16px] font-medium text-[#16151C]">New password</label>
+                      <input 
+                        type="password"
+                        placeholder="Enter new password"
+                        className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37]"
+                      />
+                    </div>
+
+                    {/* Confirm password */}
+                    <div className="flex flex-col gap-3 w-full max-w-[460px]">
+                      <label className="text-[16px] font-medium text-[#16151C]">Confirm password</label>
+                      <input 
+                        type="password"
+                        placeholder="Confirm new password"
+                        className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37]"
+                      />
+                    </div>
+
+                    <button className="w-fit h-[40px] px-6 mt-4 bg-[#D4AF37] hover:bg-[#D4AF37]/90 text-black font-medium text-[14px] rounded-[6px] transition-colors">
+                      Reset Password
+                    </button>
                   </div>
                 </>
               )}
