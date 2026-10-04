@@ -18,7 +18,9 @@ import {
   Bell,
   SlidersHorizontal,
   ArrowRight,
-  ArrowLeft
+  ArrowLeft,
+  X,
+  Check
 } from 'lucide-react';
 
 export default function UserProfileOverview() {
@@ -28,6 +30,7 @@ export default function UserProfileOverview() {
   const [activeSettingsTab, setActiveSettingsTab] = useState('notifications');
   const [editingMode, setEditingMode] = useState<'personal' | 'business' | null>(null);
   const [securityView, setSecurityView] = useState<'main' | 'change-password'>('main');
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   // Notification toggles state
   const [notifState, setNotifState] = useState({
@@ -490,7 +493,10 @@ export default function UserProfileOverview() {
                       />
                     </div>
 
-                    <button className="w-fit h-[40px] px-6 mt-4 bg-[#D4AF37] hover:bg-[#D4AF37]/90 text-black font-medium text-[14px] rounded-[6px] transition-colors">
+                    <button 
+                      onClick={() => setShowSuccessModal(true)}
+                      className="w-fit h-[40px] px-6 mt-4 bg-[#D4AF37] hover:bg-[#D4AF37]/90 text-black font-medium text-[14px] rounded-[6px] transition-colors"
+                    >
                       Reset Password
                     </button>
                   </div>
@@ -689,6 +695,45 @@ export default function UserProfileOverview() {
           )}
         </div>
       </PageTransition>
+
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
+          <div className="relative w-full max-w-[625px] h-[565px] bg-white rounded-[32px] flex flex-col items-center justify-center">
+            {/* Close button */}
+            <button 
+              onClick={() => setShowSuccessModal(false)}
+              className="absolute top-8 right-8 text-[#101828] hover:opacity-70 transition-opacity"
+            >
+              <X size={24} strokeWidth={2.5} />
+            </button>
+
+            {/* Glowing checkmark */}
+            <div className="relative w-[70px] h-[70px] flex items-center justify-center mb-8">
+              <div className="absolute inset-[-50%] rounded-full bg-[radial-gradient(circle,#D4AF37_0%,transparent_70%)] opacity-20 blur-md"></div>
+              <div className="absolute inset-[-30%] rounded-full bg-[radial-gradient(circle,#D4AF37_0%,transparent_70%)] opacity-30 blur-md"></div>
+              <div className="relative w-full h-full rounded-full flex items-center justify-center bg-[radial-gradient(116.28%_116.28%_at_0%_-16.28%,#443A18_4.69%,#D4AF37_98.31%)]">
+                <Check size={28} strokeWidth={3} className="text-white" />
+              </div>
+            </div>
+
+            {/* Success message */}
+            <h3 className="text-[20px] font-semibold text-[#16151C] mb-8">
+              Password changed successfully
+            </h3>
+
+            {/* Go back button */}
+            <button 
+              onClick={() => {
+                setShowSuccessModal(false);
+                setSecurityView('main');
+              }}
+              className="w-full max-w-[468px] h-[56px] bg-[#D4AF37] hover:bg-[#c29f31] text-black font-medium text-[16px] rounded-[6px] transition-colors flex items-center justify-center"
+            >
+              Go back
+            </button>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
