@@ -31,6 +31,7 @@ export default function UserProfileOverview() {
   const [editingMode, setEditingMode] = useState<'personal' | 'business' | null>(null);
   const [securityView, setSecurityView] = useState<'main' | 'change-password' | 'login-activity'>('main');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   // Notification toggles state
   const [notifState, setNotifState] = useState({
@@ -441,7 +442,10 @@ export default function UserProfileOverview() {
                       <ArrowRight size={20} className="text-[#5F6D7E] group-hover:text-black transition-colors" />
                     </div>
 
-                    <div className="flex items-center justify-between cursor-pointer group">
+                    <div 
+                      className="flex items-center justify-between cursor-pointer group"
+                      onClick={() => setShowLogoutModal(true)}
+                    >
                       <div>
                         <div className="text-[16px] font-medium text-[#16151C] mb-1">Log out of all devices</div>
                         <div className="text-[14px] text-[#16151C] font-light">Disconnect your account from all devices you are logged into</div>
@@ -772,6 +776,31 @@ export default function UserProfileOverview() {
             >
               Go back
             </button>
+          </div>
+        </div>
+      )}
+
+      {showLogoutModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
+          <div className="relative w-full max-w-[625px] bg-white rounded-[32px] flex flex-col items-center justify-center p-14 text-center">
+            <h3 className="text-[28px] leading-[40px] font-semibold text-[#16151C] mb-12 max-w-[500px]">
+              Are you sure you want to logged out on all devices you are logged into?
+            </h3>
+
+            <div className="flex w-full gap-5 max-w-[500px]">
+              <button 
+                onClick={() => setShowLogoutModal(false)}
+                className="flex-1 h-[60px] bg-white border border-[#E5E7EB] hover:bg-gray-50 text-[#16151C] font-medium text-[18px] rounded-[12px] transition-colors"
+              >
+                No
+              </button>
+              <button 
+                onClick={() => setShowLogoutModal(false)}
+                className="flex-1 h-[60px] bg-[#D4AF37] hover:bg-[#c29f31] text-[#16151C] font-medium text-[18px] rounded-[12px] transition-colors"
+              >
+                Yes
+              </button>
+            </div>
           </div>
         </div>
       )}
