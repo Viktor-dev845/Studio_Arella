@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { PageTransition } from '@/components/ui/Animations';
 import { useAuthStore } from '@/store/authStore';
+import api from '@/lib/api';
 import { 
   Briefcase, 
   Mail,
@@ -35,6 +36,108 @@ export default function UserProfileOverview() {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showLogoutSuccessModal, setShowLogoutSuccessModal] = useState(false);
   const [showReportSuccessModal, setShowReportSuccessModal] = useState(false);
+
+  const [personalForm, setPersonalForm] = useState({ first_name: '', last_name: '', phone: '', email: '', location: '' });
+  const [businessForm, setBusinessForm] = useState({ business_name: '', email: '', phone: '', location: '' });
+  const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+  const [reportForm, setReportForm] = useState({ message: '' });
+  const [sessions, setSessions] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (user) {
+      setPersonalForm({
+        first_name: user.first_name || user.name?.split(' ')[0] || '',
+        last_name: user.last_name || user.name?.split(' ')[1] || '',
+        phone: user.phone || '',
+        email: user.email || '',
+        location: user.location || ''
+      });
+      setBusinessForm({
+        business_name: user.business_name || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        location: user.location || ''
+      });
+    }
+  }, [user, editingMode]);
+
+  const handleSaveProfile = async (type: 'personal' | 'business') => {
+    try {
+      const payload = type === 'personal' ? personalForm : businessForm;
+      await api.put('/auth/profile', payload);
+      useAuthStore.getState().checkAuth();
+      setEditingMode(null);
+    } catch (err) {
+      console.error('Failed to update profile', err);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      alert("Passwords don't match");
+      return;
+    }
+    try {
+      await api.put('/auth/password', {
+        old_password: passwordForm.currentPassword,
+        new_password: passwordForm.newPassword
+      });
+      setShowSuccessModal(true);
+      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    } catch (err) {
+      alert('Failed to change password');
+    }
+  };
+
+  const handleReportProblem = async () => {
+    if (!reportForm.message.trim()) return;
+    try {
+      await api.post('/support/tickets', {
+        subject: 'Report a problem',
+        message: reportForm.message
+      });
+      setShowReportSuccessModal(true);
+      setReportForm({ message: '' });
+    } catch (err) {
+      alert('Failed to send message');
+    }
+  };
+
+  const loadSessions = async () => {
+    try {
+      const res = await api.get('/auth/sessions');
+      setSessions(res.data.sessions || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    if (activeSidebar === 'security' && securityView === 'login-activity') {
+      loadSessions();
+    }
+  }, [activeSidebar, securityView]);
+
+  const handleLogoutAllDevices = async () => {
+    try {
+      let allSessions = sessions;
+      if (allSessions.length === 0) {
+        const res = await api.get('/auth/sessions');
+        allSessions = res.data.sessions || [];
+      }
+      
+      const otherSessions = allSessions.filter(s => !s.is_current);
+      for (const s of otherSessions) {
+        await api.delete(`/auth/sessions/${s.id}`);
+      }
+      setShowLogoutModal(false);
+      setShowLogoutSuccessModal(true);
+      loadSessions();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
 
   // Notification toggles state
   const [notifState, setNotifState] = useState({
@@ -602,10 +705,12 @@ export default function UserProfileOverview() {
                       <div className="text-[16px] font-medium text-[#16151C] leading-[150%]">Message us</div>
                       <textarea 
                         placeholder="Enter message"
+                        value={reportForm.message}
+                        onChange={(e) => setReportForm({message: e.target.value})}
                         className="w-full h-[232px] p-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37] resize-none"
                       ></textarea>
                       <button 
-                        onClick={() => setShowReportSuccessModal(true)}
+                        onClick={handleReportProblem}
                         className="mt-2 w-fit h-[40px] px-6 bg-[#D4AF37] hover:bg-[#c29f31] text-[#16151C] font-normal text-[14px] capitalize rounded-[6px] transition-colors"
                       >
                         Send Message
