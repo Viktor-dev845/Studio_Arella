@@ -34,6 +34,7 @@ export default function UserProfileOverview() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showLogoutSuccessModal, setShowLogoutSuccessModal] = useState(false);
+  const [showReportSuccessModal, setShowReportSuccessModal] = useState(false);
 
   // Notification toggles state
   const [notifState, setNotifState] = useState({
@@ -603,7 +604,10 @@ export default function UserProfileOverview() {
                         placeholder="Enter message"
                         className="w-full h-[232px] p-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37] resize-none"
                       ></textarea>
-                      <button className="mt-2 w-fit h-[40px] px-6 bg-[#D4AF37] hover:bg-[#c29f31] text-[#16151C] font-normal text-[14px] capitalize rounded-[6px] transition-colors">
+                      <button 
+                        onClick={() => setShowReportSuccessModal(true)}
+                        className="mt-2 w-fit h-[40px] px-6 bg-[#D4AF37] hover:bg-[#c29f31] text-[#16151C] font-normal text-[14px] capitalize rounded-[6px] transition-colors"
+                      >
                         Send Message
                       </button>
                     </div>
@@ -898,6 +902,42 @@ export default function UserProfileOverview() {
             {/* Go back button */}
             <button 
               onClick={() => setShowLogoutSuccessModal(false)}
+              className="w-full max-w-[468px] h-[56px] bg-[#D4AF37] hover:bg-[#c29f31] text-black font-medium text-[16px] rounded-[6px] transition-colors flex items-center justify-center"
+            >
+              Go back
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showReportSuccessModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
+          <div className="relative w-full max-w-[625px] h-[565px] bg-white rounded-[32px] flex flex-col items-center justify-center">
+            {/* Close button */}
+            <button 
+              onClick={() => setShowReportSuccessModal(false)}
+              className="absolute top-8 right-8 text-[#101828] hover:opacity-70 transition-opacity"
+            >
+              <X size={24} strokeWidth={2.5} />
+            </button>
+
+            {/* Glowing checkmark */}
+            <div className="relative w-[70px] h-[70px] flex items-center justify-center mb-8">
+              <div className="absolute inset-[-50%] rounded-full bg-[radial-gradient(circle,#D4AF37_0%,transparent_70%)] opacity-20 blur-md"></div>
+              <div className="absolute inset-[-30%] rounded-full bg-[radial-gradient(circle,#D4AF37_0%,transparent_70%)] opacity-30 blur-md"></div>
+              <div className="relative w-full h-full rounded-full flex items-center justify-center bg-[radial-gradient(116.28%_116.28%_at_0%_-16.28%,#443A18_4.69%,#D4AF37_98.31%)]">
+                <Check size={28} strokeWidth={3} className="text-white" />
+              </div>
+            </div>
+
+            {/* Success message */}
+            <h3 className="text-[20px] font-semibold text-[#16151C] mb-8">
+              Message sent
+            </h3>
+
+            {/* Go back button */}
+            <button 
+              onClick={() => setShowReportSuccessModal(false)}
               className="w-full max-w-[468px] h-[56px] bg-[#D4AF37] hover:bg-[#c29f31] text-black font-medium text-[16px] rounded-[6px] transition-colors flex items-center justify-center"
             >
               Go back
