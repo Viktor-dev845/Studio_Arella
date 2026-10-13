@@ -115,6 +115,19 @@ const ACTIVITIES = [
   },
 ];
 
+function timeAgo(dateString: string) {
+  try {
+    const diff = Math.floor((Date.now() - new Date(dateString).getTime()) / 1000);
+    if (diff < 60) return 'Just now';
+    if (diff < 3600) return `${Math.floor(diff / 60)} minutes ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)} hours ago`;
+    if (diff < 604800) return `${Math.floor(diff / 86400)} days ago`;
+    return new Date(dateString).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  } catch {
+    return 'Recently';
+  }
+}
+
 function formatEventTime(iso: string) {
   return new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 }
@@ -139,10 +152,14 @@ export default function AdvertiserDashboard() {
   const [podcastBookings, setPodcastBookings] = useState<any[]>([]);
   const [adBookings, setAdBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [analytics, setAnalytics] = useState<any>(null);
+  const [notifications, setNotifications] = useState<any[]>([]);
 
   useEffect(() => {
     let isMounted = true;
     api.get('/finances/balance').then((res) => { if (isMounted) setBalance(res.data); }).catch(() => {});
+    api.get('/dashboard/stats').then((res) => { if (isMounted) setAnalytics(res.data); }).catch(() => {});
+    api.get('/notifications').then((res) => { if (isMounted) setNotifications(res.data.notifications || []); }).catch(() => {});
     api.get('/podcasts/my-bookings').then((res) => { if (isMounted) setPodcastBookings(res.data.bookings || []); }).catch(() => {});
     api.get('/bookings?limit=50').then((res) => { if (isMounted) setAdBookings(res.data.bookings || []); }).catch(() => {});
     return () => {
@@ -244,12 +261,12 @@ export default function AdvertiserDashboard() {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 16px' }}>
-              <p style={{ fontSize: 13, color: theme.color.text1, margin: 0, fontWeight: 500 }}>Total Podcast</p>
+              <p style={{ fontSize: 13, color: theme.color.text1, margin: 0, fontWeight: 500 }}>Active Campaigns</p>
             </div>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 28, fontWeight: 500, color: theme.color.text1, lineHeight: 1 }}>7</span>
+              <span style={{ fontSize: 28, fontWeight: 500, color: theme.color.text1, lineHeight: 1 }}>{analytics?.active_campaigns || 0}</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: theme.color.text1, fontSize: 11, fontWeight: 700 }}>
-                +11.01% <FaArrowTrendUp size={10} />
+                
               </div>
             </div>
           </div>
@@ -264,37 +281,34 @@ export default function AdvertiserDashboard() {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 16px' }}>
-              <p style={{ fontSize: 13, color: theme.color.text1, margin: 0, fontWeight: 500 }}>Total Active Listeners</p>
+              <p style={{ fontSize: 13, color: theme.color.text1, margin: 0, fontWeight: 500 }}>Total Ad Bookings</p>
             </div>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 28, fontWeight: 500, color: theme.color.text1, lineHeight: 1 }}>3,671</span>
+              <span style={{ fontSize: 28, fontWeight: 500, color: theme.color.text1, lineHeight: 1 }}>{adBookings.length}</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: theme.color.text1, fontSize: 11, fontWeight: 700 }}>
-                -0.03% <FaArrowTrendDown size={10} />
+                
               </div>
             </div>
           </div>
 
-          {/* Card 3: Followers */}
-          <div
-            style={{
-              background: '#FFFDF5',
-              borderRadius: 16,
-              padding: '20px',
-              border: '1px solid rgba(212,175,55,0.04)',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 16px' }}>
-              <p style={{ fontSize: 13, color: theme.color.text1, margin: 0, fontWeight: 500 }}>Followers</p>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 28, fontWeight: 500, color: theme.color.text1, lineHeight: 1 }}>3,671</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: theme.color.text1, fontSize: 11, fontWeight: 700 }}>
-                +15.03% <FaArrowTrendUp size={10} />
+          {/* Card 3: Total Spend */}
+            <div
+              style={{
+                background: '#FFFDF5',
+                borderRadius: 16,
+                padding: '20px',
+                border: '1px solid rgba(212,175,55,0.04)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 16px' }}>
+                <p style={{ fontSize: 13, color: theme.color.text1, margin: 0, fontWeight: 500 }}>Total Spend</p>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: 28, fontWeight: 500, color: theme.color.text1, lineHeight: 1 }}>{formatCurrency(analytics?.total_revenue || 0, currency, rates)}</span>
               </div>
             </div>
-          </div>
 
-          {/* Card 4: Booked Podcast Slots */}
+            {/* Card 4: Booked Podcast Slots */}
           <div
             style={{
               background: '#FFFDF5',
@@ -471,7 +485,7 @@ export default function AdvertiserDashboard() {
               <div>
                 <p style={{ fontSize: 12, fontWeight: 700, margin: '0 0 6px', color: '#FFFFFF' }}>Wallet Bal</p>
                 <p style={{ fontSize: 16, fontWeight: 800, margin: 0, color: '#FFFFFF', letterSpacing: '-0.2px' }}>
-                  $ 10,000
+                  {formatCurrency(balance?.credits ?? balance?.balance ?? user?.credits ?? 0, currency, rates)}
                 </p>
               </div>
               <div style={{ position: 'relative', zIndex: 1 }}>
