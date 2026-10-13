@@ -1,79 +1,142 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { Mic, Users } from 'lucide-react';
-import DashboardLayout from '@/components/layout/DashboardLayout';
+import { useState, useEffect } from 'react';
 import { PageTransition } from '@/components/ui/Animations';
+import AudienceNavbar from '@/components/audience/AudienceNavbar';
+import AudienceLeftSidebar from '@/components/audience/AudienceLeftSidebar';
+import AudienceRightSidebar from '@/components/audience/AudienceRightSidebar';
+import AudiencePostComposer from '@/components/audience/AudiencePostComposer';
+import AudiencePostCard, { PostData } from '@/components/audience/AudiencePostCard';
+import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/api';
-import { theme } from '@/lib/theme';
 
-const F = theme.font.body;
+const DEFAULT_POSTS: PostData[] = [
+  {
+    id: 'post-1',
+    author: {
+      name: 'Adam Udochi',
+      role: 'UI/UX Designer',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=150&auto=format&fit=crop',
+    },
+    title: '-Healthy Tracking podcast',
+    mediaUrl: 'https://images.unsplash.com/photo-1551650975-87deedd944c3?q=80&w=1000&auto=format&fit=crop',
+    duration: '02:35:19',
+    currentTime: '00:04:15',
+    progressPercent: 28,
+    initialLikes: 99,
+    initialComments: 8,
+  },
+  {
+    id: 'post-2',
+    author: {
+      name: 'Nermmen Saif',
+      role: 'Designer creator',
+      avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=150&auto=format&fit=crop',
+    },
+    title: '-Photo is perfect podcast',
+    mediaUrl: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=1000&auto=format&fit=crop',
+    duration: '01:42:00',
+    currentTime: '00:12:30',
+    progressPercent: 35,
+    initialLikes: 112,
+    initialComments: 14,
+  },
+];
 
-interface Show {
-  id: string;
-  title: string;
-  description: string | null;
-  cover_url: string | null;
-  creator_name: string | null;
-  episode_count: string;
-}
-
-export default function AudiencePreviewPage() {
-  const [shows, setShows] = useState<Show[]>([]);
-  const [loading, setLoading] = useState(true);
+export default function AudienceHomePage() {
+  const { user } = useAuthStore();
+  const [posts, setPosts] = useState<PostData[]>(DEFAULT_POSTS);
+  const [activeMenu, setActiveMenu] = useState('podcast');
 
   useEffect(() => {
-    api.get('/shows')
-      .then((res) => setShows(res.data.shows || []))
-      .catch(() => setShows([]))
-      .finally(() => setLoading(false));
+    // Attempt to load published podcasts from the backend to enrich the feed
+    api.get('/podcasts/shows')
+      .then((res) => {
+        const publishedShows = res.data?.shows || [];
+        if (publishedShows.length > 0) {
+          const mappedShows: PostData[] = publishedShows.map((s: any) => ({
+            id: s.id,
+            author: {
+              name: s.creator_name || 'Studio Arella Creator',
+              role: 'Podcast Host',
+              avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop',
+            },
+            title: `-${s.title}`,
+            mediaUrl: s.cover_url || 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?q=80&w=1000&auto=format&fit=crop',
+            duration: '01:15:00',
+            currentTime: '00:00:00',
+            progressPercent: 10,
+            initialLikes: 45,
+            initialComments: 3,
+          }));
+
+          // Merge with default feed items
+          setPosts([...mappedShows, ...DEFAULT_POSTS]);
+        }
+      })
+      .catch(() => {
+        // Retain default polished posts on error or offline
+      });
   }, []);
 
-  return (
-    <DashboardLayout>
-      <PageTransition>
-        <div style={{ fontFamily: F, padding: '24px 32px 48px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-            <Users size={20} color={theme.color.gold} />
-            <h1 style={{ fontFamily: theme.font.display, fontSize: 24, fontWeight: 800, color: theme.color.text1, margin: 0 }}>
-              Audience Preview
-            </h1>
-          </div>
-          <p style={{ fontSize: 13, color: theme.color.text3, margin: '0 0 28px' }}>
-            This is a real, read-only preview of what a listener browsing Studio Arella's published podcasts would see — no booking, wallet, or creator tools here.
-          </p>
+  const handleCreatePost = (content: string) => {
+    const newPost: PostData = {
+      id: `custom-${Date.now()}`,
+      author: {
+        name: user?.name || 'Adam Udochi',
+        role: user?.role === 'creator' ? 'Creator' : 'UI/UX Designer',
+        avatar: user?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=150&auto=format&fit=crop',
+      },
+      title: `-${content}`,
+      mediaUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=1000&auto=format&fit=crop',
+      duration: '00:45:00',
+      currentTime: '00:00:00',
+      progressPercent: 5,
+      initialLikes: 1,
+      initialComments: 0,
+    };
+    setPosts([newPost, ...posts]);
+  };
 
-          {loading ? (
-            <p style={{ fontSize: 13, color: theme.color.text3 }}>Loading published podcasts…</p>
-          ) : shows.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '60px 20px', background: theme.color.surface2, borderRadius: 16, border: `1px dashed ${theme.color.border}` }}>
-              <Mic size={28} color={theme.color.text4} style={{ marginBottom: 10 }} />
-              <p style={{ fontSize: 14, color: theme.color.text3, margin: 0 }}>No podcasts have any published episodes yet.</p>
-            </div>
-          ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 20 }}>
-              {shows.map((s) => (
-                <Link key={s.id} href={`/audience/${s.id}`} style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  <div style={{ width: '100%', aspectRatio: '1 / 1', borderRadius: 14, overflow: 'hidden', background: theme.color.surface2, border: `1px solid ${theme.color.border}` }}>
-                    {s.cover_url ? (
-                      <img src={s.cover_url} alt={s.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    ) : (
-                      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Mic size={28} color={theme.color.text4} />
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <p style={{ fontSize: 14, fontWeight: 700, color: theme.color.text1, margin: '0 0 2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.title}</p>
-                    <p style={{ fontSize: 12, color: theme.color.text3, margin: 0 }}>{s.creator_name || 'Studio Arella Creator'} · {s.episode_count} episode{s.episode_count === '1' ? '' : 's'}</p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
+  return (
+    <div className="min-h-screen bg-[#F7F7F7] flex flex-col font-body">
+      {/* ─── Top Audience Navigation Bar ─── */}
+      <AudienceNavbar activeNav="home" />
+
+      {/* ─── Main Content Container (3-Column Layout) ─── */}
+      <PageTransition>
+        <main className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 py-6 sm:py-8">
+          <div className="flex flex-col lg:flex-row gap-6 justify-center items-start">
+            
+            {/* 1. Left Sidebar Column (278px) */}
+            <AudienceLeftSidebar 
+              activeMenu={activeMenu}
+              onMenuSelect={(menuId) => setActiveMenu(menuId)}
+              onTagSelect={(tag) => console.log('Filtered by hashtag:', tag)}
+            />
+
+            {/* 2. Middle Main Column (570px) */}
+            <section className="w-full lg:w-[570px] flex-1 max-w-[570px] flex flex-col gap-6">
+              {/* Write New Post Box */}
+              <AudiencePostComposer 
+                onPostSubmit={handleCreatePost}
+                onLiveExperienceClick={() => alert('Starting live experience session...')}
+              />
+
+              {/* Feed Posts */}
+              <div className="flex flex-col gap-6">
+                {posts.map((post) => (
+                  <AudiencePostCard key={post.id} post={post} />
+                ))}
+              </div>
+            </section>
+
+            {/* 3. Right Sidebar Column (278px) */}
+            <AudienceRightSidebar />
+
+          </div>
+        </main>
       </PageTransition>
-    </DashboardLayout>
+    </div>
   );
 }
