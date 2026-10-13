@@ -26,21 +26,21 @@ const INITIAL_CREATORS: Creator[] = [
     id: '1',
     name: 'Steve Jobs',
     role: 'CEO of Apple',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+    avatar: '/audience/steve-jobs.png',
     followed: false,
   },
   {
     id: '2',
     name: 'Ryan Roslansky',
     role: 'CEO of Linkedin',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+    avatar: '/audience/ryan-roslansky.png',
     followed: false,
   },
   {
     id: '3',
     name: 'Dylan Field',
     role: 'CEO of Figma',
-    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
+    avatar: '/audience/dylan-field.png',
     followed: false,
   },
 ];
@@ -63,11 +63,11 @@ export default function AudienceRightSidebar() {
         }}
       >
         {/* Background 3D Illustration */}
-        <div className="absolute right-0 bottom-0 w-[140px] h-full pointer-events-none opacity-90 overflow-hidden flex items-end justify-end">
+        <div className="absolute right-[-10px] bottom-0 w-[145px] h-full pointer-events-none opacity-90 overflow-hidden flex items-end justify-end">
           <img 
             src="/audience/try-premium.png" 
             alt="Premium Illustration" 
-            className="w-full h-auto object-contain max-h-[140px]"
+            className="w-full h-auto object-contain max-h-[145px]"
             onError={(e) => {
               (e.target as HTMLElement).style.display = 'none';
             }}
@@ -111,6 +111,10 @@ export default function AudienceRightSidebar() {
                   src={creator.avatar} 
                   alt={creator.name} 
                   className="w-[38px] h-[38px] rounded-full object-cover shrink-0 border border-gray-100"
+                  onError={(e) => {
+                    // Fallback to avatar if file fails
+                    (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80';
+                  }}
                 />
                 <div className="min-w-0">
                   <h5 className="text-[13px] font-semibold text-[#212121] truncate">
@@ -156,8 +160,15 @@ export default function AudienceRightSidebar() {
       <div className="w-full bg-[#FCFDFD] rounded-[16px] p-5 shadow-[0px_0px_2px_rgba(0,0,0,0.1),0px_0px_1px_rgba(0,0,0,0.06)] border border-gray-100/60 flex flex-col gap-4">
         {/* Design podcast membership */}
         <div className="flex items-center gap-3 cursor-pointer group">
-          <div className="w-6 h-6 rounded-md bg-gradient-to-tr from-pink-500 via-purple-500 to-indigo-500 flex items-center justify-center shrink-0 shadow-sm">
-            <span className="text-[10px] text-white font-bold">F</span>
+          <div className="w-6 h-6 rounded-md flex items-center justify-center shrink-0">
+            <img 
+              src="/audience/figma-logo.png" 
+              alt="Figma" 
+              className="w-full h-full object-contain"
+              onError={(e) => {
+                (e.target as HTMLElement).style.display = 'none';
+              }}
+            />
           </div>
           <span className="text-[14px] text-[#666666] group-hover:text-black transition-colors font-normal truncate">
             Design podcast membership
@@ -167,8 +178,15 @@ export default function AudienceRightSidebar() {
         {/* UI Design membership */}
         <div className="flex items-center justify-between gap-2 cursor-pointer group">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-6 h-6 rounded-md bg-gradient-to-tr from-amber-400 to-orange-500 flex items-center justify-center shrink-0 shadow-sm">
-              <span className="text-[10px] text-white font-bold">UI</span>
+            <div className="w-6 h-6 rounded-md flex items-center justify-center shrink-0">
+              <img 
+                src="/audience/rocket-logo.png" 
+                alt="Rocket" 
+                className="w-full h-full object-contain"
+                onError={(e) => {
+                  (e.target as HTMLElement).style.display = 'none';
+                }}
+              />
             </div>
             <span className="text-[14px] text-[#666666] group-hover:text-black transition-colors font-normal truncate">
               UI Design membership
@@ -217,7 +235,7 @@ export default function AudienceRightSidebar() {
           <div className="p-4 border-t border-gray-100 flex flex-col gap-3 max-h-[220px] overflow-y-auto bg-[#FCFDFD]">
             <div className="flex items-center gap-2.5 p-1.5 rounded-lg hover:bg-gray-100/60 cursor-pointer transition-colors">
               <img 
-                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&auto=format&fit=crop&q=80" 
+                src="/audience/adam-udochi.png" 
                 alt="Chat User" 
                 className="w-8 h-8 rounded-full object-cover"
               />
@@ -229,7 +247,7 @@ export default function AudienceRightSidebar() {
             </div>
             <div className="flex items-center gap-2.5 p-1.5 rounded-lg hover:bg-gray-100/60 cursor-pointer transition-colors">
               <img 
-                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&auto=format&fit=crop&q=80" 
+                src="/audience/ryan-roslansky.png" 
                 alt="Chat User" 
                 className="w-8 h-8 rounded-full object-cover"
               />

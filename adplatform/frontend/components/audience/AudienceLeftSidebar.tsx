@@ -43,7 +43,7 @@ export default function AudienceLeftSidebar({
 
   const userName = user?.name || 'Adam Udochi';
   const userTitle = user?.role === 'screen_owner' ? 'Screen Owner' : user?.role === 'admin' ? 'Administrator' : 'UI/UX Designer';
-  const userAvatar = user?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=150&auto=format&fit=crop';
+  const userAvatar = user?.avatar || '/audience/adam-udochi.png';
 
   const handleMenuClick = (menuId: string) => {
     setCurrentMenu(menuId);

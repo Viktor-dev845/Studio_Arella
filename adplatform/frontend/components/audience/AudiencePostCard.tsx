@@ -48,7 +48,7 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
     'Amazing episode! The sound design was fantastic.',
   ]);
 
-  const userAvatar = user?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=150&auto=format&fit=crop';
+  const userAvatar = user?.avatar || '/audience/adam-udochi.png';
 
   const handleLike = () => {
     if (hasLiked) {
