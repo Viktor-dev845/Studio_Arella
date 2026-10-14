@@ -85,23 +85,35 @@ function PinwheelLogo({ className = 'w-10 h-10' }: { className?: string }) {
   );
 }
 
+import AudienceMembershipModal from './AudienceMembershipModal';
+
 export default function AudienceMembershipsCard() {
   const [memberships, setMemberships] = useState<MembershipItem[]>(INITIAL_MEMBERSHIPS);
+  const [selectedClub, setSelectedClub] = useState<MembershipItem | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const toggleMembership = (id: string) => {
-    setMemberships(prev =>
-      prev.map(item => {
-        if (item.id === id) {
-          const nextStatus = item.status === 'active' ? 'join' : 'active';
-          return {
-            ...item,
-            status: nextStatus,
-            membersCount: nextStatus === 'active' ? item.membersCount + 1 : item.membersCount - 1,
-          };
-        }
-        return item;
-      })
-    );
+  const handleActionClick = (item: MembershipItem) => {
+    if (item.status === 'join') {
+      setSelectedClub(item);
+      setIsModalOpen(true);
+    } else {
+      // Toggle back to join if already active
+      setMemberships(prev =>
+        prev.map(m => m.id === item.id ? { ...m, status: 'join', membersCount: m.membersCount - 1 } : m)
+      );
+    }
+  };
+
+  const handleSubscribeSuccess = () => {
+    if (selectedClub) {
+      setMemberships(prev =>
+        prev.map(m =>
+          m.id === selectedClub.id
+            ? { ...m, status: 'active', membersCount: m.membersCount + 1 }
+            : m
+        )
+      );
+    }
   };
 
   return (
@@ -146,7 +158,7 @@ export default function AudienceMembershipsCard() {
                 {/* Right: Action Button (110px x 40px) */}
                 <button
                   type="button"
-                  onClick={() => toggleMembership(item.id)}
+                  onClick={() => handleActionClick(item)}
                   className={`w-[110px] h-[40px] rounded-[6px] text-[14px] font-normal font-['Jost',sans-serif] capitalize transition-all shrink-0 shadow-sm active:scale-95 flex items-center justify-center cursor-pointer ${
                     isActive
                       ? 'bg-[rgba(225,200,117,0.56)] text-black/80 hover:bg-[rgba(225,200,117,0.75)]'
@@ -160,6 +172,14 @@ export default function AudienceMembershipsCard() {
           );
         })}
       </div>
+
+      {/* ─── Membership Subscription Modal (Frame 2121459664) ─── */}
+      <AudienceMembershipModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        clubName={selectedClub?.name || 'Dylan fan club'}
+        onSubscribeSuccess={handleSubscribeSuccess}
+      />
     </div>
   );
 }
