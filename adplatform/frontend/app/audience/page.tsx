@@ -8,6 +8,8 @@ import AudienceLeftSidebar from '@/components/audience/AudienceLeftSidebar';
 import AudienceRightSidebar from '@/components/audience/AudienceRightSidebar';
 import AudiencePostComposer from '@/components/audience/AudiencePostComposer';
 import AudiencePostCard, { PostData } from '@/components/audience/AudiencePostCard';
+import AudienceMembershipsCard from '@/components/audience/AudienceMembershipsCard';
+import AudiencePremiumCard from '@/components/audience/AudiencePremiumCard';
 import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/api';
 
@@ -87,16 +89,20 @@ function AudienceContent() {
   const queryView = searchParams.get('view');
 
   const { user } = useAuthStore();
-  const [activeMenu, setActiveMenu] = useState<'podcast' | 'trending' | string>(
-    queryView === 'podcast' || queryView === 'feed' ? 'podcast' : 'trending'
-  );
+  const [activeMenu, setActiveMenu] = useState<'podcast' | 'trending' | 'memberships' | string>(() => {
+    if (queryView === 'memberships') return 'memberships';
+    if (queryView === 'podcast' || queryView === 'feed') return 'podcast';
+    return 'trending';
+  });
 
   const basePosts = activeMenu === 'podcast' ? FIGMA_PODCAST_FEED_POSTS : FIGMA_TRENDING_POSTS;
   const [posts, setPosts] = useState<PostData[]>(basePosts);
 
   // Sync menu state when URL query changes
   useEffect(() => {
-    if (queryView === 'podcast' || queryView === 'feed') {
+    if (queryView === 'memberships') {
+      setActiveMenu('memberships');
+    } else if (queryView === 'podcast' || queryView === 'feed') {
       setActiveMenu('podcast');
     } else if (queryView === 'trending') {
       setActiveMenu('trending');
@@ -147,6 +153,8 @@ function AudienceContent() {
       router.push('/audience?view=podcast', { scroll: false });
     } else if (menuId === 'trending') {
       router.push('/audience?view=trending', { scroll: false });
+    } else if (menuId === 'memberships') {
+      router.push('/audience?view=memberships', { scroll: false });
     }
   };
 
@@ -182,7 +190,7 @@ function AudienceContent() {
         }}
       />
 
-      {/* ─── Main Content Container (3-Column Layout matching Figma) ─── */}
+      {/* ─── Main Content Container matching Figma ─── */}
       <PageTransition>
         <main className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           <div className="flex flex-col lg:flex-row gap-6 justify-center items-start">
@@ -194,26 +202,47 @@ function AudienceContent() {
               onTagSelect={(tag) => console.log('Filtered by hashtag:', tag)}
             />
 
-            {/* 2. Middle Main Column (570px: Write New Post + Feed Cards) */}
-            <section className="w-full lg:w-[570px] flex-1 max-w-[570px] flex flex-col gap-6">
-              {/* Write New Post Box (570px x 168px) */}
-              <AudiencePostComposer 
-                onPostSubmit={handleCreatePost}
-                onLiveExperienceClick={() => alert('Starting live experience session...')}
-              />
+            {/* 2. Main Content Area */}
+            {activeMenu === 'memberships' ? (
+              /* ─── Memberships View: Row 1 (Post Composer + Premium Card) + Row 2 (862px Membership Card) ─── */
+              <section className="w-full lg:w-[862px] flex flex-col gap-6">
+                {/* Row 1: Composer (570px) + Try Premium (278px) */}
+                <div className="flex flex-col md:flex-row gap-4 items-stretch">
+                  <div className="flex-1 max-w-[570px]">
+                    <AudiencePostComposer 
+                      onPostSubmit={handleCreatePost}
+                      onLiveExperienceClick={() => alert('Starting live experience session...')}
+                    />
+                  </div>
+                  <AudiencePremiumCard />
+                </div>
 
-              {/* Feed Posts (570px x 518px each) */}
-              <div className="flex flex-col gap-6">
-                {posts.map((post) => (
-                  <AudiencePostCard key={post.id} post={post} />
-                ))}
-              </div>
-            </section>
+                {/* Row 2: Membership Card (862px wide) */}
+                <AudienceMembershipsCard />
+              </section>
+            ) : (
+              /* ─── Default Feed / Trending 3-Column Layout ─── */
+              <>
+                {/* Middle Column (570px: Write New Post + Feed Cards) */}
+                <section className="w-full lg:w-[570px] flex-1 max-w-[570px] flex flex-col gap-6">
+                  <AudiencePostComposer 
+                    onPostSubmit={handleCreatePost}
+                    onLiveExperienceClick={() => alert('Starting live experience session...')}
+                  />
 
-            {/* 3. Right Sidebar Column (278px: Try Premium + Feed or Trending + Messages) */}
-            <AudienceRightSidebar 
-              view={activeMenu === 'podcast' ? 'feed' : 'trending'}
-            />
+                  <div className="flex flex-col gap-6">
+                    {posts.map((post) => (
+                      <AudiencePostCard key={post.id} post={post} />
+                    ))}
+                  </div>
+                </section>
+
+                {/* Right Column (278px: Try Premium + Feed or Trending + Messages) */}
+                <AudienceRightSidebar 
+                  view={activeMenu === 'podcast' ? 'feed' : 'trending'}
+                />
+              </>
+            )}
 
           </div>
         </main>

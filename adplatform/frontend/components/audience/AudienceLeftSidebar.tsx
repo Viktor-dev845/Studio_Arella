@@ -151,8 +151,10 @@ export default function AudienceLeftSidebar({
         <button
           type="button"
           onClick={() => handleMenuClick('memberships')}
-          className={`flex items-center gap-3.5 py-1.5 text-left transition-colors ${
-            currentMenu === 'memberships' ? 'text-black font-medium' : 'text-[#666666] hover:text-black'
+          className={`flex items-center gap-3.5 py-2 px-3.5 rounded-full transition-all text-left cursor-pointer ${
+            currentMenu === 'memberships'
+              ? 'bg-[#F6F6F6] text-[#666666] font-medium w-fit pr-6'
+              : 'text-[#666666] hover:text-black'
           }`}
         >
           <Users size={20} strokeWidth={1.8} className="shrink-0 text-[#666666]" />
