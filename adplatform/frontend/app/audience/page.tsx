@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { PageTransition } from '@/components/ui/Animations';
 import AudienceNavbar from '@/components/audience/AudienceNavbar';
 import AudienceLeftSidebar from '@/components/audience/AudienceLeftSidebar';
@@ -10,9 +11,9 @@ import AudiencePostCard, { PostData } from '@/components/audience/AudiencePostCa
 import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/api';
 
-const DEFAULT_POSTS: PostData[] = [
+const FIGMA_PODCAST_FEED_POSTS: PostData[] = [
   {
-    id: 'post-1',
+    id: 'post-feed-1',
     author: {
       name: 'Adam Udochi',
       role: 'UI/UX Designer',
@@ -22,12 +23,13 @@ const DEFAULT_POSTS: PostData[] = [
     mediaUrl: '/audience/mockup-sphinx.png',
     duration: '02:35:19',
     currentTime: '00:04:15',
-    progressPercent: 28,
+    progressPercent: 30,
     initialLikes: 99,
     initialComments: 8,
+    badgeTheme: 'gold',
   },
   {
-    id: 'post-2',
+    id: 'post-feed-2',
     author: {
       name: 'Nermmen Saif',
       role: 'Designer creator',
@@ -38,46 +40,115 @@ const DEFAULT_POSTS: PostData[] = [
     duration: '01:42:00',
     currentTime: '00:12:30',
     progressPercent: 35,
-    initialLikes: 112,
-    initialComments: 14,
+    initialLikes: 99,
+    initialComments: 8,
+    badgeTheme: 'green',
   },
 ];
 
-export default function AudienceHomePage() {
-  const { user } = useAuthStore();
-  const [posts, setPosts] = useState<PostData[]>(DEFAULT_POSTS);
-  const [activeMenu, setActiveMenu] = useState('podcast');
+const FIGMA_TRENDING_POSTS: PostData[] = [
+  {
+    id: 'post-trending-1',
+    author: {
+      name: 'Adam Udochi',
+      role: 'UI/UX Designer',
+      avatar: '/audience/adam-udochi.png',
+    },
+    title: '-Wealth servicing podcast',
+    mediaUrl: '/audience/mockup-sphinx.png',
+    duration: '02:35:19',
+    currentTime: '00:04:15',
+    progressPercent: 30,
+    initialLikes: 99,
+    initialComments: 8,
+    badgeTheme: 'gold',
+  },
+  {
+    id: 'post-trending-2',
+    author: {
+      name: 'Nermmen Saif',
+      role: 'Designer creator',
+      avatar: '/audience/nermmen-saif.png',
+    },
+    title: '-Trick to wealth creation podcast',
+    mediaUrl: '/audience/plant-podcast.png',
+    duration: '01:42:00',
+    currentTime: '00:12:30',
+    progressPercent: 35,
+    initialLikes: 99,
+    initialComments: 8,
+    badgeTheme: 'green',
+  },
+];
 
+function AudienceContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const queryView = searchParams.get('view');
+
+  const { user } = useAuthStore();
+  const [activeMenu, setActiveMenu] = useState<'podcast' | 'trending' | string>(
+    queryView === 'podcast' || queryView === 'feed' ? 'podcast' : 'trending'
+  );
+
+  const basePosts = activeMenu === 'podcast' ? FIGMA_PODCAST_FEED_POSTS : FIGMA_TRENDING_POSTS;
+  const [posts, setPosts] = useState<PostData[]>(basePosts);
+
+  // Sync menu state when URL query changes
   useEffect(() => {
-    // Attempt to load published podcasts from the backend to enrich the feed
+    if (queryView === 'podcast' || queryView === 'feed') {
+      setActiveMenu('podcast');
+    } else if (queryView === 'trending') {
+      setActiveMenu('trending');
+    }
+  }, [queryView]);
+
+  // Update posts when view toggles
+  useEffect(() => {
+    const currentBase = activeMenu === 'podcast' ? FIGMA_PODCAST_FEED_POSTS : FIGMA_TRENDING_POSTS;
+    setPosts(currentBase);
+  }, [activeMenu]);
+
+  // Enrich with backend podcasts if available
+  useEffect(() => {
     api.get('/podcasts/shows')
       .then((res) => {
         const publishedShows = res.data?.shows || [];
         if (publishedShows.length > 0) {
-          const mappedShows: PostData[] = publishedShows.map((s: any) => ({
+          const currentBase = activeMenu === 'podcast' ? FIGMA_PODCAST_FEED_POSTS : FIGMA_TRENDING_POSTS;
+          const mappedShows: PostData[] = publishedShows.map((s: any, idx: number) => ({
             id: s.id,
             author: {
               name: s.creator_name || 'Studio Arella Creator',
               role: 'Podcast Host',
-              avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop',
+              avatar: s.avatar || (idx % 2 === 0 ? '/audience/adam-udochi.png' : '/audience/nermmen-saif.png'),
             },
             title: `-${s.title}`,
-            mediaUrl: s.cover_url || 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?q=80&w=1000&auto=format&fit=crop',
+            mediaUrl: s.cover_url || (idx % 2 === 0 ? '/audience/mockup-sphinx.png' : '/audience/plant-podcast.png'),
             duration: '01:15:00',
             currentTime: '00:00:00',
             progressPercent: 10,
             initialLikes: 45,
             initialComments: 3,
+            badgeTheme: idx % 2 === 0 ? 'gold' : 'green',
           }));
 
-          // Merge with default feed items
-          setPosts([...mappedShows, ...DEFAULT_POSTS]);
+          setPosts([...currentBase, ...mappedShows]);
         }
       })
       .catch(() => {
-        // Retain default polished posts on error or offline
+        // Fall back gracefully to mock Figma posts
       });
-  }, []);
+  }, [activeMenu]);
+
+  const handleMenuChange = (menuId: string) => {
+    setActiveMenu(menuId);
+    if (menuId === 'podcast') {
+      router.push('/audience?view=podcast', { scroll: false });
+    } else if (menuId === 'trending') {
+      router.push('/audience?view=trending', { scroll: false });
+    }
+  };
 
   const handleCreatePost = (content: string) => {
     const newPost: PostData = {
@@ -85,45 +156,53 @@ export default function AudienceHomePage() {
       author: {
         name: user?.name || 'Adam Udochi',
         role: user?.role === 'creator' ? 'Creator' : 'UI/UX Designer',
-        avatar: user?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=150&auto=format&fit=crop',
+        avatar: user?.avatar || '/audience/adam-udochi.png',
       },
       title: `-${content}`,
-      mediaUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=1000&auto=format&fit=crop',
+      mediaUrl: '/audience/mockup-sphinx.png',
       duration: '00:45:00',
       currentTime: '00:00:00',
       progressPercent: 5,
       initialLikes: 1,
       initialComments: 0,
+      badgeTheme: 'gold',
     };
     setPosts([newPost, ...posts]);
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F7F7] flex flex-col font-body">
-      {/* ─── Top Audience Navigation Bar ─── */}
-      <AudienceNavbar activeNav="home" />
+    <div className="min-h-screen bg-[#F7F7F7] flex flex-col font-['DM_Sans',sans-serif]">
+      {/* ─── Top Audience Navigation Bar (1440px x 76px) ─── */}
+      <AudienceNavbar 
+        activeNav={activeMenu === 'podcast' ? 'home' : null}
+        onNavChange={(nav) => {
+          if (nav === 'home') {
+            handleMenuChange('podcast');
+          }
+        }}
+      />
 
-      {/* ─── Main Content Container (3-Column Layout) ─── */}
+      {/* ─── Main Content Container (3-Column Layout matching Figma) ─── */}
       <PageTransition>
-        <main className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 py-6 sm:py-8">
+        <main className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           <div className="flex flex-col lg:flex-row gap-6 justify-center items-start">
             
-            {/* 1. Left Sidebar Column (278px) */}
+            {/* 1. Left Sidebar Column (278px: Profile Card + Menu + Hashtags) */}
             <AudienceLeftSidebar 
               activeMenu={activeMenu}
-              onMenuSelect={(menuId) => setActiveMenu(menuId)}
+              onMenuSelect={handleMenuChange}
               onTagSelect={(tag) => console.log('Filtered by hashtag:', tag)}
             />
 
-            {/* 2. Middle Main Column (570px) */}
+            {/* 2. Middle Main Column (570px: Write New Post + Feed Cards) */}
             <section className="w-full lg:w-[570px] flex-1 max-w-[570px] flex flex-col gap-6">
-              {/* Write New Post Box */}
+              {/* Write New Post Box (570px x 168px) */}
               <AudiencePostComposer 
                 onPostSubmit={handleCreatePost}
                 onLiveExperienceClick={() => alert('Starting live experience session...')}
               />
 
-              {/* Feed Posts */}
+              {/* Feed Posts (570px x 518px each) */}
               <div className="flex flex-col gap-6">
                 {posts.map((post) => (
                   <AudiencePostCard key={post.id} post={post} />
@@ -131,12 +210,22 @@ export default function AudienceHomePage() {
               </div>
             </section>
 
-            {/* 3. Right Sidebar Column (278px) */}
-            <AudienceRightSidebar />
+            {/* 3. Right Sidebar Column (278px: Try Premium + Feed or Trending + Messages) */}
+            <AudienceRightSidebar 
+              view={activeMenu === 'podcast' ? 'feed' : 'trending'}
+            />
 
           </div>
         </main>
       </PageTransition>
     </div>
+  );
+}
+
+export default function AudienceHomePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#F7F7F7]" />}>
+      <AudienceContent />
+    </Suspense>
   );
 }

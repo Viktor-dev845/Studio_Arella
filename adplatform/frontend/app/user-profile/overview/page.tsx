@@ -21,7 +21,8 @@ import {
   ArrowRight,
   ArrowLeft,
   X,
-  Check
+  Check,
+  SlidersHorizontal
 } from 'lucide-react';
 
 export default function UserProfileOverview() {
