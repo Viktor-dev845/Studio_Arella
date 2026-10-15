@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import AudienceCancelSubscriptionModal from './AudienceCancelSubscriptionModal';
 
 interface SubscriptionItem {
   id: string;
@@ -87,23 +88,38 @@ function PinwheelLogo({ className = 'w-10 h-10' }: { className?: string }) {
 
 export default function AudienceSubscriptionsCard() {
   const [subscriptions, setSubscriptions] = useState<SubscriptionItem[]>(INITIAL_SUBSCRIPTIONS);
-  const [confirmUnsubId, setConfirmUnsubId] = useState<string | null>(null);
+  const [targetItem, setTargetItem] = useState<SubscriptionItem | null>(null);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
 
-  const handleToggleSubscribe = (id: string) => {
-    setSubscriptions((prev) =>
-      prev.map((sub) => {
-        if (sub.id === id) {
-          const nextState = !sub.isSubscribed;
-          return {
-            ...sub,
-            isSubscribed: nextState,
-            membersCount: nextState ? sub.membersCount + 1 : sub.membersCount - 1,
-          };
-        }
-        return sub;
-      })
-    );
-    setConfirmUnsubId(null);
+  const handleButtonClick = (item: SubscriptionItem) => {
+    if (item.isSubscribed) {
+      // Trigger confirmation modal
+      setTargetItem(item);
+      setIsCancelModalOpen(true);
+    } else {
+      // Re-subscribe directly
+      setSubscriptions((prev) =>
+        prev.map((sub) =>
+          sub.id === item.id
+            ? { ...sub, isSubscribed: true, membersCount: sub.membersCount + 1 }
+            : sub
+        )
+      );
+    }
+  };
+
+  const handleConfirmCancel = () => {
+    if (targetItem) {
+      setSubscriptions((prev) =>
+        prev.map((sub) =>
+          sub.id === targetItem.id
+            ? { ...sub, isSubscribed: false, membersCount: Math.max(0, sub.membersCount - 1) }
+            : sub
+        )
+      );
+    }
+    setIsCancelModalOpen(false);
+    setTargetItem(null);
   };
 
   return (
@@ -146,7 +162,7 @@ export default function AudienceSubscriptionsCard() {
               {/* Right: Unsubscribe / Subscribe Button (110px x 40px, background #D4AF37, radius 6px) */}
               <button
                 type="button"
-                onClick={() => handleToggleSubscribe(item.id)}
+                onClick={() => handleButtonClick(item)}
                 className={`w-[110px] h-[40px] rounded-[6px] text-[14px] font-normal font-['Jost',sans-serif] capitalize transition-all shrink-0 shadow-sm active:scale-95 flex items-center justify-center cursor-pointer ${
                   item.isSubscribed
                     ? 'bg-[#D4AF37] text-black/80 hover:bg-[#c39e2e]'
@@ -159,6 +175,17 @@ export default function AudienceSubscriptionsCard() {
           </div>
         ))}
       </div>
+
+      {/* ─── Cancel Subscription Confirmation Modal (media_1792067449779_0bb2a4d8.png) ─── */}
+      <AudienceCancelSubscriptionModal
+        isOpen={isCancelModalOpen}
+        onClose={() => {
+          setIsCancelModalOpen(false);
+          setTargetItem(null);
+        }}
+        onConfirm={handleConfirmCancel}
+        clubName={targetItem?.name}
+      />
     </div>
   );
 }
