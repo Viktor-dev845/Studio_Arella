@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import AudienceCancelSubscriptionModal from './AudienceCancelSubscriptionModal';
+import AudienceSubscriptionCancelledModal from './AudienceSubscriptionCancelledModal';
 
 interface SubscriptionItem {
   id: string;
@@ -90,6 +91,7 @@ export default function AudienceSubscriptionsCard() {
   const [subscriptions, setSubscriptions] = useState<SubscriptionItem[]>(INITIAL_SUBSCRIPTIONS);
   const [targetItem, setTargetItem] = useState<SubscriptionItem | null>(null);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [isCancelledPopupOpen, setIsCancelledPopupOpen] = useState(false);
 
   const handleButtonClick = (item: SubscriptionItem) => {
     if (item.isSubscribed) {
@@ -119,7 +121,7 @@ export default function AudienceSubscriptionsCard() {
       );
     }
     setIsCancelModalOpen(false);
-    setTargetItem(null);
+    setIsCancelledPopupOpen(true); // Open "Subscription cancelled" Filter Popup
   };
 
   return (
@@ -185,6 +187,19 @@ export default function AudienceSubscriptionsCard() {
         }}
         onConfirm={handleConfirmCancel}
         clubName={targetItem?.name}
+      />
+
+      {/* ─── Subscription Cancelled Popup (Filter Popup: media_1792068225103_dd8732da.png) ─── */}
+      <AudienceSubscriptionCancelledModal
+        isOpen={isCancelledPopupOpen}
+        onClose={() => {
+          setIsCancelledPopupOpen(false);
+          setTargetItem(null);
+        }}
+        onFinish={() => {
+          setIsCancelledPopupOpen(false);
+          setTargetItem(null);
+        }}
       />
     </div>
   );
