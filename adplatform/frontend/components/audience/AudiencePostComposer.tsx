@@ -1,20 +1,23 @@
 'use client';
 
 import { useState } from 'react';
-import { Edit3, Video, Send } from 'lucide-react';
+import { Edit3, Video, Calendar, Send } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 
 interface AudiencePostComposerProps {
   onPostSubmit?: (content: string) => void;
   onLiveExperienceClick?: () => void;
+  onFanEventClick?: () => void;
 }
 
 export default function AudiencePostComposer({
   onPostSubmit,
   onLiveExperienceClick,
+  onFanEventClick,
 }: AudiencePostComposerProps) {
   const { user } = useAuthStore();
   const [content, setContent] = useState('');
+
   const userAvatar = user?.avatar || '/audience/adam-udochi.png';
 
   const handleSubmit = (e?: React.FormEvent) => {
@@ -56,23 +59,38 @@ export default function AudiencePostComposer({
 
       {/* ─── Bottom Bar: height 70px, background rgba(212, 175, 55, 0.69) ─── */}
       <div className="w-full h-[70px] bg-[rgba(212,175,55,0.69)] rounded-b-[16px] flex items-stretch justify-between overflow-hidden">
-        {/* Left: Video Icon + "Live experiences" */}
-        <button
-          type="button"
-          onClick={onLiveExperienceClick}
-          className="flex-1 flex items-center gap-3.5 px-6 hover:bg-black/5 transition-colors text-left"
-        >
-          <Video size={22} strokeWidth={2} className="text-[#000000] shrink-0" />
-          <span className="text-[16px] font-normal text-[#000000] leading-[21px]">
-            Live experiences
-          </span>
-        </button>
+        {/* Left Action Buttons: Live experiences + Fan Event */}
+        <div className="flex items-center gap-2 sm:gap-4 pl-4 sm:pl-6 flex-1 min-w-0">
+          {/* 1. Live experiences */}
+          <button
+            type="button"
+            onClick={onLiveExperienceClick}
+            className="flex items-center gap-2 sm:gap-2.5 py-2 px-2 hover:bg-black/5 rounded-md transition-colors text-left shrink-0 cursor-pointer"
+          >
+            <Video size={20} strokeWidth={2} className="text-[#000000] shrink-0" />
+            <span className="text-[14px] sm:text-[16px] font-normal text-[#000000] leading-[21px] whitespace-nowrap">
+              Live experiences
+            </span>
+          </button>
+
+          {/* 2. Fan Event (Calendar icon + Fan Event) */}
+          <button
+            type="button"
+            onClick={onFanEventClick || (() => alert('Opening Fan Events calendar...'))}
+            className="flex items-center gap-2 sm:gap-2.5 py-2 px-2 hover:bg-black/5 rounded-md transition-colors text-left shrink-0 cursor-pointer"
+          >
+            <Calendar size={20} strokeWidth={2} className="text-[#000000] shrink-0" />
+            <span className="text-[14px] sm:text-[16px] font-normal text-[#000000] leading-[21px] whitespace-nowrap">
+              Fan Event
+            </span>
+          </button>
+        </div>
 
         {/* Right: Send Button (77px x 70px, background rgba(212, 175, 55, 0.49)) */}
         <button
           type="button"
           onClick={() => handleSubmit()}
-          className="w-[77px] h-[70px] bg-[rgba(212,175,55,0.49)] hover:bg-[#D4AF37] transition-all flex items-center justify-center text-[#000000] active:scale-95"
+          className="w-[65px] sm:w-[77px] h-[70px] bg-[rgba(212,175,55,0.49)] hover:bg-[#D4AF37] transition-all flex items-center justify-center text-[#000000] active:scale-95 shrink-0 cursor-pointer"
           title="Send Post"
         >
           <Send size={22} strokeWidth={2.2} className="text-[#000000]" />
