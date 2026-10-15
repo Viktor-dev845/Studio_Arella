@@ -175,21 +175,22 @@ export default function AudienceLeftSidebar({
           <span className="text-[16px] leading-[21px]">Bookmarks</span>
         </button>
 
-        {/* Item 5: Subscriptions (With Gold Pill Counter Badge "2") */}
-        <div className="flex items-center justify-between">
-          <button
-            type="button"
-            onClick={() => handleMenuClick('subscriptions')}
-            className={`flex items-center gap-3.5 py-1.5 text-left transition-colors ${
-              currentMenu === 'subscriptions' ? 'text-black font-medium' : 'text-[#666666] hover:text-black'
-            }`}
-          >
+        {/* Item 5: Subscriptions (Frame 8: active pill with Gold Pill Counter Badge "2") */}
+        <div
+          onClick={() => handleMenuClick('subscriptions')}
+          className={`flex items-center justify-between py-2 px-3.5 rounded-full cursor-pointer transition-all ${
+            currentMenu === 'subscriptions'
+              ? 'bg-[#F6F6F6] text-[#666666] font-medium'
+              : 'text-[#666666] hover:text-black'
+          }`}
+        >
+          <div className="flex items-center gap-3.5">
             <Gamepad2 size={20} strokeWidth={1.8} className="shrink-0 text-[#666666]" />
             <span className="text-[16px] leading-[21px]">Subscriptions</span>
-          </button>
+          </div>
           
           {/* Badge: 32px x 16px, background #D4AF37, border 2px solid white, radius 8px, text "2" */}
-          <div className="w-[32px] h-[16px] bg-[#D4AF37] border-2 border-white rounded-[8px] flex items-center justify-center text-white text-[11px] font-normal leading-[14px] shadow-sm">
+          <div className="w-[32px] h-[16px] bg-[#D4AF37] border-2 border-white rounded-[8px] flex items-center justify-center text-white text-[11px] font-normal leading-[14px] shadow-sm shrink-0">
             2
           </div>
         </div>

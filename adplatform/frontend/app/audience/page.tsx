@@ -9,6 +9,7 @@ import AudienceRightSidebar from '@/components/audience/AudienceRightSidebar';
 import AudiencePostComposer from '@/components/audience/AudiencePostComposer';
 import AudiencePostCard, { PostData } from '@/components/audience/AudiencePostCard';
 import AudienceMembershipsCard from '@/components/audience/AudienceMembershipsCard';
+import AudienceSubscriptionsCard from '@/components/audience/AudienceSubscriptionsCard';
 import AudiencePremiumCard from '@/components/audience/AudiencePremiumCard';
 import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/api';
@@ -126,7 +127,8 @@ function AudienceContent() {
   const queryView = searchParams.get('view');
 
   const { user } = useAuthStore();
-  const [activeMenu, setActiveMenu] = useState<'podcast' | 'trending' | 'memberships' | 'bookmarks' | string>(() => {
+  const [activeMenu, setActiveMenu] = useState<'podcast' | 'trending' | 'memberships' | 'bookmarks' | 'subscriptions' | string>(() => {
+    if (queryView === 'subscriptions') return 'subscriptions';
     if (queryView === 'bookmarks') return 'bookmarks';
     if (queryView === 'memberships') return 'memberships';
     if (queryView === 'podcast' || queryView === 'feed') return 'podcast';
@@ -143,7 +145,9 @@ function AudienceContent() {
 
   // Sync menu state when URL query changes
   useEffect(() => {
-    if (queryView === 'bookmarks') {
+    if (queryView === 'subscriptions') {
+      setActiveMenu('subscriptions');
+    } else if (queryView === 'bookmarks') {
       setActiveMenu('bookmarks');
     } else if (queryView === 'memberships') {
       setActiveMenu('memberships');
@@ -202,6 +206,8 @@ function AudienceContent() {
       router.push('/audience?view=memberships', { scroll: false });
     } else if (menuId === 'bookmarks') {
       router.push('/audience?view=bookmarks', { scroll: false });
+    } else if (menuId === 'subscriptions') {
+      router.push('/audience?view=subscriptions', { scroll: false });
     }
   };
 
@@ -266,6 +272,11 @@ function AudienceContent() {
 
                 {/* Row 2: Membership Card (862px wide) */}
                 <AudienceMembershipsCard />
+              </section>
+            ) : activeMenu === 'subscriptions' ? (
+              /* ─── Subscriptions View: Frame 2121459680 (862px wide directly at top) ─── */
+              <section className="w-full lg:w-[862px] flex flex-col gap-6">
+                <AudienceSubscriptionsCard />
               </section>
             ) : (
               /* ─── Default Feed / Trending / Bookmarks 3-Column Layout ─── */
