@@ -83,24 +83,69 @@ const FIGMA_TRENDING_POSTS: PostData[] = [
   },
 ];
 
+const FIGMA_BOOKMARKS_POSTS: PostData[] = [
+  {
+    id: 'post-bm-1',
+    author: {
+      name: 'Adam Udochi',
+      role: 'UI/UX Designer',
+      avatar: '/audience/adam-udochi.png',
+    },
+    title: '-Healthy Tracking podcast',
+    mediaUrl: '/audience/mockup-sphinx.png',
+    duration: '02:35:19',
+    currentTime: '00:04:15',
+    progressPercent: 30,
+    initialLikes: 99,
+    initialComments: 8,
+    badgeTheme: 'gold',
+    isBookmarked: true,
+  },
+  {
+    id: 'post-bm-2',
+    author: {
+      name: 'Nermmen Saif',
+      role: 'Designer creator',
+      avatar: '/audience/nermmen-saif.png',
+    },
+    title: '-Photo is perfect podcast',
+    mediaUrl: '/audience/plant-podcast.png',
+    duration: '01:42:00',
+    currentTime: '00:12:30',
+    progressPercent: 35,
+    initialLikes: 99,
+    initialComments: 8,
+    badgeTheme: 'green',
+    isBookmarked: true,
+  },
+];
+
 function AudienceContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryView = searchParams.get('view');
 
   const { user } = useAuthStore();
-  const [activeMenu, setActiveMenu] = useState<'podcast' | 'trending' | 'memberships' | string>(() => {
+  const [activeMenu, setActiveMenu] = useState<'podcast' | 'trending' | 'memberships' | 'bookmarks' | string>(() => {
+    if (queryView === 'bookmarks') return 'bookmarks';
     if (queryView === 'memberships') return 'memberships';
     if (queryView === 'podcast' || queryView === 'feed') return 'podcast';
     return 'trending';
   });
 
-  const basePosts = activeMenu === 'podcast' ? FIGMA_PODCAST_FEED_POSTS : FIGMA_TRENDING_POSTS;
-  const [posts, setPosts] = useState<PostData[]>(basePosts);
+  const getBasePosts = (menu: string) => {
+    if (menu === 'bookmarks') return FIGMA_BOOKMARKS_POSTS;
+    if (menu === 'podcast') return FIGMA_PODCAST_FEED_POSTS;
+    return FIGMA_TRENDING_POSTS;
+  };
+
+  const [posts, setPosts] = useState<PostData[]>(() => getBasePosts(activeMenu));
 
   // Sync menu state when URL query changes
   useEffect(() => {
-    if (queryView === 'memberships') {
+    if (queryView === 'bookmarks') {
+      setActiveMenu('bookmarks');
+    } else if (queryView === 'memberships') {
       setActiveMenu('memberships');
     } else if (queryView === 'podcast' || queryView === 'feed') {
       setActiveMenu('podcast');
@@ -111,8 +156,7 @@ function AudienceContent() {
 
   // Update posts when view toggles
   useEffect(() => {
-    const currentBase = activeMenu === 'podcast' ? FIGMA_PODCAST_FEED_POSTS : FIGMA_TRENDING_POSTS;
-    setPosts(currentBase);
+    setPosts(getBasePosts(activeMenu));
   }, [activeMenu]);
 
   // Enrich with backend podcasts if available
@@ -121,7 +165,7 @@ function AudienceContent() {
       .then((res) => {
         const publishedShows = res.data?.shows || [];
         if (publishedShows.length > 0) {
-          const currentBase = activeMenu === 'podcast' ? FIGMA_PODCAST_FEED_POSTS : FIGMA_TRENDING_POSTS;
+          const currentBase = getBasePosts(activeMenu);
           const mappedShows: PostData[] = publishedShows.map((s: any, idx: number) => ({
             id: s.id,
             author: {
@@ -137,6 +181,7 @@ function AudienceContent() {
             initialLikes: 45,
             initialComments: 3,
             badgeTheme: idx % 2 === 0 ? 'gold' : 'green',
+            isBookmarked: activeMenu === 'bookmarks',
           }));
 
           setPosts([...currentBase, ...mappedShows]);
@@ -155,6 +200,8 @@ function AudienceContent() {
       router.push('/audience?view=trending', { scroll: false });
     } else if (menuId === 'memberships') {
       router.push('/audience?view=memberships', { scroll: false });
+    } else if (menuId === 'bookmarks') {
+      router.push('/audience?view=bookmarks', { scroll: false });
     }
   };
 
@@ -221,14 +268,16 @@ function AudienceContent() {
                 <AudienceMembershipsCard />
               </section>
             ) : (
-              /* ─── Default Feed / Trending 3-Column Layout ─── */
+              /* ─── Default Feed / Trending / Bookmarks 3-Column Layout ─── */
               <>
-                {/* Middle Column (570px: Write New Post + Feed Cards) */}
+                {/* Middle Column (570px: Write New Post + Feed Cards; composer omitted in bookmarks view) */}
                 <section className="w-full lg:w-[570px] flex-1 max-w-[570px] flex flex-col gap-6">
-                  <AudiencePostComposer 
-                    onPostSubmit={handleCreatePost}
-                    onLiveExperienceClick={() => alert('Starting live experience session...')}
-                  />
+                  {activeMenu !== 'bookmarks' && (
+                    <AudiencePostComposer 
+                      onPostSubmit={handleCreatePost}
+                      onLiveExperienceClick={() => alert('Starting live experience session...')}
+                    />
+                  )}
 
                   <div className="flex flex-col gap-6">
                     {posts.map((post) => (
@@ -237,9 +286,9 @@ function AudienceContent() {
                   </div>
                 </section>
 
-                {/* Right Column (278px: Try Premium + Feed or Trending + Messages) */}
+                {/* Right Column (278px: Try Premium + Feed, Trending, or Bookmarks CHATS + Messages) */}
                 <AudienceRightSidebar 
-                  view={activeMenu === 'podcast' ? 'feed' : 'trending'}
+                  view={activeMenu === 'bookmarks' ? 'bookmarks' : activeMenu === 'podcast' ? 'feed' : 'trending'}
                 />
               </>
             )}

@@ -9,6 +9,7 @@ import {
   Plus 
 } from 'lucide-react';
 import AudiencePremiumCard from './AudiencePremiumCard';
+import AudienceChatsCard from './AudienceChatsCard';
 
 interface CreatorItem {
   id: string;
@@ -65,7 +66,7 @@ const INITIAL_LIVE_EXPERIENCES: TopicItem[] = [
 ];
 
 interface AudienceRightSidebarProps {
-  view?: 'feed' | 'trending';
+  view?: 'feed' | 'trending' | 'bookmarks';
   onFilterChange?: (topics: string[], liveExp: string[]) => void;
 }
 
@@ -115,8 +116,10 @@ export default function AudienceRightSidebar({
       {/* ─── 1. Try Premium for Free Card ─── */}
       <AudiencePremiumCard />
 
-      {/* ─── 2. Conditional Body: Trending Filters Card vs. Creators & Memberships ─── */}
-      {view === 'trending' ? (
+      {/* ─── 2. Conditional Body: Bookmarks (CHATS) vs Trending Filters vs Feed Creators ─── */}
+      {view === 'bookmarks' ? (
+        <AudienceChatsCard />
+      ) : view === 'trending' ? (
         /* ─── Trending Topics & Live Experience (Frame 1618873129: 278px x 505px) ─── */
         <div className="w-[278px] min-h-[505px] bg-[#FCFDFD] rounded-[16px] p-5 shadow-[0px_0px_2px_rgba(0,0,0,0.08),0px_0px_1px_rgba(0,0,0,0.06)] border border-gray-100/70 flex flex-col gap-8">
           {/* Section A: Trending Topics */}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   MoreHorizontal, 
   Play, 
@@ -29,6 +29,7 @@ export interface PostData {
   initialLikes?: number;
   initialComments?: number;
   badgeTheme?: 'gold' | 'green';
+  isBookmarked?: boolean;
 }
 
 interface AudiencePostCardProps {
@@ -41,10 +42,16 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
   const [likes, setLikes] = useState(post.initialLikes || 99);
   const [hasLiked, setHasLiked] = useState(false);
   const [commentsCount, setCommentsCount] = useState(post.initialComments || 8);
-  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(post.isBookmarked || false);
   const [showComments, setShowComments] = useState(false);
   const [commentInput, setCommentInput] = useState('');
   const [commentsList, setCommentsList] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (post.isBookmarked !== undefined) {
+      setIsBookmarked(post.isBookmarked);
+    }
+  }, [post.isBookmarked]);
 
   const badgeBg = post.badgeTheme === 'green' ? 'bg-[#15411F]' : 'bg-[#D4AF37]';
   const userAvatar = user?.avatar || '/audience/adam-udochi.png';
