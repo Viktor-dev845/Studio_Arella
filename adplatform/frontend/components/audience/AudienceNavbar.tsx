@@ -121,11 +121,15 @@ export default function AudienceNavbar({
             type="button"
             onClick={() => handleNavClick('messages')}
             className={`relative p-1.5 transition-colors ${
-              currentNav === 'messages' ? 'text-black' : 'text-black/60 hover:text-black'
+              currentNav === 'messages' ? 'text-[#D4AF37]' : 'text-black/60 hover:text-black'
             }`}
             title="Messages"
           >
-            <MessageSquare size={28} strokeWidth={currentNav === 'messages' ? 2.2 : 1.7} />
+            <MessageSquare 
+              size={28} 
+              strokeWidth={currentNav === 'messages' ? 2.2 : 1.7} 
+              fill={currentNav === 'messages' ? '#D4AF37' : 'none'}
+            />
             <span className="absolute top-0 right-[-3px] w-[16px] h-[16px] bg-[#FF0000] text-white text-[11px] font-['Roboto',sans-serif] font-normal rounded-full flex items-center justify-center border border-white shadow-sm">
               6
             </span>

@@ -12,6 +12,7 @@ import AudienceMembershipsCard from '@/components/audience/AudienceMembershipsCa
 import AudienceSubscriptionsCard from '@/components/audience/AudienceSubscriptionsCard';
 import AudienceLiveExperiencesCard from '@/components/audience/AudienceLiveExperiencesCard';
 import AudienceLiveEventDetail from '@/components/audience/AudienceLiveEventDetail';
+import AudienceChatPageView from '@/components/audience/AudienceChatPageView';
 import AudiencePremiumCard from '@/components/audience/AudiencePremiumCard';
 import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/api';
@@ -129,7 +130,8 @@ function AudienceContent() {
   const queryView = searchParams.get('view');
 
   const { user } = useAuthStore();
-  const [activeMenu, setActiveMenu] = useState<'podcast' | 'trending' | 'memberships' | 'bookmarks' | 'subscriptions' | 'live' | 'live-detail' | string>(() => {
+  const [activeMenu, setActiveMenu] = useState<'podcast' | 'trending' | 'memberships' | 'bookmarks' | 'subscriptions' | 'live' | 'live-detail' | 'chats' | string>(() => {
+    if (queryView === 'chats' || queryView === 'messages') return 'chats';
     if (queryView === 'live-detail') return 'live-detail';
     if (queryView === 'live') return 'live';
     if (queryView === 'subscriptions') return 'subscriptions';
@@ -149,7 +151,9 @@ function AudienceContent() {
 
   // Sync menu state when URL query changes
   useEffect(() => {
-    if (queryView === 'live-detail') {
+    if (queryView === 'chats' || queryView === 'messages') {
+      setActiveMenu('chats');
+    } else if (queryView === 'live-detail') {
       setActiveMenu('live-detail');
     } else if (queryView === 'live') {
       setActiveMenu('live');
@@ -220,6 +224,8 @@ function AudienceContent() {
       router.push('/audience?view=live', { scroll: false });
     } else if (menuId === 'live-detail') {
       router.push('/audience?view=live-detail', { scroll: false });
+    } else if (menuId === 'chats' || menuId === 'messages') {
+      router.push('/audience?view=chats', { scroll: false });
     }
   };
 
@@ -247,27 +253,43 @@ function AudienceContent() {
     <div className="min-h-screen bg-[#F7F7F7] flex flex-col font-['DM_Sans',sans-serif]">
       {/* ─── Top Audience Navigation Bar (1440px x 76px) ─── */}
       <AudienceNavbar 
-        activeNav={activeMenu === 'podcast' ? 'home' : (activeMenu === 'live' || activeMenu === 'live-detail') ? 'video' : null}
+        activeNav={
+          activeMenu === 'chats' 
+            ? 'messages' 
+            : activeMenu === 'podcast' 
+            ? 'home' 
+            : (activeMenu === 'live' || activeMenu === 'live-detail') 
+            ? 'video' 
+            : null
+        }
         onNavChange={(nav) => {
           if (nav === 'home') {
             handleMenuChange('podcast');
           } else if (nav === 'video') {
             handleMenuChange('live');
+          } else if (nav === 'messages') {
+            handleMenuChange('chats');
           }
         }}
       />
 
       {/* ─── Main Content Container matching Figma ─── */}
       <PageTransition>
-        <main className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-          <div className="flex flex-col lg:flex-row gap-6 justify-center items-start">
-            
-            {/* 1. Left Sidebar Column (278px: Profile Card + Menu + Hashtags) */}
-            <AudienceLeftSidebar 
-              activeMenu={activeMenu === 'live-detail' ? 'live' : activeMenu}
-              onMenuSelect={handleMenuChange}
-              onTagSelect={(tag) => console.log('Filtered by hashtag:', tag)}
-            />
+        {activeMenu === 'chats' ? (
+          /* ─── Dedicated Chats Screen (1440px x 1024px: Visitors 278px + Chat 911px) ─── */
+          <main className="w-full">
+            <AudienceChatPageView />
+          </main>
+        ) : (
+          <main className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+            <div className="flex flex-col lg:flex-row gap-6 justify-center items-start">
+              
+              {/* 1. Left Sidebar Column (278px: Profile Card + Menu + Hashtags) */}
+              <AudienceLeftSidebar 
+                activeMenu={activeMenu === 'live-detail' ? 'live' : activeMenu}
+                onMenuSelect={handleMenuChange}
+                onTagSelect={(tag) => console.log('Filtered by hashtag:', tag)}
+              />
 
             {/* 2. Main Content Area */}
             {activeMenu === 'memberships' ? (
@@ -330,7 +352,8 @@ function AudienceContent() {
 
           </div>
         </main>
-      </PageTransition>
+      )}
+    </PageTransition>
     </div>
   );
 }
