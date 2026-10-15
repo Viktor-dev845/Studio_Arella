@@ -67,11 +67,11 @@ export default function AudienceNavbar({
             type="button"
             onClick={() => handleNavClick('home')}
             className={`p-1.5 transition-colors ${
-              currentNav === 'home' ? 'text-black' : 'text-black/60 hover:text-black'
+              currentNav === 'home' ? 'text-[#D4AF37]' : 'text-black/60 hover:text-black'
             }`}
             title="Home"
           >
-            <Home size={28} strokeWidth={currentNav === 'home' ? 2.2 : 1.7} />
+            <Home size={28} strokeWidth={currentNav === 'home' ? 2.2 : 1.7} fill={currentNav === 'home' ? '#D4AF37' : 'none'} />
           </button>
           {currentNav === 'home' && (
             <div className="absolute bottom-0 w-[43px] h-[3px] bg-[#D4AF37] rounded-full" />
@@ -84,11 +84,11 @@ export default function AudienceNavbar({
             type="button"
             onClick={() => handleNavClick('video')}
             className={`p-1.5 transition-colors ${
-              currentNav === 'video' ? 'text-black' : 'text-black/60 hover:text-black'
+              currentNav === 'video' ? 'text-[#D4AF37]' : 'text-black/60 hover:text-black'
             }`}
             title="Live Experiences / Videos"
           >
-            <Video size={28} strokeWidth={currentNav === 'video' ? 2.2 : 1.7} />
+            <Video size={28} strokeWidth={currentNav === 'video' ? 2.2 : 1.7} fill={currentNav === 'video' ? '#D4AF37' : 'none'} />
           </button>
           {currentNav === 'video' && (
             <div className="absolute bottom-0 w-[43px] h-[3px] bg-[#D4AF37] rounded-full" />

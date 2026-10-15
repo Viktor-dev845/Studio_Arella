@@ -10,6 +10,7 @@ import AudiencePostComposer from '@/components/audience/AudiencePostComposer';
 import AudiencePostCard, { PostData } from '@/components/audience/AudiencePostCard';
 import AudienceMembershipsCard from '@/components/audience/AudienceMembershipsCard';
 import AudienceSubscriptionsCard from '@/components/audience/AudienceSubscriptionsCard';
+import AudienceLiveExperiencesCard from '@/components/audience/AudienceLiveExperiencesCard';
 import AudiencePremiumCard from '@/components/audience/AudiencePremiumCard';
 import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/api';
@@ -127,7 +128,8 @@ function AudienceContent() {
   const queryView = searchParams.get('view');
 
   const { user } = useAuthStore();
-  const [activeMenu, setActiveMenu] = useState<'podcast' | 'trending' | 'memberships' | 'bookmarks' | 'subscriptions' | string>(() => {
+  const [activeMenu, setActiveMenu] = useState<'podcast' | 'trending' | 'memberships' | 'bookmarks' | 'subscriptions' | 'live' | string>(() => {
+    if (queryView === 'live') return 'live';
     if (queryView === 'subscriptions') return 'subscriptions';
     if (queryView === 'bookmarks') return 'bookmarks';
     if (queryView === 'memberships') return 'memberships';
@@ -145,7 +147,9 @@ function AudienceContent() {
 
   // Sync menu state when URL query changes
   useEffect(() => {
-    if (queryView === 'subscriptions') {
+    if (queryView === 'live') {
+      setActiveMenu('live');
+    } else if (queryView === 'subscriptions') {
       setActiveMenu('subscriptions');
     } else if (queryView === 'bookmarks') {
       setActiveMenu('bookmarks');
@@ -208,6 +212,8 @@ function AudienceContent() {
       router.push('/audience?view=bookmarks', { scroll: false });
     } else if (menuId === 'subscriptions') {
       router.push('/audience?view=subscriptions', { scroll: false });
+    } else if (menuId === 'live') {
+      router.push('/audience?view=live', { scroll: false });
     }
   };
 
@@ -235,10 +241,12 @@ function AudienceContent() {
     <div className="min-h-screen bg-[#F7F7F7] flex flex-col font-['DM_Sans',sans-serif]">
       {/* ─── Top Audience Navigation Bar (1440px x 76px) ─── */}
       <AudienceNavbar 
-        activeNav={activeMenu === 'podcast' ? 'home' : null}
+        activeNav={activeMenu === 'podcast' ? 'home' : activeMenu === 'live' ? 'video' : null}
         onNavChange={(nav) => {
           if (nav === 'home') {
             handleMenuChange('podcast');
+          } else if (nav === 'video') {
+            handleMenuChange('live');
           }
         }}
       />
@@ -264,7 +272,7 @@ function AudienceContent() {
                   <div className="flex-1 max-w-[570px]">
                     <AudiencePostComposer 
                       onPostSubmit={handleCreatePost}
-                      onLiveExperienceClick={() => alert('Starting live experience session...')}
+                      onLiveExperienceClick={() => handleMenuChange('live')}
                     />
                   </div>
                   <AudiencePremiumCard />
@@ -278,6 +286,11 @@ function AudienceContent() {
               <section className="w-full lg:w-[862px] flex flex-col gap-6">
                 <AudienceSubscriptionsCard />
               </section>
+            ) : activeMenu === 'live' ? (
+              /* ─── Live Experiences View: Frame 2121459680 (862px wide directly at top) ─── */
+              <section className="w-full lg:w-[862px] flex flex-col gap-6">
+                <AudienceLiveExperiencesCard />
+              </section>
             ) : (
               /* ─── Default Feed / Trending / Bookmarks 3-Column Layout ─── */
               <>
@@ -286,7 +299,7 @@ function AudienceContent() {
                   {activeMenu !== 'bookmarks' && (
                     <AudiencePostComposer 
                       onPostSubmit={handleCreatePost}
-                      onLiveExperienceClick={() => alert('Starting live experience session...')}
+                      onLiveExperienceClick={() => handleMenuChange('live')}
                     />
                   )}
 
