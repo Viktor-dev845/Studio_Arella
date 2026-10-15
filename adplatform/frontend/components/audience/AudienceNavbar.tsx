@@ -101,11 +101,15 @@ export default function AudienceNavbar({
             type="button"
             onClick={() => handleNavClick('notifications')}
             className={`relative p-1.5 transition-colors ${
-              currentNav === 'notifications' ? 'text-black' : 'text-black/60 hover:text-black'
+              currentNav === 'notifications' ? 'text-[#D4AF37]' : 'text-black/60 hover:text-black'
             }`}
             title="Notifications"
           >
-            <Bell size={28} strokeWidth={currentNav === 'notifications' ? 2.2 : 1.7} />
+            <Bell 
+              size={28} 
+              strokeWidth={currentNav === 'notifications' ? 2.2 : 1.7} 
+              fill={currentNav === 'notifications' ? '#D4AF37' : 'none'}
+            />
             <span className="absolute top-0 right-[-4px] w-[18px] h-[18px] bg-[#FF0000] text-white text-[11px] font-['Roboto',sans-serif] font-normal rounded-full flex items-center justify-center border border-white shadow-sm">
               9+
             </span>

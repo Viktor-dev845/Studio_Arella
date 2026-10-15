@@ -13,6 +13,7 @@ import AudienceSubscriptionsCard from '@/components/audience/AudienceSubscriptio
 import AudienceLiveExperiencesCard from '@/components/audience/AudienceLiveExperiencesCard';
 import AudienceLiveEventDetail from '@/components/audience/AudienceLiveEventDetail';
 import AudienceChatPageView from '@/components/audience/AudienceChatPageView';
+import AudienceNotificationsPageView from '@/components/audience/AudienceNotificationsPageView';
 import AudiencePremiumCard from '@/components/audience/AudiencePremiumCard';
 import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/api';
@@ -130,7 +131,8 @@ function AudienceContent() {
   const queryView = searchParams.get('view');
 
   const { user } = useAuthStore();
-  const [activeMenu, setActiveMenu] = useState<'podcast' | 'trending' | 'memberships' | 'bookmarks' | 'subscriptions' | 'live' | 'live-detail' | 'chats' | string>(() => {
+  const [activeMenu, setActiveMenu] = useState<'podcast' | 'trending' | 'memberships' | 'bookmarks' | 'subscriptions' | 'live' | 'live-detail' | 'chats' | 'notifications' | string>(() => {
+    if (queryView === 'notifications') return 'notifications';
     if (queryView === 'chats' || queryView === 'messages') return 'chats';
     if (queryView === 'live-detail') return 'live-detail';
     if (queryView === 'live') return 'live';
@@ -151,7 +153,9 @@ function AudienceContent() {
 
   // Sync menu state when URL query changes
   useEffect(() => {
-    if (queryView === 'chats' || queryView === 'messages') {
+    if (queryView === 'notifications') {
+      setActiveMenu('notifications');
+    } else if (queryView === 'chats' || queryView === 'messages') {
       setActiveMenu('chats');
     } else if (queryView === 'live-detail') {
       setActiveMenu('live-detail');
@@ -226,6 +230,8 @@ function AudienceContent() {
       router.push('/audience?view=live-detail', { scroll: false });
     } else if (menuId === 'chats' || menuId === 'messages') {
       router.push('/audience?view=chats', { scroll: false });
+    } else if (menuId === 'notifications') {
+      router.push('/audience?view=notifications', { scroll: false });
     }
   };
 
@@ -254,7 +260,9 @@ function AudienceContent() {
       {/* ─── Top Audience Navigation Bar (1440px x 76px) ─── */}
       <AudienceNavbar 
         activeNav={
-          activeMenu === 'chats' 
+          activeMenu === 'notifications'
+            ? 'notifications'
+            : activeMenu === 'chats' 
             ? 'messages' 
             : activeMenu === 'podcast' 
             ? 'home' 
@@ -269,13 +277,20 @@ function AudienceContent() {
             handleMenuChange('live');
           } else if (nav === 'messages') {
             handleMenuChange('chats');
+          } else if (nav === 'notifications') {
+            handleMenuChange('notifications');
           }
         }}
       />
 
       {/* ─── Main Content Container matching Figma ─── */}
       <PageTransition>
-        {activeMenu === 'chats' ? (
+        {activeMenu === 'notifications' ? (
+          /* ─── Dedicated Notifications Screen (1440px x 1024px: Frame 2121459687) ─── */
+          <main className="w-full">
+            <AudienceNotificationsPageView />
+          </main>
+        ) : activeMenu === 'chats' ? (
           /* ─── Dedicated Chats Screen (1440px x 1024px: Visitors 278px + Chat 911px) ─── */
           <main className="w-full">
             <AudienceChatPageView />
