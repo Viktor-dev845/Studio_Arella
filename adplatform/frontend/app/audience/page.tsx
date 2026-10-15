@@ -11,6 +11,7 @@ import AudiencePostCard, { PostData } from '@/components/audience/AudiencePostCa
 import AudienceMembershipsCard from '@/components/audience/AudienceMembershipsCard';
 import AudienceSubscriptionsCard from '@/components/audience/AudienceSubscriptionsCard';
 import AudienceLiveExperiencesCard from '@/components/audience/AudienceLiveExperiencesCard';
+import AudienceLiveEventDetail from '@/components/audience/AudienceLiveEventDetail';
 import AudiencePremiumCard from '@/components/audience/AudiencePremiumCard';
 import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/api';
@@ -128,7 +129,8 @@ function AudienceContent() {
   const queryView = searchParams.get('view');
 
   const { user } = useAuthStore();
-  const [activeMenu, setActiveMenu] = useState<'podcast' | 'trending' | 'memberships' | 'bookmarks' | 'subscriptions' | 'live' | string>(() => {
+  const [activeMenu, setActiveMenu] = useState<'podcast' | 'trending' | 'memberships' | 'bookmarks' | 'subscriptions' | 'live' | 'live-detail' | string>(() => {
+    if (queryView === 'live-detail') return 'live-detail';
     if (queryView === 'live') return 'live';
     if (queryView === 'subscriptions') return 'subscriptions';
     if (queryView === 'bookmarks') return 'bookmarks';
@@ -147,7 +149,9 @@ function AudienceContent() {
 
   // Sync menu state when URL query changes
   useEffect(() => {
-    if (queryView === 'live') {
+    if (queryView === 'live-detail') {
+      setActiveMenu('live-detail');
+    } else if (queryView === 'live') {
       setActiveMenu('live');
     } else if (queryView === 'subscriptions') {
       setActiveMenu('subscriptions');
@@ -214,6 +218,8 @@ function AudienceContent() {
       router.push('/audience?view=subscriptions', { scroll: false });
     } else if (menuId === 'live') {
       router.push('/audience?view=live', { scroll: false });
+    } else if (menuId === 'live-detail') {
+      router.push('/audience?view=live-detail', { scroll: false });
     }
   };
 
@@ -241,7 +247,7 @@ function AudienceContent() {
     <div className="min-h-screen bg-[#F7F7F7] flex flex-col font-['DM_Sans',sans-serif]">
       {/* ─── Top Audience Navigation Bar (1440px x 76px) ─── */}
       <AudienceNavbar 
-        activeNav={activeMenu === 'podcast' ? 'home' : activeMenu === 'live' ? 'video' : null}
+        activeNav={activeMenu === 'podcast' ? 'home' : (activeMenu === 'live' || activeMenu === 'live-detail') ? 'video' : null}
         onNavChange={(nav) => {
           if (nav === 'home') {
             handleMenuChange('podcast');
@@ -258,7 +264,7 @@ function AudienceContent() {
             
             {/* 1. Left Sidebar Column (278px: Profile Card + Menu + Hashtags) */}
             <AudienceLeftSidebar 
-              activeMenu={activeMenu}
+              activeMenu={activeMenu === 'live-detail' ? 'live' : activeMenu}
               onMenuSelect={handleMenuChange}
               onTagSelect={(tag) => console.log('Filtered by hashtag:', tag)}
             />
@@ -286,10 +292,15 @@ function AudienceContent() {
               <section className="w-full lg:w-[862px] flex flex-col gap-6">
                 <AudienceSubscriptionsCard />
               </section>
+            ) : activeMenu === 'live-detail' ? (
+              /* ─── Live Experience Detail Stream View: Frame 2121459695 (958px wide) ─── */
+              <section className="w-full lg:w-[958px] flex flex-col gap-6">
+                <AudienceLiveEventDetail onClose={() => handleMenuChange('live')} />
+              </section>
             ) : activeMenu === 'live' ? (
               /* ─── Live Experiences View: Frame 2121459680 (862px wide directly at top) ─── */
               <section className="w-full lg:w-[862px] flex flex-col gap-6">
-                <AudienceLiveExperiencesCard />
+                <AudienceLiveExperiencesCard onJoinEvent={() => handleMenuChange('live-detail')} />
               </section>
             ) : (
               /* ─── Default Feed / Trending / Bookmarks 3-Column Layout ─── */

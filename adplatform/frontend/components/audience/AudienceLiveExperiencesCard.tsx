@@ -85,7 +85,11 @@ function PinwheelLogo({ className = 'w-10 h-10' }: { className?: string }) {
   );
 }
 
-export default function AudienceLiveExperiencesCard() {
+interface AudienceLiveExperiencesCardProps {
+  onJoinEvent?: (id: string) => void;
+}
+
+export default function AudienceLiveExperiencesCard({ onJoinEvent }: AudienceLiveExperiencesCardProps = {}) {
   const [experiences, setExperiences] = useState<LiveExperienceItem[]>(INITIAL_LIVE_EXPERIENCES);
 
   const handleToggleJoin = (id: string) => {
@@ -102,6 +106,10 @@ export default function AudienceLiveExperiencesCard() {
         return item;
       })
     );
+
+    if (onJoinEvent) {
+      onJoinEvent(id);
+    }
   };
 
   return (
@@ -128,11 +136,14 @@ export default function AudienceLiveExperiencesCard() {
             {/* Main Row: Logo + Text on left, Button on right */}
             <div className="flex items-center justify-between gap-4 flex-wrap sm:flex-nowrap">
               {/* Left: Logo (40x40) + Text Block */}
-              <div className="flex items-center gap-4 sm:gap-5 min-w-0">
-                <PinwheelLogo className="w-10 h-10 shrink-0" />
+              <div 
+                onClick={() => onJoinEvent?.(item.id)}
+                className={`flex items-center gap-4 sm:gap-5 min-w-0 ${onJoinEvent ? 'cursor-pointer group' : ''}`}
+              >
+                <PinwheelLogo className="w-10 h-10 shrink-0 group-hover:scale-105 transition-transform" />
 
                 <div className="flex flex-col min-w-0">
-                  <h3 className="text-[14px] font-semibold text-black leading-[18px] truncate">
+                  <h3 className="text-[14px] font-semibold text-black leading-[18px] truncate group-hover:text-[#D4AF37] transition-colors">
                     {item.name}
                   </h3>
                   <p className="text-[10px] font-normal text-black leading-[13px] truncate">
