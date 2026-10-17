@@ -49,26 +49,6 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-// Line chart spline data matching screenshot
-const VIEWS_DATA = [
-  { name: 'Jan', thisYear: 10000, lastYear: 14000 },
-  { name: 'Feb', thisYear: 14000, lastYear: 15000 },
-  { name: 'Mar', thisYear: 17000, lastYear: 20000 },
-  { name: 'Apr', thisYear: 25000, lastYear: 12000 },
-  { name: 'May', thisYear: 29000, lastYear: 16000 },
-  { name: 'Jun', thisYear: 22000, lastYear: 21000 },
-  { name: 'Jul', thisYear: 24000, lastYear: 27000 },
-];
-
-// Traffic by podcast data matching screenshot
-const TRAFFIC_BY_PODCAST = [
-  { name: 'Growth Lab', filled: 75 },
-  { name: 'Love is all', filled: 55 },
-  { name: 'Growth Lab', filled: 65 },
-  { name: 'Positioning', filled: 80 },
-  { name: 'Business on', filled: 45 },
-  { name: 'Family life', filled: 60 },
-];
 
 const BAR_COLORS = [
   '#FFF6DC', '#FBF2E3', '#111111', '#F1F9CD', '#E8C170', '#FFF6DC',
@@ -86,34 +66,6 @@ function podcastBookingsByMonth(bookings: any[]) {
   return MONTH_NAMES.map((name, i) => ({ name, val: counts[i], color: BAR_COLORS[i] }));
 }
 
-// Activities matching screenshot exactly
-const ACTIVITIES = [
-  {
-    avatar: 'https://i.pravatar.cc/150?u=22',
-    title: 'Family life podcast hit 2M vie...',
-    time: 'Just now',
-  },
-  {
-    avatar: 'https://i.pravatar.cc/150?u=44',
-    title: 'Growth Lab podcast is trendi...',
-    time: '59 minutes ago',
-  },
-  {
-    avatar: 'https://i.pravatar.cc/150?u=55',
-    title: 'Growth Lab hit 15M conversat...',
-    time: '12 hours ago',
-  },
-  {
-    avatar: 'https://i.pravatar.cc/150?u=12',
-    title: 'Positioning podcast is trendin...',
-    time: 'Today, 11:59 AM',
-  },
-  {
-    avatar: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=150&auto=format&fit=crop',
-    title: 'Business On hit 2M views',
-    time: 'Feb 2, 2026',
-  },
-];
 
 function timeAgo(dateString: string) {
   try {
@@ -154,6 +106,7 @@ export default function AdvertiserDashboard() {
   const [loading, setLoading] = useState(false);
   const [analytics, setAnalytics] = useState<any>(null);
   const [notifications, setNotifications] = useState<any[]>([]);
+  const [podcastTraffic, setPodcastTraffic] = useState<{ name: string; filled: number }[]>([]);
 
   useEffect(() => {
     let isMounted = true;
@@ -162,6 +115,21 @@ export default function AdvertiserDashboard() {
     api.get('/notifications').then((res) => { if (isMounted) setNotifications(res.data.notifications || []); }).catch(() => {});
     api.get('/podcasts/my-bookings').then((res) => { if (isMounted) setPodcastBookings(res.data.bookings || []); }).catch(() => {});
     api.get('/bookings?limit=50').then((res) => { if (isMounted) setAdBookings(res.data.bookings || []); }).catch(() => {});
+    api.get('/content/feed').then((res) => {
+      const posts = res.data?.posts || [];
+      if (isMounted && posts.length > 0) {
+        const totalViews = posts.reduce((sum: number, p: any) => sum + (parseInt(p.views_count, 10) || parseInt(p.likes_count, 10) || 1), 0);
+        const mapped = posts.slice(0, 6).map((p: any) => {
+          const score = (parseInt(p.views_count, 10) || parseInt(p.likes_count, 10) || 1);
+          const filled = Math.min(95, Math.max(20, Math.round((score / (totalViews || 1)) * 100)));
+          return {
+            name: p.title ? p.title.replace(/^-/, '') : 'Podcast show',
+            filled,
+          };
+        });
+        setPodcastTraffic(mapped);
+      }
+    }).catch(() => {});
     return () => {
       isMounted = false;
     };
@@ -183,7 +151,36 @@ export default function AdvertiserDashboard() {
 
   const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', weekday: 'short' });
 
+  const userActivities = [
+    ...notifications.map((n: any) => ({
+      avatar: n.avatar || user?.avatar || '/audience/adam-udochi.png',
+      title: n.body || n.title || n.message || 'Notification received',
+      time: timeAgo(n.created_at),
+    })),
+    ...podcastBookings.slice(0, 3).map((b: any) => ({
+      avatar: '/audience/kyle-fisher.png',
+      title: `Booked podcast slot (${b.episode_title || 'Audio session'})`,
+      time: timeAgo(b.created_at || b.start_time),
+    })),
+    ...adBookings.slice(0, 3).map((b: any) => ({
+      avatar: '/audience/adam-udochi.png',
+      title: `Ad screen reserved (${b.screen_name || 'DOOH Display'})`,
+      time: timeAgo(b.created_at || b.start_time),
+    })),
+  ].slice(0, 5);
+
   const podcastBookingsMonthly = podcastBookingsByMonth(podcastBookings);
+  const currentMonthIdx = new Date().getMonth();
+  const dynamicViewsData = MONTH_NAMES.slice(0, 7).map((name, i) => {
+    const isPast = i <= currentMonthIdx;
+    const count = podcastBookingsMonthly[i]?.val || 0;
+    return {
+      name,
+      thisYear: isPast ? count * 500 : 0,
+      lastYear: 0,
+    };
+  });
+  const maxViewsVal = Math.max(1000, ...dynamicViewsData.map((d) => d.thisYear));
   const monthlyMax = Math.max(4, ...podcastBookingsMonthly.map((m) => m.val));
   const yAxisTicks = [0, Math.round(monthlyMax / 2), monthlyMax];
 
@@ -345,16 +342,16 @@ export default function AdvertiserDashboard() {
 
             <div style={{ height: 210, width: '100%' }}>
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={VIEWS_DATA} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
+                <LineChart data={dynamicViewsData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
                   <CartesianGrid vertical={false} stroke={theme.color.bg} />
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: theme.color.text4 }} dy={8} />
                   <YAxis
-                    domain={[0, 32000]}
-                    ticks={[0, 10000, 20000, 30000]}
+                    domain={[0, maxViewsVal]}
+                    ticks={[0, Math.round(maxViewsVal / 2), maxViewsVal]}
                     axisLine={false}
                     tickLine={false}
                     tick={{ fontSize: 11, fill: theme.color.text4 }}
-                    tickFormatter={(val) => (val === 0 ? '0' : `${val / 1000}K`)}
+                    tickFormatter={(val) => (val === 0 ? '0' : val >= 1000 ? `${(val / 1000).toFixed(0)}K` : val)}
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Line type="monotone" dataKey="thisYear" name="This year" stroke="#111111" strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} />
@@ -369,19 +366,28 @@ export default function AdvertiserDashboard() {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 20px' }}>
               <p style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1, margin: 0 }}>Traffic by Podcast</p>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-              {TRAFFIC_BY_PODCAST.map((t, idx) => (
-                <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14 }}>
-                  <span style={{ fontSize: 12, color: theme.color.text2, fontWeight: 500, width: 85, whiteSpace: 'nowrap' }}>
-                    {t.name}
-                  </span>
-                  <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 0 }}>
-                    <div style={{ height: 2, width: `${t.filled}%`, background: '#111111' }} />
-                    <div style={{ height: 2, width: `${100 - t.filled}%`, background: '#EAEAEA' }} />
+            {podcastTraffic.length === 0 ? (
+              <div style={{ padding: '28px 12px', textAlign: 'center' }}>
+                <p style={{ fontSize: 13, color: theme.color.text2, margin: 0, fontWeight: 600 }}>No podcast traffic yet</p>
+                <p style={{ fontSize: 11, color: theme.color.text4, margin: '4px 0 0' }}>
+                  Traffic distribution will appear as listeners tune in.
+                </p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+                {podcastTraffic.map((t, idx) => (
+                  <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14 }}>
+                    <span style={{ fontSize: 12, color: theme.color.text2, fontWeight: 500, width: 85, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {t.name}
+                    </span>
+                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 0 }}>
+                      <div style={{ height: 2, width: `${t.filled}%`, background: '#111111' }} />
+                      <div style={{ height: 2, width: `${100 - t.filled}%`, background: '#EAEAEA' }} />
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -534,30 +540,48 @@ export default function AdvertiserDashboard() {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 14px' }}>
             <p style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1, margin: 0 }}>Activities</p>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            {ACTIVITIES.map((act, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <img
-                  src={act.avatar}
-                  alt="avatar"
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: '50%',
-                    objectFit: 'cover',
-                    flexShrink: 0,
-                    boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
-                  }}
-                />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: 12, color: theme.color.text1, fontWeight: 700, margin: '0 0 1px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {act.title}
-                  </p>
-                  <p style={{ fontSize: 11, color: theme.color.text4, margin: 0 }}>{act.time}</p>
+          {userActivities.length === 0 ? (
+            <div style={{
+              background: theme.color.surface,
+              borderRadius: 12,
+              padding: '24px 14px',
+              textAlign: 'center',
+              border: `1px solid ${theme.color.surface2}`,
+            }}>
+              <p style={{ fontSize: 13, color: theme.color.text2, fontWeight: 600, margin: '0 0 4px' }}>No recent activity</p>
+              <p style={{ fontSize: 11, color: theme.color.text4, margin: 0 }}>
+                Your bookings, campaigns, and community alerts will appear here.
+              </p>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {userActivities.map((act, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <img
+                    src={act.avatar}
+                    alt="avatar"
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: '50%',
+                      objectFit: 'cover',
+                      flexShrink: 0,
+                      boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
+                    }}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/audience/adam-udochi.png';
+                    }}
+                  />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: 12, color: theme.color.text1, fontWeight: 700, margin: '0 0 1px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {act.title}
+                    </p>
+                    <p style={{ fontSize: 11, color: theme.color.text4, margin: 0 }}>{act.time}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Recent Booking Calendar Section */}
