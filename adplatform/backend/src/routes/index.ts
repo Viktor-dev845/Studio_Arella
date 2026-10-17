@@ -41,6 +41,44 @@ import { globalSearch } from '../controllers/searchController';
 import { followUser, unfollowUser, getFollowers, getFollowing } from '../controllers/followController';
 import { getBlogPosts, getBlogPost, likeBlogPost, unlikeBlogPost, createBlogPost, updateBlogPost, deleteBlogPost, getAllBlogPostsAdmin } from '../controllers/blogController';
 
+// ── Creator Space Controllers ────────────────────────────────────────────────
+import {
+  getFeed,
+  getBookmarkedContent,
+  createContent,
+  toggleLikeContent,
+  toggleBookmark,
+  getContentComments,
+  addContentComment
+} from '../controllers/creatorContentController';
+import {
+  getMembershipPlans,
+  subscribeMembership,
+  getMySubscriptions,
+  cancelSubscription,
+  getCreatorMembers
+} from '../controllers/creatorMembershipController';
+import {
+  getLiveExperiences,
+  getLiveExperienceById,
+  joinLiveExperience,
+  getLiveMessages,
+  sendLiveMessage,
+  likeLiveMessage
+} from '../controllers/creatorLiveController';
+import {
+  getConversations,
+  getConversationMessages,
+  sendDirectMessage
+} from '../controllers/creatorDirectMessageController';
+import {
+  getCreatorWallet,
+  updateBankDetails,
+  sendTip,
+  requestPayout,
+  getPayoutHistory
+} from '../controllers/creatorWalletController';
+
 import pool from '../db/pool';
 
 const router = Router();
@@ -239,5 +277,42 @@ router.get('/leads/admin', authenticate, getLeads);
 
 // Newsletter
 router.post('/newsletter', subscribeNewsletter);
+
+// ── Creator Space: Content & Feed ────────────────────────────────────────────
+router.get('/content/feed', optionalAuthenticate, getFeed);
+router.get('/content/bookmarks', authenticate, getBookmarkedContent);
+router.post('/content', authenticate, createContent);
+router.post('/content/:id/like', authenticate, toggleLikeContent);
+router.post('/content/:id/bookmark', authenticate, toggleBookmark);
+router.get('/content/:id/comments', optionalAuthenticate, getContentComments);
+router.post('/content/:id/comments', authenticate, addContentComment);
+
+// ── Creator Space: Memberships & Subscriptions ──────────────────────────────
+router.get('/memberships/plans', optionalAuthenticate, getMembershipPlans);
+router.get('/memberships/plans/:creatorId', optionalAuthenticate, getMembershipPlans);
+router.post('/memberships/subscribe', authenticate, subscribeMembership);
+router.get('/memberships/my-subscriptions', authenticate, getMySubscriptions);
+router.post('/memberships/:id/cancel', authenticate, cancelSubscription);
+router.get('/memberships/creator-members', authenticate, getCreatorMembers);
+
+// ── Creator Space: Live Experiences / Stream Rooms ──────────────────────────
+router.get('/live-experiences', optionalAuthenticate, getLiveExperiences);
+router.get('/live-experiences/:id', optionalAuthenticate, getLiveExperienceById);
+router.post('/live-experiences/:id/join', authenticate, joinLiveExperience);
+router.get('/live-experiences/:id/messages', optionalAuthenticate, getLiveMessages);
+router.post('/live-experiences/:id/messages', authenticate, sendLiveMessage);
+router.post('/live-experiences/messages/:messageId/like', authenticate, likeLiveMessage);
+
+// ── Creator Space: Direct Messages (1-on-1 Chat) ─────────────────────────────
+router.get('/chats/conversations', optionalAuthenticate, getConversations);
+router.get('/chats/:contactId/messages', optionalAuthenticate, getConversationMessages);
+router.post('/chats/:contactId/messages', authenticate, sendDirectMessage);
+
+// ── Creator Space: Wallet, Tips & Payouts ───────────────────────────────────
+router.get('/creator/wallet', authenticate, getCreatorWallet);
+router.put('/creator/wallet/bank', authenticate, updateBankDetails);
+router.post('/creator/tips', authenticate, sendTip);
+router.post('/creator/payout', authenticate, requestPayout);
+router.get('/creator/payouts', authenticate, getPayoutHistory);
 
 export default router;

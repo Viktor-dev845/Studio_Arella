@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 
+import { useRouter } from 'next/navigation';
+
 interface ChatItem {
   id: string;
   name: string;
@@ -14,14 +16,14 @@ interface ChatItem {
 
 const CHAT_LIST: ChatItem[] = [
   {
-    id: '1',
+    id: '2aeff3a5-c640-49bb-9c54-b20cfcde4932',
     name: 'Darlene Black',
     message: 'Hey, how is your project?',
     avatar: '/audience/darlene-black.png',
     isOnline: true,
   },
   {
-    id: '2',
+    id: '7b7d0a58-3f58-48c6-8b94-e9b93f278bae',
     name: 'Theresa Steward',
     message: 'Hi, Dmitry! I have a work for you. We',
     avatar: '/audience/theresa-steward.png',
@@ -29,31 +31,31 @@ const CHAT_LIST: ChatItem[] = [
     nameColor: 'text-[#15411F]',
   },
   {
-    id: '3',
+    id: 'db9c8abc-87b6-45d1-99dd-1eb6d5959b27',
     name: 'Brandon Wilson',
     message: 'I am Russian and I am learning Engl',
     avatar: '/audience/brandon-wilson.png',
     isOnline: true,
   },
   {
-    id: '4',
+    id: '723ccc51-044c-4509-a32a-e93aaf649248',
     name: 'Kyle Fisher',
     message: 'So, It’s up to you!',
     avatar: '/audience/kyle-fisher.png',
     isOnline: false,
   },
   {
-    id: '5',
+    id: '3ebd44d6-54c1-4e6b-8519-6bc67753f631',
     name: 'Audrey Alexander',
     message: 'When you got it?',
     avatar: '/audience/audrey-alexander.png',
     isOnline: true,
   },
   {
-    id: '6',
-    name: 'Design Conference',
-    message: 'Can you guys help me with it?',
-    avatar: '/audience/design-conference.png',
+    id: 'd69c7e9f-c990-4c72-a6d6-02d00794f282',
+    name: 'Nermmen Saif',
+    message: 'Great insights on the new soundscape!',
+    avatar: '/audience/nermmen-saif.png',
     isOnline: false,
   },
 ];
@@ -63,11 +65,16 @@ export default function AudienceChatsCard({
 }: {
   onSelectChat?: (chat: ChatItem) => void;
 }) {
-  const [activeChatId, setActiveChatId] = useState<string>('4'); // Kyle Fisher selected by default as in Figma
+  const router = useRouter();
+  const [activeChatId, setActiveChatId] = useState<string>('723ccc51-044c-4509-a32a-e93aaf649248'); // Kyle Fisher selected by default as in Figma
 
   const handleSelect = (chat: ChatItem) => {
     setActiveChatId(chat.id);
-    if (onSelectChat) onSelectChat(chat);
+    if (onSelectChat) {
+      onSelectChat(chat);
+    } else {
+      router.push('/audience?view=chats');
+    }
   };
 
   return (

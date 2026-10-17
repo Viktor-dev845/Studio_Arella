@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import api from '@/lib/api';
 
 interface LiveExperienceItem {
   id: string;
@@ -9,30 +10,6 @@ interface LiveExperienceItem {
   participantsCount: number;
   isJoined: boolean;
 }
-
-const INITIAL_LIVE_EXPERIENCES: LiveExperienceItem[] = [
-  {
-    id: 'live-1',
-    name: '1 View fan event',
-    description: 'A place where fun things are discussed......',
-    participantsCount: 115,
-    isJoined: false,
-  },
-  {
-    id: 'live-2',
-    name: '1 View fan event',
-    description: 'A place where fun things are discussed......',
-    participantsCount: 115,
-    isJoined: false,
-  },
-  {
-    id: 'live-3',
-    name: '1 View fan event',
-    description: 'A place where fun things are discussed......',
-    participantsCount: 115,
-    isJoined: false,
-  },
-];
 
 /* Pinwheel radiating logo matching the Figma vectors */
 function PinwheelLogo({ className = 'w-10 h-10' }: { className?: string }) {
@@ -90,9 +67,35 @@ interface AudienceLiveExperiencesCardProps {
 }
 
 export default function AudienceLiveExperiencesCard({ onJoinEvent }: AudienceLiveExperiencesCardProps = {}) {
-  const [experiences, setExperiences] = useState<LiveExperienceItem[]>(INITIAL_LIVE_EXPERIENCES);
+  const [experiences, setExperiences] = useState<LiveExperienceItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleToggleJoin = (id: string) => {
+  // Fetch real live experiences from backend
+  useEffect(() => {
+    setIsLoading(true);
+    api.get('/live-experiences')
+      .then((res) => {
+        const events = res.data?.events || [];
+        if (events.length > 0) {
+          const mapped: LiveExperienceItem[] = events.map((e: any) => ({
+            id: e.id,
+            name: e.name || 'Live Experience Room',
+            description: e.description || 'A place where exciting topics and ideas are discussed live',
+            participantsCount: parseInt(e.participants_count, 10) || 0,
+            isJoined: Boolean(e.has_joined),
+          }));
+          setExperiences(mapped);
+        }
+      })
+      .catch((err) => {
+        console.warn('Could not fetch live experiences from API:', err);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, []);
+
+  const handleToggleJoin = async (id: string) => {
     setExperiences((prev) =>
       prev.map((item) => {
         if (item.id === id) {
@@ -100,12 +103,18 @@ export default function AudienceLiveExperiencesCard({ onJoinEvent }: AudienceLiv
           return {
             ...item,
             isJoined: nextJoined,
-            participantsCount: nextJoined ? item.participantsCount + 1 : item.participantsCount - 1,
+            participantsCount: nextJoined ? item.participantsCount + 1 : Math.max(0, item.participantsCount - 1),
           };
         }
         return item;
       })
     );
+
+    try {
+      await api.post(`/live-experiences/${id}/join`);
+    } catch (err) {
+      console.warn('Toggle join live experience API error:', err);
+    }
 
     if (onJoinEvent) {
       onJoinEvent(id);
@@ -121,7 +130,32 @@ export default function AudienceLiveExperiencesCard({ onJoinEvent }: AudienceLiv
 
       {/* ─── List of Live Experience Events (Frame 2121459677, gap: 32px) ─── */}
       <div className="flex flex-col gap-8">
-        {experiences.map((item) => (
+        {isLoading ? (
+          [1, 2, 3].map((n) => (
+            <div key={n} className="flex flex-col gap-3 pb-6 border-b border-gray-100/70 last:border-b-0 animate-pulse">
+              <div className="w-28 h-6 bg-gray-200 rounded-md" />
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-full bg-gray-200" />
+                  <div className="flex flex-col gap-2">
+                    <div className="w-40 h-4 bg-gray-200 rounded" />
+                    <div className="w-64 h-3 bg-gray-100 rounded" />
+                  </div>
+                </div>
+                <div className="w-24 h-10 bg-gray-200 rounded-md" />
+              </div>
+            </div>
+          ))
+        ) : experiences.length === 0 ? (
+          <div className="w-full p-12 text-center flex flex-col items-center justify-center gap-3 bg-gray-50/60 rounded-[16px] border border-gray-100">
+            <PinwheelLogo className="w-10 h-10 opacity-40 mb-1" />
+            <h3 className="text-[16px] font-medium text-gray-800">No Live Broadcasts Right Now</h3>
+            <p className="text-[13px] text-gray-500 max-w-sm">
+              Live audio broadcast rooms and community events will appear here when active.
+            </p>
+          </div>
+        ) : (
+          experiences.map((item) => (
           <div
             key={item.id}
             className="flex flex-col gap-3 pb-6 border-b border-gray-100/70 last:border-b-0 last:pb-0"
@@ -166,7 +200,8 @@ export default function AudienceLiveExperiencesCard({ onJoinEvent }: AudienceLiv
               </button>
             </div>
           </div>
-        ))}
+        ))
+      )}
       </div>
     </div>
   );

@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AudienceCancelSubscriptionModal from './AudienceCancelSubscriptionModal';
 import AudienceSubscriptionCancelledModal from './AudienceSubscriptionCancelledModal';
+import api from '@/lib/api';
 
 interface SubscriptionItem {
   id: string;
@@ -11,30 +12,6 @@ interface SubscriptionItem {
   membersCount: number;
   isSubscribed: boolean;
 }
-
-const INITIAL_SUBSCRIPTIONS: SubscriptionItem[] = [
-  {
-    id: 'sub-1',
-    name: 'Dylan fan club',
-    description: 'A place where fun things are discussed......',
-    membersCount: 115,
-    isSubscribed: true,
-  },
-  {
-    id: 'sub-2',
-    name: 'Dylan fan club',
-    description: 'A place where fun things are discussed......',
-    membersCount: 115,
-    isSubscribed: true,
-  },
-  {
-    id: 'sub-3',
-    name: 'Dylan fan club',
-    description: 'A place where fun things are discussed......',
-    membersCount: 115,
-    isSubscribed: true,
-  },
-];
 
 /* Pinwheel radiating logo matching the Figma vectors */
 function PinwheelLogo({ className = 'w-10 h-10' }: { className?: string }) {
@@ -88,10 +65,36 @@ function PinwheelLogo({ className = 'w-10 h-10' }: { className?: string }) {
 }
 
 export default function AudienceSubscriptionsCard() {
-  const [subscriptions, setSubscriptions] = useState<SubscriptionItem[]>(INITIAL_SUBSCRIPTIONS);
+  const [subscriptions, setSubscriptions] = useState<SubscriptionItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [targetItem, setTargetItem] = useState<SubscriptionItem | null>(null);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [isCancelledPopupOpen, setIsCancelledPopupOpen] = useState(false);
+
+  // Fetch real subscriptions from backend
+  useEffect(() => {
+    setIsLoading(true);
+    api.get('/memberships/my-subscriptions')
+      .then((res) => {
+        const subs = res.data?.subscriptions || [];
+        if (subs.length > 0) {
+          const mapped: SubscriptionItem[] = subs.map((s: any) => ({
+            id: s.id,
+            name: s.creator_name ? `${s.creator_name} Fan Club` : 'Creator Fan Club',
+            description: 'Access exclusive audio broadcasts, private live sessions & creator perks',
+            membersCount: 115,
+            isSubscribed: s.status === 'active',
+          }));
+          setSubscriptions(mapped);
+        }
+      })
+      .catch((err) => {
+        console.warn('Could not load user subscriptions from API:', err);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, []);
 
   const handleButtonClick = (item: SubscriptionItem) => {
     if (item.isSubscribed) {
@@ -110,7 +113,7 @@ export default function AudienceSubscriptionsCard() {
     }
   };
 
-  const handleConfirmCancel = () => {
+  const handleConfirmCancel = async () => {
     if (targetItem) {
       setSubscriptions((prev) =>
         prev.map((sub) =>
@@ -119,6 +122,12 @@ export default function AudienceSubscriptionsCard() {
             : sub
         )
       );
+
+      try {
+        await api.post(`/memberships/${targetItem.id}/cancel`);
+      } catch (err) {
+        console.warn('Cancel subscription API error:', err);
+      }
     }
     setIsCancelModalOpen(false);
     setIsCancelledPopupOpen(true); // Open "Subscription cancelled" Filter Popup
@@ -133,7 +142,32 @@ export default function AudienceSubscriptionsCard() {
 
       {/* ─── List of Subscriptions: gap 32px (Frame 2121459677) ─── */}
       <div className="flex flex-col gap-8">
-        {subscriptions.map((item) => (
+        {isLoading ? (
+          [1, 2, 3].map((n) => (
+            <div key={n} className="flex flex-col gap-3 pb-6 border-b border-gray-100/70 last:border-b-0 animate-pulse">
+              <div className="w-24 h-6 bg-gray-200 rounded-md" />
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-full bg-gray-200" />
+                  <div className="flex flex-col gap-2">
+                    <div className="w-36 h-4 bg-gray-200 rounded" />
+                    <div className="w-56 h-3 bg-gray-100 rounded" />
+                  </div>
+                </div>
+                <div className="w-24 h-10 bg-gray-200 rounded-md" />
+              </div>
+            </div>
+          ))
+        ) : subscriptions.length === 0 ? (
+          <div className="w-full p-12 text-center flex flex-col items-center justify-center gap-3 bg-gray-50/60 rounded-[16px] border border-gray-100">
+            <PinwheelLogo className="w-10 h-10 opacity-40 mb-1" />
+            <h3 className="text-[16px] font-medium text-gray-800">No Active Subscriptions</h3>
+            <p className="text-[13px] text-gray-500 max-w-sm">
+              You haven't subscribed to any creator fan clubs yet. Explore clubs under the Memberships tab!
+            </p>
+          </div>
+        ) : (
+          subscriptions.map((item) => (
           <div
             key={item.id}
             className="flex flex-col gap-3 pb-6 border-b border-gray-100/70 last:border-b-0 last:pb-0"
@@ -175,7 +209,8 @@ export default function AudienceSubscriptionsCard() {
               </button>
             </div>
           </div>
-        ))}
+        ))
+      )}
       </div>
 
       {/* ─── Cancel Subscription Confirmation Modal (media_1792067449779_0bb2a4d8.png) ─── */}

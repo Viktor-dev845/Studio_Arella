@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Paperclip, Send } from 'lucide-react';
+import { useAuthStore } from '@/store/authStore';
+import api from '@/lib/api';
 
 export interface ChatContact {
   id: string;
@@ -27,7 +29,7 @@ export interface ChatMessage {
 
 const INITIAL_CONTACTS: ChatContact[] = [
   {
-    id: 'darlene',
+    id: '2aeff3a5-c640-49bb-9c54-b20cfcde4932',
     name: 'Darlene Black',
     lastMessage: 'Hey, how is your project?',
     avatar: '/audience/darlene-black.png',
@@ -37,7 +39,7 @@ const INITIAL_CONTACTS: ChatContact[] = [
     sharedMediaCount: 8,
   },
   {
-    id: 'theresa',
+    id: '7b7d0a58-3f58-48c6-8b94-e9b93f278bae',
     name: 'Theresa Steward',
     lastMessage: 'Hi, Dmitry! I have a work for you. We',
     avatar: '/audience/theresa-steward.png',
@@ -48,7 +50,7 @@ const INITIAL_CONTACTS: ChatContact[] = [
     sharedMediaCount: 14,
   },
   {
-    id: 'brandon',
+    id: 'db9c8abc-87b6-45d1-99dd-1eb6d5959b27',
     name: 'Brandon Wilson',
     lastMessage: 'I am Russian and I am learning Engl',
     avatar: '/audience/brandon-wilson.png',
@@ -58,7 +60,7 @@ const INITIAL_CONTACTS: ChatContact[] = [
     sharedMediaCount: 5,
   },
   {
-    id: 'kyle',
+    id: '723ccc51-044c-4509-a32a-e93aaf649248',
     name: 'Kyle Fisher',
     lastMessage: 'So, It’s up to you!',
     avatar: '/audience/kyle-fisher.png',
@@ -68,7 +70,7 @@ const INITIAL_CONTACTS: ChatContact[] = [
     sharedMediaCount: 12,
   },
   {
-    id: 'audrey',
+    id: '3ebd44d6-54c1-4e6b-8519-6bc67753f631',
     name: 'Audrey Alexander',
     lastMessage: 'When you got it?',
     avatar: '/audience/audrey-alexander.png',
@@ -78,65 +80,14 @@ const INITIAL_CONTACTS: ChatContact[] = [
     sharedMediaCount: 3,
   },
   {
-    id: 'conference',
-    name: 'Design Conference',
-    lastMessage: 'Can you guys help me with it?',
-    avatar: '/audience/design-conference.png',
+    id: 'd69c7e9f-c990-4c72-a6d6-02d00794f282',
+    name: 'Nermmen Saif',
+    lastMessage: 'Great insights on the new soundscape!',
+    avatar: '/audience/nermmen-saif.png',
     isOnline: false,
     onlineDotStyle: 'none',
     lastOnline: 'LAST ACTIVE: YESTERDAY',
-    sharedMediaCount: 37,
-  },
-];
-
-const INITIAL_KYLE_MESSAGES: ChatMessage[] = [
-  {
-    id: 'msg-top-kyle',
-    sender: 'them',
-    text: 'Oh, sh#t! This junior designers!!!!!!!!!!!!!!!!',
-    time: '4:29 PM',
-    avatar: '/audience/kyle-fisher.png',
-    bgColor: 'bg-[#E9F0F8]',
-  },
-  {
-    id: 'msg-1',
-    sender: 'me',
-    text: 'Hi, Kyle. How are you doing? Did you get that job yesterday?',
-    time: '4:20 PM',
-    isRead: true,
-    bgColor: 'bg-[#D4AF37]',
-  },
-  {
-    id: 'msg-2',
-    sender: 'them',
-    text: 'Nope, they kicked me out of the office!',
-    time: '4:29 PM',
-    avatar: '/audience/kyle-fisher.png',
-    bgColor: 'bg-[#FCF6E6]',
-  },
-  {
-    id: 'msg-3',
-    sender: 'me',
-    text: 'Wow! I can invite you in my new project. We need a product designer right now!',
-    time: '4:30 PM',
-    isRead: true,
-    bgColor: 'bg-[#D4AF37]',
-  },
-  {
-    id: 'msg-4',
-    sender: 'them',
-    text: 'It’ll be great! I need this job, but...',
-    time: '4:29 PM',
-    avatar: '/audience/kyle-fisher.png',
-    bgColor: 'bg-[#FCF6E6]',
-  },
-  {
-    id: 'msg-5',
-    sender: 'them',
-    text: 'So, it’s up to you!',
-    time: '4:29 PM',
-    avatar: '/audience/kyle-fisher.png',
-    bgColor: 'bg-[#FCF6E6]',
+    sharedMediaCount: 19,
   },
 ];
 
@@ -170,18 +121,84 @@ function DoubleBlueCheck() {
 }
 
 export default function AudienceChatPageView() {
-  const [contacts] = useState<ChatContact[]>(INITIAL_CONTACTS);
-  const [activeContactId, setActiveContactId] = useState<string>('kyle');
-  const [messages, setMessages] = useState<ChatMessage[]>(INITIAL_KYLE_MESSAGES);
+  const { user } = useAuthStore();
+  const [contacts, setContacts] = useState<ChatContact[]>(INITIAL_CONTACTS);
+  const [activeContactId, setActiveContactId] = useState<string>('723ccc51-044c-4509-a32a-e93aaf649248');
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [isLoadingMessages, setIsLoadingMessages] = useState<boolean>(true);
   const [inputMessage, setInputMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // 1. Fetch conversations from backend
+  useEffect(() => {
+    api.get('/chats/conversations')
+      .then((res) => {
+        const convos = res.data?.conversations || [];
+        if (convos.length > 0) {
+          const mapped: ChatContact[] = convos.map((c: any) => ({
+            id: c.contact_id,
+            name: c.contact_name,
+            lastMessage: c.last_message_text || 'Active now',
+            avatar: c.contact_avatar || '/audience/adam-udochi.png',
+            isOnline: true,
+            onlineDotStyle: 'solid-green',
+            lastOnline: 'ONLINE NOW',
+            sharedMediaCount: 8,
+          }));
+          // Merge unique contacts
+          setContacts((prev) => {
+            const ids = new Set(mapped.map((m) => m.id));
+            const existingFiltered = prev.filter((p) => !ids.has(p.id));
+            return [...mapped, ...existingFiltered];
+          });
+        }
+      })
+      .catch((err) => {
+        console.warn('Could not load conversations from API, using default Figma contacts:', err);
+      });
+  }, []);
+
+  // 2. Fetch messages for active contact
+  useEffect(() => {
+    if (!activeContactId) return;
+    setIsLoadingMessages(true);
+    api.get(`/chats/${activeContactId}/messages`)
+      .then((res) => {
+        const msgs = res.data?.messages || [];
+        const mapped: ChatMessage[] = msgs.map((m: any) => {
+          const isMe = m.sender_id === user?.id;
+          const date = new Date(m.created_at);
+          const time = !isNaN(date.getTime()) 
+            ? date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) 
+            : '4:29 PM';
+          return {
+            id: m.id,
+            sender: isMe ? 'me' : 'them',
+            text: m.message_text,
+            time,
+            isRead: m.is_read,
+            avatar: isMe ? (user?.avatar || '/audience/adam-udochi.png') : (activeContact?.avatar || '/audience/kyle-fisher.png'),
+            bgColor: isMe ? 'bg-[#D4AF37]' : 'bg-[#FCF6E6]',
+          };
+        });
+        setMessages(mapped);
+      })
+      .catch((err) => {
+        console.warn(`Could not load messages for contact ${activeContactId}:`, err);
+        setMessages([]);
+      })
+      .finally(() => {
+        setIsLoadingMessages(false);
+      });
+  }, [activeContactId, user?.id]);
+
   const activeContact = contacts.find((c) => c.id === activeContactId) || contacts[3];
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputMessage.trim()) return;
 
+    const textToSend = inputMessage.trim();
     const now = new Date();
     const hours = now.getHours();
     const minutes = now.getMinutes().toString().padStart(2, '0');
@@ -192,7 +209,7 @@ export default function AudienceChatPageView() {
     const newMsg: ChatMessage = {
       id: `msg-${Date.now()}`,
       sender: 'me',
-      text: inputMessage.trim(),
+      text: textToSend,
       time: timeString,
       isRead: true,
       bgColor: 'bg-[#D4AF37]',
@@ -200,6 +217,12 @@ export default function AudienceChatPageView() {
 
     setMessages((prev) => [...prev, newMsg]);
     setInputMessage('');
+
+    try {
+      await api.post(`/chats/${activeContactId}/messages`, { message: textToSend });
+    } catch (err) {
+      console.warn('Send direct message API error:', err);
+    }
   };
 
   useEffect(() => {
@@ -329,82 +352,91 @@ export default function AudienceChatPageView() {
 
             {/* Messages Area (850px x 521px scrollable stream) */}
             <div className="flex-1 p-6 sm:p-8 overflow-y-auto flex flex-col gap-5 min-h-[440px] max-h-[560px]">
-              
-              {/* Faded Kyle message at top if Kyle selected */}
-              {activeContactId === 'kyle' && (
-                <div className="flex flex-col items-end gap-1 opacity-70">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-[#E9F0F8] rounded-[4px] px-4 py-2.5 max-w-[420px] text-[14px] leading-[21px] text-[#181818]">
-                      Oh, sh#t! This junior designers!!!!!!!!!!!!!!!!
-                    </div>
-                    <img 
-                      src="/audience/kyle-fisher.png" 
-                      alt="Kyle Fisher" 
-                      className="w-[46px] h-[46px] rounded-[26px] object-cover shrink-0" 
-                    />
+              {isLoadingMessages ? (
+                <div className="flex flex-col gap-5 animate-pulse py-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-full bg-neutral-200 shrink-0" />
+                    <div className="h-14 w-64 bg-neutral-200 rounded-[4px]" />
                   </div>
-                  <span className="text-[10px] text-[#181818]/60 mr-[58px]">
-                    4:29 PM
-                  </span>
+                  <div className="flex items-end justify-end gap-3">
+                    <div className="h-14 w-72 bg-neutral-200 rounded-[4px]" />
+                    <div className="w-10 h-10 rounded-full bg-neutral-200 shrink-0" />
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-full bg-neutral-200 shrink-0" />
+                    <div className="h-12 w-48 bg-neutral-200 rounded-[4px]" />
+                  </div>
                 </div>
-              )}
-
-              {/* Centered Date Separator: YESTERDAY, 29 JAN */}
-              <div className="w-full flex items-center justify-center gap-4 my-2">
-                <div className="flex-1 max-w-[302px] h-[1px] bg-[#F4F4F4]" />
-                <span className="text-[12px] font-normal uppercase tracking-wider text-[#181818]/60 shrink-0">
-                  yesterday, 29 jan
-                </span>
-                <div className="flex-1 max-w-[302px] h-[1px] bg-[#F4F4F4]" />
-              </div>
-
-              {/* Render Messages */}
-              {messages.filter(m => m.id !== 'msg-top-kyle').map((msg) => {
-                const isMe = msg.sender === 'me';
-
-                return (
-                  <div
-                    key={msg.id}
-                    className={`flex flex-col ${isMe ? 'items-start' : 'items-end'} gap-1.5`}
-                  >
-                    <div className="flex items-end gap-3 max-w-[85%]">
-                      {/* Bubble */}
-                      <div
-                        className={`${
-                          msg.bgColor || (isMe ? 'bg-[#D4AF37]' : 'bg-[#FCF6E6]')
-                        } rounded-[4px] px-4 py-3 text-[14px] leading-[21px] ${
-                          isMe ? 'text-[#000000]' : 'text-[#181818]'
-                        } shadow-2xs`}
-                      >
-                        {msg.text}
-                      </div>
-
-                      {/* Avatar for incoming messages */}
-                      {!isMe && (
-                        <img
-                          src={msg.avatar || activeContact.avatar}
-                          alt="Sender"
-                          className="w-[46px] h-[46px] rounded-[26px] object-cover shrink-0"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src =
-                              'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80';
-                          }}
-                        />
-                      )}
-                    </div>
-
-                    {/* Timestamp & Read Receipts */}
-                    <div
-                      className={`flex items-center gap-1.5 text-[10px] text-[#181818]/60 ${
-                        isMe ? 'pl-1' : 'pr-[58px]'
-                      }`}
-                    >
-                      {isMe && msg.isRead && <DoubleBlueCheck />}
-                      <span>{msg.time}</span>
-                    </div>
+              ) : messages.length === 0 ? (
+                <div className="flex-1 flex flex-col items-center justify-center text-center py-16 text-[#181818]/60">
+                  <div className="w-14 h-14 rounded-full bg-neutral-100 flex items-center justify-center mb-3">
+                    <Send size={24} className="text-[#181818]/40" />
                   </div>
-                );
-              })}
+                  <p className="text-[15px] font-medium text-[#181818]">No messages yet</p>
+                  <p className="text-[13px] text-[#181818]/60 max-w-[280px] mt-1">
+                    Send a message below to start chatting with {activeContact.name}!
+                  </p>
+                </div>
+              ) : (
+                <>
+                  {/* Centered Date Separator: YESTERDAY, 29 JAN */}
+                  <div className="w-full flex items-center justify-center gap-4 my-2">
+                    <div className="flex-1 max-w-[302px] h-[1px] bg-[#F4F4F4]" />
+                    <span className="text-[12px] font-normal uppercase tracking-wider text-[#181818]/60 shrink-0">
+                      yesterday, 29 jan
+                    </span>
+                    <div className="flex-1 max-w-[302px] h-[1px] bg-[#F4F4F4]" />
+                  </div>
+
+                  {/* Render Messages */}
+                  {messages.map((msg) => {
+                    const isMe = msg.sender === 'me';
+
+                    return (
+                      <div
+                        key={msg.id}
+                        className={`flex flex-col ${isMe ? 'items-start' : 'items-end'} gap-1.5`}
+                      >
+                        <div className="flex items-end gap-3 max-w-[85%]">
+                          {/* Bubble */}
+                          <div
+                            className={`${
+                              msg.bgColor || (isMe ? 'bg-[#D4AF37]' : 'bg-[#FCF6E6]')
+                            } rounded-[4px] px-4 py-3 text-[14px] leading-[21px] ${
+                              isMe ? 'text-[#000000]' : 'text-[#181818]'
+                            } shadow-2xs`}
+                          >
+                            {msg.text}
+                          </div>
+
+                          {/* Avatar for incoming messages */}
+                          {!isMe && (
+                            <img
+                              src={msg.avatar || activeContact.avatar}
+                              alt="Sender"
+                              className="w-[46px] h-[46px] rounded-[26px] object-cover shrink-0"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src =
+                                  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80';
+                              }}
+                            />
+                          )}
+                        </div>
+
+                        {/* Timestamp & Read Receipts */}
+                        <div
+                          className={`flex items-center gap-1.5 text-[10px] text-[#181818]/60 ${
+                            isMe ? 'pl-1' : 'pr-[58px]'
+                          }`}
+                        >
+                          {isMe && msg.isRead && <DoubleBlueCheck />}
+                          <span>{msg.time}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </>
+              )}
 
               <div ref={messagesEndRef} />
             </div>

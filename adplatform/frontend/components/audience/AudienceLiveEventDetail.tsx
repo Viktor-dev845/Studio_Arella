@@ -1,6 +1,6 @@
 'use client';
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import api from '@/lib/api';
 import { 
   Play, 
   Pause, 
@@ -18,6 +18,7 @@ import {
 
 interface AudienceLiveEventDetailProps {
   onClose?: () => void;
+  eventId?: string;
 }
 
 interface CommentItem {
@@ -31,42 +32,46 @@ interface CommentItem {
   replies?: CommentItem[];
 }
 
-const INITIAL_COMMENTS: CommentItem[] = [
-  {
-    id: 'c1',
-    author: 'JOHN DOE',
-    avatarBg: 'bg-amber-100 text-amber-800',
-    text: 'Nice event. Leaning more about the autonft ultra project is an eye opener for community members looking forward to massive reward like this',
-    likes: 8,
-    replies: [
-      {
-        id: 'c1-r1',
-        author: 'Hamilton',
-        avatarBg: 'bg-emerald-100 text-emerald-800',
-        text: 'Nice event. Leaning more about the autonft ultra project is an eye opener for community members looking forward to massive reward like this',
-        likes: 8,
-      },
-    ],
-  },
-  {
-    id: 'c2',
-    author: 'JOHN DOE',
-    avatarBg: 'bg-amber-100 text-amber-800',
-    text: 'Nice event. Leaning more about the autonft ultra project is an eye opener for community members looking forward to massive reward like this',
-    likes: 8,
-    replies: [],
-  },
-];
-
-export default function AudienceLiveEventDetail({ onClose }: AudienceLiveEventDetailProps) {
+export default function AudienceLiveEventDetail({ onClose, eventId }: AudienceLiveEventDetailProps) {
+  const [activeEventId, setActiveEventId] = useState<string | null>(eventId || null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'comments'>('overview');
   const [mainLikes, setMainLikes] = useState(8);
   const [hasLikedMain, setHasLikedMain] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
-  const [comments, setComments] = useState<CommentItem[]>(INITIAL_COMMENTS);
+  const [comments, setComments] = useState<CommentItem[]>([]);
+  const [isLoadingComments, setIsLoadingComments] = useState(true);
   const [commentInput, setCommentInput] = useState('');
   const [activeThumbnailIndex, setActiveThumbnailIndex] = useState(0);
+
+  // Load active event and messages from backend
+  useEffect(() => {
+    async function loadEventData() {
+      setIsLoadingComments(true);
+      try {
+        let currentId = eventId;
+        if (!currentId) {
+          const res = await api.get('/live-experiences');
+          const first = res.data?.events?.[0];
+          if (first) {
+            currentId = first.id;
+            setActiveEventId(first.id);
+          }
+        }
+        if (currentId) {
+          const msgRes = await api.get(`/live-experiences/${currentId}/messages`);
+          if (msgRes.data?.messages) {
+            setComments(msgRes.data.messages);
+          }
+        }
+      } catch (err) {
+        console.warn('Could not load live experience messages:', err);
+      } finally {
+        setIsLoadingComments(false);
+      }
+    }
+    loadEventData();
+  }, [eventId]);
 
   const handleMainLike = () => {
     if (hasLikedMain) {
@@ -78,7 +83,7 @@ export default function AudienceLiveEventDetail({ onClose }: AudienceLiveEventDe
     }
   };
 
-  const handleCommentLike = (commentId: string, isReply = false, parentId?: string) => {
+  const handleCommentLike = async (commentId: string, isReply = false, parentId?: string) => {
     setComments((prev) =>
       prev.map((c) => {
         if (!isReply && c.id === commentId) {
@@ -106,23 +111,38 @@ export default function AudienceLiveEventDetail({ onClose }: AudienceLiveEventDe
         return c;
       })
     );
+
+    try {
+      await api.post(`/live-experiences/messages/${commentId}/like`);
+    } catch (err) {
+      console.warn('Like live message API error:', err);
+    }
   };
 
-  const handleAddComment = (e: React.FormEvent) => {
+  const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!commentInput.trim()) return;
 
+    const text = commentInput.trim();
     const newComment: CommentItem = {
       id: `c-${Date.now()}`,
       author: 'JOHN DOE',
       avatarBg: 'bg-amber-100 text-amber-800',
-      text: commentInput.trim(),
+      text,
       likes: 0,
       replies: [],
     };
 
-    setComments([...comments, newComment]);
+    setComments((prev) => [...prev, newComment]);
     setCommentInput('');
+
+    if (activeEventId) {
+      try {
+        await api.post(`/live-experiences/${activeEventId}/messages`, { message: text });
+      } catch (err) {
+        console.warn('Send live message API error:', err);
+      }
+    }
   };
 
   return (
@@ -374,83 +394,101 @@ export default function AudienceLiveEventDetail({ onClose }: AudienceLiveEventDe
 
         {/* Comment Thread List */}
         <div className="flex flex-col gap-6">
-          {comments.map((comment) => (
-            <div key={comment.id} className="flex flex-col gap-2">
-              {/* Main Comment */}
-              <div className="flex items-start gap-3">
-                <div
-                  className={`w-9 h-9 rounded-full ${comment.avatarBg} flex items-center justify-center font-bold text-xs shrink-0 shadow-xs`}
-                >
-                  {comment.author.slice(0, 2)}
-                </div>
-
-                <div className="flex-1 flex flex-col gap-1">
-                  <span className="text-[14px] font-bold text-black leading-[17px]">
-                    {comment.author}
-                  </span>
-                  <p className="text-[12px] font-normal text-[#707070] leading-[16px] max-w-[620px]">
-                    {comment.text}
-                  </p>
-
-                  {/* Actions: Likes & Replies */}
-                  <div className="flex items-center gap-5 pt-1">
-                    <button
-                      type="button"
-                      onClick={() => handleCommentLike(comment.id)}
-                      className="flex items-center gap-1.5 text-[#707070] hover:text-black transition-colors cursor-pointer"
-                    >
-                      <Heart
-                        size={14}
-                        className={comment.hasLiked ? 'text-[#D4AF37] fill-[#D4AF37]' : ''}
-                      />
-                      <span className="text-[12px] font-bold">{comment.likes}</span>
-                    </button>
-
-                    {comment.replies && comment.replies.length > 0 && (
-                      <span className="text-[13px] font-normal text-[#FF3A15] cursor-pointer hover:underline">
-                        Replies ({comment.replies.length})
-                      </span>
-                    )}
-                  </div>
+          {isLoadingComments ? (
+            [1, 2].map((n) => (
+              <div key={n} className="flex items-start gap-3 animate-pulse">
+                <div className="w-9 h-9 rounded-full bg-gray-200 shrink-0" />
+                <div className="flex-1 flex flex-col gap-2">
+                  <div className="w-32 h-4 bg-gray-200 rounded" />
+                  <div className="w-3/4 h-3 bg-gray-100 rounded" />
                 </div>
               </div>
+            ))
+          ) : comments.length === 0 ? (
+            <div className="w-full py-8 text-center flex flex-col items-center justify-center gap-2 bg-gray-50/50 rounded-[12px] border border-gray-100">
+              <MessageSquare size={22} className="text-gray-400" />
+              <p className="text-[13px] text-gray-500 font-medium">No live chat messages yet</p>
+              <p className="text-[11px] text-gray-400">Be the first to share your thoughts in this live stream below!</p>
+            </div>
+          ) : (
+            comments.map((comment) => (
+              <div key={comment.id} className="flex flex-col gap-2">
+                {/* Main Comment */}
+                <div className="flex items-start gap-3">
+                  <div
+                    className={`w-9 h-9 rounded-full ${comment.avatarBg || 'bg-amber-100 text-amber-800'} flex items-center justify-center font-bold text-xs shrink-0 shadow-xs`}
+                  >
+                    {comment.author.slice(0, 2)}
+                  </div>
 
-              {/* Nested Replies (e.g. Hamilton) */}
-              {comment.replies &&
-                comment.replies.map((reply) => (
-                  <div key={reply.id} className="ml-10 flex items-start gap-2.5 pt-2">
-                    <div
-                      className={`w-7 h-7 rounded-full ${reply.avatarBg} flex items-center justify-center font-bold text-[10px] shrink-0 shadow-xs`}
-                    >
-                      {reply.author.slice(0, 2)}
-                    </div>
+                  <div className="flex-1 flex flex-col gap-1">
+                    <span className="text-[14px] font-bold text-black leading-[17px]">
+                      {comment.author}
+                    </span>
+                    <p className="text-[12px] font-normal text-[#707070] leading-[16px] max-w-[620px]">
+                      {comment.text}
+                    </p>
 
-                    <div className="flex-1 flex flex-col gap-1">
-                      <span className="text-[13px] font-bold text-black leading-[16px]">
-                        {reply.author}
-                      </span>
-                      <p className="text-[10px] font-normal text-[#707070] leading-[13px] max-w-[500px]">
-                        {reply.text}
-                      </p>
+                    {/* Actions: Likes & Replies */}
+                    <div className="flex items-center gap-5 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => handleCommentLike(comment.id)}
+                        className="flex items-center gap-1.5 text-[#707070] hover:text-black transition-colors cursor-pointer"
+                      >
+                        <Heart
+                          size={14}
+                          className={comment.hasLiked ? 'text-[#D4AF37] fill-[#D4AF37]' : ''}
+                        />
+                        <span className="text-[12px] font-bold">{comment.likes}</span>
+                      </button>
 
-                      <div className="flex items-center gap-4 pt-1">
-                        <button
-                          type="button"
-                          onClick={() => handleCommentLike(reply.id, true, comment.id)}
-                          className="flex items-center gap-1.5 text-[#707070] hover:text-black transition-colors cursor-pointer"
-                        >
-                          <Heart
-                            size={12}
-                            className={reply.hasLiked ? 'text-[#D4AF37] fill-[#D4AF37]' : ''}
-                          />
-                          <span className="text-[11px] font-bold">{reply.likes}</span>
-                        </button>
-                      </div>
+                      {comment.replies && comment.replies.length > 0 && (
+                        <span className="text-[13px] font-normal text-[#FF3A15] cursor-pointer hover:underline">
+                          Replies ({comment.replies.length})
+                        </span>
+                      )}
                     </div>
                   </div>
-                ))}
-            </div>
-          ))}
+                </div>
+
+                {/* Nested Replies */}
+                {comment.replies &&
+                  comment.replies.map((reply) => (
+                    <div key={reply.id} className="ml-10 flex items-start gap-2.5 pt-2">
+                      <div
+                        className={`w-7 h-7 rounded-full ${reply.avatarBg || 'bg-indigo-100 text-indigo-800'} flex items-center justify-center font-bold text-[10px] shrink-0 shadow-xs`}
+                      >
+                        {reply.author.slice(0, 2)}
+                      </div>
+
+                      <div className="flex-1 flex flex-col gap-1">
+                        <span className="text-[13px] font-bold text-black leading-[16px]">
+                          {reply.author}
+                        </span>
+                        <p className="text-[10px] font-normal text-[#707070] leading-[13px] max-w-[500px]">
+                          {reply.text}
+                        </p>
+
+                        <div className="flex items-center gap-4 pt-1">
+                          <button
+                            type="button"
+                            onClick={() => handleCommentLike(reply.id, true, comment.id)}
+                            className="flex items-center gap-1.5 text-[#707070] hover:text-black transition-colors cursor-pointer"
+                          >
+                            <Heart
+                              size={12}
+                              className={reply.hasLiked ? 'text-[#D4AF37] fill-[#D4AF37]' : ''}
+                            />
+                            <span className="text-[11px] font-bold">{reply.likes}</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            ))
+          )}
         </div>
 
         {/* ─── 6. Write Your Comment Input Bar (Group 4) ─── */}

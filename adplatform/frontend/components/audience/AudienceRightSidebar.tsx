@@ -21,24 +21,24 @@ interface CreatorItem {
 
 const INITIAL_CREATORS: CreatorItem[] = [
   {
-    id: '1',
-    name: 'Steve Jobs',
-    role: 'CEO of Apple',
-    avatar: '/audience/steve-jobs.png',
+    id: '723ccc51-044c-4509-a32a-e93aaf649248',
+    name: 'Kyle Fisher',
+    role: 'Product Designer',
+    avatar: '/audience/kyle-fisher.png',
     followed: true,
   },
   {
-    id: '2',
-    name: 'Ryan Roslansky',
-    role: 'CEO of LinkedIn',
-    avatar: '/audience/ryan-roslansky.png',
+    id: 'd69c7e9f-c990-4c72-a6d6-02d00794f282',
+    name: 'Nermmen Saif',
+    role: 'Sound Designer',
+    avatar: '/audience/nermmen-saif.png',
     followed: false,
   },
   {
-    id: '3',
-    name: 'Dylan Field',
-    role: 'Co-founder and CEO of Figma',
-    avatar: '/audience/dylan-field.png',
+    id: '7b7d0a58-3f58-48c6-8b94-e9b93f278bae',
+    name: 'Theresa Steward',
+    role: 'Brand Strategist',
+    avatar: '/audience/theresa-steward.png',
     followed: false,
   },
 ];

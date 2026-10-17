@@ -13,6 +13,7 @@ import {
   Image as ImageIcon 
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
+import api from '@/lib/api';
 
 export interface PostData {
   id: string;
@@ -56,22 +57,55 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
   const badgeBg = post.badgeTheme === 'green' ? 'bg-[#15411F]' : 'bg-[#D4AF37]';
   const userAvatar = user?.avatar || '/audience/adam-udochi.png';
 
-  const handleLike = () => {
-    if (hasLiked) {
-      setLikes(prev => prev - 1);
-      setHasLiked(false);
-    } else {
-      setLikes(prev => prev + 1);
-      setHasLiked(true);
+  const handleLike = async () => {
+    const nextLiked = !hasLiked;
+    setHasLiked(nextLiked);
+    setLikes((prev) => (nextLiked ? prev + 1 : Math.max(0, prev - 1)));
+    try {
+      await api.post(`/content/${post.id}/like`);
+    } catch (err) {
+      console.warn('Like toggle failed:', err);
     }
   };
 
-  const handleAddComment = (e: React.FormEvent) => {
+  const handleToggleBookmark = async () => {
+    const nextBookmarked = !isBookmarked;
+    setIsBookmarked(nextBookmarked);
+    try {
+      await api.post(`/content/${post.id}/bookmark`);
+    } catch (err) {
+      console.warn('Bookmark toggle failed:', err);
+    }
+  };
+
+  const handleToggleComments = async () => {
+    const nextShow = !showComments;
+    setShowComments(nextShow);
+    if (nextShow && commentsList.length === 0) {
+      try {
+        const res = await api.get(`/content/${post.id}/comments`);
+        if (res.data?.comments) {
+          setCommentsList(res.data.comments.map((c: any) => c.comment));
+        }
+      } catch (err) {
+        console.warn('Could not fetch comments:', err);
+      }
+    }
+  };
+
+  const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!commentInput.trim()) return;
-    setCommentsList(prev => [...prev, commentInput.trim()]);
-    setCommentsCount(prev => prev + 1);
+    const text = commentInput.trim();
+    setCommentsList((prev) => [...prev, text]);
+    setCommentsCount((prev) => prev + 1);
     setCommentInput('');
+    setShowComments(true);
+    try {
+      await api.post(`/content/${post.id}/comments`, { comment: text });
+    } catch (err) {
+      console.warn('Comment post failed:', err);
+    }
   };
 
   return (
@@ -182,9 +216,10 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
             className="flex items-center gap-2 cursor-pointer select-none" 
             onClick={() => setShowComments(!showComments)}
           >
-            <button
+            <button 
               type="button"
-              className="text-[#200E32] hover:scale-105 transition-transform"
+              onClick={handleToggleComments}
+              className="text-[#200E32] hover:scale-105 transition-transform cursor-pointer"
               title="Comments"
             >
               <MessageSquare size={22} strokeWidth={1.8} className="text-[#200E32]" />
@@ -208,8 +243,8 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
         {/* Bookmark Button */}
         <button
           type="button"
-          onClick={() => setIsBookmarked(!isBookmarked)}
-          className="text-[#200E32] hover:scale-105 transition-transform"
+          onClick={handleToggleBookmark}
+          className="text-[#200E32] hover:scale-105 transition-transform cursor-pointer"
           title="Bookmark"
         >
           <Bookmark size={22} strokeWidth={1.8} className={isBookmarked ? 'text-[#D4AF37] fill-[#D4AF37]' : 'text-[#200E32]'} />

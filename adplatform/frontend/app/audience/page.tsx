@@ -18,113 +18,6 @@ import AudiencePremiumCard from '@/components/audience/AudiencePremiumCard';
 import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/api';
 
-const FIGMA_PODCAST_FEED_POSTS: PostData[] = [
-  {
-    id: 'post-feed-1',
-    author: {
-      name: 'Adam Udochi',
-      role: 'UI/UX Designer',
-      avatar: '/audience/adam-udochi.png',
-    },
-    title: '-Healthy Tracking podcast',
-    mediaUrl: '/audience/mockup-sphinx.png',
-    duration: '02:35:19',
-    currentTime: '00:04:15',
-    progressPercent: 30,
-    initialLikes: 99,
-    initialComments: 8,
-    badgeTheme: 'gold',
-  },
-  {
-    id: 'post-feed-2',
-    author: {
-      name: 'Nermmen Saif',
-      role: 'Designer creator',
-      avatar: '/audience/nermmen-saif.png',
-    },
-    title: '-Photo is perfect podcast',
-    mediaUrl: '/audience/plant-podcast.png',
-    duration: '01:42:00',
-    currentTime: '00:12:30',
-    progressPercent: 35,
-    initialLikes: 99,
-    initialComments: 8,
-    badgeTheme: 'green',
-  },
-];
-
-const FIGMA_TRENDING_POSTS: PostData[] = [
-  {
-    id: 'post-trending-1',
-    author: {
-      name: 'Adam Udochi',
-      role: 'UI/UX Designer',
-      avatar: '/audience/adam-udochi.png',
-    },
-    title: '-Wealth servicing podcast',
-    mediaUrl: '/audience/mockup-sphinx.png',
-    duration: '02:35:19',
-    currentTime: '00:04:15',
-    progressPercent: 30,
-    initialLikes: 99,
-    initialComments: 8,
-    badgeTheme: 'gold',
-  },
-  {
-    id: 'post-trending-2',
-    author: {
-      name: 'Nermmen Saif',
-      role: 'Designer creator',
-      avatar: '/audience/nermmen-saif.png',
-    },
-    title: '-Trick to wealth creation podcast',
-    mediaUrl: '/audience/plant-podcast.png',
-    duration: '01:42:00',
-    currentTime: '00:12:30',
-    progressPercent: 35,
-    initialLikes: 99,
-    initialComments: 8,
-    badgeTheme: 'green',
-  },
-];
-
-const FIGMA_BOOKMARKS_POSTS: PostData[] = [
-  {
-    id: 'post-bm-1',
-    author: {
-      name: 'Adam Udochi',
-      role: 'UI/UX Designer',
-      avatar: '/audience/adam-udochi.png',
-    },
-    title: '-Healthy Tracking podcast',
-    mediaUrl: '/audience/mockup-sphinx.png',
-    duration: '02:35:19',
-    currentTime: '00:04:15',
-    progressPercent: 30,
-    initialLikes: 99,
-    initialComments: 8,
-    badgeTheme: 'gold',
-    isBookmarked: true,
-  },
-  {
-    id: 'post-bm-2',
-    author: {
-      name: 'Nermmen Saif',
-      role: 'Designer creator',
-      avatar: '/audience/nermmen-saif.png',
-    },
-    title: '-Photo is perfect podcast',
-    mediaUrl: '/audience/plant-podcast.png',
-    duration: '01:42:00',
-    currentTime: '00:12:30',
-    progressPercent: 35,
-    initialLikes: 99,
-    initialComments: 8,
-    badgeTheme: 'green',
-    isBookmarked: true,
-  },
-];
-
 function AudienceContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -143,13 +36,8 @@ function AudienceContent() {
     return 'trending';
   });
 
-  const getBasePosts = (menu: string) => {
-    if (menu === 'bookmarks') return FIGMA_BOOKMARKS_POSTS;
-    if (menu === 'podcast') return FIGMA_PODCAST_FEED_POSTS;
-    return FIGMA_TRENDING_POSTS;
-  };
-
-  const [posts, setPosts] = useState<PostData[]>(() => getBasePosts(activeMenu));
+  const [posts, setPosts] = useState<PostData[]>([]);
+  const [isLoadingPosts, setIsLoadingPosts] = useState<boolean>(true);
 
   // Sync menu state when URL query changes
   useEffect(() => {
@@ -174,41 +62,44 @@ function AudienceContent() {
     }
   }, [queryView]);
 
-  // Update posts when view toggles
+  // Fetch live posts from Creator Space API for the active view
   useEffect(() => {
-    setPosts(getBasePosts(activeMenu));
-  }, [activeMenu]);
+    setIsLoadingPosts(true);
+    let url = '/content/feed';
+    if (activeMenu === 'bookmarks') {
+      url = '/content/bookmarks';
+    } else if (activeMenu === 'trending') {
+      url = '/content/feed?view=trending';
+    }
 
-  // Enrich with backend podcasts if available
-  useEffect(() => {
-    api.get('/podcasts/shows')
+    api.get(url)
       .then((res) => {
-        const publishedShows = res.data?.shows || [];
-        if (publishedShows.length > 0) {
-          const currentBase = getBasePosts(activeMenu);
-          const mappedShows: PostData[] = publishedShows.map((s: any, idx: number) => ({
-            id: s.id,
-            author: {
-              name: s.creator_name || 'Studio Arella Creator',
-              role: 'Podcast Host',
-              avatar: s.avatar || (idx % 2 === 0 ? '/audience/adam-udochi.png' : '/audience/nermmen-saif.png'),
-            },
-            title: `-${s.title}`,
-            mediaUrl: s.cover_url || (idx % 2 === 0 ? '/audience/mockup-sphinx.png' : '/audience/plant-podcast.png'),
-            duration: '01:15:00',
-            currentTime: '00:00:00',
-            progressPercent: 10,
-            initialLikes: 45,
-            initialComments: 3,
-            badgeTheme: idx % 2 === 0 ? 'gold' : 'green',
-            isBookmarked: activeMenu === 'bookmarks',
-          }));
-
-          setPosts([...currentBase, ...mappedShows]);
-        }
+        const feedPosts = res.data?.posts || [];
+        const mapped: PostData[] = feedPosts.map((p: any) => ({
+          id: p.id,
+          author: {
+            name: p.author_name || 'Studio Arella Creator',
+            role: p.author_role || 'Creator',
+            avatar: p.author_avatar || '/audience/adam-udochi.png',
+          },
+          title: p.title?.startsWith('-') ? p.title : `-${p.title || 'Studio Podcast'}`,
+          mediaUrl: p.cover_url || p.media_url || '/audience/mockup-sphinx.png',
+          duration: p.duration_text || '02:35:19',
+          currentTime: '00:04:15',
+          progressPercent: 30,
+          initialLikes: parseInt(p.likes_count, 10) || 0,
+          initialComments: parseInt(p.comments_count, 10) || 0,
+          badgeTheme: p.badge_theme === 'green' ? 'green' : 'gold',
+          isBookmarked: Boolean(p.is_bookmarked),
+        }));
+        setPosts(mapped);
       })
-      .catch(() => {
-        // Fall back gracefully to mock Figma posts
+      .catch((err) => {
+        console.warn('Could not fetch creator feed from API:', err);
+        setPosts([]);
+      })
+      .finally(() => {
+        setIsLoadingPosts(false);
       });
   }, [activeMenu]);
 
@@ -235,8 +126,8 @@ function AudienceContent() {
     }
   };
 
-  const handleCreatePost = (content: string) => {
-    const newPost: PostData = {
+  const handleCreatePost = async (content: string) => {
+    const tempPost: PostData = {
       id: `custom-${Date.now()}`,
       author: {
         name: user?.name || 'Adam Udochi',
@@ -252,7 +143,17 @@ function AudienceContent() {
       initialComments: 0,
       badgeTheme: 'gold',
     };
-    setPosts([newPost, ...posts]);
+    setPosts((prev) => [tempPost, ...prev]);
+
+    try {
+      await api.post('/content', {
+        title: content,
+        contentType: 'audio',
+        description: content,
+      });
+    } catch (err) {
+      console.warn('API post creation failed, kept local post:', err);
+    }
   };
 
   return (
@@ -352,9 +253,47 @@ function AudienceContent() {
                   )}
 
                   <div className="flex flex-col gap-6">
-                    {posts.map((post) => (
-                      <AudiencePostCard key={post.id} post={post} />
-                    ))}
+                    {isLoadingPosts ? (
+                      <div className="flex flex-col gap-6 animate-pulse">
+                        {[1, 2].map((i) => (
+                          <div key={i} className="bg-white rounded-[16px] p-6 shadow-sm border border-gray-100 flex flex-col gap-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-12 h-12 rounded-full bg-neutral-200 shrink-0" />
+                              <div className="flex flex-col gap-2 flex-1">
+                                <div className="h-4 w-32 bg-neutral-200 rounded" />
+                                <div className="h-3 w-20 bg-neutral-200 rounded" />
+                              </div>
+                            </div>
+                            <div className="h-44 w-full bg-neutral-200 rounded-[12px]" />
+                            <div className="h-4 w-3/4 bg-neutral-200 rounded" />
+                          </div>
+                        ))}
+                      </div>
+                    ) : posts.length === 0 ? (
+                      <div className="bg-white rounded-[16px] p-12 text-center shadow-sm border border-gray-100/80 flex flex-col items-center justify-center">
+                        <div className="w-16 h-16 rounded-full bg-amber-50 flex items-center justify-center mb-4">
+                          <span className="text-2xl">🎙️</span>
+                        </div>
+                        <h4 className="text-[17px] font-semibold text-[#181818]">
+                          {activeMenu === 'bookmarks'
+                            ? 'No saved bookmarks yet'
+                            : activeMenu === 'trending'
+                            ? 'No trending podcasts right now'
+                            : 'No podcasts published yet'}
+                        </h4>
+                        <p className="text-[13px] text-[#181818]/60 max-w-[340px] mt-1.5 leading-relaxed">
+                          {activeMenu === 'bookmarks'
+                            ? 'Click the bookmark icon on any podcast card in the feed to save episodes here for later listening.'
+                            : activeMenu === 'trending'
+                            ? 'Trending audio content will appear here as listeners tune in and engage.'
+                            : 'Be the first to share an audio experience with your community!'}
+                        </p>
+                      </div>
+                    ) : (
+                      posts.map((post) => (
+                        <AudiencePostCard key={post.id} post={post} />
+                      ))
+                    )}
                   </div>
                 </section>
 

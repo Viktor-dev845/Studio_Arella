@@ -4,35 +4,13 @@ import { useState } from 'react';
 
 interface MembershipItem {
   id: string;
+  creator_id?: string;
   name: string;
   description: string;
+  price?: number | string;
   membersCount: number;
   status: 'join' | 'active';
 }
-
-const INITIAL_MEMBERSHIPS: MembershipItem[] = [
-  {
-    id: 'm1',
-    name: 'Dylan fan club',
-    description: 'A place where fun things are discussed......',
-    membersCount: 115,
-    status: 'join',
-  },
-  {
-    id: 'm2',
-    name: 'Dylan fan club',
-    description: 'A place where fun things are discussed......',
-    membersCount: 115,
-    status: 'active',
-  },
-  {
-    id: 'm3',
-    name: 'Dylan fan club',
-    description: 'A place where fun things are discussed......',
-    membersCount: 115,
-    status: 'join',
-  },
-];
 
 /* Pinwheel radiating logo matching the Figma vectors */
 function PinwheelLogo({ className = 'w-10 h-10' }: { className?: string }) {
@@ -86,11 +64,41 @@ function PinwheelLogo({ className = 'w-10 h-10' }: { className?: string }) {
 }
 
 import AudienceMembershipModal from './AudienceMembershipModal';
+import { useEffect } from 'react';
+import api from '@/lib/api';
 
 export default function AudienceMembershipsCard() {
-  const [memberships, setMemberships] = useState<MembershipItem[]>(INITIAL_MEMBERSHIPS);
+  const [memberships, setMemberships] = useState<MembershipItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedClub, setSelectedClub] = useState<MembershipItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Fetch real membership plans from backend
+  useEffect(() => {
+    setIsLoading(true);
+    api.get('/memberships/plans')
+      .then((res) => {
+        const plans = res.data?.plans || [];
+        if (plans.length > 0) {
+          const mapped: MembershipItem[] = plans.map((p: any) => ({
+            id: p.id,
+            creator_id: p.creator_id,
+            name: p.name || 'Creator VIP Club',
+            description: p.description || 'Access exclusive audio broadcasts, private live sessions & creator perks',
+            price: p.price || 1000,
+            membersCount: 115,
+            status: 'join',
+          }));
+          setMemberships(mapped);
+        }
+      })
+      .catch((err) => {
+        console.warn('Could not load membership plans from API:', err);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, []);
 
   const handleActionClick = (item: MembershipItem) => {
     if (item.status === 'join') {
@@ -98,21 +106,32 @@ export default function AudienceMembershipsCard() {
       setIsModalOpen(true);
     } else {
       // Toggle back to join if already active
-      setMemberships(prev =>
-        prev.map(m => m.id === item.id ? { ...m, status: 'join', membersCount: m.membersCount - 1 } : m)
+      setMemberships((prev) =>
+        prev.map((m) =>
+          m.id === item.id ? { ...m, status: 'join', membersCount: Math.max(0, m.membersCount - 1) } : m
+        )
       );
     }
   };
 
-  const handleSubscribeSuccess = () => {
+  const handleSubscribeSuccess = async () => {
     if (selectedClub) {
-      setMemberships(prev =>
-        prev.map(m =>
+      setMemberships((prev) =>
+        prev.map((m) =>
           m.id === selectedClub.id
             ? { ...m, status: 'active', membersCount: m.membersCount + 1 }
             : m
         )
       );
+
+      try {
+        await api.post('/memberships/subscribe', {
+          plan_id: selectedClub.id,
+          creator_id: selectedClub.creator_id,
+        });
+      } catch (err) {
+        console.warn('Subscribe membership API error:', err);
+      }
     }
   };
 
@@ -125,59 +144,86 @@ export default function AudienceMembershipsCard() {
 
       {/* ─── List of Memberships: gap 32px ─── */}
       <div className="flex flex-col gap-8">
-        {memberships.map((item) => {
-          const isActive = item.status === 'active';
-          return (
-            <div 
-              key={item.id} 
-              className="flex flex-col gap-3 pb-6 border-b border-gray-100/70 last:border-b-0 last:pb-0"
-            >
-              {/* Badge: 100px x 28px, background rgba(48, 150, 137, 0.1), radius 8px, text #309689 */}
-              <div className="w-fit h-[28px] px-3 bg-[rgba(48,150,137,0.1)] rounded-[8px] flex items-center justify-center">
-                <span className="text-[14px] font-normal text-[#309689] leading-[18px]">
-                  {item.membersCount} members
-                </span>
-              </div>
-
-              {/* Main Row: Logo + Text on left, Button on right */}
-              <div className="flex items-center justify-between gap-4 flex-wrap sm:flex-nowrap">
-                {/* Left: Logo (40x40) + Text Block */}
-                <div className="flex items-center gap-4 sm:gap-5 min-w-0">
-                  <PinwheelLogo className="w-10 h-10 shrink-0" />
-                  
-                  <div className="flex flex-col min-w-0">
-                    <h3 className="text-[14px] font-semibold text-black leading-[18px] truncate">
-                      {item.name}
-                    </h3>
-                    <p className="text-[10px] font-normal text-black leading-[13px] truncate">
-                      {item.description}
-                    </p>
+        {isLoading ? (
+          [1, 2, 3].map((n) => (
+            <div key={n} className="flex flex-col gap-3 pb-6 border-b border-gray-100/70 last:border-b-0 animate-pulse">
+              <div className="w-24 h-6 bg-gray-200 rounded-md" />
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-full bg-gray-200" />
+                  <div className="flex flex-col gap-2">
+                    <div className="w-36 h-4 bg-gray-200 rounded" />
+                    <div className="w-56 h-3 bg-gray-100 rounded" />
                   </div>
                 </div>
-
-                {/* Right: Action Button (110px x 40px) */}
-                <button
-                  type="button"
-                  onClick={() => handleActionClick(item)}
-                  className={`w-[110px] h-[40px] rounded-[6px] text-[14px] font-normal font-['Jost',sans-serif] capitalize transition-all shrink-0 shadow-sm active:scale-95 flex items-center justify-center cursor-pointer ${
-                    isActive
-                      ? 'bg-[rgba(225,200,117,0.56)] text-black/80 hover:bg-[rgba(225,200,117,0.75)]'
-                      : 'bg-[#D4AF37] text-black/85 hover:bg-[#c29f31]'
-                  }`}
-                >
-                  {isActive ? 'Active Member' : 'Be A Member'}
-                </button>
+                <div className="w-24 h-10 bg-gray-200 rounded-md" />
               </div>
             </div>
-          );
-        })}
+          ))
+        ) : memberships.length === 0 ? (
+          <div className="w-full p-12 text-center flex flex-col items-center justify-center gap-3 bg-gray-50/60 rounded-[16px] border border-gray-100">
+            <PinwheelLogo className="w-10 h-10 opacity-40 mb-1" />
+            <h3 className="text-[16px] font-medium text-gray-800">No Membership Clubs Available</h3>
+            <p className="text-[13px] text-gray-500 max-w-sm">
+              Creator fan clubs will appear here once creators open community enrollment.
+            </p>
+          </div>
+        ) : (
+          memberships.map((item) => {
+            const isActive = item.status === 'active';
+            return (
+              <div 
+                key={item.id} 
+                className="flex flex-col gap-3 pb-6 border-b border-gray-100/70 last:border-b-0 last:pb-0"
+              >
+                {/* Badge: 100px x 28px, background rgba(48, 150, 137, 0.1), radius 8px, text #309689 */}
+                <div className="w-fit h-[28px] px-3 bg-[rgba(48,150,137,0.1)] rounded-[8px] flex items-center justify-center">
+                  <span className="text-[14px] font-normal text-[#309689] leading-[18px]">
+                    {item.membersCount} members
+                  </span>
+                </div>
+
+                {/* Main Row: Logo + Text on left, Button on right */}
+                <div className="flex items-center justify-between gap-4 flex-wrap sm:flex-nowrap">
+                  {/* Left: Logo (40x40) + Text Block */}
+                  <div className="flex items-center gap-4 sm:gap-5 min-w-0">
+                    <PinwheelLogo className="w-10 h-10 shrink-0" />
+                    
+                    <div className="flex flex-col min-w-0">
+                      <h3 className="text-[14px] font-semibold text-black leading-[18px] truncate">
+                        {item.name}
+                      </h3>
+                      <p className="text-[10px] font-normal text-black leading-[13px] truncate">
+                        {item.description}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Right: Action Button (110px x 40px) */}
+                  <button
+                    type="button"
+                    onClick={() => handleActionClick(item)}
+                    className={`w-[110px] h-[40px] rounded-[6px] text-[14px] font-normal font-['Jost',sans-serif] capitalize transition-all shrink-0 shadow-sm active:scale-95 flex items-center justify-center cursor-pointer ${
+                      isActive
+                        ? 'bg-[rgba(225,200,117,0.56)] text-black/80 hover:bg-[rgba(225,200,117,0.75)]'
+                        : 'bg-[#D4AF37] text-black/85 hover:bg-[#c29f31]'
+                    }`}
+                  >
+                    {isActive ? 'Active Member' : 'Be A Member'}
+                  </button>
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
 
       {/* ─── Membership Subscription Modal (Frame 2121459664) ─── */}
       <AudienceMembershipModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        clubName={selectedClub?.name || 'Dylan fan club'}
+        clubName={selectedClub?.name || 'Creator VIP Fan Club'}
+        price={selectedClub?.price ? `₦${Number(selectedClub.price).toLocaleString()} / month` : '₦1,000 / month'}
         onSubscribeSuccess={handleSubscribeSuccess}
       />
     </div>
