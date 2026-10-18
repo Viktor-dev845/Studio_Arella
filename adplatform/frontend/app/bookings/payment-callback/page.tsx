@@ -104,7 +104,7 @@ function PaymentCallbackContent() {
             )}
 
             <div style={{ display: 'flex', gap: 10 }}>
-              <Link href="/calendar" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: 'rgba(45,110,255,0.12)', color: '#D4AF37', padding: '12px', borderRadius: 10, fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>
+              <Link href="/bookings?tab=calendar" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: 'rgba(45,110,255,0.12)', color: '#D4AF37', padding: '12px', borderRadius: 10, fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>
                 <FaCalendarDays size={13} /> View Calendar
               </Link>
               <Link href="/bookings" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: '#D4AF37', color: '#111111', padding: '12px', borderRadius: 10, fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>

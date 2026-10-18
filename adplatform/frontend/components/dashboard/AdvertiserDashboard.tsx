@@ -502,7 +502,7 @@ export default function AdvertiserDashboard() {
 
           <div className="dash-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             <Link
-              href="/book"
+              href="/bookings?tab=screen"
               style={{
                 padding: '9px 12px',
                 background: theme.color.surface2,
@@ -625,7 +625,7 @@ export default function AdvertiserDashboard() {
 
           <div className="dash-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
             <Link
-              href="/book"
+              href="/bookings?tab=screen"
               style={{
                 padding: '8px 12px',
                 background: theme.color.surface2,
@@ -640,7 +640,7 @@ export default function AdvertiserDashboard() {
               Book Ad slot
             </Link>
             <Link
-              href="/podcast/book"
+              href="/bookings?tab=podcast"
               style={{
                 padding: '8px 12px',
                 background: theme.color.surface,
@@ -659,7 +659,7 @@ export default function AdvertiserDashboard() {
 
           <div style={{ textAlign: 'center' }}>
             <Link
-              href="/calendar"
+              href="/bookings?tab=calendar"
               style={{
                 fontSize: 12,
                 fontWeight: 700,

@@ -162,7 +162,7 @@ export default function ScreenOwnerDashboard() {
                   { label: 'Add New Screen', href: '/listings', bg: theme.color.ownerOrangeLight, color: theme.color.ownerOrange, border: theme.color.ownerOrangeBorder },
                   { label: 'View Bookings', href: '/bookings', bg: theme.color.ownerBlueLight, color: theme.color.ownerBlue, border: theme.color.ownerBlueBorder },
                   { label: 'View Earnings', href: '/finances', bg: theme.color.ownerGreenLight, color: theme.color.ownerGreen, border: theme.color.ownerGreenBorder },
-                  { label: 'Schedule', href: '/calendar', bg: theme.color.ownerPurpleLight, color: theme.color.ownerPurple, border: theme.color.ownerPurpleBorder },
+                  { label: 'Schedule', href: '/bookings?tab=calendar', bg: theme.color.ownerPurpleLight, color: theme.color.ownerPurple, border: theme.color.ownerPurpleBorder },
                 ].map(({ label, href, bg, color, border }) => (
                   <Link key={label} href={href} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 12px', background: bg, border: `1px solid ${border}`, borderRadius: 9, textDecoration: 'none', fontSize: 12, fontWeight: 700, color }}>
                     {label} <FaArrowRight size={10} color={color} />
