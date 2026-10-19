@@ -27,7 +27,7 @@ function AudienceContent() {
 
   const { user } = useAuthStore();
   const [activeMenu, setActiveMenu] = useState<'podcast' | 'trending' | 'memberships' | 'bookmarks' | 'subscriptions' | 'live' | 'live-detail' | 'chats' | 'notifications' | 'profile' | 'edit-profile' | 'settings' | string>(() => {
-    if (queryView === 'edit-profile' || queryView === 'settings') return 'edit-profile';
+    if (queryView === 'change-password' || queryView === 'edit-profile' || queryView === 'settings') return 'edit-profile';
     if (queryView === 'profile') return 'profile';
     if (queryView === 'notifications') return 'notifications';
     if (queryView === 'chats' || queryView === 'messages') return 'chats';
@@ -45,7 +45,7 @@ function AudienceContent() {
 
   // Sync menu state when URL query changes
   useEffect(() => {
-    if (queryView === 'edit-profile' || queryView === 'settings') {
+    if (queryView === 'change-password' || queryView === 'edit-profile' || queryView === 'settings') {
       setActiveMenu('edit-profile');
     } else if (queryView === 'profile') {
       setActiveMenu('profile');
@@ -232,7 +232,10 @@ function AudienceContent() {
             {/* 2. Main Content Area */}
             {activeMenu === 'edit-profile' || activeMenu === 'settings' ? (
               /* ─── Edit Profile / Settings View: Frame 2121459220 etc. (866px wide matching Figma) ─── */
-              <AudienceEditProfilePageView onBackToProfile={() => handleMenuChange('profile')} />
+              <AudienceEditProfilePageView 
+                onBackToProfile={() => handleMenuChange('profile')} 
+                initialSubView={queryView === 'change-password' ? 'change-password' : 'profile'}
+              />
             ) : activeMenu === 'profile' ? (
               /* ─── Profile View: Frame 2121459585 (850px wide container matching Figma) ─── */
               <AudienceProfilePageView onEditProfileClick={() => handleMenuChange('edit-profile')} />

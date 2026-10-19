@@ -4,13 +4,14 @@ import { useState, useEffect } from 'react';
 import { 
   Loader2, 
   X, 
-  KeyRound, 
   ShieldCheck, 
   Laptop, 
   Smartphone, 
   Globe, 
   Clock,
-  ChevronLeft
+  ChevronLeft,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useToast } from '@/components/ui/ToastProvider';
@@ -18,6 +19,7 @@ import api from '@/lib/api';
 
 interface AudienceEditProfilePageViewProps {
   onBackToProfile?: () => void;
+  initialSubView?: 'profile' | 'change-password';
 }
 
 interface SessionItem {
@@ -30,12 +32,19 @@ interface SessionItem {
 
 export default function AudienceEditProfilePageView({
   onBackToProfile,
+  initialSubView = 'profile',
 }: AudienceEditProfilePageViewProps) {
   const { user, checkAuth } = useAuthStore();
   const { toast } = useToast();
 
   // ─── Sub-view State ('profile' or dedicated 'change-password' matching Figma) ───
-  const [activeSubView, setActiveSubView] = useState<'profile' | 'change-password'>('profile');
+  const [activeSubView, setActiveSubView] = useState<'profile' | 'change-password'>(initialSubView);
+
+  useEffect(() => {
+    if (initialSubView) {
+      setActiveSubView(initialSubView);
+    }
+  }, [initialSubView]);
 
   // ─── Success Confirmation Popup Modal (Figma: Filter Popup 383px x 433px) ───
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
@@ -86,13 +95,16 @@ export default function AudienceEditProfilePageView({
     }
   }, [user]);
 
-  // ─── 3. Modals & Password State ───
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  // ─── 3. Password State (with eye toggles matching Figma) ───
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
+  // ─── 4. Login History Sessions State ───
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [sessions, setSessions] = useState<SessionItem[]>([]);
   const [isLoadingSessions, setIsLoadingSessions] = useState(false);
@@ -127,7 +139,7 @@ export default function AudienceEditProfilePageView({
       }
 
       await checkAuth();
-      // Show Figma confirmation popup
+      // Launch Figma confirmation popup
       setShowSuccessPopup(true);
     } catch (err: any) {
       toast(err?.response?.data?.message || 'Could not save profile changes', 'error');
@@ -157,11 +169,10 @@ export default function AudienceEditProfilePageView({
         currentPassword,
         newPassword,
       });
-      setShowPasswordModal(false);
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-      // Trigger Figma Account settings changed popup
+      // Launch Figma confirmation popup
       setShowSuccessPopup(true);
     } catch (err: any) {
       toast(err?.response?.data?.message || 'Could not update password', 'error');
@@ -248,81 +259,111 @@ export default function AudienceEditProfilePageView({
   return (
     <div className="w-full lg:w-[866px] flex flex-col gap-6 font-['DM_Sans',sans-serif]">
 
-      {/* ─── DEDICATED CHANGE PASSWORD VIEW (Matching Figma 'change passwprd' screen) ─── */}
+      {/* ─── DEDICATED CHANGE PASSWORD VIEW (Matching Figma 'change passwprd' screen: 1440px x 939px layout) ─── */}
       {activeSubView === 'change-password' ? (
-        <div className="flex flex-col gap-5 animate-in fade-in duration-150">
-          {/* Back button */}
-          <button
-            type="button"
-            onClick={() => setActiveSubView('profile')}
-            className="flex items-center gap-2 text-[14px] font-medium text-[#141414] hover:opacity-75 transition-opacity w-fit cursor-pointer"
-          >
-            <ChevronLeft size={20} />
-            <span>Back</span>
-          </button>
+        <div className="w-full max-w-[964px] flex flex-col gap-4 animate-in fade-in duration-150">
+          {/* Back button (Frame 2121459062: 84px x 36px, Ellipse 331 36x36 #EFEFEF, text 'Back' underline #262626) */}
+          <div className="flex items-center gap-3.5 mb-2">
+            <button
+              type="button"
+              onClick={() => setActiveSubView('profile')}
+              className="flex items-center gap-3 cursor-pointer group"
+            >
+              <div className="w-9 h-9 rounded-full bg-[#EFEFEF] flex items-center justify-center text-[#464646] group-hover:bg-[#E5E5E5] transition-colors">
+                <ChevronLeft size={20} strokeWidth={2.2} />
+              </div>
+              <span className="font-['Urbanist',sans-serif] font-semibold text-[16px] leading-[19px] text-[#262626] underline group-hover:opacity-80 transition-opacity">
+                Back
+              </span>
+            </button>
+          </div>
 
-          {/* Change Password Card */}
-          <div className="w-full bg-[#FFFFFF] rounded-[20px] p-6 sm:p-8 shadow-[0px_2px_12px_rgba(0,0,0,0.02)] border border-gray-100/70 flex flex-col gap-6">
-            <h2 className="text-[20px] font-semibold text-[#141414] leading-[26px]">
+          {/* Change Password Card (Frame 2121459238: 964px x 492px, radius 20px, bg #FFFFFF) */}
+          <div className="w-full bg-[#FFFFFF] rounded-[20px] p-6 sm:p-8 sm:px-9 shadow-[0px_2px_12px_rgba(0,0,0,0.02)] border border-gray-100/70 flex flex-col gap-6">
+            <h2 className="font-['Urbanist',sans-serif] font-semibold text-[19.67px] leading-[29px] text-[#141414]">
               Change Password
             </h2>
 
-            <form onSubmit={handleChangePassword} className="flex flex-col gap-5 max-w-[540px]">
-              {/* Current Password */}
-              <div className="flex flex-col">
-                <label className="text-[14px] font-medium text-[#141414] mb-2">
-                  Current Password
-                </label>
+            <form onSubmit={handleChangePassword} className="flex flex-col gap-6">
+              {/* Field 1: Current Password (Frame 2121459235: 863px x 69px, radius 10px, border 1px solid #98989A) */}
+              <div className="relative w-full">
                 <input
-                  type="password"
+                  type={showCurrentPassword ? 'text' : 'password'}
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full h-[52.85px] px-4 rounded-[12.3px] border border-[rgba(152,152,154,0.5)] bg-white text-[15px] text-[#141414] placeholder-[#98989A] focus:outline-none focus:border-[#D9BA54] focus:ring-1 focus:ring-[#D9BA54] transition-all font-['DM_Sans',sans-serif]"
+                  placeholder="Current Password"
+                  className="w-full h-[69px] px-5 pr-14 rounded-[10px] border border-[#98989A] bg-white font-['Urbanist',sans-serif] text-[18px] sm:text-[19.67px] text-[#141414] placeholder-[#141414] focus:outline-none focus:border-[#D9BA54] focus:ring-1 focus:ring-[#D9BA54] transition-all"
                   required
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                  className="absolute right-5 top-1/2 -translate-y-1/2 text-[#B8B8B8] hover:text-[#707070] transition-colors cursor-pointer"
+                  title={showCurrentPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showCurrentPassword ? <Eye size={22} /> : <EyeOff size={22} />}
+                </button>
               </div>
 
-              {/* New Password */}
-              <div className="flex flex-col">
-                <label className="text-[14px] font-medium text-[#141414] mb-2">
-                  New Password
-                </label>
+              {/* Field 2: New Password (Frame 2121459236: 863px x 69px, radius 10px, border 1px solid #98989A) */}
+              <div className="relative w-full">
                 <input
-                  type="password"
+                  type={showNewPassword ? 'text' : 'password'}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="At least 6 characters"
-                  className="w-full h-[52.85px] px-4 rounded-[12.3px] border border-[rgba(152,152,154,0.5)] bg-white text-[15px] text-[#141414] placeholder-[#98989A] focus:outline-none focus:border-[#D9BA54] focus:ring-1 focus:ring-[#D9BA54] transition-all font-['DM_Sans',sans-serif]"
+                  placeholder="New Password"
+                  className="w-full h-[69px] px-5 pr-14 rounded-[10px] border border-[#98989A] bg-white font-['Urbanist',sans-serif] text-[18px] sm:text-[19.67px] text-[#141414] placeholder-[#141414] focus:outline-none focus:border-[#D9BA54] focus:ring-1 focus:ring-[#D9BA54] transition-all"
                   required
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  className="absolute right-5 top-1/2 -translate-y-1/2 text-[#B8B8B8] hover:text-[#707070] transition-colors cursor-pointer"
+                  title={showNewPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showNewPassword ? <Eye size={22} /> : <EyeOff size={22} />}
+                </button>
               </div>
 
-              {/* Confirm New Password */}
-              <div className="flex flex-col">
-                <label className="text-[14px] font-medium text-[#141414] mb-2">
-                  Confirm New Password
-                </label>
+              {/* Field 3: Confirm New Password (Frame 2121459237: 865px x 69px, radius 10px, border 1px solid #98989A) */}
+              <div className="relative w-full">
                 <input
-                  type="password"
+                  type={showConfirmPassword ? 'text' : 'password'}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Repeat new password"
-                  className="w-full h-[52.85px] px-4 rounded-[12.3px] border border-[rgba(152,152,154,0.5)] bg-white text-[15px] text-[#141414] placeholder-[#98989A] focus:outline-none focus:border-[#D9BA54] focus:ring-1 focus:ring-[#D9BA54] transition-all font-['DM_Sans',sans-serif]"
+                  placeholder="Confirm New Password"
+                  className="w-full h-[69px] px-5 pr-14 rounded-[10px] border border-[#98989A] bg-white font-['Urbanist',sans-serif] text-[18px] sm:text-[19.67px] text-[#141414] placeholder-[#141414] focus:outline-none focus:border-[#D9BA54] focus:ring-1 focus:ring-[#D9BA54] transition-all"
                   required
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-5 top-1/2 -translate-y-1/2 text-[#B8B8B8] hover:text-[#707070] transition-colors cursor-pointer"
+                  title={showConfirmPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showConfirmPassword ? <Eye size={22} /> : <EyeOff size={22} />}
+                </button>
               </div>
 
-              <div className="pt-2">
+              {/* Action Buttons Row: Cancel (118px x 48px) + Update Password (176px x 48px) */}
+              <div className="flex items-center justify-end gap-5 pt-3">
+                <button
+                  type="button"
+                  onClick={() => setActiveSubView('profile')}
+                  className="w-[118px] h-[48px] border border-[#D9BA54] rounded-[10px] bg-transparent text-[#D9BA54] font-['Urbanist',sans-serif] font-bold text-[16px] leading-[24px] hover:bg-amber-50/40 transition-colors flex items-center justify-center cursor-pointer"
+                >
+                  Cancel
+                </button>
+
                 <button
                   type="submit"
                   disabled={isChangingPassword}
-                  className="w-[166px] h-[48px] bg-[#D9BA54] hover:bg-[#c9a73e] text-[#000000] text-[15px] font-bold rounded-[10px] shadow-sm transition-all flex items-center justify-center cursor-pointer disabled:opacity-60"
+                  className="w-[176px] h-[48px] bg-[#D9BA54] hover:bg-[#c9a73e] text-[#000000] font-['Urbanist',sans-serif] font-bold text-[16px] leading-[24px] rounded-[10px] shadow-sm transition-colors flex items-center justify-center cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {isChangingPassword ? (
                     <Loader2 size={18} className="animate-spin text-black" />
                   ) : (
-                    'Save Changes'
+                    'Update Password'
                   )}
                 </button>
               </div>
@@ -330,7 +371,7 @@ export default function AudienceEditProfilePageView({
           </div>
         </div>
       ) : (
-        /* ─── MAIN EDIT PROFILE VIEW ─── */
+        /* ─── MAIN EDIT PROFILE VIEW (Matching Figma 4-Card Settings Layout) ─── */
         <form onSubmit={handleSaveProfile} className="flex flex-col gap-6">
 
           {/* ─── CARD 1: Personal Information (Frame 2121459220: 866px x 330px, radius 20px) ─── */}
