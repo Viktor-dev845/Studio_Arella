@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { 
   Upload, 
   Edit3, 
@@ -37,6 +37,67 @@ interface EventClubItem {
   badgeCount?: number;
   avatars: string[];
 }
+
+export interface FollowerProfile {
+  id: string;
+  name: string;
+  role: string;
+  avatar: string;
+}
+
+export const DEFAULT_DESIGNER_FOLLOWERS: FollowerProfile[] = [
+  {
+    id: 'f1',
+    name: 'Audrey Alexander',
+    role: 'Team lead at Google',
+    avatar: '/audience/audrey-alexander.png',
+  },
+  {
+    id: 'f2',
+    name: 'Kyle Fisher',
+    role: 'Product designer at Commandor Corp',
+    avatar: '/audience/kyle-fisher.png',
+  },
+  {
+    id: 'f3',
+    name: 'Darlene Black',
+    role: 'HR-manager, 10 000 connections',
+    avatar: '/audience/darlene-black.png',
+  },
+  {
+    id: 'f4',
+    name: 'Eduardo Russell',
+    role: 'Full stack developer at Yandex',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80',
+  },
+];
+
+export const DEFAULT_DESIGNER_FOLLOWING: FollowerProfile[] = [
+  {
+    id: 'ing1',
+    name: 'Brandon Wilson',
+    role: 'Senior Product Designer',
+    avatar: '/audience/brandon-wilson.png',
+  },
+  {
+    id: 'ing2',
+    name: 'Theresa Steward',
+    role: 'Brand Strategist & Podcaster',
+    avatar: '/audience/theresa-steward.png',
+  },
+  {
+    id: 'ing3',
+    name: 'Steve Jobs',
+    role: 'Innovation & Product Keynotes',
+    avatar: '/audience/steve-jobs.png',
+  },
+  {
+    id: 'ing4',
+    name: 'Nermmen Saif',
+    role: 'Creative Director at Studio Art',
+    avatar: '/audience/nermmen-saif.png',
+  },
+];
 
 const DEFAULT_PODCAST_ITEMS: ShowItem[] = [
   {
@@ -102,10 +163,22 @@ const DEFAULT_FAN_EVENTS: EventClubItem[] = [
 
 export default function AudienceProfilePageView() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const queryTab = searchParams.get('tab');
   const { toast } = useToast();
   const { user, logout } = useAuthStore();
 
-  const [activeTab, setActiveTab] = useState<'profile' | 'followers' | 'following'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'followers' | 'following'>(() => {
+    if (queryTab === 'followers') return 'followers';
+    if (queryTab === 'following') return 'following';
+    return 'profile';
+  });
+
+  useEffect(() => {
+    if (queryTab === 'followers') setActiveTab('followers');
+    else if (queryTab === 'following') setActiveTab('following');
+    else if (queryTab === 'profile') setActiveTab('profile');
+  }, [queryTab]);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [isAboutExpanded, setIsAboutExpanded] = useState(false);
   const [showAllPodcasts, setShowAllPodcasts] = useState(false);
@@ -199,6 +272,11 @@ export default function AudienceProfilePageView() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const handleTabChange = (tab: 'profile' | 'followers' | 'following') => {
+    setActiveTab(tab);
+    router.replace(`/audience?view=profile&tab=${tab}`, { scroll: false });
+  };
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -379,7 +457,7 @@ export default function AudienceProfilePageView() {
       <div className="w-full max-w-[720px] flex items-end border-b border-[#E7E7E7] relative">
         <button
           type="button"
-          onClick={() => setActiveTab('profile')}
+          onClick={() => handleTabChange('profile')}
           className={`w-[240px] text-[12px] font-semibold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center ${
             activeTab === 'profile'
               ? 'h-[50px] bg-[#D9BA54] text-black rounded-t-[6px]'
@@ -391,7 +469,7 @@ export default function AudienceProfilePageView() {
 
         <button
           type="button"
-          onClick={() => setActiveTab('followers')}
+          onClick={() => handleTabChange('followers')}
           className={`w-[240px] text-[12px] font-semibold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center ${
             activeTab === 'followers'
               ? 'h-[50px] bg-[#D9BA54] text-black rounded-t-[6px]'
@@ -403,7 +481,7 @@ export default function AudienceProfilePageView() {
 
         <button
           type="button"
-          onClick={() => setActiveTab('following')}
+          onClick={() => handleTabChange('following')}
           className={`w-[240px] text-[12px] font-semibold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center ${
             activeTab === 'following'
               ? 'h-[50px] bg-[#D9BA54] text-black rounded-t-[6px]'
@@ -561,116 +639,68 @@ export default function AudienceProfilePageView() {
           </div>
         </div>
       ) : activeTab === 'followers' ? (
-        /* Followers Tab Content */
-        <div className="w-full bg-white rounded-[4px] shadow-[0px_20px_60px_rgba(241,244,248,0.5)] border border-gray-100 p-6 sm:p-7">
-          <h2 className="text-[18px] font-semibold text-[#181818] mb-4">
-            Followers ({followersCount})
-          </h2>
-          {followers.length === 0 ? (
-            <div className="p-8 text-center bg-[#FAFAFA] rounded-xl border border-dashed border-gray-200">
-              <Users size={32} className="mx-auto text-gray-400 mb-2" />
-              <p className="text-[14px] font-medium text-gray-700">No followers yet</p>
-              <p className="text-[12px] text-gray-500 max-w-sm mx-auto mt-1">
-                When fans and community members follow your profile, they will appear here.
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {followers.map((f: any) => (
-                <div
-                  key={f.id}
-                  className="flex items-center justify-between p-3.5 rounded-xl border border-gray-100 bg-[#FCFDFD]"
-                >
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={f.avatar || '/audience/adam-udochi.png'}
-                      alt={f.name}
-                      className="w-11 h-11 rounded-full object-cover"
-                    />
-                    <div>
-                      <p className="text-[14px] font-semibold text-gray-900 m-0 leading-tight">
-                        {f.name}
-                      </p>
-                      <p className="text-[12px] text-gray-500 m-0 mt-0.5">
-                        {f.role || 'Community Member'}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => toast(`Viewing ${f.name}'s profile`, 'info')}
-                    className="text-[12px] font-semibold text-[#D9BA54] hover:underline"
-                  >
-                    View
-                  </button>
+        /* ─── Followers Tab Content: Frame matching designer screen (850px wide) ─── */
+        <div className="w-full bg-white rounded-[4px] shadow-[0px_20px_60px_rgba(241,244,248,0.5)] border border-gray-100/80 p-8 sm:p-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
+            {(followers.length > 0 ? followers : DEFAULT_DESIGNER_FOLLOWERS).map((f: any) => (
+              <div
+                key={f.id}
+                onClick={() => toast(`Viewing ${f.name}'s profile`, 'info')}
+                className="flex items-center gap-4 group cursor-pointer"
+              >
+                <div className="w-[52px] h-[52px] rounded-full overflow-hidden shrink-0 bg-neutral-200 shadow-sm border border-black/5">
+                  <img
+                    src={f.avatar || '/audience/audrey-alexander.png'}
+                    alt={f.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/audience/adam-udochi.png';
+                    }}
+                  />
                 </div>
-              ))}
-            </div>
-          )}
+                <div className="flex flex-col justify-center min-w-0">
+                  <span className="text-[16px] font-bold text-[#181818] leading-[22px] truncate group-hover:text-[#D9BA54] transition-colors">
+                    {f.name}
+                  </span>
+                  <span className="text-[13px] font-normal text-[#181818] leading-[150%] truncate mt-0.5">
+                    {f.role || 'Community Member'}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       ) : (
-        /* Following Tab Content */
-        <div className="w-full bg-white rounded-[4px] shadow-[0px_20px_60px_rgba(241,244,248,0.5)] border border-gray-100 p-6 sm:p-7">
-          <h2 className="text-[18px] font-semibold text-[#181818] mb-4">
-            Following ({followingCount})
-          </h2>
-          {following.length === 0 ? (
-            <div className="p-8 text-center bg-[#FAFAFA] rounded-xl border border-dashed border-gray-200">
-              <Users size={32} className="mx-auto text-gray-400 mb-2" />
-              <p className="text-[14px] font-medium text-gray-700">Not following anyone yet</p>
-              <p className="text-[12px] text-gray-500 max-w-sm mx-auto mt-1">
-                Explore the Creator Space and follow creators to receive updates on new podcasts and live rooms.
-              </p>
-              <button
-                type="button"
-                onClick={() => router.push('/audience?view=trending')}
-                className="mt-4 px-4 py-2 bg-[#D9BA54] text-black text-xs font-semibold rounded-lg"
+        /* ─── Following Tab Content: Frame matching designer screen (850px wide) ─── */
+        <div className="w-full bg-white rounded-[4px] shadow-[0px_20px_60px_rgba(241,244,248,0.5)] border border-gray-100/80 p-8 sm:p-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
+            {(following.length > 0 ? following : DEFAULT_DESIGNER_FOLLOWING).map((f: any) => (
+              <div
+                key={f.id}
+                onClick={() => toast(`Viewing ${f.name}'s profile`, 'info')}
+                className="flex items-center gap-4 group cursor-pointer"
               >
-                Discover Creators
-              </button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {following.map((f: any) => (
-                <div
-                  key={f.id}
-                  className="flex items-center justify-between p-3.5 rounded-xl border border-gray-100 bg-[#FCFDFD]"
-                >
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={f.avatar || '/audience/kyle-fisher.png'}
-                      alt={f.name}
-                      className="w-11 h-11 rounded-full object-cover"
-                    />
-                    <div>
-                      <p className="text-[14px] font-semibold text-gray-900 m-0 leading-tight">
-                        {f.name}
-                      </p>
-                      <p className="text-[12px] text-gray-500 m-0 mt-0.5">
-                        {f.role || 'Creator'}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      try {
-                        await api.delete(`/follows/${f.id}`);
-                        setFollowing((prev) => prev.filter((item) => item.id !== f.id));
-                        setFollowingCount((prev) => Math.max(0, prev - 1));
-                        toast(`Unfollowed ${f.name}`, 'info');
-                      } catch {
-                        toast('Could not unfollow', 'error');
-                      }
+                <div className="w-[52px] h-[52px] rounded-full overflow-hidden shrink-0 bg-neutral-200 shadow-sm border border-black/5">
+                  <img
+                    src={f.avatar || '/audience/kyle-fisher.png'}
+                    alt={f.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/audience/kyle-fisher.png';
                     }}
-                    className="text-[12px] font-semibold text-red-500 hover:underline"
-                  >
-                    Unfollow
-                  </button>
+                  />
                 </div>
-              ))}
-            </div>
-          )}
+                <div className="flex flex-col justify-center min-w-0">
+                  <span className="text-[16px] font-bold text-[#181818] leading-[22px] truncate group-hover:text-[#D9BA54] transition-colors">
+                    {f.name}
+                  </span>
+                  <span className="text-[13px] font-normal text-[#181818] leading-[150%] truncate mt-0.5">
+                    {f.role || 'Creator'}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
