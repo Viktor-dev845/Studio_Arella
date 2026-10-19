@@ -9,8 +9,8 @@ import {
   Laptop, 
   Smartphone, 
   Globe, 
-  Check, 
-  Clock 
+  Clock,
+  ChevronLeft
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useToast } from '@/components/ui/ToastProvider';
@@ -33,6 +33,12 @@ export default function AudienceEditProfilePageView({
 }: AudienceEditProfilePageViewProps) {
   const { user, checkAuth } = useAuthStore();
   const { toast } = useToast();
+
+  // ─── Sub-view State ('profile' or dedicated 'change-password' matching Figma) ───
+  const [activeSubView, setActiveSubView] = useState<'profile' | 'change-password'>('profile');
+
+  // ─── Success Confirmation Popup Modal (Figma: Filter Popup 383px x 433px) ───
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
   // ─── 1. Form State (Personal Information) ───
   const [firstName, setFirstName] = useState('');
@@ -80,7 +86,7 @@ export default function AudienceEditProfilePageView({
     }
   }, [user]);
 
-  // ─── 3. Modals State ───
+  // ─── 3. Modals & Password State ───
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -121,10 +127,8 @@ export default function AudienceEditProfilePageView({
       }
 
       await checkAuth();
-      toast('Profile changes saved successfully', 'success');
-      if (onBackToProfile) {
-        onBackToProfile();
-      }
+      // Show Figma confirmation popup
+      setShowSuccessPopup(true);
     } catch (err: any) {
       toast(err?.response?.data?.message || 'Could not save profile changes', 'error');
     } finally {
@@ -153,11 +157,12 @@ export default function AudienceEditProfilePageView({
         currentPassword,
         newPassword,
       });
-      toast('Password changed successfully', 'success');
       setShowPasswordModal(false);
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
+      // Trigger Figma Account settings changed popup
+      setShowSuccessPopup(true);
     } catch (err: any) {
       toast(err?.response?.data?.message || 'Could not update password', 'error');
     } finally {
@@ -232,302 +237,40 @@ export default function AudienceEditProfilePageView({
     );
   };
 
+  const handleFinishSuccess = () => {
+    setShowSuccessPopup(false);
+    setActiveSubView('profile');
+    if (onBackToProfile) {
+      onBackToProfile();
+    }
+  };
+
   return (
     <div className="w-full lg:w-[866px] flex flex-col gap-6 font-['DM_Sans',sans-serif]">
-      {/* ─── Form Wrapper ─── */}
-      <form onSubmit={handleSaveProfile} className="flex flex-col gap-6">
 
-        {/* ─── CARD 1: Personal Information (Frame 2121459220: 866px x 330px, radius 20px) ─── */}
-        <div className="w-full bg-[#FFFFFF] rounded-[20px] p-6 sm:p-8 shadow-[0px_2px_12px_rgba(0,0,0,0.02)] border border-gray-100/70">
-          <h2 className="text-[19.66px] font-semibold text-[#141414] leading-[26px] tracking-tight mb-6">
-            Personal Information
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
-            {/* First Name */}
-            <div className="flex flex-col">
-              <label 
-                htmlFor="firstName" 
-                className="text-[14px] sm:text-[15px] font-normal text-[#141414] mb-2"
-              >
-                First Name
-              </label>
-              <input
-                id="firstName"
-                type="text"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                placeholder="Adela"
-                className="w-full h-[52.85px] px-4 rounded-[12.3px] border border-[rgba(152,152,154,0.5)] bg-white text-[15px] text-[#141414] placeholder-[#98989A] focus:outline-none focus:border-[#D9BA54] focus:ring-1 focus:ring-[#D9BA54] transition-all font-['DM_Sans',sans-serif]"
-              />
-            </div>
-
-            {/* Last Name */}
-            <div className="flex flex-col">
-              <label 
-                htmlFor="lastName" 
-                className="text-[14px] sm:text-[15px] font-normal text-[#141414] mb-2"
-              >
-                Last Name
-              </label>
-              <input
-                id="lastName"
-                type="text"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                placeholder="Parkson"
-                className="w-full h-[52.85px] px-4 rounded-[12.3px] border border-[rgba(152,152,154,0.5)] bg-white text-[15px] text-[#141414] placeholder-[#98989A] focus:outline-none focus:border-[#D9BA54] focus:ring-1 focus:ring-[#D9BA54] transition-all font-['DM_Sans',sans-serif]"
-              />
-            </div>
-
-            {/* Email Address */}
-            <div className="flex flex-col">
-              <label 
-                htmlFor="email" 
-                className="text-[14px] sm:text-[15px] font-normal text-[#141414] mb-2"
-              >
-                Email Address
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="adelapark.@example.com"
-                className="w-full h-[52.85px] px-4 rounded-[12.3px] border border-[rgba(152,152,154,0.5)] bg-white text-[15px] text-[#141414] placeholder-[#98989A] focus:outline-none focus:border-[#D9BA54] focus:ring-1 focus:ring-[#D9BA54] transition-all font-['DM_Sans',sans-serif]"
-              />
-            </div>
-
-            {/* About */}
-            <div className="flex flex-col">
-              <label 
-                htmlFor="about" 
-                className="text-[14px] sm:text-[15px] font-normal text-[#141414] mb-2"
-              >
-                About
-              </label>
-              <input
-                id="about"
-                type="text"
-                value={about}
-                onChange={(e) => setAbout(e.target.value)}
-                placeholder="Lorem ipsum"
-                className="w-full h-[52.85px] px-4 rounded-[12.3px] border border-[rgba(152,152,154,0.5)] bg-white text-[15px] text-[#141414] placeholder-[#98989A] focus:outline-none focus:border-[#D9BA54] focus:ring-1 focus:ring-[#D9BA54] transition-all font-['DM_Sans',sans-serif]"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* ─── CARD 2: Password & Security (Frame 2121459228: 849px x 345.66px, radius 20px) ─── */}
-        <div className="w-full bg-[#FFFFFF] rounded-[20px] p-6 sm:p-8 shadow-[0px_2px_12px_rgba(0,0,0,0.02)] border border-gray-100/70 flex flex-col gap-6">
-          <h2 className="text-[19.88px] font-semibold text-[#141414] leading-[26px] tracking-tight">
-            Password & Security
-          </h2>
-
-          {/* Row 1: Change Password */}
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex flex-col">
-              <span className="text-[16px] font-normal text-[#141414] leading-[22px]">
-                Change Password
-              </span>
-              <span className="text-[13px] text-[#98989A] leading-[18px] mt-0.5">
-                Last changed 3 months ago
-              </span>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setShowPasswordModal(true)}
-              className="h-[46px] px-5 rounded-[12px] border border-[rgba(152,152,154,0.5)] text-[14px] font-medium text-[#141414] hover:bg-gray-50 transition-colors cursor-pointer shrink-0"
-            >
-              Change Password
-            </button>
-          </div>
-
-          {/* Row 2: Two-Factor Authentication */}
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex flex-col">
-              <span className="text-[16px] font-normal text-[#141414] leading-[22px]">
-                Two-Factor Authentication
-              </span>
-              <span className="text-[13px] text-[#98989A] leading-[18px] mt-0.5">
-                Add an extra layer of security to your account
-              </span>
-            </div>
-
-            <ToggleSwitch
-              checked={twoFactorEnabled}
-              onChange={handleToggle2FA}
-            />
-          </div>
-
-          {/* Row 3: Login History */}
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex flex-col">
-              <span className="text-[16px] font-normal text-[#141414] leading-[22px]">
-                Login History
-              </span>
-              <span className="text-[13px] text-[#98989A] leading-[18px] mt-0.5">
-                View your recent login activity
-              </span>
-            </div>
-
-            <button
-              type="button"
-              onClick={handleOpenLoginHistory}
-              className="h-[44.5px] px-5 rounded-[12px] border border-[rgba(152,152,154,0.5)] text-[14px] font-medium text-[#141414] hover:bg-gray-50 transition-colors cursor-pointer shrink-0"
-            >
-              View History
-            </button>
-          </div>
-        </div>
-
-        {/* ─── CARD 3: Notification Preferences (Frame 2121459233: 849px x 479px, radius 20px) ─── */}
-        <div className="w-full bg-[#FFFFFF] rounded-[20px] p-6 sm:p-8 shadow-[0px_2px_12px_rgba(0,0,0,0.02)] border border-gray-100/70 flex flex-col">
-          <h2 className="text-[19.88px] font-semibold text-[#141414] leading-[26px] tracking-tight mb-6">
-            Notification Preferences
-          </h2>
-
-          {/* Subheader: Email Notifications */}
-          <span className="text-[15px] font-medium text-[#141414] leading-[20px] mb-4">
-            Email Notifications
-          </span>
-
-          {/* Community Activity */}
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex flex-col">
-              <span className="text-[16px] font-normal text-[#141414] leading-[22px]">
-                Community Activity
-              </span>
-              <span className="text-[13px] text-[#98989A] leading-[18px] mt-0.5">
-                Notifications about discussions and events
-              </span>
-            </div>
-
-            <ToggleSwitch
-              checked={communityActivity}
-              onChange={setCommunityActivity}
-            />
-          </div>
-
-          {/* Divider Line matching Figma (1px border line rgba(152, 152, 154, 0.57)) */}
-          <div className="w-full h-[1px] bg-[rgba(152,152,154,0.3)] my-6" />
-
-          {/* Section: Push Notifications */}
-          <div className="flex flex-col gap-6">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex flex-col">
-                <span className="text-[16px] font-medium text-[#141414] leading-[22px]">
-                  Push Notifications
-                </span>
-                <span className="text-[13px] text-[#98989A] leading-[18px] mt-0.5">
-                  Receive updates about your activities
-                </span>
-              </div>
-
-              <ToggleSwitch
-                checked={pushNotifications}
-                onChange={setPushNotifications}
-              />
-            </div>
-
-            {/* Event Reminders */}
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex flex-col">
-                <span className="text-[16px] font-medium text-[#141414] leading-[22px]">
-                  Event Reminders
-                </span>
-                <span className="text-[13px] text-[#98989A] leading-[18px] mt-0.5">
-                  Reminders for upcoming events
-                </span>
-              </div>
-
-              <ToggleSwitch
-                checked={eventReminders}
-                onChange={setEventReminders}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* ─── CARD 4: Privacy & Security (Frame 2121459234: 849px x 269px, radius 20px) ─── */}
-        <div className="w-full bg-[#FFFFFF] rounded-[20px] p-6 sm:p-8 shadow-[0px_2px_12px_rgba(0,0,0,0.02)] border border-gray-100/70 flex flex-col gap-6">
-          <h2 className="text-[19.88px] font-semibold text-[#141414] leading-[26px] tracking-tight mb-1">
-            Privacy & Security
-          </h2>
-
-          {/* Profile Visibility */}
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex flex-col">
-              <span className="text-[16px] font-normal text-[#141414] leading-[22px]">
-                Profile Visibility
-              </span>
-              <span className="text-[13px] text-[#98989A] leading-[18px] mt-0.5">
-                Control who can see your profile information
-              </span>
-            </div>
-
-            <ToggleSwitch
-              checked={profileVisibility}
-              onChange={setProfileVisibility}
-            />
-          </div>
-
-          {/* Data Sharing */}
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex flex-col">
-              <span className="text-[16px] font-normal text-[#141414] leading-[22px]">
-                Data Sharing
-              </span>
-              <span className="text-[13px] text-[#98989A] leading-[18px] mt-0.5">
-                Allow Trila to use your data to improve services
-              </span>
-            </div>
-
-            <ToggleSwitch
-              checked={dataSharing}
-              onChange={setDataSharing}
-            />
-          </div>
-        </div>
-
-        {/* ─── BOTTOM ACTION BUTTON: Save Changes (153px x 48px, #D9BA54) ─── */}
-        <div className="flex justify-end pt-2 pb-10">
+      {/* ─── DEDICATED CHANGE PASSWORD VIEW (Matching Figma 'change passwprd' screen) ─── */}
+      {activeSubView === 'change-password' ? (
+        <div className="flex flex-col gap-5 animate-in fade-in duration-150">
+          {/* Back button */}
           <button
-            type="submit"
-            disabled={isSaving}
-            className="w-[153px] h-[48px] bg-[#D9BA54] hover:bg-[#c9a73e] text-[#000000] text-[15px] font-bold rounded-[10px] shadow-sm transition-all flex items-center justify-center cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+            type="button"
+            onClick={() => setActiveSubView('profile')}
+            className="flex items-center gap-2 text-[14px] font-medium text-[#141414] hover:opacity-75 transition-opacity w-fit cursor-pointer"
           >
-            {isSaving ? (
-              <Loader2 size={18} className="animate-spin text-black" />
-            ) : (
-              'Save Changes'
-            )}
+            <ChevronLeft size={20} />
+            <span>Back</span>
           </button>
-        </div>
-      </form>
 
-      {/* ─── MODAL: Change Password ─── */}
-      {showPasswordModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="w-full max-w-md bg-white rounded-[20px] shadow-2xl p-6 border border-gray-100 flex flex-col gap-4">
-            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-              <div className="flex items-center gap-2">
-                <KeyRound size={20} className="text-[#D9BA54]" />
-                <h3 className="text-[18px] font-semibold text-[#141414]">Change Password</h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowPasswordModal(false)}
-                className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-500 cursor-pointer"
-              >
-                <X size={18} />
-              </button>
-            </div>
+          {/* Change Password Card */}
+          <div className="w-full bg-[#FFFFFF] rounded-[20px] p-6 sm:p-8 shadow-[0px_2px_12px_rgba(0,0,0,0.02)] border border-gray-100/70 flex flex-col gap-6">
+            <h2 className="text-[20px] font-semibold text-[#141414] leading-[26px]">
+              Change Password
+            </h2>
 
-            <form onSubmit={handleChangePassword} className="flex flex-col gap-4 pt-2">
-              <div>
-                <label className="text-[13px] font-medium text-gray-700 block mb-1">
+            <form onSubmit={handleChangePassword} className="flex flex-col gap-5 max-w-[540px]">
+              {/* Current Password */}
+              <div className="flex flex-col">
+                <label className="text-[14px] font-medium text-[#141414] mb-2">
                   Current Password
                 </label>
                 <input
@@ -535,13 +278,14 @@ export default function AudienceEditProfilePageView({
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full h-11 px-3.5 rounded-[10px] border border-gray-200 text-sm focus:outline-none focus:border-[#D9BA54] focus:ring-1 focus:ring-[#D9BA54]"
+                  className="w-full h-[52.85px] px-4 rounded-[12.3px] border border-[rgba(152,152,154,0.5)] bg-white text-[15px] text-[#141414] placeholder-[#98989A] focus:outline-none focus:border-[#D9BA54] focus:ring-1 focus:ring-[#D9BA54] transition-all font-['DM_Sans',sans-serif]"
                   required
                 />
               </div>
 
-              <div>
-                <label className="text-[13px] font-medium text-gray-700 block mb-1">
+              {/* New Password */}
+              <div className="flex flex-col">
+                <label className="text-[14px] font-medium text-[#141414] mb-2">
                   New Password
                 </label>
                 <input
@@ -549,13 +293,14 @@ export default function AudienceEditProfilePageView({
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="At least 6 characters"
-                  className="w-full h-11 px-3.5 rounded-[10px] border border-gray-200 text-sm focus:outline-none focus:border-[#D9BA54] focus:ring-1 focus:ring-[#D9BA54]"
+                  className="w-full h-[52.85px] px-4 rounded-[12.3px] border border-[rgba(152,152,154,0.5)] bg-white text-[15px] text-[#141414] placeholder-[#98989A] focus:outline-none focus:border-[#D9BA54] focus:ring-1 focus:ring-[#D9BA54] transition-all font-['DM_Sans',sans-serif]"
                   required
                 />
               </div>
 
-              <div>
-                <label className="text-[13px] font-medium text-gray-700 block mb-1">
+              {/* Confirm New Password */}
+              <div className="flex flex-col">
+                <label className="text-[14px] font-medium text-[#141414] mb-2">
                   Confirm New Password
                 </label>
                 <input
@@ -563,28 +308,365 @@ export default function AudienceEditProfilePageView({
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Repeat new password"
-                  className="w-full h-11 px-3.5 rounded-[10px] border border-gray-200 text-sm focus:outline-none focus:border-[#D9BA54] focus:ring-1 focus:ring-[#D9BA54]"
+                  className="w-full h-[52.85px] px-4 rounded-[12.3px] border border-[rgba(152,152,154,0.5)] bg-white text-[15px] text-[#141414] placeholder-[#98989A] focus:outline-none focus:border-[#D9BA54] focus:ring-1 focus:ring-[#D9BA54] transition-all font-['DM_Sans',sans-serif]"
                   required
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-3">
-                <button
-                  type="button"
-                  onClick={() => setShowPasswordModal(false)}
-                  className="px-4 h-10 rounded-[10px] text-sm text-gray-600 hover:bg-gray-100 transition-colors"
-                >
-                  Cancel
-                </button>
+              <div className="pt-2">
                 <button
                   type="submit"
                   disabled={isChangingPassword}
-                  className="px-5 h-10 rounded-[10px] bg-[#D9BA54] hover:bg-[#c9a73e] text-black text-sm font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+                  className="w-[166px] h-[48px] bg-[#D9BA54] hover:bg-[#c9a73e] text-[#000000] text-[15px] font-bold rounded-[10px] shadow-sm transition-all flex items-center justify-center cursor-pointer disabled:opacity-60"
                 >
-                  {isChangingPassword ? <Loader2 size={16} className="animate-spin" /> : 'Update Password'}
+                  {isChangingPassword ? (
+                    <Loader2 size={18} className="animate-spin text-black" />
+                  ) : (
+                    'Save Changes'
+                  )}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      ) : (
+        /* ─── MAIN EDIT PROFILE VIEW ─── */
+        <form onSubmit={handleSaveProfile} className="flex flex-col gap-6">
+
+          {/* ─── CARD 1: Personal Information (Frame 2121459220: 866px x 330px, radius 20px) ─── */}
+          <div className="w-full bg-[#FFFFFF] rounded-[20px] p-6 sm:p-8 shadow-[0px_2px_12px_rgba(0,0,0,0.02)] border border-gray-100/70">
+            <h2 className="text-[19.66px] font-semibold text-[#141414] leading-[26px] tracking-tight mb-6">
+              Personal Information
+            </h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+              {/* First Name */}
+              <div className="flex flex-col">
+                <label 
+                  htmlFor="firstName" 
+                  className="text-[14px] sm:text-[15px] font-normal text-[#141414] mb-2"
+                >
+                  First Name
+                </label>
+                <input
+                  id="firstName"
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  placeholder="Adela"
+                  className="w-full h-[52.85px] px-4 rounded-[12.3px] border border-[rgba(152,152,154,0.5)] bg-white text-[15px] text-[#141414] placeholder-[#98989A] focus:outline-none focus:border-[#D9BA54] focus:ring-1 focus:ring-[#D9BA54] transition-all font-['DM_Sans',sans-serif]"
+                />
+              </div>
+
+              {/* Last Name */}
+              <div className="flex flex-col">
+                <label 
+                  htmlFor="lastName" 
+                  className="text-[14px] sm:text-[15px] font-normal text-[#141414] mb-2"
+                >
+                  Last Name
+                </label>
+                <input
+                  id="lastName"
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  placeholder="Parkson"
+                  className="w-full h-[52.85px] px-4 rounded-[12.3px] border border-[rgba(152,152,154,0.5)] bg-white text-[15px] text-[#141414] placeholder-[#98989A] focus:outline-none focus:border-[#D9BA54] focus:ring-1 focus:ring-[#D9BA54] transition-all font-['DM_Sans',sans-serif]"
+                />
+              </div>
+
+              {/* Email Address */}
+              <div className="flex flex-col">
+                <label 
+                  htmlFor="email" 
+                  className="text-[14px] sm:text-[15px] font-normal text-[#141414] mb-2"
+                >
+                  Email Address
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="adelapark.@example.com"
+                  className="w-full h-[52.85px] px-4 rounded-[12.3px] border border-[rgba(152,152,154,0.5)] bg-white text-[15px] text-[#141414] placeholder-[#98989A] focus:outline-none focus:border-[#D9BA54] focus:ring-1 focus:ring-[#D9BA54] transition-all font-['DM_Sans',sans-serif]"
+                />
+              </div>
+
+              {/* About */}
+              <div className="flex flex-col">
+                <label 
+                  htmlFor="about" 
+                  className="text-[14px] sm:text-[15px] font-normal text-[#141414] mb-2"
+                >
+                  About
+                </label>
+                <input
+                  id="about"
+                  type="text"
+                  value={about}
+                  onChange={(e) => setAbout(e.target.value)}
+                  placeholder="Lorem ipsum"
+                  className="w-full h-[52.85px] px-4 rounded-[12.3px] border border-[rgba(152,152,154,0.5)] bg-white text-[15px] text-[#141414] placeholder-[#98989A] focus:outline-none focus:border-[#D9BA54] focus:ring-1 focus:ring-[#D9BA54] transition-all font-['DM_Sans',sans-serif]"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* ─── CARD 2: Password & Security (Frame 2121459228: 849px x 345.66px, radius 20px) ─── */}
+          <div className="w-full bg-[#FFFFFF] rounded-[20px] p-6 sm:p-8 shadow-[0px_2px_12px_rgba(0,0,0,0.02)] border border-gray-100/70 flex flex-col gap-6">
+            <h2 className="text-[19.88px] font-semibold text-[#141414] leading-[26px] tracking-tight">
+              Password & Security
+            </h2>
+
+            {/* Row 1: Change Password */}
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex flex-col">
+                <span className="text-[16px] font-normal text-[#141414] leading-[22px]">
+                  Change Password
+                </span>
+                <span className="text-[13px] text-[#98989A] leading-[18px] mt-0.5">
+                  Last changed 3 months ago
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setActiveSubView('change-password')}
+                className="h-[46px] px-5 rounded-[12px] border border-[rgba(152,152,154,0.5)] text-[14px] font-medium text-[#141414] hover:bg-gray-50 transition-colors cursor-pointer shrink-0"
+              >
+                Change Password
+              </button>
+            </div>
+
+            {/* Row 2: Two-Factor Authentication */}
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex flex-col">
+                <span className="text-[16px] font-normal text-[#141414] leading-[22px]">
+                  Two-Factor Authentication
+                </span>
+                <span className="text-[13px] text-[#98989A] leading-[18px] mt-0.5">
+                  Add an extra layer of security to your account
+                </span>
+              </div>
+
+              <ToggleSwitch
+                checked={twoFactorEnabled}
+                onChange={handleToggle2FA}
+              />
+            </div>
+
+            {/* Row 3: Login History */}
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex flex-col">
+                <span className="text-[16px] font-normal text-[#141414] leading-[22px]">
+                  Login History
+                </span>
+                <span className="text-[13px] text-[#98989A] leading-[18px] mt-0.5">
+                  View your recent login activity
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleOpenLoginHistory}
+                className="h-[44.5px] px-5 rounded-[12px] border border-[rgba(152,152,154,0.5)] text-[14px] font-medium text-[#141414] hover:bg-gray-50 transition-colors cursor-pointer shrink-0"
+              >
+                View History
+              </button>
+            </div>
+          </div>
+
+          {/* ─── CARD 3: Notification Preferences (Frame 2121459233: 849px x 479px, radius 20px) ─── */}
+          <div className="w-full bg-[#FFFFFF] rounded-[20px] p-6 sm:p-8 shadow-[0px_2px_12px_rgba(0,0,0,0.02)] border border-gray-100/70 flex flex-col">
+            <h2 className="text-[19.88px] font-semibold text-[#141414] leading-[26px] tracking-tight mb-6">
+              Notification Preferences
+            </h2>
+
+            {/* Subheader: Email Notifications */}
+            <span className="text-[15px] font-medium text-[#141414] leading-[20px] mb-4">
+              Email Notifications
+            </span>
+
+            {/* Community Activity */}
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex flex-col">
+                <span className="text-[16px] font-normal text-[#141414] leading-[22px]">
+                  Community Activity
+                </span>
+                <span className="text-[13px] text-[#98989A] leading-[18px] mt-0.5">
+                  Notifications about discussions and events
+                </span>
+              </div>
+
+              <ToggleSwitch
+                checked={communityActivity}
+                onChange={setCommunityActivity}
+              />
+            </div>
+
+            {/* Divider Line matching Figma (1px border line rgba(152, 152, 154, 0.57)) */}
+            <div className="w-full h-[1px] bg-[rgba(152,152,154,0.3)] my-6" />
+
+            {/* Section: Push Notifications */}
+            <div className="flex flex-col gap-6">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex flex-col">
+                  <span className="text-[16px] font-medium text-[#141414] leading-[22px]">
+                    Push Notifications
+                  </span>
+                  <span className="text-[13px] text-[#98989A] leading-[18px] mt-0.5">
+                    Receive updates about your activities
+                  </span>
+                </div>
+
+                <ToggleSwitch
+                  checked={pushNotifications}
+                  onChange={setPushNotifications}
+                />
+              </div>
+
+              {/* Event Reminders */}
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex flex-col">
+                  <span className="text-[16px] font-medium text-[#141414] leading-[22px]">
+                    Event Reminders
+                  </span>
+                  <span className="text-[13px] text-[#98989A] leading-[18px] mt-0.5">
+                    Reminders for upcoming events
+                  </span>
+                </div>
+
+                <ToggleSwitch
+                  checked={eventReminders}
+                  onChange={setEventReminders}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* ─── CARD 4: Privacy & Security (Frame 2121459234: 849px x 269px, radius 20px) ─── */}
+          <div className="w-full bg-[#FFFFFF] rounded-[20px] p-6 sm:p-8 shadow-[0px_2px_12px_rgba(0,0,0,0.02)] border border-gray-100/70 flex flex-col gap-6">
+            <h2 className="text-[19.88px] font-semibold text-[#141414] leading-[26px] tracking-tight mb-1">
+              Privacy & Security
+            </h2>
+
+            {/* Profile Visibility */}
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex flex-col">
+                <span className="text-[16px] font-normal text-[#141414] leading-[22px]">
+                  Profile Visibility
+                </span>
+                <span className="text-[13px] text-[#98989A] leading-[18px] mt-0.5">
+                  Control who can see your profile information
+                </span>
+              </div>
+
+              <ToggleSwitch
+                checked={profileVisibility}
+                onChange={setProfileVisibility}
+              />
+            </div>
+
+            {/* Data Sharing */}
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex flex-col">
+                <span className="text-[16px] font-normal text-[#141414] leading-[22px]">
+                  Data Sharing
+                </span>
+                <span className="text-[13px] text-[#98989A] leading-[18px] mt-0.5">
+                  Allow Trila to use your data to improve services
+                </span>
+              </div>
+
+              <ToggleSwitch
+                checked={dataSharing}
+                onChange={setDataSharing}
+              />
+            </div>
+          </div>
+
+          {/* ─── BOTTOM ACTION BUTTON: Save Changes (153px x 48px, #D9BA54) ─── */}
+          <div className="flex justify-end pt-2 pb-10">
+            <button
+              type="submit"
+              disabled={isSaving}
+              className="w-[153px] h-[48px] bg-[#D9BA54] hover:bg-[#c9a73e] text-[#000000] text-[15px] font-bold rounded-[10px] shadow-sm transition-all flex items-center justify-center cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {isSaving ? (
+                <Loader2 size={18} className="animate-spin text-black" />
+              ) : (
+                'Save Changes'
+              )}
+            </button>
+          </div>
+        </form>
+      )}
+
+      {/* ─── SUCCESS POPUP MODAL: "Account settings changed" (Figma Filter Popup: 383px x 433px) ─── */}
+      {showSuccessPopup && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#A2A1A8]/20 backdrop-blur-[20px] animate-in fade-in duration-200">
+          <div className="relative w-[383px] max-w-[92vw] h-[433px] bg-[#FFFFFF] rounded-[20px] shadow-[0px_20px_50px_rgba(0,0,0,0.12)] overflow-hidden flex flex-col items-center select-none animate-in zoom-in-95 duration-150">
+            
+            {/* Line 2 (divider at top 66px, 343px wide) */}
+            <div className="absolute top-[66px] left-[20px] w-[343px] max-w-[calc(100%-40px)] h-[1px] border-t border-[rgba(162,161,168,0.1)]" />
+
+            {/* Item / Alert - Success badge (70px x 70px centered at top 94px with radial glow rings) */}
+            <div className="absolute top-[94px] left-1/2 -translate-x-1/2 w-[70px] h-[70px] flex items-center justify-center">
+              {/* Shape 1 (outermost glow: -51.43%, opacity 0.1, blur 5px) */}
+              <div 
+                className="absolute w-[142px] h-[142px] rounded-full pointer-events-none"
+                style={{
+                  background: 'radial-gradient(116.28% 116.28% at 0% -16.28%, #443A18 4.69%, #D4AF37 98.31%)',
+                  opacity: 0.1,
+                  filter: 'blur(5px)',
+                }}
+              />
+
+              {/* Shape 2 (middle glow: -28.57%, opacity 0.15, blur 5px) */}
+              <div 
+                className="absolute w-[110px] h-[110px] rounded-full pointer-events-none"
+                style={{
+                  background: 'radial-gradient(116.28% 116.28% at 0% -16.28%, #443A18 4.69%, #D4AF37 98.31%)',
+                  opacity: 0.15,
+                  filter: 'blur(5px)',
+                }}
+              />
+
+              {/* Shape 3 (center 70px circle) */}
+              <div 
+                className="relative w-[70px] h-[70px] rounded-full flex items-center justify-center shadow-sm z-10"
+                style={{
+                  background: 'radial-gradient(116.28% 116.28% at 0% -16.28%, #443A18 4.69%, #D4AF37 98.31%)',
+                }}
+              >
+                {/* iconoir:xmark (28px x 28px, white stroke 1.5px) */}
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path 
+                    d="M6.758 17.243L12.001 12m5.243-5.243L12 12m0 0L6.758 6.757M12.001 12l5.243 5.243" 
+                    stroke="#FFFFFF" 
+                    strokeWidth="1.5" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                  />
+                </svg>
+              </div>
+            </div>
+
+            {/* Title: Account settings changed (at top 224px, 20px font-semibold, #16151C) */}
+            <h3 className="absolute top-[224px] left-1/2 -translate-x-1/2 w-[280px] text-center font-['DM_Sans',sans-serif] font-semibold text-[20px] leading-[30px] text-[#16151C] m-0">
+              Account settings changed
+            </h3>
+
+            {/* Button: Finish (166px x 50px, #D4AF37, rounded 6px, top 307px) */}
+            <button
+              type="button"
+              onClick={handleFinishSuccess}
+              className="absolute top-[307px] left-1/2 -translate-x-1/2 w-[166px] h-[50px] bg-[#D4AF37] hover:bg-[#c9a73e] text-[#000000] font-['DM_Sans',sans-serif] font-normal text-[16px] leading-[21px] rounded-[6px] shadow-sm flex items-center justify-center cursor-pointer transition-colors"
+            >
+              Finish
+            </button>
           </div>
         </div>
       )}
