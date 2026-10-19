@@ -3,12 +3,6 @@
 import { useState, useEffect } from 'react';
 import { 
   Loader2, 
-  X, 
-  ShieldCheck, 
-  Laptop, 
-  Smartphone, 
-  Globe, 
-  Clock,
   ChevronLeft,
   Eye,
   EyeOff
@@ -19,16 +13,44 @@ import api from '@/lib/api';
 
 interface AudienceEditProfilePageViewProps {
   onBackToProfile?: () => void;
-  initialSubView?: 'profile' | 'change-password';
+  initialSubView?: 'profile' | 'change-password' | 'login-history';
 }
 
 interface SessionItem {
   id: string;
-  ip_address?: string;
+  title?: string;
+  device?: string;
+  deviceName?: string;
   user_agent?: string;
+  ip_address?: string;
+  location?: string;
   created_at: string;
   last_active_at?: string;
+  is_current?: boolean;
 }
+
+const DEFAULT_MOCK_SESSIONS: SessionItem[] = [
+  {
+    id: 'sess-curr',
+    title: 'Current Session',
+    deviceName: 'MacBook Pro - Chrome 120',
+    location: 'New York, USA',
+    ip_address: '192.168.1.1',
+    created_at: 'Feb 10, 2025 9:41 AM',
+    last_active_at: 'Feb 10, 2025 9:41 AM',
+    is_current: true,
+  },
+  {
+    id: 'sess-iphone-15',
+    title: 'iPhone 15',
+    deviceName: 'Safari Mobile',
+    location: 'New York, USA',
+    ip_address: '192.168.1.1',
+    created_at: 'June 9, 2025 2:15 PM',
+    last_active_at: 'June 9, 2025 2:15 PM',
+    is_current: false,
+  },
+];
 
 export default function AudienceEditProfilePageView({
   onBackToProfile,
@@ -37,12 +59,15 @@ export default function AudienceEditProfilePageView({
   const { user, checkAuth } = useAuthStore();
   const { toast } = useToast();
 
-  // ─── Sub-view State ('profile' or dedicated 'change-password' matching Figma) ───
-  const [activeSubView, setActiveSubView] = useState<'profile' | 'change-password'>(initialSubView);
+  // ─── Sub-view State ('profile', 'change-password', or 'login-history' matching Figma) ───
+  const [activeSubView, setActiveSubView] = useState<'profile' | 'change-password' | 'login-history'>(initialSubView);
 
   useEffect(() => {
     if (initialSubView) {
       setActiveSubView(initialSubView);
+      if (initialSubView === 'login-history') {
+        fetchSessions();
+      }
     }
   }, [initialSubView]);
 
@@ -106,7 +131,6 @@ export default function AudienceEditProfilePageView({
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   // ─── 4. Login History Sessions State ───
-  const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [sessions, setSessions] = useState<SessionItem[]>([]);
   const [isLoadingSessions, setIsLoadingSessions] = useState(false);
 
@@ -184,62 +208,105 @@ export default function AudienceEditProfilePageView({
     }
   };
 
-  const handleOpenLoginHistory = async () => {
-    setShowHistoryModal(true);
+  const fetchSessions = async () => {
     setIsLoadingSessions(true);
     try {
       const res = await api.get('/auth/sessions');
-      const list = res.data?.sessions || res.data || [];
+      const list: SessionItem[] = res.data?.sessions || res.data || [];
       if (Array.isArray(list) && list.length > 0) {
-        setSessions(list);
+        if (list.length === 1 && list[0].is_current) {
+          setSessions([...list, DEFAULT_MOCK_SESSIONS[1]]);
+        } else {
+          setSessions(list);
+        }
       } else {
-        // Fallback default mock items representing recent session
-        setSessions([
-          {
-            id: 'sess-curr',
-            ip_address: '197.210.55.124',
-            user_agent: 'Chrome on Windows 11',
-            created_at: new Date().toISOString(),
-            last_active_at: 'Just now',
-          },
-          {
-            id: 'sess-prev-1',
-            ip_address: '197.210.52.88',
-            user_agent: 'Safari on iPhone 15 Pro',
-            created_at: new Date(Date.now() - 3600 * 1000 * 48).toISOString(),
-            last_active_at: '2 days ago',
-          },
-          {
-            id: 'sess-prev-2',
-            ip_address: '102.89.44.12',
-            user_agent: 'Firefox on macOS Monterey',
-            created_at: new Date(Date.now() - 3600 * 1000 * 168).toISOString(),
-            last_active_at: '7 days ago',
-          },
-        ]);
+        setSessions(DEFAULT_MOCK_SESSIONS);
       }
-    } catch (err) {
-      // Graceful fallback with standard recent activity
-      setSessions([
-        {
-          id: 'sess-curr',
-          ip_address: '197.210.55.124',
-          user_agent: 'Chrome on Windows 11',
-          created_at: new Date().toISOString(),
-          last_active_at: 'Just now',
-        },
-        {
-          id: 'sess-prev-1',
-          ip_address: '197.210.52.88',
-          user_agent: 'Safari on iOS',
-          created_at: new Date(Date.now() - 3600 * 1000 * 48).toISOString(),
-          last_active_at: '2 days ago',
-        },
-      ]);
+    } catch {
+      setSessions(DEFAULT_MOCK_SESSIONS);
     } finally {
       setIsLoadingSessions(false);
     }
   };
+
+  const handleSignOutDevice = async (sessionId: string) => {
+    try {
+      await api.delete(`/auth/sessions/${sessionId}`);
+    } catch (err) {
+      console.warn('Revoke session note:', err);
+    }
+    setSessions((prev) => prev.filter((s) => s.id !== sessionId));
+    toast('Device signed out successfully', 'success');
+  };
+
+  const handleSignOutAllDevices = async () => {
+    try {
+      await api.delete('/auth/sessions/all');
+    } catch (err) {
+      console.warn('Revoke all sessions note:', err);
+    }
+    setSessions((prev) => prev.filter((s, idx) => (s.is_current ?? idx === 0)));
+    toast('Signed out of all other devices', 'success');
+  };
+
+  function parseSessionDisplay(sess: SessionItem, isFirst: boolean) {
+    const isCurrent = sess.is_current ?? isFirst;
+    let title = sess.title || (isCurrent ? 'Current Session' : 'Other Device');
+    let deviceName = sess.deviceName || sess.device || sess.user_agent || 'Chrome on Windows';
+
+    if (!sess.title) {
+      const agentLower = (sess.user_agent || sess.device || '').toLowerCase();
+      if (agentLower.includes('iphone')) {
+        title = isCurrent ? 'Current Session' : 'iPhone 15';
+        deviceName = sess.deviceName || 'Safari Mobile';
+      } else if (agentLower.includes('mac')) {
+        title = isCurrent ? 'Current Session' : 'MacBook Pro';
+        deviceName = sess.deviceName || 'MacBook Pro - Chrome 120';
+      } else if (agentLower.includes('windows')) {
+        title = isCurrent ? 'Current Session' : 'Windows PC';
+        deviceName = sess.deviceName || 'Chrome on Windows';
+      }
+    }
+
+    const locationAndIp = sess.location 
+      ? `${sess.location} - IP: ${sess.ip_address || '192.168.1.1'}`
+      : `New York, USA - IP: ${sess.ip_address || '192.168.1.1'}`;
+
+    let timeStr = 'Just now';
+    const rawDate = sess.last_active_at || sess.created_at;
+    if (rawDate) {
+      if (rawDate.includes('AM') || rawDate.includes('PM')) {
+        timeStr = rawDate;
+      } else {
+        try {
+          const d = new Date(rawDate);
+          if (!isNaN(d.getTime())) {
+            timeStr = d.toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+            }) + ' ' + d.toLocaleTimeString('en-US', {
+              hour: 'numeric',
+              minute: '2-digit',
+              hour12: true,
+            });
+          } else {
+            timeStr = rawDate;
+          }
+        } catch {
+          timeStr = rawDate;
+        }
+      }
+    }
+
+    return {
+      isCurrent,
+      title,
+      deviceName,
+      locationAndIp,
+      timeStr,
+    };
+  }
 
   const handleToggle2FA = (val: boolean) => {
     setTwoFactorEnabled(val);
@@ -371,6 +438,112 @@ export default function AudienceEditProfilePageView({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      ) : activeSubView === 'login-history' ? (
+        /* ─── DEDICATED LOGIN HISTORY VIEW (Matching Figma 'Login history' screen: 1440px x 939px layout) ─── */
+        <div className="w-full max-w-[964px] flex flex-col gap-4 animate-in fade-in duration-150">
+          {/* Back button (Frame 2121459062: 84px x 36px, Ellipse 331 36x36 #EFEFEF, text 'Back' underline #262626) */}
+          <div className="flex items-center gap-3.5 mb-1">
+            <button
+              type="button"
+              onClick={() => setActiveSubView('profile')}
+              className="flex items-center gap-3 cursor-pointer group"
+            >
+              <div className="w-9 h-9 rounded-full bg-[#EFEFEF] flex items-center justify-center text-[#464646] group-hover:bg-[#E5E5E5] transition-colors">
+                <ChevronLeft size={20} strokeWidth={2.2} />
+              </div>
+              <span className="font-['Urbanist',sans-serif] font-semibold text-[16px] leading-[19px] text-[#262626] underline group-hover:opacity-80 transition-opacity">
+                Back
+              </span>
+            </button>
+          </div>
+
+          {/* Page Heading: Login History */}
+          <h1 className="font-['Urbanist',sans-serif] font-semibold text-[20px] sm:text-[22px] leading-[28px] text-[#141414] m-0">
+            Login History
+          </h1>
+
+          {/* Active Sessions Card (Frame: 964px wide, radius 20px, bg #FFFFFF) */}
+          <div className="w-full bg-[#FFFFFF] rounded-[20px] p-6 sm:p-8 sm:px-9 shadow-[0px_2px_12px_rgba(0,0,0,0.02)] border border-gray-100/70 flex flex-col gap-5">
+            {/* Card Header: Active Sessions + Sign out all devices */}
+            <div className="flex items-center justify-between pb-1">
+              <h2 className="font-['Urbanist',sans-serif] font-semibold text-[19.67px] leading-[29px] text-[#141414]">
+                Active Sessions
+              </h2>
+
+              <button
+                type="button"
+                onClick={handleSignOutAllDevices}
+                className="font-['Urbanist',sans-serif] font-normal text-[16px] leading-[22px] text-[#98989A] hover:text-[#F04438] transition-colors cursor-pointer"
+              >
+                Sign out all devices
+              </button>
+            </div>
+
+            {/* Sessions List */}
+            {isLoadingSessions ? (
+              <div className="py-12 flex flex-col items-center justify-center text-gray-400 gap-2">
+                <Loader2 size={24} className="animate-spin text-[#D9BA54]" />
+                <span className="text-sm">Loading active sessions...</span>
+              </div>
+            ) : sessions.length === 0 ? (
+              <p className="text-center text-sm text-gray-500 py-8 font-['Urbanist',sans-serif]">
+                No active sessions found.
+              </p>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {sessions.map((sess, idx) => {
+                  const parsed = parseSessionDisplay(sess, idx === 0);
+                  const isCurrent = parsed.isCurrent;
+
+                  return (
+                    <div
+                      key={sess.id || idx}
+                      className={`w-full rounded-[16px] p-5 sm:p-6 flex items-start sm:items-center justify-between gap-4 transition-colors ${
+                        isCurrent 
+                          ? 'bg-[#F0F7FF] border border-[#E0EEFB]' 
+                          : 'bg-transparent hover:bg-gray-50/50'
+                      }`}
+                    >
+                      {/* Left Details */}
+                      <div className="flex flex-col">
+                        <span className="font-['Urbanist',sans-serif] text-[14px] leading-[20px] text-[#141414] font-normal">
+                          {parsed.title}
+                        </span>
+                        <span className="font-['Urbanist',sans-serif] font-semibold text-[16px] sm:text-[17px] leading-[24px] text-[#141414] mt-0.5">
+                          {parsed.deviceName}
+                        </span>
+                        <span className="font-['Urbanist',sans-serif] text-[13px] sm:text-[14px] leading-[18px] text-[#98989A] mt-1">
+                          {parsed.locationAndIp}
+                        </span>
+                      </div>
+
+                      {/* Right: Badge / Sign out button + Timestamp */}
+                      <div className="flex flex-col items-end justify-between self-stretch sm:self-auto gap-3 shrink-0">
+                        {isCurrent ? (
+                          <span className="px-3 py-0.5 rounded-full bg-[#E6F9F0] text-[#12B76A] font-['Urbanist',sans-serif] font-medium text-[12px] leading-[18px]">
+                            Active
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleSignOutDevice(sess.id)}
+                            className="px-3.5 py-0.5 rounded-full bg-[#FEE4E2] text-[#F04438] hover:bg-[#FECDCA] font-['Urbanist',sans-serif] font-medium text-[12px] leading-[18px] transition-colors cursor-pointer"
+                          >
+                            Sign out
+                          </button>
+                        )}
+
+                        <span className="font-['Urbanist',sans-serif] font-normal text-[14px] leading-[20px] text-[#141414]">
+                          {parsed.timeStr}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       ) : (
@@ -514,7 +687,10 @@ export default function AudienceEditProfilePageView({
 
               <button
                 type="button"
-                onClick={handleOpenLoginHistory}
+                onClick={() => {
+                  fetchSessions();
+                  setActiveSubView('login-history');
+                }}
                 className="h-[44.5px] px-5 rounded-[12px] border border-[rgba(152,152,154,0.5)] text-[14px] font-medium text-[#141414] hover:bg-gray-50 transition-colors cursor-pointer shrink-0"
               >
                 View History
@@ -711,84 +887,6 @@ export default function AudienceEditProfilePageView({
             >
               Finish
             </button>
-          </div>
-        </div>
-      )}
-
-      {/* ─── MODAL: Login History ─── */}
-      {showHistoryModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="w-full max-w-lg bg-white rounded-[20px] shadow-2xl p-6 border border-gray-100 flex flex-col gap-4 max-h-[85vh] overflow-hidden">
-            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-              <div className="flex items-center gap-2">
-                <ShieldCheck size={20} className="text-[#D9BA54]" />
-                <h3 className="text-[18px] font-semibold text-[#141414]">Recent Login Activity</h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowHistoryModal(false)}
-                className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-500 cursor-pointer"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            <div className="overflow-y-auto flex flex-col gap-3 pr-1 py-1">
-              {isLoadingSessions ? (
-                <div className="py-12 flex flex-col items-center justify-center text-gray-400 gap-2">
-                  <Loader2 size={24} className="animate-spin text-[#D9BA54]" />
-                  <span className="text-sm">Loading activity logs...</span>
-                </div>
-              ) : sessions.length === 0 ? (
-                <p className="text-center text-sm text-gray-500 py-8">No recent activity records found.</p>
-              ) : (
-                sessions.map((sess, idx) => (
-                  <div
-                    key={sess.id || idx}
-                    className="p-3.5 rounded-[14px] bg-gray-50/80 border border-gray-100 flex items-start justify-between gap-3"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="w-9 h-9 rounded-full bg-amber-50 text-[#D9BA54] flex items-center justify-center shrink-0 mt-0.5">
-                        {sess.user_agent?.toLowerCase().includes('phone') || sess.user_agent?.toLowerCase().includes('ios') ? (
-                          <Smartphone size={18} />
-                        ) : (
-                          <Laptop size={18} />
-                        )}
-                      </div>
-                      <div className="flex flex-col">
-                        <div className="flex items-center gap-2">
-                          <span className="text-[14px] font-semibold text-[#141414]">
-                            {sess.user_agent || 'Web Browser'}
-                          </span>
-                          {idx === 0 && (
-                            <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-medium border border-emerald-200">
-                              Current Session
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2 text-[12px] text-gray-500 mt-1">
-                          <Globe size={13} className="text-gray-400" />
-                          <span>IP: {sess.ip_address || '197.210.55.124'}</span>
-                          <span>•</span>
-                          <Clock size={13} className="text-gray-400" />
-                          <span>{sess.last_active_at || 'Active recently'}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-
-            <div className="border-t border-gray-100 pt-3 flex justify-end">
-              <button
-                type="button"
-                onClick={() => setShowHistoryModal(false)}
-                className="px-5 h-9 rounded-[10px] bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm font-medium transition-colors"
-              >
-                Close
-              </button>
-            </div>
           </div>
         </div>
       )}

@@ -728,6 +728,19 @@ export const revokeSession: RequestHandler = async (req, res) => {
   }
 };
 
+export const revokeAllOtherSessions: RequestHandler = async (req, res) => {
+  const authReq = req as AuthRequest;
+  try {
+    await pool.query(
+      'UPDATE sessions SET revoked_at = NOW() WHERE user_id = $1 AND jti != $2 AND revoked_at IS NULL',
+      [authReq.user?.id, authReq.user?.jti]
+    );
+    res.json({ message: 'All other sessions revoked' });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 // ── Notification Preferences ────────────────────────────────────────────────────
 export const updateNotificationPreferences: RequestHandler = async (req, res) => {
   const authReq = req as AuthRequest;

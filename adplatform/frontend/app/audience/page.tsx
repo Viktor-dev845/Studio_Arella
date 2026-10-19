@@ -27,7 +27,7 @@ function AudienceContent() {
 
   const { user } = useAuthStore();
   const [activeMenu, setActiveMenu] = useState<'podcast' | 'trending' | 'memberships' | 'bookmarks' | 'subscriptions' | 'live' | 'live-detail' | 'chats' | 'notifications' | 'profile' | 'edit-profile' | 'settings' | string>(() => {
-    if (queryView === 'change-password' || queryView === 'edit-profile' || queryView === 'settings') return 'edit-profile';
+    if (queryView === 'login-history' || queryView === 'change-password' || queryView === 'edit-profile' || queryView === 'settings') return 'edit-profile';
     if (queryView === 'profile') return 'profile';
     if (queryView === 'notifications') return 'notifications';
     if (queryView === 'chats' || queryView === 'messages') return 'chats';
@@ -45,7 +45,7 @@ function AudienceContent() {
 
   // Sync menu state when URL query changes
   useEffect(() => {
-    if (queryView === 'change-password' || queryView === 'edit-profile' || queryView === 'settings') {
+    if (queryView === 'login-history' || queryView === 'change-password' || queryView === 'edit-profile' || queryView === 'settings') {
       setActiveMenu('edit-profile');
     } else if (queryView === 'profile') {
       setActiveMenu('profile');
@@ -135,6 +135,10 @@ function AudienceContent() {
       router.push('/audience?view=profile', { scroll: false });
     } else if (menuId === 'edit-profile' || menuId === 'settings') {
       router.push('/audience?view=edit-profile', { scroll: false });
+    } else if (menuId === 'login-history') {
+      router.push('/audience?view=login-history', { scroll: false });
+    } else if (menuId === 'change-password') {
+      router.push('/audience?view=change-password', { scroll: false });
     }
   };
 
@@ -234,7 +238,13 @@ function AudienceContent() {
               /* ─── Edit Profile / Settings View: Frame 2121459220 etc. (866px wide matching Figma) ─── */
               <AudienceEditProfilePageView 
                 onBackToProfile={() => handleMenuChange('profile')} 
-                initialSubView={queryView === 'change-password' ? 'change-password' : 'profile'}
+                initialSubView={
+                  queryView === 'login-history' 
+                    ? 'login-history' 
+                    : queryView === 'change-password' 
+                    ? 'change-password' 
+                    : 'profile'
+                }
               />
             ) : activeMenu === 'profile' ? (
               /* ─── Profile View: Frame 2121459585 (850px wide container matching Figma) ─── */

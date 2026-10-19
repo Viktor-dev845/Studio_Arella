@@ -5,7 +5,7 @@ import { authenticate, optionalAuthenticate } from '../middleware/auth';
 import { otpGuessLimiter, otpRequestLimiter, authLimiter, chatLimiter } from '../middleware/rateLimit';
 
 // Auth
-import { register, login, getMe, updateProfile, uploadAvatar, changePassword, deleteAccount, becomeScreenOwner, verifyEmail, resendVerification, forgotPassword, resetPassword, acceptTerms, markTourSeen, setup2FA, verifySetup2FA, disable2FA, verify2FALogin, getSessions, revokeSession, updateNotificationPreferences, updateDisplayPreferences } from '../controllers/authController';
+import { register, login, getMe, updateProfile, uploadAvatar, changePassword, deleteAccount, becomeScreenOwner, verifyEmail, resendVerification, forgotPassword, resetPassword, acceptTerms, markTourSeen, setup2FA, verifySetup2FA, disable2FA, verify2FALogin, getSessions, revokeSession, revokeAllOtherSessions, updateNotificationPreferences, updateDisplayPreferences } from '../controllers/authController';
 import { getExchangeRates } from '../controllers/exchangeRateController';
 import { googleCallback, googleOneTap } from '../controllers/googleAuthController';
 import { submitLead, getLeads } from '../controllers/leadController';
@@ -152,6 +152,7 @@ router.post('/auth/2fa/disable', authenticate, disable2FA);
 router.post('/auth/2fa/login-verify', verify2FALogin);
 
 router.get('/auth/sessions', authenticate, getSessions);
+router.delete('/auth/sessions/all', authenticate, revokeAllOtherSessions);
 router.delete('/auth/sessions/:id', authenticate, revokeSession);
 
 router.put('/auth/notification-preferences', authenticate, updateNotificationPreferences);
