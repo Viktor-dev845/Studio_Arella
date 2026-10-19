@@ -53,9 +53,15 @@ export default function AudienceLeftSidebar({
   return (
     <aside className="w-full lg:w-[278px] flex flex-col gap-6 shrink-0 font-['DM_Sans',sans-serif]">
       {/* ─── 1. User Mini Profile Card (Group 48095422) ─── */}
-      <div className="w-[278px] h-[168px] bg-white rounded-[18px] shadow-[0px_0px_2px_rgba(0,0,0,0.14),0px_0px_1px_rgba(0,0,0,0.12)] border border-gray-100/60 overflow-hidden flex flex-col justify-between">
+      <div className={`w-[278px] h-[168px] bg-white rounded-[18px] shadow-[0px_0px_2px_rgba(0,0,0,0.14),0px_0px_1px_rgba(0,0,0,0.12)] border overflow-hidden flex flex-col justify-between transition-all ${
+        currentMenu === 'profile' ? 'border-[#D9BA54] ring-1 ring-[#D9BA54]/50' : 'border-gray-100/60'
+      }`}>
         {/* Banner + Avatar Row */}
-        <div>
+        <div 
+          onClick={() => handleMenuClick('profile')}
+          className="cursor-pointer hover:opacity-95 transition-opacity"
+          title="View profile"
+        >
           {/* Top Banner (Rectangle 19: 278px x 82px) */}
           <div className="w-[278px] h-[82px] relative bg-gradient-to-r from-gray-50 via-gray-100 to-amber-50/50 overflow-hidden">
             <img 

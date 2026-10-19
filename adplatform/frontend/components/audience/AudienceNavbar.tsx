@@ -37,7 +37,7 @@ export default function AudienceNavbar({
     setCurrentNav(nav);
     if (onNavChange) onNavChange(nav);
     if (nav === 'profile') {
-      router.push('/user-profile/overview');
+      router.push('/audience?view=profile');
     }
   };
 
@@ -149,19 +149,16 @@ export default function AudienceNavbar({
             type="button"
             onClick={() => handleNavClick('profile')}
             className={`p-1.5 transition-colors ${
-              currentNav === 'profile' ? 'text-black' : 'text-black/60 hover:text-black'
+              currentNav === 'profile' ? 'text-[#D9BA54]' : 'text-black/60 hover:text-black'
             }`}
             title="User Profile"
           >
-            {user?.avatar ? (
-              <img 
-                src={user.avatar} 
-                alt="Profile" 
-                className="w-7 h-7 rounded-full object-cover border border-gray-200"
-              />
-            ) : (
-              <UserIcon size={28} strokeWidth={currentNav === 'profile' ? 2.2 : 1.7} />
-            )}
+            <UserIcon 
+              size={28} 
+              strokeWidth={currentNav === 'profile' ? 2.2 : 1.7} 
+              fill={currentNav === 'profile' ? '#D9BA54' : 'none'} 
+              color={currentNav === 'profile' ? '#D9BA54' : 'currentColor'}
+            />
           </button>
           {currentNav === 'profile' && (
             <div className="absolute bottom-0 w-[43px] h-[3px] bg-[#D4AF37] rounded-full" />

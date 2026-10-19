@@ -1,0 +1,892 @@
+'use client';
+
+import { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { 
+  Upload, 
+  Edit3, 
+  MoreVertical, 
+  Navigation, 
+  Check, 
+  X, 
+  Loader2, 
+  Plus, 
+  Play, 
+  Calendar, 
+  Users,
+  ShieldCheck,
+  LogOut,
+  UserX
+} from 'lucide-react';
+import { useAuthStore } from '@/store/authStore';
+import { useToast } from '@/components/ui/ToastProvider';
+import api from '@/lib/api';
+
+interface ShowItem {
+  id: string;
+  title: string;
+  subtitle: string;
+  cover: string;
+}
+
+interface EventClubItem {
+  id: string;
+  title: string;
+  count: number;
+  badgeCount?: number;
+  avatars: string[];
+}
+
+const DEFAULT_PODCAST_ITEMS: ShowItem[] = [
+  {
+    id: 'p1',
+    title: 'Zara redesign concept',
+    subtitle: 'UX/UI design, 15.07.2019',
+    cover: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&auto=format&fit=crop&q=80',
+  },
+  {
+    id: 'p2',
+    title: 'SCTHON event brand identity',
+    subtitle: 'Graphic design, 03.31.2019',
+    cover: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=600&auto=format&fit=crop&q=80',
+  },
+  {
+    id: 'p3',
+    title: 'Drozd. Brand identity. 2016',
+    subtitle: 'Graphic design, 03.04.2016',
+    cover: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80',
+  },
+];
+
+const DEFAULT_FAN_EVENTS: EventClubItem[] = [
+  {
+    id: 'e1',
+    title: 'User experience (UX)',
+    count: 6,
+    badgeCount: 1,
+    avatars: [
+      '/audience/adam-udochi.png',
+      '/audience/kyle-fisher.png',
+      '/audience/brandon-wilson.png',
+      '/audience/nermmen-saif.png',
+      '/audience/darlene-black.png',
+    ],
+  },
+  {
+    id: 'e2',
+    title: 'User interface (UI)',
+    count: 7,
+    badgeCount: 2,
+    avatars: [
+      '/audience/audrey-alexander.png',
+      '/audience/theresa-steward.png',
+      '/audience/dylan-field.png',
+      '/audience/adam-udochi.png',
+      '/audience/kyle-fisher.png',
+    ],
+  },
+  {
+    id: 'e3',
+    title: 'Brand identity',
+    count: 5,
+    avatars: [
+      '/audience/ryan-roslansky.png',
+      '/audience/steve-jobs.png',
+      '/audience/nermmen-saif.png',
+      '/audience/brandon-wilson.png',
+      '/audience/theresa-steward.png',
+    ],
+  },
+];
+
+export default function AudienceProfilePageView() {
+  const router = useRouter();
+  const { toast } = useToast();
+  const { user, logout } = useAuthStore();
+
+  const [activeTab, setActiveTab] = useState<'profile' | 'followers' | 'following'>('profile');
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const [isAboutExpanded, setIsAboutExpanded] = useState(false);
+  const [showAllPodcasts, setShowAllPodcasts] = useState(false);
+  const [showAllEvents, setShowAllEvents] = useState(false);
+
+  // Modals
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showVerifyModal, setShowVerifyModal] = useState(false);
+  const [showCreateEventModal, setShowCreateEventModal] = useState(false);
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [isRequestingVerification, setIsRequestingVerification] = useState(false);
+
+  // Edit form state
+  const [name, setName] = useState('');
+  const [bio, setBio] = useState('');
+  const [location, setLocation] = useState('');
+  const [about, setAbout] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState('');
+  const [bannerUrl, setBannerUrl] = useState('');
+
+  // Live Followers & Following lists
+  const [followers, setFollowers] = useState<any[]>([]);
+  const [following, setFollowing] = useState<any[]>([]);
+  const [followersCount, setFollowersCount] = useState<number>(1043);
+  const [followingCount, setFollowingCount] = useState<number>(143);
+  const [podcasts, setPodcasts] = useState<ShowItem[]>(DEFAULT_PODCAST_ITEMS);
+
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (user) {
+      setName(user.name || 'Udo Emmanuel');
+      setBio(user.bio || 'Family Life podcast creator for over 5years');
+      setLocation(user.location || 'Saint Petersburg, Russian Federation');
+      setAbout(
+        user.about ||
+        "I'm more experienced in eCommerce web projects and mobile banking apps, but also like to work with creative projects, such as landing pages or unusual corporate websites."
+      );
+      setAvatarUrl(user.avatar || '/audience/adam-udochi.png');
+      setBannerUrl(
+        user.banner ||
+        'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=1200&auto=format&fit=crop&q=80'
+      );
+    }
+  }, [user]);
+
+  // Fetch live followers, following, and creator shows from database
+  useEffect(() => {
+    let isMounted = true;
+    Promise.allSettled([
+      api.get('/follows/followers'),
+      api.get('/follows/following'),
+      api.get('/shows/mine'),
+    ]).then(([fRes, ingRes, showsRes]) => {
+      if (!isMounted) return;
+      if (fRes.status === 'fulfilled' && fRes.value.data?.followers) {
+        setFollowers(fRes.value.data.followers);
+        if (fRes.value.data.followers.length > 0) {
+          setFollowersCount(fRes.value.data.followers.length);
+        }
+      }
+      if (ingRes.status === 'fulfilled' && ingRes.value.data?.following) {
+        setFollowing(ingRes.value.data.following);
+        if (ingRes.value.data.following.length > 0) {
+          setFollowingCount(ingRes.value.data.following.length);
+        }
+      }
+      if (showsRes.status === 'fulfilled' && showsRes.value.data?.shows?.length > 0) {
+        const mappedShows: ShowItem[] = showsRes.value.data.shows.map((s: any) => ({
+          id: s.id,
+          title: s.title,
+          subtitle: `${s.episode_count || 0} episodes · ${new Date(s.created_at || Date.now()).toLocaleDateString('en-GB')}`,
+          cover: s.cover_url || DEFAULT_PODCAST_ITEMS[0].cover,
+        }));
+        setPodcasts(mappedShows);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Close more menu on click outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowMoreMenu(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingProfile(true);
+    try {
+      await api.put('/auth/profile', {
+        name,
+        bio,
+        location,
+        about,
+        avatar: avatarUrl,
+      });
+      useAuthStore.getState().checkAuth();
+      toast('Profile updated successfully', 'success');
+      setShowEditModal(false);
+    } catch (err: any) {
+      toast(err?.response?.data?.message || 'Could not update profile', 'error');
+    } finally {
+      setIsSavingProfile(false);
+    }
+  };
+
+  const handleRequestVerification = async () => {
+    setIsRequestingVerification(true);
+    try {
+      await new Promise((r) => setTimeout(r, 1200));
+      toast('Verification request submitted! Our team will review your account.', 'success');
+      setShowVerifyModal(false);
+    } catch {
+      toast('Could not submit verification request.', 'error');
+    } finally {
+      setIsRequestingVerification(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      toast('Signed out successfully', 'info');
+      router.push('/auth/login');
+    } catch {
+      router.push('/auth/login');
+    }
+  };
+
+  return (
+    <section className="w-full lg:w-[850px] flex flex-col gap-6 font-['DM_Sans',sans-serif]">
+      {/* ─── 1. Profile Hero Card (Figma: 850px x 360px, radius 4px) ─── */}
+      <div className="w-full bg-white rounded-[4px] shadow-[0px_20px_60px_rgba(241,244,248,0.5)] border border-gray-100 overflow-hidden relative">
+        {/* Banner (850px x 180px) */}
+        <div className="w-full h-[180px] relative bg-neutral-200 overflow-hidden">
+          <img
+            src={bannerUrl}
+            alt="Profile Banner"
+            className="w-full h-full object-cover"
+          />
+
+          {/* Banner Tools Overlay (Upload on left, Edit & More on right) */}
+          <div className="absolute inset-0 p-5 flex items-start justify-between pointer-events-none">
+            {/* Upload Button */}
+            <button
+              type="button"
+              onClick={() => toast('Click Edit Profile to change your cover picture.', 'info')}
+              className="w-9 h-9 rounded-[4px] bg-white/90 backdrop-blur-sm shadow-[0px_10px_30px_rgba(113,123,133,0.05)] flex items-center justify-center text-[#181818] hover:bg-white transition-colors pointer-events-auto cursor-pointer"
+              title="Upload cover"
+            >
+              <Upload size={16} />
+            </button>
+
+            {/* Right Buttons: Edit profile + More (...) */}
+            <div className="flex items-center gap-2 pointer-events-auto relative" ref={menuRef}>
+              <button
+                type="button"
+                onClick={() => setShowEditModal(true)}
+                className="h-9 px-4 rounded-[4px] bg-white/90 backdrop-blur-sm shadow-[0px_10px_30px_rgba(113,123,133,0.05)] flex items-center gap-2 text-[12px] font-normal uppercase tracking-wider text-[#181818] hover:bg-white transition-colors cursor-pointer"
+              >
+                <Edit3 size={15} />
+                <span>Edit Profile</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowMoreMenu((prev) => !prev)}
+                className="w-9 h-9 rounded-[4px] bg-white/90 backdrop-blur-sm shadow-[0px_10px_30px_rgba(113,123,133,0.05)] flex items-center justify-center text-[#181818] hover:bg-white transition-colors cursor-pointer"
+                title="More options"
+              >
+                <MoreVertical size={18} />
+              </button>
+
+              {/* More Dropdown Menu (Frame 2121459585: 200px x 101px) */}
+              {showMoreMenu && (
+                <div
+                  className="absolute right-0 top-11 w-[200px] bg-white rounded-[10px] shadow-[-4.75px_30px_30px_rgba(184,184,184,0.25)] border border-gray-100 p-4 z-50 flex items-center justify-between animate-in fade-in zoom-in-95 duration-100"
+                >
+                  <div className="flex flex-col gap-2.5">
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="text-left text-[15px] font-normal text-[#F64A4A] hover:opacity-80 transition-opacity cursor-pointer flex items-center gap-2"
+                    >
+                      <LogOut size={16} />
+                      Log out
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowMoreMenu(false);
+                        toast('Account deactivation must be requested through Support.', 'info');
+                      }}
+                      className="text-left text-[15px] font-normal text-[#000000] hover:opacity-80 transition-opacity cursor-pointer flex items-center gap-2"
+                    >
+                      <UserX size={16} />
+                      Deactivate account
+                    </button>
+                  </div>
+
+                  {/* Golden vertical indicator line */}
+                  <div className="w-[2px] h-[63px] bg-[#D4AF37]/15 rounded-[10px] relative">
+                    <div className="w-[2px] h-[14px] bg-[#D4AF37] rounded-[20px] absolute top-[9px]" />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Profile Info Row: Avatar + Details + Location + CTAs */}
+        <div className="px-7 pb-6 pt-0 relative flex flex-col md:flex-row items-start md:items-end justify-between gap-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-end gap-5">
+            {/* Circular Avatar (170px x 170px, 10px white border, overlapping banner) */}
+            <div className="-mt-[85px] w-[170px] h-[170px] rounded-full border-[10px] border-white overflow-hidden bg-neutral-100 shrink-0 shadow-[0_4px_16px_rgba(0,0,0,0.06)] relative z-10">
+              <img
+                src={avatarUrl}
+                alt={name}
+                className="w-full h-full object-cover"
+              />
+            </div>
+
+            {/* Name & Tagline */}
+            <div className="flex flex-col mb-1">
+              <h1 className="text-[18px] font-semibold text-[#181818] leading-[23px] m-0">
+                {name}
+              </h1>
+              <p className="text-[14px] font-normal text-[#181818] leading-[21px] mt-1 m-0">
+                {bio}
+              </p>
+            </div>
+          </div>
+
+          {/* Location on Right (Figma: Saint Petersburg, Russian Federation) */}
+          <div className="flex items-center gap-1.5 text-[12px] font-normal text-[#181818] mb-2 self-start md:self-center shrink-0">
+            <Navigation size={14} className="text-[#15411F] fill-[#15411F]" />
+            <span>{location}</span>
+          </div>
+        </div>
+
+        {/* Action Buttons Row: CREATE AN EVENT & GET VERIFIED */}
+        <div className="px-7 pb-6 flex items-center gap-4 flex-wrap">
+          <button
+            type="button"
+            onClick={() => setShowCreateEventModal(true)}
+            className="w-[170px] h-8 bg-[#D9BA54] hover:bg-[#c9a73e] text-black text-[12px] font-normal uppercase tracking-wider rounded-[6px] transition-colors cursor-pointer flex items-center justify-center"
+          >
+            Create an Event
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setShowVerifyModal(true)}
+            className="w-[170px] h-8 bg-white hover:bg-amber-50/50 border border-[#D9BA54] text-[#D9BA54] text-[12px] font-medium uppercase tracking-wider rounded-[6px] transition-colors cursor-pointer flex items-center justify-center"
+          >
+            Get Verified
+          </button>
+        </div>
+      </div>
+
+      {/* ─── 2. Tabs Bar (Figma: 720px wide, PROFILE 50px high, FOLLOWERS/FOLLOWING 40px) ─── */}
+      <div className="w-full max-w-[720px] flex items-end border-b border-[#E7E7E7] relative">
+        <button
+          type="button"
+          onClick={() => setActiveTab('profile')}
+          className={`w-[240px] text-[12px] font-semibold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center ${
+            activeTab === 'profile'
+              ? 'h-[50px] bg-[#D9BA54] text-black rounded-t-[6px]'
+              : 'h-[40px] bg-white text-[#181818] border border-[#E7E7E7] border-b-0 hover:bg-gray-50'
+          }`}
+        >
+          Profile
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('followers')}
+          className={`w-[240px] text-[12px] font-semibold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center ${
+            activeTab === 'followers'
+              ? 'h-[50px] bg-[#D9BA54] text-black rounded-t-[6px]'
+              : 'h-[40px] bg-white text-[#181818] border border-[#E7E7E7] border-b-0 hover:bg-gray-50'
+          }`}
+        >
+          Followers ({followersCount})
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('following')}
+          className={`w-[240px] text-[12px] font-semibold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center ${
+            activeTab === 'following'
+              ? 'h-[50px] bg-[#D9BA54] text-black rounded-t-[6px]'
+              : 'h-[40px] bg-white text-[#181818] border border-[#E7E7E7] border-b-0 hover:bg-gray-50'
+          }`}
+        >
+          Following ({followingCount})
+        </button>
+      </div>
+
+      {/* ─── 3. Tab Contents ─── */}
+      {activeTab === 'profile' ? (
+        <div className="flex flex-col gap-6 w-full">
+          {/* Card A: About (Figma: 850px x 170px, box-shadow) */}
+          <div className="w-full bg-white rounded-[4px] shadow-[0px_20px_60px_rgba(241,244,248,0.5)] border border-gray-100 p-6 sm:p-7 flex flex-col justify-between">
+            <div>
+              <h2 className="text-[18px] font-semibold text-[#181818] leading-[23px] m-0 mb-3">
+                About
+              </h2>
+              <p
+                className={`text-[14px] font-normal text-[#181818] leading-[150%] m-0 transition-all ${
+                  isAboutExpanded ? '' : 'line-clamp-2'
+                }`}
+              >
+                {about}
+              </p>
+            </div>
+
+            <div className="mt-4">
+              <button
+                type="button"
+                onClick={() => setIsAboutExpanded((prev) => !prev)}
+                className="text-[12px] font-medium uppercase tracking-wider text-[#D9BA54] hover:underline cursor-pointer bg-transparent border-none p-0"
+              >
+                {isAboutExpanded ? 'See Less' : 'See More'}
+              </button>
+            </div>
+          </div>
+
+          {/* Card B: Podcast (Figma: 850px x 355px, 3 items, Show all (12)) */}
+          <div className="w-full bg-white rounded-[4px] shadow-[0px_20px_60px_rgba(241,244,248,0.5)] border border-gray-100 p-6 sm:p-7 flex flex-col">
+            <div className="flex items-center gap-3 mb-5">
+              <h2 className="text-[18px] font-semibold text-[#181818] leading-[23px] m-0">
+                Podcast
+              </h2>
+              <span className="text-[18px] font-normal text-[#747474]">
+                {Math.min(3, podcasts.length)} of {podcasts.length > 3 ? podcasts.length : 12}
+              </span>
+            </div>
+
+            {/* 3 Columns Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+              {(showAllPodcasts ? podcasts : podcasts.slice(0, 3)).map((pod) => (
+                <Link
+                  key={pod.id}
+                  href={`/podcast`}
+                  className="flex flex-col group text-decoration-none"
+                >
+                  <div className="w-full aspect-[250/160] rounded-[2px] overflow-hidden bg-neutral-100 relative shadow-sm">
+                    <img
+                      src={pod.cover}
+                      alt={pod.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                    />
+                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center text-black shadow-md">
+                        <Play size={18} fill="currentColor" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <h3 className="text-[14px] font-medium text-[#181818] leading-[150%] mt-2.5 mb-0 truncate group-hover:text-[#D9BA54] transition-colors">
+                    {pod.title}
+                  </h3>
+                  <p className="text-[10px] font-light text-[#181818]/70 leading-[150%] m-0 truncate">
+                    {pod.subtitle}
+                  </p>
+                </Link>
+              ))}
+            </div>
+
+            <div className="mt-6">
+              <button
+                type="button"
+                onClick={() => {
+                  if (podcasts.length > 3) {
+                    setShowAllPodcasts((prev) => !prev);
+                  } else {
+                    router.push('/podcast');
+                  }
+                }}
+                className="text-[12px] font-semibold uppercase tracking-wider text-[#D9BA54] hover:underline cursor-pointer bg-transparent border-none p-0"
+              >
+                {showAllPodcasts ? 'Show Less' : `Show All (${podcasts.length > 3 ? podcasts.length : 12})`}
+              </button>
+            </div>
+          </div>
+
+          {/* Card C: Fan Club Events (Figma: 850px x 220px, 3 items, Show all (17)) */}
+          <div className="w-full bg-white rounded-[4px] shadow-[0px_20px_60px_rgba(241,244,248,0.5)] border border-gray-100 p-6 sm:p-7 flex flex-col">
+            <h2 className="text-[18px] font-medium text-[#181818] leading-[23px] m-0 mb-5">
+              Fan Club Events
+            </h2>
+
+            {/* 3 Columns Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+              {(showAllEvents ? DEFAULT_FAN_EVENTS : DEFAULT_FAN_EVENTS.slice(0, 3)).map((ev) => (
+                <div
+                  key={ev.id}
+                  onClick={() => router.push('/audience?view=live')}
+                  className="w-full h-[80px] bg-white border border-[#F4F4F4] rounded-[6px] px-4 py-3 flex flex-col justify-between hover:border-gray-300 transition-colors cursor-pointer shadow-sm"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[14px] font-medium text-[#181818] truncate pr-2">
+                      {ev.title}
+                    </span>
+                    <span className="text-[14px] font-semibold text-[#15411F]">
+                      {ev.count}
+                    </span>
+                  </div>
+
+                  {/* Overlapping Avatar Stack */}
+                  <div className="flex items-center">
+                    {ev.avatars.map((av, i) => (
+                      <div
+                        key={i}
+                        className="w-6 h-6 rounded-full overflow-hidden border-2 border-white -ml-1.5 first:ml-0 bg-neutral-200 shrink-0"
+                      >
+                        <img
+                          src={av}
+                          alt="participant"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ))}
+                    {ev.badgeCount && (
+                      <div className="w-6 h-6 rounded-full bg-[#0275B1] text-white text-[10px] font-semibold -ml-1.5 border-2 border-white flex items-center justify-center shrink-0">
+                        +{ev.badgeCount}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6">
+              <button
+                type="button"
+                onClick={() => router.push('/audience?view=live')}
+                className="text-[12px] font-semibold uppercase tracking-wider text-[#D9BA54] hover:underline cursor-pointer bg-transparent border-none p-0"
+              >
+                Show All (17)
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : activeTab === 'followers' ? (
+        /* Followers Tab Content */
+        <div className="w-full bg-white rounded-[4px] shadow-[0px_20px_60px_rgba(241,244,248,0.5)] border border-gray-100 p-6 sm:p-7">
+          <h2 className="text-[18px] font-semibold text-[#181818] mb-4">
+            Followers ({followersCount})
+          </h2>
+          {followers.length === 0 ? (
+            <div className="p-8 text-center bg-[#FAFAFA] rounded-xl border border-dashed border-gray-200">
+              <Users size={32} className="mx-auto text-gray-400 mb-2" />
+              <p className="text-[14px] font-medium text-gray-700">No followers yet</p>
+              <p className="text-[12px] text-gray-500 max-w-sm mx-auto mt-1">
+                When fans and community members follow your profile, they will appear here.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {followers.map((f: any) => (
+                <div
+                  key={f.id}
+                  className="flex items-center justify-between p-3.5 rounded-xl border border-gray-100 bg-[#FCFDFD]"
+                >
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={f.avatar || '/audience/adam-udochi.png'}
+                      alt={f.name}
+                      className="w-11 h-11 rounded-full object-cover"
+                    />
+                    <div>
+                      <p className="text-[14px] font-semibold text-gray-900 m-0 leading-tight">
+                        {f.name}
+                      </p>
+                      <p className="text-[12px] text-gray-500 m-0 mt-0.5">
+                        {f.role || 'Community Member'}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => toast(`Viewing ${f.name}'s profile`, 'info')}
+                    className="text-[12px] font-semibold text-[#D9BA54] hover:underline"
+                  >
+                    View
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
+        /* Following Tab Content */
+        <div className="w-full bg-white rounded-[4px] shadow-[0px_20px_60px_rgba(241,244,248,0.5)] border border-gray-100 p-6 sm:p-7">
+          <h2 className="text-[18px] font-semibold text-[#181818] mb-4">
+            Following ({followingCount})
+          </h2>
+          {following.length === 0 ? (
+            <div className="p-8 text-center bg-[#FAFAFA] rounded-xl border border-dashed border-gray-200">
+              <Users size={32} className="mx-auto text-gray-400 mb-2" />
+              <p className="text-[14px] font-medium text-gray-700">Not following anyone yet</p>
+              <p className="text-[12px] text-gray-500 max-w-sm mx-auto mt-1">
+                Explore the Creator Space and follow creators to receive updates on new podcasts and live rooms.
+              </p>
+              <button
+                type="button"
+                onClick={() => router.push('/audience?view=trending')}
+                className="mt-4 px-4 py-2 bg-[#D9BA54] text-black text-xs font-semibold rounded-lg"
+              >
+                Discover Creators
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {following.map((f: any) => (
+                <div
+                  key={f.id}
+                  className="flex items-center justify-between p-3.5 rounded-xl border border-gray-100 bg-[#FCFDFD]"
+                >
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={f.avatar || '/audience/kyle-fisher.png'}
+                      alt={f.name}
+                      className="w-11 h-11 rounded-full object-cover"
+                    />
+                    <div>
+                      <p className="text-[14px] font-semibold text-gray-900 m-0 leading-tight">
+                        {f.name}
+                      </p>
+                      <p className="text-[12px] text-gray-500 m-0 mt-0.5">
+                        {f.role || 'Creator'}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        await api.delete(`/follows/${f.id}`);
+                        setFollowing((prev) => prev.filter((item) => item.id !== f.id));
+                        setFollowingCount((prev) => Math.max(0, prev - 1));
+                        toast(`Unfollowed ${f.name}`, 'info');
+                      } catch {
+                        toast('Could not unfollow', 'error');
+                      }
+                    }}
+                    className="text-[12px] font-semibold text-red-500 hover:underline"
+                  >
+                    Unfollow
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ─── MODAL 1: Edit Profile ─── */}
+      {showEditModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl w-full max-w-[540px] shadow-2xl p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-150 relative">
+            <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+              <h3 className="text-[18px] font-bold text-gray-900">Edit Creator Profile</h3>
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="text-gray-400 hover:text-gray-700"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveProfile} className="mt-5 flex flex-col gap-4">
+              <div>
+                <label className="text-xs font-semibold text-gray-700 uppercase tracking-wider block mb-1">
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full h-11 px-3.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-[#D9BA54]"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-gray-700 uppercase tracking-wider block mb-1">
+                  Headline / Bio
+                </label>
+                <input
+                  type="text"
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  className="w-full h-11 px-3.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-[#D9BA54]"
+                  placeholder="e.g. Family Life podcast creator for over 5years"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-gray-700 uppercase tracking-wider block mb-1">
+                  Location
+                </label>
+                <input
+                  type="text"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  className="w-full h-11 px-3.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-[#D9BA54]"
+                  placeholder="e.g. Saint Petersburg, Russian Federation"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-gray-700 uppercase tracking-wider block mb-1">
+                  About
+                </label>
+                <textarea
+                  value={about}
+                  onChange={(e) => setAbout(e.target.value)}
+                  rows={3}
+                  className="w-full p-3.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-[#D9BA54] resize-none"
+                  placeholder="Write a short summary about your creative projects and journey"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-3">
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(false)}
+                  className="flex-1 h-11 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSavingProfile}
+                  className="flex-1 h-11 rounded-lg bg-[#D9BA54] hover:bg-[#c9a73e] text-black text-sm font-bold flex items-center justify-center gap-2"
+                >
+                  {isSavingProfile ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    'Save Changes'
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ─── MODAL 2: Get Verified ─── */}
+      {showVerifyModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl w-full max-w-[480px] shadow-2xl p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-150 text-center">
+            <div className="w-14 h-14 rounded-full bg-amber-50 text-[#D9BA54] flex items-center justify-center mx-auto mb-4">
+              <ShieldCheck size={32} />
+            </div>
+
+            <h3 className="text-[18px] font-bold text-gray-900 mb-1">
+              Studio Arella Creator Verification
+            </h3>
+            <p className="text-xs text-gray-500 max-w-sm mx-auto mb-6">
+              Verified creators receive the golden checkmark, priority ranking in the Audience feed, and access to ticketed 1View Live Streams.
+            </p>
+
+            <div className="bg-gray-50 rounded-xl p-4 text-left text-xs text-gray-700 flex flex-col gap-2 mb-6">
+              <div className="flex items-center gap-2">
+                <Check size={14} className="text-emerald-600 shrink-0" />
+                <span>Active account with published podcast content</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check size={14} className="text-emerald-600 shrink-0" />
+                <span>Valid contact details and Nigerian bank account linked</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check size={14} className="text-emerald-600 shrink-0" />
+                <span>Adheres to Studio Arella Community Guidelines</span>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setShowVerifyModal(false)}
+                className="flex-1 h-11 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                onClick={handleRequestVerification}
+                disabled={isRequestingVerification}
+                className="flex-1 h-11 rounded-lg bg-[#D9BA54] hover:bg-[#c9a73e] text-black text-sm font-bold flex items-center justify-center gap-2"
+              >
+                {isRequestingVerification ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  'Submit Request'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── MODAL 3: Create an Event ─── */}
+      {showCreateEventModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl w-full max-w-[500px] shadow-2xl p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+              <h3 className="text-[18px] font-bold text-gray-900">Create Creator Event</h3>
+              <button
+                onClick={() => setShowCreateEventModal(false)}
+                className="text-gray-400 hover:text-gray-700"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <p className="text-xs text-gray-500 mt-3 mb-5">
+              Choose the type of event you want to host for your community.
+            </p>
+
+            <div className="flex flex-col gap-3.5 mb-6">
+              <div
+                onClick={() => {
+                  setShowCreateEventModal(false);
+                  router.push('/audience?view=live');
+                }}
+                className="p-4 rounded-xl border border-gray-200 hover:border-[#D9BA54] bg-[#FCFDFD] cursor-pointer transition-all flex items-center gap-3.5"
+              >
+                <div className="w-10 h-10 rounded-lg bg-amber-50 text-[#D9BA54] flex items-center justify-center shrink-0">
+                  <Play size={20} />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-gray-900 m-0">1View Live Audio Stream</h4>
+                  <p className="text-xs text-gray-500 m-0 mt-0.5">
+                    Broadcast a real-time audio event with live fan chat.
+                  </p>
+                </div>
+              </div>
+
+              <div
+                onClick={() => {
+                  setShowCreateEventModal(false);
+                  router.push('/bookings?tab=podcast');
+                }}
+                className="p-4 rounded-xl border border-gray-200 hover:border-[#D9BA54] bg-[#FCFDFD] cursor-pointer transition-all flex items-center gap-3.5"
+              >
+                <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                  <Calendar size={20} />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-gray-900 m-0">Book Studio Arella Recording Time</h4>
+                  <p className="text-xs text-gray-500 m-0 mt-0.5">
+                    Reserve professional audio/video recording session.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowCreateEventModal(false)}
+              className="w-full h-11 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}

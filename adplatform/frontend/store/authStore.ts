@@ -20,6 +20,8 @@ interface User {
   handle?: string;
   location?: string;
   bio?: string;
+  about?: string;
+  banner?: string;
   two_factor_enabled?: boolean;
   notification_preferences?: Record<string, boolean>;
   display_currency?: string;

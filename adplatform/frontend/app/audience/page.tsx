@@ -14,6 +14,7 @@ import AudienceLiveExperiencesCard from '@/components/audience/AudienceLiveExper
 import AudienceLiveEventDetail from '@/components/audience/AudienceLiveEventDetail';
 import AudienceChatPageView from '@/components/audience/AudienceChatPageView';
 import AudienceNotificationsPageView from '@/components/audience/AudienceNotificationsPageView';
+import AudienceProfilePageView from '@/components/audience/AudienceProfilePageView';
 import AudiencePremiumCard from '@/components/audience/AudiencePremiumCard';
 import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/api';
@@ -24,7 +25,8 @@ function AudienceContent() {
   const queryView = searchParams.get('view');
 
   const { user } = useAuthStore();
-  const [activeMenu, setActiveMenu] = useState<'podcast' | 'trending' | 'memberships' | 'bookmarks' | 'subscriptions' | 'live' | 'live-detail' | 'chats' | 'notifications' | string>(() => {
+  const [activeMenu, setActiveMenu] = useState<'podcast' | 'trending' | 'memberships' | 'bookmarks' | 'subscriptions' | 'live' | 'live-detail' | 'chats' | 'notifications' | 'profile' | string>(() => {
+    if (queryView === 'profile') return 'profile';
     if (queryView === 'notifications') return 'notifications';
     if (queryView === 'chats' || queryView === 'messages') return 'chats';
     if (queryView === 'live-detail') return 'live-detail';
@@ -41,7 +43,9 @@ function AudienceContent() {
 
   // Sync menu state when URL query changes
   useEffect(() => {
-    if (queryView === 'notifications') {
+    if (queryView === 'profile') {
+      setActiveMenu('profile');
+    } else if (queryView === 'notifications') {
       setActiveMenu('notifications');
     } else if (queryView === 'chats' || queryView === 'messages') {
       setActiveMenu('chats');
@@ -123,6 +127,8 @@ function AudienceContent() {
       router.push('/audience?view=chats', { scroll: false });
     } else if (menuId === 'notifications') {
       router.push('/audience?view=notifications', { scroll: false });
+    } else if (menuId === 'profile') {
+      router.push('/audience?view=profile', { scroll: false });
     }
   };
 
@@ -165,6 +171,8 @@ function AudienceContent() {
             ? 'notifications'
             : activeMenu === 'chats' 
             ? 'messages' 
+            : activeMenu === 'profile'
+            ? 'profile'
             : activeMenu === 'podcast' 
             ? 'home' 
             : (activeMenu === 'live' || activeMenu === 'live-detail') 
@@ -180,6 +188,8 @@ function AudienceContent() {
             handleMenuChange('chats');
           } else if (nav === 'notifications') {
             handleMenuChange('notifications');
+          } else if (nav === 'profile') {
+            handleMenuChange('profile');
           }
         }}
       />
@@ -208,7 +218,10 @@ function AudienceContent() {
               />
 
             {/* 2. Main Content Area */}
-            {activeMenu === 'memberships' ? (
+            {activeMenu === 'profile' ? (
+              /* ─── Profile View: Frame 2121459585 (850px wide container matching Figma) ─── */
+              <AudienceProfilePageView />
+            ) : activeMenu === 'memberships' ? (
               /* ─── Memberships View: Row 1 (Post Composer + Premium Card) + Row 2 (862px Membership Card) ─── */
               <section className="w-full lg:w-[862px] flex flex-col gap-6">
                 {/* Row 1: Composer (570px) + Try Premium (278px) */}
