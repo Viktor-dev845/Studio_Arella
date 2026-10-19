@@ -15,6 +15,7 @@ import AudienceLiveEventDetail from '@/components/audience/AudienceLiveEventDeta
 import AudienceChatPageView from '@/components/audience/AudienceChatPageView';
 import AudienceNotificationsPageView from '@/components/audience/AudienceNotificationsPageView';
 import AudienceProfilePageView from '@/components/audience/AudienceProfilePageView';
+import AudienceEditProfilePageView from '@/components/audience/AudienceEditProfilePageView';
 import AudiencePremiumCard from '@/components/audience/AudiencePremiumCard';
 import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/api';
@@ -25,7 +26,8 @@ function AudienceContent() {
   const queryView = searchParams.get('view');
 
   const { user } = useAuthStore();
-  const [activeMenu, setActiveMenu] = useState<'podcast' | 'trending' | 'memberships' | 'bookmarks' | 'subscriptions' | 'live' | 'live-detail' | 'chats' | 'notifications' | 'profile' | string>(() => {
+  const [activeMenu, setActiveMenu] = useState<'podcast' | 'trending' | 'memberships' | 'bookmarks' | 'subscriptions' | 'live' | 'live-detail' | 'chats' | 'notifications' | 'profile' | 'edit-profile' | 'settings' | string>(() => {
+    if (queryView === 'edit-profile' || queryView === 'settings') return 'edit-profile';
     if (queryView === 'profile') return 'profile';
     if (queryView === 'notifications') return 'notifications';
     if (queryView === 'chats' || queryView === 'messages') return 'chats';
@@ -43,7 +45,9 @@ function AudienceContent() {
 
   // Sync menu state when URL query changes
   useEffect(() => {
-    if (queryView === 'profile') {
+    if (queryView === 'edit-profile' || queryView === 'settings') {
+      setActiveMenu('edit-profile');
+    } else if (queryView === 'profile') {
       setActiveMenu('profile');
     } else if (queryView === 'notifications') {
       setActiveMenu('notifications');
@@ -129,6 +133,8 @@ function AudienceContent() {
       router.push('/audience?view=notifications', { scroll: false });
     } else if (menuId === 'profile') {
       router.push('/audience?view=profile', { scroll: false });
+    } else if (menuId === 'edit-profile' || menuId === 'settings') {
+      router.push('/audience?view=edit-profile', { scroll: false });
     }
   };
 
@@ -171,7 +177,7 @@ function AudienceContent() {
             ? 'notifications'
             : activeMenu === 'chats' 
             ? 'messages' 
-            : activeMenu === 'profile'
+            : (activeMenu === 'profile' || activeMenu === 'edit-profile' || activeMenu === 'settings')
             ? 'profile'
             : activeMenu === 'podcast' 
             ? 'home' 
@@ -212,15 +218,24 @@ function AudienceContent() {
               
               {/* 1. Left Sidebar Column (278px: Profile Card + Menu + Hashtags) */}
               <AudienceLeftSidebar 
-                activeMenu={activeMenu === 'live-detail' ? 'live' : activeMenu}
+                activeMenu={
+                  activeMenu === 'live-detail' 
+                    ? 'live' 
+                    : (activeMenu === 'edit-profile' || activeMenu === 'settings') 
+                    ? 'settings' 
+                    : activeMenu
+                }
                 onMenuSelect={handleMenuChange}
                 onTagSelect={(tag) => console.log('Filtered by hashtag:', tag)}
               />
 
             {/* 2. Main Content Area */}
-            {activeMenu === 'profile' ? (
+            {activeMenu === 'edit-profile' || activeMenu === 'settings' ? (
+              /* ─── Edit Profile / Settings View: Frame 2121459220 etc. (866px wide matching Figma) ─── */
+              <AudienceEditProfilePageView onBackToProfile={() => handleMenuChange('profile')} />
+            ) : activeMenu === 'profile' ? (
               /* ─── Profile View: Frame 2121459585 (850px wide container matching Figma) ─── */
-              <AudienceProfilePageView />
+              <AudienceProfilePageView onEditProfileClick={() => handleMenuChange('edit-profile')} />
             ) : activeMenu === 'memberships' ? (
               /* ─── Memberships View: Row 1 (Post Composer + Premium Card) + Row 2 (862px Membership Card) ─── */
               <section className="w-full lg:w-[862px] flex flex-col gap-6">

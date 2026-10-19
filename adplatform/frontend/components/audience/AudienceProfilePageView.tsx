@@ -185,7 +185,13 @@ const DEFAULT_FAN_EVENTS: EventClubItem[] = [
   },
 ];
 
-export default function AudienceProfilePageView() {
+interface AudienceProfilePageViewProps {
+  onEditProfileClick?: () => void;
+}
+
+export default function AudienceProfilePageView({
+  onEditProfileClick,
+}: AudienceProfilePageViewProps = {}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryTab = searchParams.get('tab');
@@ -399,7 +405,13 @@ export default function AudienceProfilePageView() {
             <div className="flex items-center gap-2 pointer-events-auto relative" ref={menuRef}>
               <button
                 type="button"
-                onClick={() => setShowEditModal(true)}
+                onClick={() => {
+                  if (onEditProfileClick) {
+                    onEditProfileClick();
+                  } else {
+                    router.push('/audience?view=edit-profile');
+                  }
+                }}
                 className="h-9 px-4 rounded-[4px] bg-white/90 backdrop-blur-sm shadow-[0px_10px_30px_rgba(113,123,133,0.05)] flex items-center gap-2 text-[12px] font-normal uppercase tracking-wider text-[#181818] hover:bg-white transition-colors cursor-pointer"
               >
                 <Edit3 size={15} />
