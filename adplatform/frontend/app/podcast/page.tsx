@@ -7,151 +7,179 @@ import { theme } from '@/lib/theme';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { PageTransition } from '@/components/ui/Animations';
 import PodcastRightPanel from '@/components/podcast/PodcastRightPanel';
+import api from '@/lib/api';
 
 const F = theme.font.body;
 
-interface PodcastItem {
+interface PodcastShow {
   id: string;
   title: string;
-  listeners: string;
-  episodes: string;
-  img: string;
-  overlayBadge?: string;
-  overlayColor?: string;
+  description?: string;
+  cover_url?: string;
+  creator_name?: string;
+  episode_count?: number | string;
+  created_at?: string;
 }
-
-const PODCAST_ITEMS: PodcastItem[] = [
-  {
-    id: '1',
-    title: 'Undressed',
-    listeners: '2M active listeners',
-    episodes: '135 episodes',
-    img: 'https://images.unsplash.com/photo-1509967419530-da38b4704bc6?w=500&auto=format&fit=crop&q=80',
-  },
-  {
-    id: '2',
-    title: 'Weak In Your Light',
-    listeners: '200K active listeners',
-    episodes: '135 episodes',
-    img: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=500&auto=format&fit=crop&q=80',
-    overlayBadge: 'WEAK IN YOUR LIGHT',
-    overlayColor: '#D97706',
-  },
-  {
-    id: '3',
-    title: 'Sober Reflection',
-    listeners: '20K active listeners',
-    episodes: '135 episodes',
-    img: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80',
-    overlayBadge: 'pink SOBER',
-    overlayColor: '#DC2626',
-  },
-  {
-    id: '4',
-    title: 'Father And Son',
-    listeners: '2K active listeners',
-    episodes: '135 episodes',
-    img: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=500&auto=format&fit=crop&q=80',
-    overlayBadge: 'DELUXE EDITION',
-    overlayColor: '#2563EB',
-  },
-  {
-    id: '5',
-    title: 'Business On',
-    listeners: 'Liked Songs',
-    episodes: '135 episodes',
-    img: 'https://images.unsplash.com/photo-1507499739999-097706ad8914?w=500&auto=format&fit=crop&q=80',
-    overlayBadge: 'sphere',
-    overlayColor: '#7C3AED',
-  },
-];
-
-// All 10 items (repeating the 5 cards for the 2 rows)
-const ALL_PODCAST_ITEMS: PodcastItem[] = [
-  ...PODCAST_ITEMS,
-  ...PODCAST_ITEMS.map((item, idx) => ({ ...item, id: `${idx + 6}` })),
-];
 
 export default function PodcastsPage() {
   const [trendingView, setTrendingView] = useState<'board' | 'list'>('board');
   const [allView, setAllView] = useState<'board' | 'list'>('board');
+  const [myShows, setMyShows] = useState<PodcastShow[]>([]);
+  const [allShows, setAllShows] = useState<PodcastShow[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const renderCard = (pod: PodcastItem) => (
-    <Link
-      key={pod.id}
-      href={`/podcast/${pod.id}`}
-      style={{
-        textDecoration: 'none',
-        display: 'flex',
-        flexDirection: 'column',
-        minWidth: 0,
-        transition: 'transform 0.15s ease',
-      }}
-      className="podcast-card-hover"
-    >
-      <div
+  useEffect(() => {
+    let isMounted = true;
+    Promise.allSettled([
+      api.get('/shows/mine'),
+      api.get('/shows'),
+    ]).then(([mineRes, allRes]) => {
+      if (!isMounted) return;
+      if (mineRes.status === 'fulfilled' && mineRes.value.data?.shows) {
+        setMyShows(mineRes.value.data.shows);
+      }
+      if (allRes.status === 'fulfilled' && allRes.value.data?.shows) {
+        setAllShows(allRes.value.data.shows);
+      }
+    }).finally(() => {
+      if (isMounted) setLoading(false);
+    });
+    return () => { isMounted = false; };
+  }, []);
+
+  const renderCard = (pod: PodcastShow) => {
+    const img = pod.cover_url || 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=500&auto=format&fit=crop&q=80';
+    const epCount = pod.episode_count ? `${pod.episode_count} episode${Number(pod.episode_count) === 1 ? '' : 's'}` : '0 episodes';
+    const subtitle = pod.creator_name ? `By ${pod.creator_name}` : (pod.description || 'Studio Arella');
+
+    return (
+      <Link
+        key={pod.id}
+        href={`/podcast/${pod.id}`}
         style={{
-          width: '100%',
-          aspectRatio: '1 / 1',
-          borderRadius: 14,
-          overflow: 'hidden',
-          background: theme.color.surface2,
-          position: 'relative',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+          textDecoration: 'none',
+          display: 'flex',
+          flexDirection: 'column',
+          minWidth: 0,
+          transition: 'transform 0.15s ease',
         }}
+        className="podcast-card-hover"
       >
-        <img
-          src={pod.img}
-          alt={pod.title}
+        <div
           style={{
             width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            display: 'block',
+            aspectRatio: '1 / 1',
+            borderRadius: 14,
+            overflow: 'hidden',
+            background: theme.color.surface2,
+            position: 'relative',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
           }}
-        />
-      </div>
+        >
+          <img
+            src={img}
+            alt={pod.title}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              display: 'block',
+            }}
+          />
+        </div>
 
-      <div style={{ marginTop: 10 }}>
-        <p
+        <div style={{ marginTop: 10 }}>
+          <p
+            style={{
+              fontSize: 13,
+              fontWeight: 700,
+              color: theme.color.text1,
+              margin: '0 0 3px',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+          >
+            {pod.title}
+          </p>
+          <p
+            style={{
+              fontSize: 11,
+              color: theme.color.text4,
+              fontWeight: 500,
+              margin: '0 0 3px',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+          >
+            {subtitle}
+          </p>
+          <p
+            style={{
+              fontSize: 11,
+              color: '#E2BC44',
+              fontWeight: 600,
+              margin: 0,
+            }}
+          >
+            {epCount}
+          </p>
+        </div>
+      </Link>
+    );
+  };
+
+  const renderListItem = (pod: PodcastShow) => {
+    const img = pod.cover_url || 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=500&auto=format&fit=crop&q=80';
+    const epCount = pod.episode_count ? `${pod.episode_count} episode${Number(pod.episode_count) === 1 ? '' : 's'}` : '0 episodes';
+    const subtitle = pod.creator_name ? `By ${pod.creator_name}` : (pod.description || 'Studio Arella');
+
+    return (
+      <Link
+        key={pod.id}
+        href={`/podcast/${pod.id}`}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 16,
+          textDecoration: 'none',
+          padding: '10px 14px',
+          borderRadius: 12,
+          background: theme.color.surface,
+          border: '1px solid #F1F5F9',
+        }}
+      >
+        <div
           style={{
-            fontSize: 13,
-            fontWeight: 700,
-            color: theme.color.text1,
-            margin: '0 0 3px',
-            whiteSpace: 'nowrap',
+            width: 56,
+            height: 56,
+            borderRadius: 8,
             overflow: 'hidden',
-            textOverflow: 'ellipsis',
+            background: theme.color.surface2,
+            flexShrink: 0,
           }}
         >
-          {pod.title}
-        </p>
-        <p
-          style={{
-            fontSize: 11,
-            color: theme.color.text4,
-            fontWeight: 500,
-            margin: '0 0 3px',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-          }}
-        >
-          {pod.listeners}
-        </p>
-        <p
-          style={{
-            fontSize: 11,
-            color: '#E2BC44',
-            fontWeight: 500,
-            margin: 0,
-          }}
-        >
-          {pod.episodes}
-        </p>
-      </div>
-    </Link>
-  );
+          <img
+            src={img}
+            alt={pod.title}
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ fontSize: 15, fontWeight: 700, color: theme.color.text1, margin: '0 0 4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {pod.title}
+          </p>
+          <p style={{ fontSize: 13, color: theme.color.text4, fontWeight: 500, margin: 0 }}>
+            {subtitle} · {epCount}
+          </p>
+        </div>
+      </Link>
+    );
+  };
+
+  const displayTrending = myShows.length > 0 ? myShows : allShows.slice(0, 5);
+  const displayAll = allShows.length > 0 ? allShows : myShows;
 
   return (
     <DashboardLayout>
@@ -193,236 +221,297 @@ export default function PodcastsPage() {
         >
           {/* ─── MAIN COLUMN ─── */}
           <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 36 }}>
-            {/* 1. Your trending topics (2) */}
-            <div>
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  marginBottom: 18,
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <h2 style={{ fontSize: 14, fontWeight: 700, color: theme.color.text1, margin: 0 }}>
-                    Your trending topics (2)
-                  </h2>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <button
-                    type="button"
-                    onClick={() => setTrendingView('board')}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 6,
-                      fontSize: 12,
-                      fontWeight: trendingView === 'board' ? 700 : 500,
-                      color: trendingView === 'board' ? theme.color.text1 : theme.color.text3,
-                      background: theme.color.surface,
-                      border: trendingView === 'board' ? '1px solid #E2E8F0' : '1px solid transparent',
-                      borderRadius: 8,
-                      padding: '5px 12px',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <LayoutGrid size={13} />
-                    <span>Board View</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setTrendingView('list')}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 6,
-                      fontSize: 12,
-                      fontWeight: trendingView === 'list' ? 700 : 500,
-                      color: trendingView === 'list' ? theme.color.text1 : theme.color.text3,
-                      background: theme.color.surface,
-                      border: trendingView === 'list' ? '1px solid #E2E8F0' : '1px solid transparent',
-                      borderRadius: 8,
-                      padding: '5px 12px',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <List size={13} />
-                    <span>List View</span>
-                  </button>
-                </div>
+            {/* Top Action Bar */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+              <div>
+                <h1 style={{ fontSize: 20, fontWeight: 800, color: theme.color.text1, margin: '0 0 4px' }}>
+                  Podcasts & Audio Studio
+                </h1>
+                <p style={{ fontSize: 13, color: theme.color.text4, margin: 0 }}>
+                  Publish audio shows, explore creator episodes, or book studio recording time.
+                </p>
               </div>
 
-              {trendingView === 'board' ? (
-                <div
-                  className="podcast-grid-5"
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <Link
+                  href="/bookings?tab=podcast"
                   style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
-                    gap: 18,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    background: '#F1F5F9',
+                    color: theme.color.text1,
+                    fontSize: 12,
+                    fontWeight: 600,
+                    padding: '8px 14px',
+                    borderRadius: 8,
+                    textDecoration: 'none',
                   }}
                 >
-                  {PODCAST_ITEMS.map(renderCard)}
-                </div>
-              ) : (
-                /* List View matching podcast-listview mockup */
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                  {[PODCAST_ITEMS[0], PODCAST_ITEMS[0]].map((pod, i) => (
-                    <Link
-                      key={i}
-                      href={`/podcast/${pod.id}`}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 16,
-                        textDecoration: 'none',
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: 56,
-                          height: 56,
-                          borderRadius: 8,
-                          overflow: 'hidden',
-                          background: theme.color.surface2,
-                          flexShrink: 0,
-                        }}
-                      >
-                        <img
-                          src={pod.img}
-                          alt={pod.title}
-                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                        />
-                      </div>
-                      <div>
-                        <p style={{ fontSize: 15, fontWeight: 700, color: theme.color.text1, margin: '0 0 4px' }}>
-                          {pod.title}
-                        </p>
-                        <p style={{ fontSize: 13, color: theme.color.text4, fontWeight: 500, margin: 0 }}>
-                          {pod.listeners} · {pod.episodes}
-                        </p>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              )}
+                  Book Studio Time
+                </Link>
+                <Link
+                  href="/podcast/new"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    background: '#EA580C',
+                    color: '#fff',
+                    fontSize: 12,
+                    fontWeight: 700,
+                    padding: '8px 14px',
+                    borderRadius: 8,
+                    textDecoration: 'none',
+                  }}
+                >
+                  <Plus size={14} />
+                  New Show
+                </Link>
+              </div>
             </div>
 
-            {/* 2. All podcasts (10) */}
-            <div>
+            {loading ? (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 260 }}>
+                <div style={{ width: 28, height: 28, border: '2.5px solid #FED7AA', borderTopColor: '#F97316', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+                <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+              </div>
+            ) : displayAll.length === 0 ? (
               <div
                 style={{
+                  padding: '48px 24px',
+                  textAlign: 'center',
+                  background: '#FAFAFA',
+                  borderRadius: 16,
+                  border: '1px dashed #E2E8F0',
                   display: 'flex',
+                  flexDirection: 'column',
                   alignItems: 'center',
-                  justifyContent: 'space-between',
-                  marginBottom: 18,
+                  gap: 12,
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <h2 style={{ fontSize: 14, fontWeight: 700, color: theme.color.text1, margin: 0 }}>
-                    All podcasts (10)
-                  </h2>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <button
-                    type="button"
-                    onClick={() => setAllView('board')}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 6,
-                      fontSize: 12,
-                      fontWeight: allView === 'board' ? 700 : 500,
-                      color: allView === 'board' ? theme.color.text1 : theme.color.text3,
-                      background: theme.color.surface,
-                      border: allView === 'board' ? '1px solid #E2E8F0' : '1px solid transparent',
-                      borderRadius: 8,
-                      padding: '5px 12px',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <LayoutGrid size={13} />
-                    <span>Board View</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setAllView('list')}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 6,
-                      fontSize: 12,
-                      fontWeight: allView === 'list' ? 700 : 500,
-                      color: allView === 'list' ? theme.color.text1 : theme.color.text3,
-                      background: theme.color.surface,
-                      border: allView === 'list' ? '1px solid #E2E8F0' : '1px solid transparent',
-                      borderRadius: 8,
-                      padding: '5px 12px',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <List size={13} />
-                    <span>List View</span>
-                  </button>
-                </div>
-              </div>
-
-              {allView === 'board' ? (
                 <div
                   style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
-                    gap: 18,
-                    rowGap: 24,
+                    width: 52,
+                    height: 52,
+                    borderRadius: 26,
+                    background: '#FFF7ED',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#EA580C',
                   }}
                 >
-                  {ALL_PODCAST_ITEMS.map(renderCard)}
+                  <Mic size={26} />
                 </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                  {ALL_PODCAST_ITEMS.map((pod, i) => (
-                    <Link
-                      key={i}
-                      href={`/podcast/${pod.id}`}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 16,
-                        textDecoration: 'none',
-                      }}
-                    >
-                      <div
+                <div>
+                  <h3 style={{ fontSize: 16, fontWeight: 700, color: theme.color.text1, margin: '0 0 6px' }}>
+                    No podcast shows published yet
+                  </h3>
+                  <p style={{ fontSize: 13, color: theme.color.text4, margin: 0, maxWidth: 400 }}>
+                    Start your creator journey by creating your first show, or reserve recording studio time at Studio Arella.
+                  </p>
+                </div>
+                <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+                  <Link
+                    href="/podcast/new"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      background: '#EA580C',
+                      color: '#fff',
+                      fontSize: 13,
+                      fontWeight: 700,
+                      padding: '9px 18px',
+                      borderRadius: 8,
+                      textDecoration: 'none',
+                    }}
+                  >
+                    <Plus size={15} />
+                    Create Your First Show
+                  </Link>
+                  <Link
+                    href="/bookings?tab=podcast"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      background: '#fff',
+                      border: '1px solid #CBD5E1',
+                      color: theme.color.text1,
+                      fontSize: 13,
+                      fontWeight: 600,
+                      padding: '9px 18px',
+                      borderRadius: 8,
+                      textDecoration: 'none',
+                    }}
+                  >
+                    Book Studio Time
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <>
+                {/* 1. Trending / My Shows */}
+                <div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      marginBottom: 18,
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <h2 style={{ fontSize: 14, fontWeight: 700, color: theme.color.text1, margin: 0 }}>
+                        {myShows.length > 0 ? `Your Shows (${myShows.length})` : `Featured Shows (${displayTrending.length})`}
+                      </h2>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <button
+                        type="button"
+                        onClick={() => setTrendingView('board')}
                         style={{
-                          width: 56,
-                          height: 56,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 6,
+                          fontSize: 12,
+                          fontWeight: trendingView === 'board' ? 700 : 500,
+                          color: trendingView === 'board' ? theme.color.text1 : theme.color.text3,
+                          background: theme.color.surface,
+                          border: trendingView === 'board' ? '1px solid #E2E8F0' : '1px solid transparent',
                           borderRadius: 8,
-                          overflow: 'hidden',
-                          background: theme.color.surface2,
-                          flexShrink: 0,
+                          padding: '5px 12px',
+                          cursor: 'pointer',
                         }}
                       >
-                        <img
-                          src={pod.img}
-                          alt={pod.title}
-                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                        />
-                      </div>
-                      <div>
-                        <p style={{ fontSize: 15, fontWeight: 700, color: theme.color.text1, margin: '0 0 4px' }}>
-                          {pod.title}
-                        </p>
-                        <p style={{ fontSize: 13, color: theme.color.text4, fontWeight: 500, margin: 0 }}>
-                          {pod.listeners} · {pod.episodes}
-                        </p>
-                      </div>
-                    </Link>
-                  ))}
+                        <LayoutGrid size={13} />
+                        <span>Board View</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setTrendingView('list')}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 6,
+                          fontSize: 12,
+                          fontWeight: trendingView === 'list' ? 700 : 500,
+                          color: trendingView === 'list' ? theme.color.text1 : theme.color.text3,
+                          background: theme.color.surface,
+                          border: trendingView === 'list' ? '1px solid #E2E8F0' : '1px solid transparent',
+                          borderRadius: 8,
+                          padding: '5px 12px',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <List size={13} />
+                        <span>List View</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {trendingView === 'board' ? (
+                    <div
+                      className="podcast-grid-5"
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
+                        gap: 18,
+                      }}
+                    >
+                      {displayTrending.map(renderCard)}
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                      {displayTrending.map(renderListItem)}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+
+                {/* 2. All Podcasts */}
+                <div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      marginBottom: 18,
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <h2 style={{ fontSize: 14, fontWeight: 700, color: theme.color.text1, margin: 0 }}>
+                        All podcasts ({displayAll.length})
+                      </h2>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <button
+                        type="button"
+                        onClick={() => setAllView('board')}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 6,
+                          fontSize: 12,
+                          fontWeight: allView === 'board' ? 700 : 500,
+                          color: allView === 'board' ? theme.color.text1 : theme.color.text3,
+                          background: theme.color.surface,
+                          border: allView === 'board' ? '1px solid #E2E8F0' : '1px solid transparent',
+                          borderRadius: 8,
+                          padding: '5px 12px',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <LayoutGrid size={13} />
+                        <span>Board View</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setAllView('list')}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 6,
+                          fontSize: 12,
+                          fontWeight: allView === 'list' ? 700 : 500,
+                          color: allView === 'list' ? theme.color.text1 : theme.color.text3,
+                          background: theme.color.surface,
+                          border: allView === 'list' ? '1px solid #E2E8F0' : '1px solid transparent',
+                          borderRadius: 8,
+                          padding: '5px 12px',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <List size={13} />
+                        <span>List View</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {allView === 'board' ? (
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
+                        gap: 18,
+                        rowGap: 24,
+                      }}
+                    >
+                      {displayAll.map(renderCard)}
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                      {displayAll.map(renderListItem)}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
           </div>
 
           {/* ─── RIGHT COLUMN ─── */}

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useState, useMemo } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -1034,7 +1034,7 @@ export default function FinancesPage() {
                         </div>
 
                         <p style={{ textAlign: 'center', fontSize: 20, fontWeight: 600, color: '#16151C', fontFamily: 'var(--font-dm-sans)', lineHeight: '30px', margin: '60px 0 80px', padding: '0 10px' }}>
-                          To authorize this payment, enter the OTP sent to the email <strong>{user?.email || 'Bems.arella@gmail.com'}</strong> attached to your studio arella account
+                          To authorize this payment, enter the OTP sent to the email <strong>{user?.email || 'your registered email'}</strong> attached to your Studio Arella account
                         </p>
 
                         <button

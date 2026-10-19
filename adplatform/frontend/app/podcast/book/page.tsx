@@ -40,6 +40,10 @@ export default function BookPodcastSessionPage() {
   const router = useRouter();
   const { toast } = useToast();
 
+  useEffect(() => {
+    router.replace('/bookings?tab=podcast');
+  }, [router]);
+
   const [packageId, setPackageId] = useState<typeof PACKAGES[number]['id']>('Audio Only');
   const [notes, setNotes] = useState('');
   const [date, setDate] = useState(todayISODate());

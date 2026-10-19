@@ -826,7 +826,7 @@ export default function CampaignsPage() {
                   <button onClick={() => setWizardStep('card')} className="text-black hover:opacity-70 transition-opacity">
                     <ArrowLeft size={24} strokeWidth={2} />
                   </button>
-                  <span className="text-[20px] font-medium text-black">Pay with Wema card</span>
+                  <span className="text-[20px] font-medium text-black">Pay with card</span>
                   <button onClick={resetWizard} className="text-black hover:opacity-70 transition-opacity">
                     <X size={24} strokeWidth={2} />
                   </button>
@@ -835,8 +835,8 @@ export default function CampaignsPage() {
                 {/* Body */}
                 <div className="flex flex-col items-center w-full px-[60px] pt-[80px]">
                   <p className="text-[16px] font-bold text-black text-center mb-[60px] leading-[26px]">
-                    {billingHeader || '3 months Ad space'} at<br/>
-                    #{budgetAmount.toLocaleString()}
+                    {billingHeader || 'Campaign budget'} at<br/>
+                    ₦{budgetAmount.toLocaleString()}
                   </p>
                   
                   <div className="w-full flex flex-col gap-[20px]">
@@ -848,14 +848,14 @@ export default function CampaignsPage() {
                     
                     <input 
                       type="text" 
-                      placeholder="Lilian Okoro" 
+                      placeholder="Cardholder Name" 
                       className="w-full h-[54px] px-[20px] rounded-[12px] border border-[rgba(162,161,168,0.2)] text-[16px] text-black focus:outline-none focus:border-[#D4AF37] placeholder:text-[rgba(22,21,28,0.3)] font-light"
                     />
                     
                     <div className="relative w-full">
                       <input 
                         type="text" 
-                        placeholder="**** **** **** 0493" 
+                        placeholder="•••• •••• •••• ••••" 
                         className="w-full h-[54px] px-[20px] rounded-[12px] border border-[rgba(162,161,168,0.2)] text-[16px] text-black focus:outline-none focus:border-[#D4AF37] placeholder:text-[rgba(22,21,28,0.3)] font-light pr-[50px]"
                       />
                       <div className="absolute right-[20px] top-[17px] w-[24px] h-[20px] flex items-center justify-center">
@@ -867,12 +867,12 @@ export default function CampaignsPage() {
                     <div className="flex w-full gap-[20px]">
                       <input 
                         type="text" 
-                        placeholder="Expiry date (02/28)" 
+                        placeholder="Expiry date (MM/YY)" 
                         className="w-full h-[54px] px-[20px] rounded-[12px] border border-[rgba(162,161,168,0.2)] text-[16px] text-black focus:outline-none focus:border-[#D4AF37] placeholder:text-[rgba(22,21,28,0.3)] font-light"
                       />
                       <input 
                         type="text" 
-                        placeholder="346" 
+                        placeholder="CVV" 
                         className="w-full h-[54px] px-[20px] rounded-[12px] border border-[rgba(162,161,168,0.2)] text-[16px] text-black focus:outline-none focus:border-[#D4AF37] placeholder:text-[rgba(22,21,28,0.3)] font-light"
                       />
                     </div>
@@ -893,7 +893,7 @@ export default function CampaignsPage() {
           )}
 
           
-          {/* ─── CREATE CAMPAIGN: STEP 4 — OTP (WEMA) ─── */}
+          {/* ─── CREATE CAMPAIGN: STEP 4 — OTP ─── */}
           {createModalOpen && wizardStep === 'otp' && (
             <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[rgba(162,161,168,0.2)] backdrop-blur-[10px] p-4">
               <div 
@@ -905,7 +905,7 @@ export default function CampaignsPage() {
                   <button onClick={() => setWizardStep('card-confirm')} className="text-black hover:opacity-70 transition-opacity">
                     <ArrowLeft size={24} strokeWidth={2} />
                   </button>
-                  <span className="text-[20px] font-medium text-black">Pay with Wema card</span>
+                  <span className="text-[20px] font-medium text-black">Pay with card</span>
                   <button onClick={resetWizard} className="text-black hover:opacity-70 transition-opacity">
                     <X size={24} strokeWidth={2} />
                   </button>
@@ -946,7 +946,7 @@ export default function CampaignsPage() {
                   </div>
 
                   <p className="text-[20px] font-bold text-black text-center max-w-[480px] leading-[32px] mb-[40px]">
-                    To authorize this payment, enter the OTP sent to the email Bems.arella@gmail.com attached to your studio arella account
+                    To authorize this payment, enter the OTP sent to the email <span className="text-[#D4AF37]">{user?.email || 'your registered email'}</span> attached to your Studio Arella account
                   </p>
 
                   <button

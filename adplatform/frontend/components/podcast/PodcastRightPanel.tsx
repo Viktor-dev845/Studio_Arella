@@ -1,8 +1,10 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ChevronRight, Globe } from 'lucide-react';
+import { ChevronRight, Globe, Mic } from 'lucide-react';
 import { theme } from '@/lib/theme';
+import api from '@/lib/api';
 
 const F = theme.font.body;
 
@@ -10,40 +12,40 @@ interface PodcastRightPanelProps {
   variant?: 'calendar' | 'promos';
 }
 
-const TOP_PERFORMING_TOPICS = [
-  {
-    title: 'Family life podcast',
-    listeners: '2M active listeners',
-    avatarBg: 'linear-gradient(135deg, #A855F7, #EC4899)',
-    img: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&auto=format&fit=crop&q=80',
-  },
-  {
-    title: 'Growth Lab podcast',
-    listeners: '1M active listeners',
-    avatarBg: 'linear-gradient(135deg, #F59E0B, #D97706)',
-    img: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&auto=format&fit=crop&q=80',
-  },
-  {
-    title: 'Growth Lab',
-    listeners: '800K active listeners',
-    avatarBg: 'linear-gradient(135deg, #3B82F6, #1D4ED8)',
-    img: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
-  },
-  {
-    title: 'Positioning podcast',
-    listeners: '500K active listeners',
-    avatarBg: 'linear-gradient(135deg, #EF4444, #B91C1C)',
-    img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80',
-  },
-  {
-    title: 'Business On',
-    listeners: '200K active listeners',
-    avatarBg: 'linear-gradient(135deg, #10B981, #047857)',
-    img: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&auto=format&fit=crop&q=80',
-  },
-];
+function formatBookingTime(iso: string) {
+  try {
+    return new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  } catch {
+    return '';
+  }
+}
 
 export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRightPanelProps) {
+  const [topics, setTopics] = useState<any[]>([]);
+  const [upcomingBookings, setUpcomingBookings] = useState<any[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    Promise.allSettled([
+      api.get('/shows?limit=5'),
+      api.get('/podcasts/my-bookings'),
+    ]).then(([showsRes, bkRes]) => {
+      if (!isMounted) return;
+      if (showsRes.status === 'fulfilled' && showsRes.value.data?.shows) {
+        setTopics(showsRes.value.data.shows.slice(0, 5));
+      }
+      if (bkRes.status === 'fulfilled' && bkRes.value.data?.bookings) {
+        const active = bkRes.value.data.bookings
+          .filter((b: any) => b.status !== 'cancelled')
+          .slice(0, 3);
+        setUpcomingBookings(active);
+      }
+    });
+    return () => { isMounted = false; };
+  }, []);
+
+  const todayFormatted = new Date().toLocaleDateString('en-GB', { month: 'short', day: 'numeric', weekday: 'short' });
+
   if (variant === 'promos') {
     return (
       <div style={{ width: 280, display: 'flex', flexDirection: 'column', gap: 20, flexShrink: 0, fontFamily: F }}>
@@ -66,13 +68,13 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
               Place your Ad on our billboard for wider reach
             </h3>
             <p style={{ fontSize: 10.5, color: '#D5CCA7', margin: 0, lineHeight: 1.45, fontWeight: 500 }}>
-              Did you know that over 70% of businesses goes unknown? That's a lot of potential revenue lost!
+              Did you know that over 70% of businesses goes unknown? Amplify your brand with Studio Arella screens!
             </p>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
             <Link
-              href="/podcast/book"
+              href="/bookings?tab=screen"
               style={{
                 background: '#E2F163',
                 color: '#1E293B',
@@ -132,7 +134,7 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
 
           <div>
             <Link
-              href="/podcast/book"
+              href="/bookings?tab=podcast"
               style={{
                 background: '#E2F163',
                 color: '#0F172A',
@@ -160,8 +162,10 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
             position: 'relative',
           }}
         >
-          <div
+          <Link
+            href="/chat"
             style={{
+              textDecoration: 'none',
               background: '#FFFFFF',
               borderRadius: 24,
               padding: '14px 20px',
@@ -193,7 +197,7 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
                 transform: 'rotate(25deg)',
               }}
             />
-          </div>
+          </Link>
         </div>
 
       </div>
@@ -228,102 +232,118 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
         Add a podcast
       </Link>
 
-      {/* Your top performing topics */}
+      {/* Featured topics */}
       <div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 14px' }}>
-          <h3 style={{ fontSize: 13, fontWeight: 500, color: '#000000', margin: 0 }}>
-            Your top performing topics
+          <h3 style={{ fontSize: 13, fontWeight: 700, color: theme.color.text1, margin: 0 }}>
+            Featured topics
           </h3>
         </div>
 
-        <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: 14 }}>
-          {/* Vertical connecting line */}
-          <div style={{ position: 'absolute', left: 15.5, top: 16, bottom: 16, width: 1, background: '#E2E8F0', zIndex: 0 }} />
-          {TOP_PERFORMING_TOPICS.map((topic, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, position: 'relative', zIndex: 1 }}>
-              <div
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: '50%',
-                  overflow: 'hidden',
-                  flexShrink: 0,
-                  background: topic.avatarBg,
-                  border: `2px solid ${theme.color.surface}`,
-                }}
+        {topics.length === 0 ? (
+          <div style={{ padding: '16px', borderRadius: 8, background: '#F8FAFC', border: '1px dashed #E2E8F0', textAlign: 'center' }}>
+            <p style={{ fontSize: 11, color: theme.color.text4, margin: '0 0 8px' }}>No featured podcasts published yet.</p>
+            <Link href="/podcast/new" style={{ fontSize: 11, color: '#EA580C', fontWeight: 700, textDecoration: 'none' }}>+ Create first show</Link>
+          </div>
+        ) : (
+          <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div style={{ position: 'absolute', left: 15.5, top: 16, bottom: 16, width: 1, background: '#E2E8F0', zIndex: 0 }} />
+            {topics.map((t, i) => (
+              <Link
+                key={t.id || i}
+                href={`/podcast/${t.id}`}
+                style={{ display: 'flex', alignItems: 'center', gap: 10, position: 'relative', zIndex: 1, textDecoration: 'none' }}
               >
-                <img
-                  src={topic.img}
-                  alt={topic.title}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                />
-              </div>
-              <div style={{ minWidth: 0 }}>
-                <p
+                <div
                   style={{
-                    fontSize: 13,
-                    fontWeight: 500,
-                    color: '#000000',
-                    margin: '0 0 2px',
-                    whiteSpace: 'nowrap',
+                    width: 32,
+                    height: 32,
+                    borderRadius: '50%',
                     overflow: 'hidden',
-                    textOverflow: 'ellipsis',
+                    flexShrink: 0,
+                    background: theme.color.surface2,
+                    border: `2px solid ${theme.color.surface}`,
                   }}
                 >
-                  {topic.title}
-                </p>
-                <p style={{ fontSize: 11, color: theme.color.text4, margin: 0, fontWeight: 400 }}>
-                  {topic.listeners}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
+                  <img
+                    src={t.cover_url || 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=100&auto=format&fit=crop&q=80'}
+                    alt={t.title}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                </div>
+                <div style={{ minWidth: 0 }}>
+                  <p
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: theme.color.text1,
+                      margin: '0 0 2px',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
+                    {t.title}
+                  </p>
+                  <p style={{ fontSize: 11, color: theme.color.text4, margin: 0, fontWeight: 400 }}>
+                    {t.creator_name ? `By ${t.creator_name}` : `${t.episode_count || 0} episodes`}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Recent Podcast Booking Calendar */}
       <div>
-        <h3 style={{ fontSize: 13, fontWeight: 500, color: '#000000', margin: '0 0 12px' }}>
+        <h3 style={{ fontSize: 13, fontWeight: 700, color: theme.color.text1, margin: '0 0 12px' }}>
           Recent Podcast Booking Calendar
         </h3>
 
         {/* Date and Controls */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 13, color: '#64748B', fontWeight: 400 }}>Aug 15, Sat</span>
+            <span style={{ fontSize: 13, color: '#64748B', fontWeight: 500 }}>{todayFormatted}</span>
             <span style={{ fontSize: 9, fontWeight: 700, color: '#FFFFFF', background: '#1E293B', padding: '3px 8px', borderRadius: 12, letterSpacing: '0.02em' }}>
               TODAY
             </span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <button style={{ width: 24, height: 24, borderRadius: 6, border: '1px solid #E2E8F0', background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#94A3B8' }}>
-              <ChevronRight size={14} style={{ transform: 'rotate(180deg)' }} />
-            </button>
-            <button style={{ width: 24, height: 24, borderRadius: 6, border: '1px solid #E2E8F0', background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#94A3B8' }}>
-              <ChevronRight size={14} />
-            </button>
           </div>
         </div>
 
         {/* Bookings cards */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 }}>
-          <div style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderLeft: `3px solid #10B981`, borderRadius: 8, padding: '12px 14px' }}>
-            <p style={{ fontSize: 13, fontWeight: 500, color: '#000000', margin: '0 0 4px' }}>Podcast session</p>
-            <p style={{ fontSize: 11, color: '#94A3B8', margin: 0 }}>16:00</p>
-          </div>
-          <div style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderLeft: `3px solid #F59E0B`, borderRadius: 8, padding: '12px 14px' }}>
-            <p style={{ fontSize: 13, fontWeight: 500, color: '#000000', margin: '0 0 4px' }}>Ad screen booking</p>
-            <p style={{ fontSize: 11, color: '#94A3B8', margin: 0 }}>14:00</p>
-          </div>
-          <div style={{ background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderLeft: `3px solid #3B82F6`, borderRadius: 8, padding: '12px 14px' }}>
-            <p style={{ fontSize: 13, fontWeight: 500, color: '#000000', margin: '0 0 4px' }}>Ad screen booking</p>
-            <p style={{ fontSize: 11, color: '#94A3B8', margin: 0 }}>13:00</p>
-          </div>
+          {upcomingBookings.length === 0 ? (
+            <div style={{ padding: '14px', borderRadius: 8, background: '#F8FAFC', border: '1px dashed #E2E8F0', textAlign: 'center' }}>
+              <p style={{ fontSize: 11, color: theme.color.text4, margin: '0 0 6px' }}>No studio sessions scheduled today.</p>
+              <Link href="/bookings?tab=podcast" style={{ fontSize: 11, color: '#B48811', fontWeight: 700, textDecoration: 'none' }}>Book studio session &gt;</Link>
+            </div>
+          ) : (
+            upcomingBookings.map((b, i) => (
+              <div
+                key={b.id || i}
+                style={{
+                  background: theme.color.surface,
+                  border: `1px solid ${theme.color.border}`,
+                  borderLeft: `3px solid #10B981`,
+                  borderRadius: 8,
+                  padding: '12px 14px',
+                }}
+              >
+                <p style={{ fontSize: 13, fontWeight: 600, color: theme.color.text1, margin: '0 0 4px' }}>
+                  {b.package_type || 'Podcast Session'}
+                </p>
+                <p style={{ fontSize: 11, color: '#94A3B8', margin: 0 }}>
+                  {formatBookingTime(b.start_time)}
+                </p>
+              </div>
+            ))
+          )}
         </div>
 
         {/* Book podcast slot button */}
         <Link
-          href="/podcast/book"
+          href="/bookings?tab=podcast"
           style={{
             width: '100%',
             padding: '10px 14px',
@@ -351,7 +371,7 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
         {/* See full calendar */}
         <div style={{ textAlign: 'center' }}>
           <Link
-            href="/bookings"
+            href="/bookings?tab=calendar"
             style={{
               fontSize: 11,
               fontWeight: 700,

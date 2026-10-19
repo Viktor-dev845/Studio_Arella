@@ -11,6 +11,7 @@ import api from '@/lib/api';
 import { theme } from '@/lib/theme';
 import { useCartStore } from '@/store/cartStore';
 import { usePreferencesStore } from '@/store/preferencesStore';
+import { useAuthStore } from '@/store/authStore';
 import { formatCurrency } from '@/lib/currency';
 import { buildSlots, DurationUnit, CampaignType } from '@/lib/bookingSlots';
 
@@ -30,6 +31,7 @@ function BookAdForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
+  const { user } = useAuthStore();
   const { cart, addToCart } = useCartStore();
   const { currency, rates } = usePreferencesStore();
 
@@ -56,7 +58,7 @@ function BookAdForm() {
   const [step, setStep] = useState<Step>('form');
   const [bookingId, setBookingId] = useState<string | null>(null);
   const [totalCost, setTotalCost] = useState(0);
-  const [walletBalance, setWalletBalance] = useState(5215005.25);
+  const [walletBalance, setWalletBalance] = useState(0);
   const [paying, setPaying] = useState(false);
   const [cardForm, setCardForm] = useState({ name: '', number: '', expiry: '', cvv: '', amount: '' });
   const [otpDigits, setOtpDigits] = useState(['', '', '', '']);
@@ -65,10 +67,16 @@ function BookAdForm() {
   const [showCreativeModal, setShowCreativeModal] = useState(false);
   const [showCancelCreativeModal, setShowCancelCreativeModal] = useState(false);
   const [showCreativeCancelSuccessModal, setShowCreativeCancelSuccessModal] = useState(false);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'gtb_card' | 'wema_card' | 'card' | 'wallet'>('wema_card');
+  const [savedCards, setSavedCards] = useState<any[]>([]);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'saved_card' | 'card' | 'wallet'>('wallet');
 
   useEffect(() => {
     api.get('/finances/balance').then((res) => setWalletBalance(Number(res.data?.credits ?? 0))).catch(() => {});
+    api.get('/payments/cards').then((res) => {
+      const cards = res.data?.cards || [];
+      setSavedCards(cards);
+      if (cards.length > 0) setSelectedPaymentMethod('saved_card');
+    }).catch(() => {});
     api.get('/screens?limit=100').then((res) => {
       const list = (res.data?.screens || []).filter((s: any) => s.status === 'active');
       setScreens(list);
@@ -445,7 +453,7 @@ function BookAdForm() {
                 <span className="text-[20px] font-medium text-[#101828] text-center flex-1">
                   {step === 'billing' ? 'Billing' : 
                    step === 'success' && selectedPaymentMethod !== 'wallet' ? 'Pay with card' : 
-                   step === 'card' || step === 'otp' ? (selectedPaymentMethod === 'card' ? 'Pay with a new card' : `Pay with ${selectedPaymentMethod === 'wema_card' ? 'Wema' : selectedPaymentMethod === 'gtb_card' ? 'GTB' : ''} card`) : 
+                   step === 'card' || step === 'otp' ? (selectedPaymentMethod === 'card' ? 'Pay with a new card' : 'Pay with card') : 
                    step === 'wallet' || (step === 'success' && selectedPaymentMethod === 'wallet') ? 'Pay from wallet' : ''}
                 </span>
                 
@@ -463,39 +471,42 @@ function BookAdForm() {
                     </p>
                     
                     <div className="w-full space-y-4">
-                      {/* GTB Card Option */}
+                      {/* Wallet Option */}
                       <div 
-                        onClick={() => setSelectedPaymentMethod('gtb_card')}
-                        className={`w-full h-[127px] rounded-[16px] border cursor-pointer transition-all flex flex-col justify-center px-6 relative ${selectedPaymentMethod === 'gtb_card' ? 'border-2 border-[#D4AF37]' : 'border border-[#D7D7D7]'}`}
+                        onClick={() => setSelectedPaymentMethod('wallet')}
+                        className={`w-full h-[100px] rounded-[16px] border cursor-pointer transition-all flex flex-col justify-center px-6 relative ${selectedPaymentMethod === 'wallet' ? 'border-2 border-[#D4AF37]' : 'border border-[#D7D7D7]'}`}
                       >
-                        <div className="flex items-center gap-4 mb-5">
-                          <div className={`w-[16px] h-[16px] rounded-full border flex items-center justify-center shrink-0 ${selectedPaymentMethod === 'gtb_card' ? 'border-[#D4AF37]' : 'border-[#D7D7D7]'}`}>
-                            {selectedPaymentMethod === 'gtb_card' && <div className="w-[8px] h-[8px] rounded-full bg-[#DF4308]" />}
+                        <div className="flex items-center gap-4 mb-2">
+                          <div className={`w-[16px] h-[16px] rounded-full border flex items-center justify-center shrink-0 ${selectedPaymentMethod === 'wallet' ? 'border-[#D4AF37]' : 'border-[#D7D7D7]'}`}>
+                            {selectedPaymentMethod === 'wallet' && <div className="w-[8px] h-[8px] rounded-full bg-[#DF4308]" />}
                           </div>
-                          <span className="text-[16px] font-medium text-[#101828]">Pay with GTB card</span>
+                          <span className="text-[16px] font-medium text-[#101828]">Pay with Studio Arella Wallet</span>
                         </div>
                         <div className="ml-[32px] flex items-center justify-between text-[#101828] pr-4">
-                          <span className="text-[14px] font-medium tracking-[0.05em]">*************528</span>
-                          <span className="text-[14px] font-medium">Lilian Okoro</span>
+                          <span className="text-[14px] font-medium">Available balance</span>
+                          <span className="text-[14px] font-bold text-[#D4AF37]">{formatCurrency(walletBalance, currency, rates)}</span>
                         </div>
                       </div>
-                      
-                      {/* Wema Card Option */}
-                      <div 
-                        onClick={() => setSelectedPaymentMethod('wema_card')}
-                        className={`w-full h-[127px] rounded-[16px] border cursor-pointer transition-all flex flex-col justify-center px-6 relative ${selectedPaymentMethod === 'wema_card' ? 'border-2 border-[#D4AF37]' : 'border border-[#D7D7D7]'}`}
-                      >
-                        <div className="flex items-center gap-4 mb-5">
-                          <div className={`w-[16px] h-[16px] rounded-full border flex items-center justify-center shrink-0 ${selectedPaymentMethod === 'wema_card' ? 'border-[#D4AF37]' : 'border-[#D7D7D7]'}`}>
-                            {selectedPaymentMethod === 'wema_card' && <div className="w-[8px] h-[8px] rounded-full bg-[#DF4308]" />}
+
+                      {/* Saved Cards */}
+                      {savedCards.map((c: any) => (
+                        <div 
+                          key={c.id}
+                          onClick={() => setSelectedPaymentMethod('saved_card')}
+                          className={`w-full h-[100px] rounded-[16px] border cursor-pointer transition-all flex flex-col justify-center px-6 relative ${selectedPaymentMethod === 'saved_card' ? 'border-2 border-[#D4AF37]' : 'border border-[#D7D7D7]'}`}
+                        >
+                          <div className="flex items-center gap-4 mb-2">
+                            <div className={`w-[16px] h-[16px] rounded-full border flex items-center justify-center shrink-0 ${selectedPaymentMethod === 'saved_card' ? 'border-[#D4AF37]' : 'border-[#D7D7D7]'}`}>
+                              {selectedPaymentMethod === 'saved_card' && <div className="w-[8px] h-[8px] rounded-full bg-[#DF4308]" />}
+                            </div>
+                            <span className="text-[16px] font-medium text-[#101828]">Pay with {c.bank || c.brand || 'Saved Card'}</span>
                           </div>
-                          <span className="text-[16px] font-medium text-[#101828]">Pay with Wema card</span>
+                          <div className="ml-[32px] flex items-center justify-between text-[#101828] pr-4">
+                            <span className="text-[14px] font-medium tracking-[0.05em]">•••• •••• •••• {c.last4 || '****'}</span>
+                            <span className="text-[14px] font-medium">{c.account_name || user?.name || 'Cardholder'}</span>
+                          </div>
                         </div>
-                        <div className="ml-[32px] flex items-center justify-between text-[#101828] pr-4">
-                          <span className="text-[14px] font-medium tracking-[0.05em]">*************493</span>
-                          <span className="text-[14px] font-medium">Lilian Okoro</span>
-                        </div>
-                      </div>
+                      ))}
 
                       {/* New Card Option */}
                       <div 
@@ -512,7 +523,7 @@ function BookAdForm() {
                     <div className="mt-auto w-full pt-10">
                       <button 
                         onClick={() => {
-                          if (selectedPaymentMethod === 'gtb_card' || selectedPaymentMethod === 'wema_card') {
+                          if (selectedPaymentMethod === 'saved_card') {
                             handlePayCard();
                           } else {
                             setStep(selectedPaymentMethod);
@@ -571,9 +582,9 @@ function BookAdForm() {
                     ) : (
                       <div className="w-full space-y-[20px] mb-[68px]">
                         <input placeholder="Enter amount" className="w-full h-[60px] rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-[#FFFFFF] px-4 text-[16px] text-[#16151C] font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
-                        <input placeholder="Lilian Okoro" value={cardForm.name} onChange={(e) => setCardForm({...cardForm, name: e.target.value})} className="w-full h-[60px] rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-[#FFFFFF] px-4 text-[16px] text-[#16151C] font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
+                        <input placeholder="Cardholder Name" value={cardForm.name} onChange={(e) => setCardForm({...cardForm, name: e.target.value})} className="w-full h-[60px] rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-[#FFFFFF] px-4 text-[16px] text-[#16151C] font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
                         <div className="relative w-full">
-                          <input placeholder="**** **** **** 0493" value={cardForm.number} onChange={(e) => setCardForm({...cardForm, number: e.target.value})} className="w-full h-[60px] rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-[#FFFFFF] px-4 text-[16px] text-[#16151C] font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
+                          <input placeholder="•••• •••• •••• ••••" value={cardForm.number} onChange={(e) => setCardForm({...cardForm, number: e.target.value})} className="w-full h-[60px] rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-[#FFFFFF] px-4 text-[16px] text-[#16151C] font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
                           <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center">
                             <div className="w-[30px] h-[20px] relative flex items-center justify-center border rounded-[2px] bg-white overflow-hidden p-0.5">
                               <div className="w-[12px] h-[12px] rounded-full bg-[#EA001B] absolute left-1 mix-blend-multiply opacity-90" />
@@ -639,7 +650,7 @@ function BookAdForm() {
                     </div>
 
                     <p className="text-center text-[14px] leading-[1.6] text-[rgba(162,161,168,1)] mb-auto px-4 max-w-[400px]">
-                      To authorize this payment, enter the OTP sent to the email <span className="text-[#101828] font-medium">Bems.arella@gmail.com</span> attached to your studio arella account
+                      To authorize this payment, enter the OTP sent to the email <span className="text-[#101828] font-medium">{user?.email || 'your registered email'}</span> attached to your Studio Arella account
                     </p>
 
                     <div className="w-full mt-auto mb-8">
