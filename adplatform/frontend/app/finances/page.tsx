@@ -36,6 +36,8 @@ import {
   Globe,
   Sparkles,
   Wallet,
+  Monitor,
+  PieChart,
 } from 'lucide-react';
 import Link from 'next/link';
 import { theme } from '@/lib/theme';
@@ -60,6 +62,7 @@ export default function FinancesPage() {
   const [showReservedModal, setShowReservedModal] = useState(false);
   const [showLinkBankModal, setShowLinkBankModal] = useState(false);
   const [selectedReceipt, setSelectedReceipt] = useState<any | null>(null);
+  const [showSpendingInsightModal, setShowSpendingInsightModal] = useState(false);
   
   // Fund Wallet state
   const [amount, setAmount] = useState('25000');
@@ -102,11 +105,12 @@ export default function FinancesPage() {
   const fetchData = async () => {
     setLoadError(false);
     try {
-      const [b, t, r, ab] = await Promise.all([
+      const [b, t, r, ab, cardsRes] = await Promise.all([
         api.get('/finances/balance'),
-        api.get('/finances/transactions?limit=50'),
+        api.get('/finances/transactions?limit=100'),
         api.get('/finances/revenue'),
         api.get('/bookings?limit=100'),
+        api.get('/payments/cards').catch(() => ({ data: { cards: [] } })),
       ]);
 
       setBalance({
@@ -117,6 +121,7 @@ export default function FinancesPage() {
       });
       setTransactions(t.data?.transactions || []);
       setAdBookings(ab.data?.bookings || []);
+      setSavedCards(cardsRes.data?.cards || []);
     } catch {
       setBalance(null);
       setTransactions([]);
@@ -341,7 +346,12 @@ export default function FinancesPage() {
   };
 
   const walletCredits = balance?.credits ?? 0;
-  const totalSpending = balance?.total_revenue ?? 0;
+  const screenAdSpending = useMemo(() => {
+    return adBookings
+      .filter((b: any) => b.status === 'active' || b.status === 'completed' || b.status === 'ended')
+      .reduce((sum: number, b: any) => sum + (Number(b.billing || b.total_cost) || 0), 0);
+  }, [adBookings]);
+  const totalSpending = (balance?.total_revenue && balance.total_revenue > 0) ? balance.total_revenue : screenAdSpending;
   const walletId = user?.id ? user.id.slice(0, 13) : 'â€”';
   const hasReservedAccount = Boolean(balance?.reserved_account_number);
   const dedicatedBank = balance?.reserved_account_bank || null;
@@ -384,7 +394,7 @@ export default function FinancesPage() {
                 
                 <div className="flex justify-between items-end mt-auto">
                   <div style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '24px', color: '#FFFFFF' }}>
-                    NGN 15,000
+                    {loading ? '...' : formatCurrency(walletCredits, currency, rates)}
                   </div>
                   <button 
                     onClick={openFundModal}
@@ -418,9 +428,12 @@ export default function FinancesPage() {
                 
                 <div className="flex justify-between items-end mt-auto">
                   <div style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '24px', color: '#FFFFFF' }}>
-                    NGN 25,000
+                    {loading ? '...' : formatCurrency(totalSpending, currency, rates)}
                   </div>
-                  <button className="bg-white rounded-[11.8px] shadow-sm flex justify-center items-center px-[17px] py-[12px]">
+                  <button 
+                    onClick={() => setShowSpendingInsightModal(true)}
+                    className="bg-white hover:bg-gray-100 rounded-[11.8px] shadow-sm flex justify-center items-center px-[17px] py-[12px] transition-colors cursor-pointer"
+                  >
                     <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '13.6px', color: '#101828' }}>
                       View spending insight
                     </span>
@@ -437,29 +450,32 @@ export default function FinancesPage() {
                 }}
               >
                 <div className="z-10">
-                  <div style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 400, fontSize: '13px', color: '#FFFFFF', marginBottom: '8px' }}>
-                    Special Offer: Book Ad slot from #1,000/min
+                  <div style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 600, fontSize: '13px', color: '#FFFFFF', marginBottom: '6px' }}>
+                    Special Offer: Book Ad slot from ₦1,000/min
                   </div>
                   <div style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '11px', color: '#D5E0ED', maxWidth: '65%', lineHeight: '140%' }}>
                     Instant digital screen activation across high-traffic prime Lagos studios
                   </div>
                 </div>
                 
-                <div className="absolute right-[-10px] top-[20px] w-[80px] h-[100px] flex justify-center items-center z-0">
-                   <div className="w-[60px] h-[80px] bg-white/10 rounded-[6px] border border-white/20 backdrop-blur-md flex flex-col items-center justify-center p-1 transform rotate-6">
-                      <div className="w-full h-[20px] bg-white rounded-[4px] mb-1"></div>
-                      <span className="text-[4px] text-white/70 text-center leading-tight">Our billboard stand is in a strategic location...</span>
+                <div className="absolute right-[-6px] top-[18px] w-[90px] h-[100px] flex justify-center items-center z-0 pointer-events-none">
+                   <div className="w-[68px] h-[88px] bg-white/10 rounded-[8px] border border-white/20 backdrop-blur-md flex flex-col items-center justify-center p-2 transform rotate-6 shadow-md">
+                      <div className="w-full h-[24px] bg-gradient-to-r from-[#D4AF37] to-[#F59E0B] rounded-[4px] mb-1 flex items-center justify-center">
+                        <Monitor size={12} color="#111" />
+                      </div>
+                      <span className="text-[6px] text-white/90 text-center font-semibold leading-tight">Prime Lagos Screen Ads</span>
                    </div>
                 </div>
 
-                <button 
-                  className="bg-[#FBFF79] rounded-[6px] px-[17px] py-[8px] z-10"
+                <Link 
+                  href="/bookings?tab=screen"
+                  className="bg-[#FBFF79] hover:bg-[#f6fa5c] rounded-[6px] px-[17px] py-[8px] z-10 transition-colors text-decoration-none inline-block cursor-pointer"
                   style={{ boxShadow: '0px 0px 7px rgba(251, 255, 121, 0.32)' }}
                 >
-                  <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 600, fontSize: '9.4px', color: '#051235', textTransform: 'uppercase' }}>
+                  <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 700, fontSize: '9.4px', color: '#051235', textTransform: 'uppercase' }}>
                     BOOK AD SLOT
                   </span>
-                </button>
+                </Link>
               </div>
             </div>
 
@@ -470,12 +486,17 @@ export default function FinancesPage() {
               <div className="bg-white rounded-[24px] p-[24px] flex flex-col justify-between relative shadow-sm border border-[#F0F0F0]" style={{ height: '176px' }}>
                 <div>
                    <h3 style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '18px', color: '#101828' }}>Total Transaction</h3>
-                   <div className="w-[30px] h-[25px] flex items-center justify-center rounded-[8px] mt-[10px]" style={{ background: 'rgba(3, 197, 210, 0.2)' }}>
-                      <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#005055' }}>45</span>
+                   <div className="w-[36px] h-[25px] px-1.5 flex items-center justify-center rounded-[8px] mt-[10px]" style={{ background: 'rgba(3, 197, 210, 0.2)' }}>
+                      <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 600, fontSize: '14px', color: '#005055' }}>
+                        {loading ? '—' : transactions.length}
+                      </span>
                    </div>
                 </div>
                 <div className="flex justify-between items-center w-full">
-                  <button className="flex items-center gap-[10px] w-full max-w-[287px] bg-[#FFFFFF] shadow-sm rounded-[14px] px-[20px] py-[14px] border border-[#F0F0F0] hover:bg-gray-50">
+                  <button 
+                    onClick={handleExportCSV}
+                    className="flex items-center gap-[10px] w-full max-w-[287px] bg-[#FFFFFF] shadow-sm rounded-[14px] px-[20px] py-[14px] border border-[#F0F0F0] hover:bg-gray-50 transition-colors cursor-pointer"
+                  >
                     <div className="w-[24px] h-[24px] bg-[#E5F9FA] rounded-full flex items-center justify-center">
                       <Download size={14} color="#005055" />
                     </div>
@@ -488,21 +509,32 @@ export default function FinancesPage() {
               <div className="bg-white rounded-[24px] p-[24px] flex flex-col justify-between relative shadow-sm border border-[#F0F0F0]" style={{ height: '176px' }}>
                 <div>
                    <h3 style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '18px', color: '#101828' }}>Linked Bank Card</h3>
-                   <div className="w-[30px] h-[25px] flex items-center justify-center rounded-[8px] mt-[10px]" style={{ background: 'rgba(227, 24, 24, 0.2)' }}>
-                      <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#E31818' }}>3</span>
+                   <div className="w-[36px] h-[25px] px-1.5 flex items-center justify-center rounded-[8px] mt-[10px]" style={{ background: savedCards.length > 0 ? 'rgba(34, 197, 94, 0.15)' : 'rgba(227, 24, 24, 0.15)' }}>
+                      <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 600, fontSize: '14px', color: savedCards.length > 0 ? '#15803d' : '#E31818' }}>
+                        {loading ? '—' : savedCards.length}
+                      </span>
                    </div>
                 </div>
                 
                 <div className="flex justify-between items-center w-full">
-                  <button onClick={() => { setShowFundModal(true); setFundStep('add-card'); }} className="flex items-center justify-center w-full max-w-[287px] bg-[#101828] hover:bg-[#1a2538] shadow-sm rounded-[14px] px-[20px] py-[14px]">
+                  <button onClick={() => { setShowFundModal(true); setFundStep('add-card'); }} className="flex items-center justify-center w-full max-w-[287px] bg-[#101828] hover:bg-[#1a2538] shadow-sm rounded-[14px] px-[20px] py-[14px] transition-colors cursor-pointer">
                     <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '16px', color: '#FFFFFF' }}>Add A Bank Card</span>
                   </button>
                   
-                  {/* Mastercard circles placeholder */}
-                  <div className="flex relative items-center h-[50px] w-[90px]">
-                     <div className="w-[44px] h-[44px] rounded-full bg-[#EA001B]/80 mix-blend-multiply absolute right-[40px]"></div>
-                     <div className="w-[44px] h-[44px] rounded-full bg-[#FFA200]/80 mix-blend-multiply absolute right-[20px]"></div>
-                     <div className="w-[44px] h-[44px] rounded-full border-2 border-[#101828]/10 right-[0px] absolute"></div>
+                  {/* Linked Card Indicator or Card Circles */}
+                  <div className="flex relative items-center h-[50px] w-[90px] justify-end">
+                     {savedCards.length > 0 ? (
+                       <div className="flex items-center gap-1.5 bg-[#F9FAFB] border border-[#E4E7EC] px-2.5 py-1.5 rounded-[10px] text-[11px] font-semibold text-[#344054]">
+                         <CreditCard size={14} className="text-[#D4AF37]" />
+                         <span>•••• {savedCards[0].last4 || 'Card'}</span>
+                       </div>
+                     ) : (
+                       <div className="flex relative items-center h-[50px] w-[90px]">
+                         <div className="w-[44px] h-[44px] rounded-full bg-[#EA001B]/80 mix-blend-multiply absolute right-[40px]"></div>
+                         <div className="w-[44px] h-[44px] rounded-full bg-[#FFA200]/80 mix-blend-multiply absolute right-[20px]"></div>
+                         <div className="w-[44px] h-[44px] rounded-full border-2 border-[#101828]/10 right-[0px] absolute"></div>
+                       </div>
+                     )}
                   </div>
                 </div>
               </div>
@@ -559,15 +591,25 @@ export default function FinancesPage() {
                   </div>
 
                   <div className="flex items-center gap-[16px]">
-                    <button className="flex items-center gap-[10px] text-white">
-                       <Download size={20} />
-                       <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 400, fontSize: '14px' }}>Generate transaction statement</span>
+                    <button 
+                      onClick={handleExportCSV}
+                      className="flex items-center gap-[10px] text-white hover:text-white/80 transition-colors cursor-pointer"
+                    >
+                       <Download size={18} />
+                       <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px' }}>Generate transaction statement</span>
                     </button>
-                    <button className="flex items-center gap-[10px] text-white ml-[20px]">
-                       <TrendingUp size={20} />
-                       <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 400, fontSize: '14px' }}>View spending insight</span>
+                    <button 
+                      onClick={() => setShowSpendingInsightModal(true)}
+                      className="flex items-center gap-[10px] text-white hover:text-white/80 transition-colors ml-[20px] cursor-pointer"
+                    >
+                       <TrendingUp size={18} />
+                       <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px' }}>View spending insight</span>
                     </button>
-                    <button className="w-[24px] h-[24px] border border-white rounded-[5px] flex items-center justify-center text-white ml-[10px]">
+                    <button 
+                      onClick={() => setShowSpendingInsightModal(true)}
+                      title="More spending insights"
+                      className="w-[24px] h-[24px] border border-white rounded-[5px] flex items-center justify-center text-white hover:bg-white/10 transition-colors ml-[10px] cursor-pointer"
+                    >
                        <span className="text-[14px] leading-none mb-2">...</span>
                     </button>
                   </div>
@@ -587,211 +629,144 @@ export default function FinancesPage() {
                    </tr>
                  </thead>
                  <tbody>
-                   <tr className="border-b border-[#F0F0F0] bg-white">
-                     <td className="px-[24px] py-[12px]">
-                       <div className="flex flex-col">
-                          <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>Podcast sponsorship wave</span>
-                          <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 400, fontSize: '14px', color: '#5F6D7E' }}>Campaign</span>
-                       </div>
-                     </td>
-                     <td className="px-[24px] py-[12px]">
-                        <div className="flex items-center relative h-[24px] w-[50px]">
-                           <div className="w-[24px] h-[24px] bg-[#E35205] rounded-full border-2 border-white absolute left-0 z-20 flex items-center justify-center text-[8px] text-white font-bold">GTB</div>
-                           <div className="w-[24px] h-[24px] bg-[#005055] rounded-full border-2 border-white absolute left-[12px] z-10 flex items-center justify-center text-[8px] text-white font-bold">ACC</div>
+                  {loading ? (
+                    <tr>
+                      <td colSpan={7} className="px-[24px] py-[40px] text-center text-[#5F6D7E] text-[14px]">
+                        Loading transactions...
+                      </td>
+                    </tr>
+                  ) : currentRecords.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="px-[24px] py-[48px] text-center">
+                        <div className="flex flex-col items-center justify-center gap-2">
+                          <Receipt size={36} className="text-gray-300 mb-1" />
+                          <p style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 600, fontSize: '15px', color: '#101828', margin: 0 }}>
+                            No transactions yet
+                          </p>
+                          <p style={{ fontFamily: 'var(--font-dm-sans)', fontSize: '13px', color: '#5F6D7E', margin: '0 0 12px' }}>
+                            Transactions from wallet top-ups, ad slot bookings, and podcast studio reservations will show here.
+                          </p>
+                          <button
+                            onClick={openFundModal}
+                            className="bg-[#D4AF37] hover:bg-[#bfa030] text-[#111111] font-bold text-[12px] px-4 py-2 rounded-lg transition-colors cursor-pointer"
+                          >
+                            Fund Wallet Now
+                          </button>
                         </div>
-                     </td>
-                     <td className="px-[24px] py-[12px]" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>23f1335thu_o9</td>
-                     <td className="px-[24px] py-[12px] text-center" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>5</td>
-                     <td className="px-[24px] py-[12px]" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>NGN 28,000</td>
-                     <td className="px-[24px] py-[12px]">
-                        <span className="px-[10px] py-[3px] rounded-full" style={{ background: 'rgba(3, 197, 210, 0.2)', color: '#005055', fontFamily: 'var(--font-dm-sans)', fontSize: '10.7px' }}>SUCCESSFUL</span>
-                     </td>
-                     <td className="px-[24px] py-[12px]">
-                        <button className="w-[24px] h-[24px] flex items-center justify-center text-[#5F6D7E]">
-                           <span className="text-[14px] leading-none rotate-90 font-bold tracking-widest -mt-2">...</span>
-                        </button>
-                     </td>
-                   </tr>
+                      </td>
+                    </tr>
+                  ) : (
+                    currentRecords.map((t: any) => {
+                      const isCredit = t.type === 'credit' || t.type === 'refund';
+                      const isPending = t.type === 'pending' || t.status === 'pending';
+                      const isFailed = t.status === 'failed';
+                      const statusText = isFailed ? 'FAILED' : isPending ? 'PENDING' : 'SUCCESSFUL';
+                      const statusBg = isFailed
+                        ? 'rgba(243, 184, 164, 0.2)'
+                        : isPending
+                        ? 'rgba(3, 36, 210, 0.15)'
+                        : 'rgba(3, 197, 210, 0.2)';
+                      const statusColor = isFailed ? '#E31818' : isPending ? '#0284c7' : '#005055';
 
-                   <tr className="border-b border-[#F0F0F0] bg-white">
-                     <td className="px-[24px] py-[12px]">
-                       <div className="flex flex-col">
-                          <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>Podcast sponsorship wave</span>
-                          <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 400, fontSize: '14px', color: '#5F6D7E' }}>Campaign</span>
-                       </div>
-                     </td>
-                     <td className="px-[24px] py-[12px]">
-                        <div className="flex items-center relative h-[24px] w-[50px]">
-                           <div className="w-[24px] h-[24px] bg-[#E35205] rounded-full flex items-center justify-center text-[8px] text-white font-bold">GTB</div>
-                        </div>
-                     </td>
-                     <td className="px-[24px] py-[12px]" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>23f1335thu_o9</td>
-                     <td className="px-[24px] py-[12px] text-center" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>2</td>
-                     <td className="px-[24px] py-[12px]" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>NGN 55,000</td>
-                     <td className="px-[24px] py-[12px]">
-                        <span className="px-[10px] py-[3px] rounded-full" style={{ background: 'rgba(3, 36, 210, 0.2)', color: '#005055', fontFamily: 'var(--font-dm-sans)', fontSize: '10.7px' }}>PENDING</span>
-                     </td>
-                     <td className="px-[24px] py-[12px]">
-                        <button className="w-[24px] h-[24px] flex items-center justify-center text-[#5F6D7E]">
-                           <span className="text-[14px] leading-none rotate-90 font-bold tracking-widest -mt-2">...</span>
-                        </button>
-                     </td>
-                   </tr>
+                      const serviceName = t.description || (
+                        t.source === 'topup' ? 'Wallet Top-Up' :
+                        t.source === 'booking' ? 'Screen Ad Slot Booking' :
+                        t.source === 'podcast_booking' ? 'Podcast Studio Booking' :
+                        t.source === 'campaign' ? 'Campaign Funding' :
+                        t.source || 'Transaction'
+                      );
+                      const serviceCategory = (
+                        t.source === 'booking' ? 'Screen Ad' :
+                        t.source === 'podcast_booking' ? 'Podcast' :
+                        t.source === 'topup' ? 'Wallet Credit' :
+                        t.source === 'campaign' ? 'Campaign' :
+                        'Direct'
+                      );
 
-                   <tr className="border-b border-[#F0F0F0] bg-white">
-                     <td className="px-[24px] py-[12px]">
-                       <div className="flex flex-col">
-                          <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>Podcast sponsorship wave</span>
-                          <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 400, fontSize: '14px', color: '#5F6D7E' }}>Campaign</span>
-                       </div>
-                     </td>
-                     <td className="px-[24px] py-[12px]">
-                        <div className="flex items-center relative h-[24px] w-[80px]">
-                           <div className="w-[24px] h-[24px] bg-[#60269E] rounded-full border-2 border-white absolute left-0 z-30 flex items-center justify-center text-[8px] text-white font-bold">POL</div>
-                           <div className="w-[24px] h-[24px] bg-[#005055] rounded-full border-2 border-white absolute left-[12px] z-20 flex items-center justify-center text-[8px] text-white font-bold">ACC</div>
-                           <div className="w-[24px] h-[24px] bg-[#5C068C] rounded-full border-2 border-white absolute left-[24px] z-10 flex items-center justify-center text-[8px] text-white font-bold">FCMB</div>
-                        </div>
-                     </td>
-                     <td className="px-[24px] py-[12px]" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>23f1335thu_o9</td>
-                     <td className="px-[24px] py-[12px] text-center" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>50</td>
-                     <td className="px-[24px] py-[12px]" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>NGN 2,550,000</td>
-                     <td className="px-[24px] py-[12px]">
-                        <span className="px-[10px] py-[3px] rounded-full" style={{ background: 'rgba(243, 184, 164, 0.2)', color: '#E31818', fontFamily: 'var(--font-dm-sans)', fontSize: '10.7px' }}>FAILED</span>
-                     </td>
-                     <td className="px-[24px] py-[12px]">
-                        <button className="w-[24px] h-[24px] flex items-center justify-center text-[#5F6D7E]">
-                           <span className="text-[14px] leading-none rotate-90 font-bold tracking-widest -mt-2">...</span>
-                        </button>
-                     </td>
-                   </tr>
+                      const channelBadge = (t.channel || (isCredit ? 'Paystack' : 'Wallet')).toUpperCase().slice(0, 4);
 
-                   <tr className="border-b border-[#F0F0F0] bg-white">
-                     <td className="px-[24px] py-[12px]">
-                       <div className="flex flex-col">
-                          <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>Podcast sponsorship wave</span>
-                          <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 400, fontSize: '14px', color: '#5F6D7E' }}>Ad</span>
-                       </div>
-                     </td>
-                     <td className="px-[24px] py-[12px]">
-                        <div className="flex items-center relative h-[24px] w-[50px]">
-                           <div className="w-[24px] h-[24px] bg-[#60269E] rounded-full flex items-center justify-center text-[8px] text-white font-bold">POL</div>
-                        </div>
-                     </td>
-                     <td className="px-[24px] py-[12px]" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>23f1335thu_o9</td>
-                     <td className="px-[24px] py-[12px] text-center" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>10</td>
-                     <td className="px-[24px] py-[12px]" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>NGN 258,000</td>
-                     <td className="px-[24px] py-[12px]">
-                        <span className="px-[10px] py-[3px] rounded-full" style={{ background: 'rgba(3, 197, 210, 0.2)', color: '#005055', fontFamily: 'var(--font-dm-sans)', fontSize: '10.7px' }}>SUCCESSFUL</span>
-                     </td>
-                     <td className="px-[24px] py-[12px]">
-                        <button className="w-[24px] h-[24px] flex items-center justify-center text-[#5F6D7E]">
-                           <span className="text-[14px] leading-none rotate-90 font-bold tracking-widest -mt-2">...</span>
-                        </button>
-                     </td>
-                   </tr>
-
-                   <tr className="border-b border-[#F0F0F0] bg-white">
-                     <td className="px-[24px] py-[12px]">
-                       <div className="flex flex-col">
-                          <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>Podcast sponsorship wave</span>
-                          <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 400, fontSize: '14px', color: '#5F6D7E' }}>Studio session</span>
-                       </div>
-                     </td>
-                     <td className="px-[24px] py-[12px]">
-                        <div className="flex items-center relative h-[24px] w-[50px]">
-                           <div className="w-[24px] h-[24px] bg-[#005055] rounded-full border-2 border-white absolute left-0 z-20 flex items-center justify-center text-[8px] text-white font-bold">ACC</div>
-                           <div className="w-[24px] h-[24px] bg-[#FF0000] rounded-full border-2 border-white absolute left-[12px] z-10 flex items-center justify-center text-[8px] text-white font-bold">ZEN</div>
-                        </div>
-                     </td>
-                     <td className="px-[24px] py-[12px]" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>23f1335thu_o9</td>
-                     <td className="px-[24px] py-[12px] text-center" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>6</td>
-                     <td className="px-[24px] py-[12px]" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>NGN 128,000</td>
-                     <td className="px-[24px] py-[12px]">
-                        <span className="px-[10px] py-[3px] rounded-full" style={{ background: 'rgba(3, 197, 210, 0.2)', color: '#005055', fontFamily: 'var(--font-dm-sans)', fontSize: '10.7px' }}>SUCCESSFUL</span>
-                     </td>
-                     <td className="px-[24px] py-[12px]">
-                        <button className="w-[24px] h-[24px] flex items-center justify-center text-[#5F6D7E]">
-                           <span className="text-[14px] leading-none rotate-90 font-bold tracking-widest -mt-2">...</span>
-                        </button>
-                     </td>
-                   </tr>
-
-                   <tr className="border-b border-[#F0F0F0] bg-white">
-                     <td className="px-[24px] py-[12px]">
-                       <div className="flex flex-col">
-                          <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>Podcast sponsorship wave</span>
-                          <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 400, fontSize: '14px', color: '#5F6D7E' }}>Studio session</span>
-                       </div>
-                     </td>
-                     <td className="px-[24px] py-[12px]">
-                        <div className="flex items-center relative h-[24px] w-[50px]">
-                           <div className="w-[24px] h-[24px] bg-[#5C068C] rounded-full flex items-center justify-center text-[8px] text-white font-bold">FCMB</div>
-                        </div>
-                     </td>
-                     <td className="px-[24px] py-[12px]" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>23f1335thu_o9</td>
-                     <td className="px-[24px] py-[12px] text-center" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>4</td>
-                     <td className="px-[24px] py-[12px]" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>NGN 218,000</td>
-                     <td className="px-[24px] py-[12px]">
-                        <span className="px-[10px] py-[3px] rounded-full" style={{ background: 'rgba(3, 36, 210, 0.2)', color: '#005055', fontFamily: 'var(--font-dm-sans)', fontSize: '10.7px' }}>PENDING</span>
-                     </td>
-                     <td className="px-[24px] py-[12px]">
-                        <button className="w-[24px] h-[24px] flex items-center justify-center text-[#5F6D7E]">
-                           <span className="text-[14px] leading-none rotate-90 font-bold tracking-widest -mt-2">...</span>
-                        </button>
-                     </td>
-                   </tr>
-
-                   <tr className="border-b border-[#F0F0F0] bg-white">
-                     <td className="px-[24px] py-[12px]">
-                       <div className="flex flex-col">
-                          <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>Podcast sponsorship wave</span>
-                          <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 400, fontSize: '14px', color: '#5F6D7E' }}>Ad</span>
-                       </div>
-                     </td>
-                     <td className="px-[24px] py-[12px]">
-                        <div className="flex items-center relative h-[24px] w-[50px]">
-                           <div className="w-[24px] h-[24px] bg-gray-200 rounded-full flex items-center justify-center text-[8px] text-gray-500 font-bold">BNK</div>
-                        </div>
-                     </td>
-                     <td className="px-[24px] py-[12px]" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>23f1335thu_o9</td>
-                     <td className="px-[24px] py-[12px] text-center" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>1</td>
-                     <td className="px-[24px] py-[12px]" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>NGN 33,000</td>
-                     <td className="px-[24px] py-[12px]">
-                        <span className="px-[10px] py-[3px] rounded-full" style={{ background: 'rgba(3, 36, 210, 0.2)', color: '#005055', fontFamily: 'var(--font-dm-sans)', fontSize: '10.7px' }}>PENDING</span>
-                     </td>
-                     <td className="px-[24px] py-[12px]">
-                        <button className="w-[24px] h-[24px] flex items-center justify-center text-[#5F6D7E]">
-                           <span className="text-[14px] leading-none rotate-90 font-bold tracking-widest -mt-2">...</span>
-                        </button>
-                     </td>
-                   </tr>
-
-                 </tbody>
-               </table>
-               
-               {/* Pagination Footer */}
-               <div className="flex items-center justify-between px-[24px] py-[12px] gap-[10px] bg-white">
-                 <button className="px-3 py-1 text-[#5F6D7E] text-[14px] flex items-center gap-1 border border-[#F0F0F0] rounded-[5px]">
-                    <ChevronLeft size={16} /> Previous
-                 </button>
-                 <div className="flex items-center gap-2 text-[14px] text-[#5F6D7E]">
-                    <span className="w-[30px] h-[30px] flex items-center justify-center rounded-[5px] bg-[#F0F0F0] text-black">1</span>
-                    <span className="w-[30px] h-[30px] flex items-center justify-center">2</span>
-                    <span className="w-[30px] h-[30px] flex items-center justify-center">3</span>
-                    <span className="w-[30px] h-[30px] flex items-center justify-center">4</span>
-                    <span className="w-[30px] h-[30px] flex items-center justify-center">5</span>
-                 </div>
-                 <button className="px-3 py-1 text-[#5F6D7E] text-[14px] flex items-center gap-1 border border-[#F0F0F0] rounded-[5px]">
-                    Next <ChevronRight size={16} />
-                 </button>
-               </div>
-               
+                      return (
+                        <tr key={t.id || t.reference} className="border-b border-[#F0F0F0] bg-white hover:bg-gray-50/50 transition-colors">
+                          <td className="px-[24px] py-[14px]">
+                            <div className="flex flex-col">
+                              <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>
+                                {serviceName}
+                              </span>
+                              <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 400, fontSize: '13px', color: '#5F6D7E' }}>
+                                {serviceCategory}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-[24px] py-[14px]">
+                            <div className="flex items-center">
+                              <span className="px-2 py-0.5 bg-gray-100 border border-gray-200 rounded text-[10px] text-gray-700 font-bold uppercase tracking-wider">
+                                {channelBadge}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-[24px] py-[14px]" style={{ fontFamily: 'monospace', fontWeight: 500, fontSize: '12px', color: '#475467' }}>
+                            {t.reference ? (t.reference.length > 18 ? `${t.reference.slice(0, 8)}...${t.reference.slice(-6)}` : t.reference) : '—'}
+                          </td>
+                          <td className="px-[24px] py-[14px] text-center" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 400, fontSize: '13px', color: '#5F6D7E' }}>
+                            {t.created_at ? new Date(t.created_at).toLocaleDateString('en-GB') : '—'}
+                          </td>
+                          <td className="px-[24px] py-[14px]" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 600, fontSize: '14px', color: isCredit ? '#16A34A' : '#101828' }}>
+                            {isCredit ? '+' : '-'}{formatCurrency(Number(t.amount) || 0, currency, rates)}
+                          </td>
+                          <td className="px-[24px] py-[14px]">
+                            <span className="px-[10px] py-[3px] rounded-full font-bold" style={{ background: statusBg, color: statusColor, fontFamily: 'var(--font-dm-sans)', fontSize: '10.7px' }}>
+                              {statusText}
+                            </span>
+                          </td>
+                          <td className="px-[24px] py-[14px]">
+                            <button 
+                              onClick={() => setSelectedReceipt(t)}
+                              title="View & Download Receipt"
+                              className="w-[30px] h-[30px] rounded-md hover:bg-gray-100 flex items-center justify-center text-[#5F6D7E] hover:text-[#101828] transition-colors cursor-pointer"
+                            >
+                              <Receipt size={16} />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+              
+              {/* Pagination Footer */}
+              <div className="flex items-center justify-between px-[24px] py-[14px] gap-[10px] bg-white border-t border-[#F0F0F0]">
+                <button 
+                  disabled={currentPage <= 1}
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  className="px-3 py-1.5 text-[#5F6D7E] text-[13px] flex items-center gap-1.5 border border-[#F0F0F0] rounded-[6px] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors cursor-pointer"
+                >
+                   <ChevronLeft size={15} /> Previous
+                </button>
+                <div className="flex items-center gap-1.5 text-[13px] text-[#5F6D7E]">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).slice(0, 5).map(pageNum => (
+                    <button
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`w-[28px] h-[28px] flex items-center justify-center rounded-[6px] transition-colors cursor-pointer ${currentPage === pageNum ? 'bg-[#101828] text-white font-semibold' : 'hover:bg-gray-100 text-[#5F6D7E]'}`}
+                    >
+                      {pageNum}
+                    </button>
+                  ))}
+                </div>
+                <button 
+                  disabled={currentPage >= totalPages}
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  className="px-3 py-1.5 text-[#5F6D7E] text-[13px] flex items-center gap-1.5 border border-[#F0F0F0] rounded-[6px] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors cursor-pointer"
+                >
+                   Next <ChevronRight size={15} />
+                </button>
+              </div>
+              
             </div>
 
           </div>
 
-
-        {/* â”€â”€â”€ MODAL 1: FUND WALLET â”€â”€â”€ */}
         <AnimatePresence>
           {showFundModal && (
             <>
@@ -1489,6 +1464,139 @@ export default function FinancesPage() {
                         onClick={() => setSelectedReceipt(null)} 
                         variant="primary" 
                         style={{ flex: 1, background: '#C69A2C' }}
+                      >
+                        Close
+                      </Button>
+                    </div>
+
+                  </div>
+                </motion.div>
+              </div>
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* ─── MODAL 4: SPENDING INSIGHTS ─── */}
+        <AnimatePresence>
+          {showSpendingInsightModal && (
+            <>
+              <motion.div 
+                key="spending-bd" 
+                initial={{ opacity: 0 }} 
+                animate={{ opacity: 1 }} 
+                exit={{ opacity: 0 }}
+                onClick={() => setShowSpendingInsightModal(false)}
+                style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.5)', zIndex: 200, backdropFilter: 'blur(4px)' }} 
+              />
+              <div style={{ position: 'fixed', inset: 0, zIndex: 201, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, pointerEvents: 'none' }}>
+                <motion.div 
+                  key="spending-card"
+                  initial={{ opacity: 0, scale: 0.94, y: 16 }} 
+                  animate={{ opacity: 1, scale: 1, y: 0 }} 
+                  exit={{ opacity: 0, scale: 0.96, y: 10 }} 
+                  transition={{ duration: 0.2 }}
+                  style={{ width: '100%', maxWidth: 540, pointerEvents: 'auto' }}
+                >
+                  <div style={{ background: '#FFFFFF', borderRadius: 28, padding: '28px 28px 32px', boxShadow: '0 20px 40px rgba(0,0,0,0.15)', fontFamily: F }}>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-[36px] h-[36px] rounded-full bg-[#D4AF37]/15 flex items-center justify-center">
+                          <TrendingDown size={18} className="text-[#D4AF37]" />
+                        </div>
+                        <div>
+                          <h2 style={{ fontSize: 18, fontWeight: 700, fontFamily: 'var(--font-dm-sans)', color: '#101828', margin: 0 }}>
+                            Spending Insights
+                          </h2>
+                          <p style={{ fontSize: 12, color: '#667085', margin: 0 }}>
+                            Overview of your ad slots, studio sessions & wallet usage
+                          </p>
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => setShowSpendingInsightModal(false)}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#667085', padding: 4 }}
+                      >
+                        <X size={18} />
+                      </button>
+                    </div>
+
+                    {/* Total summary highlight */}
+                    <div style={{ background: 'linear-gradient(135deg, #101828 0%, #1D2939 100%)', borderRadius: 18, padding: '20px', color: '#FFFFFF', marginBottom: 20 }}>
+                      <p style={{ fontSize: 12, color: '#98A2B3', margin: '0 0 6px', fontWeight: 500 }}>Total Cumulative Spending</p>
+                      <h3 style={{ fontSize: 28, fontWeight: 700, margin: 0, color: '#FFFFFF', fontFamily: 'var(--font-dm-sans)' }}>
+                        {formatCurrency(totalSpending, currency, rates)}
+                      </h3>
+                      <p style={{ fontSize: 11, color: '#D4AF37', margin: '8px 0 0', fontWeight: 600 }}>
+                        Across all screen ad bookings & studio reservations
+                      </p>
+                    </div>
+
+                    {/* Category breakdown */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}>
+                      
+                      <div style={{ background: '#F9FAFB', border: '1px solid #EAECF0', borderRadius: 14, padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center">
+                            <Monitor size={17} className="text-amber-600" />
+                          </div>
+                          <div>
+                            <p style={{ fontSize: 13, fontWeight: 600, color: '#101828', margin: 0 }}>Digital Screen Advertising</p>
+                            <p style={{ fontSize: 11, color: '#667085', margin: 0 }}>{adBookings.length} booking{adBookings.length === 1 ? '' : 's'}</p>
+                          </div>
+                        </div>
+                        <span style={{ fontSize: 14, fontWeight: 700, color: '#101828' }}>
+                          {formatCurrency(screenAdSpending, currency, rates)}
+                        </span>
+                      </div>
+
+                      <div style={{ background: '#F9FAFB', border: '1px solid #EAECF0', borderRadius: 14, padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-center">
+                            <Building2 size={17} className="text-purple-600" />
+                          </div>
+                          <div>
+                            <p style={{ fontSize: 13, fontWeight: 600, color: '#101828', margin: 0 }}>Podcast Studio Sessions</p>
+                            <p style={{ fontSize: 11, color: '#667085', margin: 0 }}>Audio studio rentals & equipment</p>
+                          </div>
+                        </div>
+                        <span style={{ fontSize: 14, fontWeight: 700, color: '#101828' }}>
+                          {formatCurrency(Math.max(0, totalSpending - screenAdSpending), currency, rates)}
+                        </span>
+                      </div>
+
+                      <div style={{ background: '#F9FAFB', border: '1px solid #EAECF0', borderRadius: 14, padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center">
+                            <Wallet size={17} className="text-emerald-600" />
+                          </div>
+                          <div>
+                            <p style={{ fontSize: 13, fontWeight: 600, color: '#101828', margin: 0 }}>Available Wallet Credits</p>
+                            <p style={{ fontSize: 11, color: '#667085', margin: 0 }}>Pre-funded balance ready to use</p>
+                          </div>
+                        </div>
+                        <span style={{ fontSize: 14, fontWeight: 700, color: '#16A34A' }}>
+                          {formatCurrency(walletCredits, currency, rates)}
+                        </span>
+                      </div>
+
+                    </div>
+
+                    <div style={{ display: 'flex', gap: 10 }}>
+                      <Button
+                        onClick={() => {
+                          setShowSpendingInsightModal(false);
+                          handleExportCSV();
+                        }}
+                        variant="secondary"
+                        style={{ flex: 1 }}
+                      >
+                        <Download size={13} /> Export Statement
+                      </Button>
+                      <Button 
+                        onClick={() => setShowSpendingInsightModal(false)} 
+                        variant="primary" 
+                        style={{ flex: 1, background: '#101828' }}
                       >
                         Close
                       </Button>
