@@ -75,27 +75,51 @@ export const DEFAULT_DESIGNER_FOLLOWERS: FollowerProfile[] = [
 export const DEFAULT_DESIGNER_FOLLOWING: FollowerProfile[] = [
   {
     id: 'ing1',
-    name: 'Brandon Wilson',
-    role: 'Senior Product Designer',
-    avatar: '/audience/brandon-wilson.png',
+    name: 'Audrey Alexander',
+    role: 'Team lead at Google',
+    avatar: '/audience/audrey-alexander.png',
   },
   {
     id: 'ing2',
-    name: 'Theresa Steward',
-    role: 'Brand Strategist & Podcaster',
-    avatar: '/audience/theresa-steward.png',
+    name: 'Kyle Fisher',
+    role: 'Product designer at Commandor Corp',
+    avatar: '/audience/kyle-fisher.png',
   },
   {
     id: 'ing3',
-    name: 'Steve Jobs',
-    role: 'Innovation & Product Keynotes',
-    avatar: '/audience/steve-jobs.png',
+    name: 'Darlene Black',
+    role: 'HR-manager, 10 000 connections',
+    avatar: '/audience/darlene-black.png',
   },
   {
     id: 'ing4',
-    name: 'Nermmen Saif',
-    role: 'Creative Director at Studio Art',
-    avatar: '/audience/nermmen-saif.png',
+    name: 'Eduardo Russell',
+    role: 'Full stack developer at Yandex',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80',
+  },
+  {
+    id: 'ing5',
+    name: 'Audrey Alexander',
+    role: 'Team lead at Google',
+    avatar: '/audience/audrey-alexander.png',
+  },
+  {
+    id: 'ing6',
+    name: 'Kyle Fisher',
+    role: 'Product designer at Commandor Corp',
+    avatar: '/audience/kyle-fisher.png',
+  },
+  {
+    id: 'ing7',
+    name: 'Darlene Black',
+    role: 'HR-manager, 10 000 connections',
+    avatar: '/audience/darlene-black.png',
+  },
+  {
+    id: 'ing8',
+    name: 'Eduardo Russell',
+    role: 'Full stack developer at Yandex',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80',
   },
 ];
 
@@ -276,6 +300,31 @@ export default function AudienceProfilePageView() {
   const handleTabChange = (tab: 'profile' | 'followers' | 'following') => {
     setActiveTab(tab);
     router.replace(`/audience?view=profile&tab=${tab}`, { scroll: false });
+  };
+
+  const [unfollowedMap, setUnfollowedMap] = useState<Record<string, boolean>>({});
+
+  const handleToggleFollow = async (creatorId: string, creatorName: string) => {
+    const isCurrentlyUnfollowed = Boolean(unfollowedMap[creatorId]);
+    if (isCurrentlyUnfollowed) {
+      setUnfollowedMap((prev) => ({ ...prev, [creatorId]: false }));
+      setFollowingCount((prev) => prev + 1);
+      toast(`Following ${creatorName}`, 'success');
+      try {
+        await api.post(`/follows/${creatorId}`);
+      } catch (err) {
+        console.warn('API follow error:', err);
+      }
+    } else {
+      setUnfollowedMap((prev) => ({ ...prev, [creatorId]: true }));
+      setFollowingCount((prev) => Math.max(0, prev - 1));
+      toast(`Unfollowed ${creatorName}`, 'info');
+      try {
+        await api.delete(`/follows/${creatorId}`);
+      } catch (err) {
+        console.warn('API unfollow error:', err);
+      }
+    }
   };
 
   const handleSaveProfile = async (e: React.FormEvent) => {
@@ -671,35 +720,66 @@ export default function AudienceProfilePageView() {
           </div>
         </div>
       ) : (
-        /* ─── Following Tab Content: Frame matching designer screen (850px wide) ─── */
-        <div className="w-full bg-white rounded-[4px] shadow-[0px_20px_60px_rgba(241,244,248,0.5)] border border-gray-100/80 p-8 sm:p-10">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
-            {(following.length > 0 ? following : DEFAULT_DESIGNER_FOLLOWING).map((f: any) => (
-              <div
-                key={f.id}
-                onClick={() => toast(`Viewing ${f.name}'s profile`, 'info')}
-                className="flex items-center gap-4 group cursor-pointer"
-              >
-                <div className="w-[52px] h-[52px] rounded-full overflow-hidden shrink-0 bg-neutral-200 shadow-sm border border-black/5">
-                  <img
-                    src={f.avatar || '/audience/kyle-fisher.png'}
-                    alt={f.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = '/audience/kyle-fisher.png';
-                    }}
-                  />
+        /* ─── Following Tab Content: Filter line + 2-Column Cards matching Figma specs ─── */
+        <div className="flex flex-col gap-6 w-full lg:w-[850px]">
+          {/* Filter Divider: Line --- PEOPLE YOU FOLLOW --- Line */}
+          <div className="w-full flex items-center justify-between gap-4 py-1">
+            <div className="flex-1 h-[1px] bg-[#E7E7E7]" />
+            <span className="text-[12px] font-medium text-[#181818] uppercase tracking-wider whitespace-nowrap px-2 font-['DM_Sans',sans-serif]">
+              People you follow
+            </span>
+            <div className="flex-1 h-[1px] bg-[#E7E7E7]" />
+          </div>
+
+          {/* 2-Column Grid of 420px x 95px Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {(following.length > 0 ? following : DEFAULT_DESIGNER_FOLLOWING).map((f: any) => {
+              const isUnfollowed = Boolean(unfollowedMap[f.id]);
+              return (
+                <div
+                  key={f.id}
+                  className="w-full h-[95px] bg-white rounded-[4px] shadow-[0px_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 flex items-center justify-between px-6 py-4 transition-all"
+                >
+                  {/* Left: Avatar + Details */}
+                  <div
+                    onClick={() => toast(`Viewing ${f.name}'s profile`, 'info')}
+                    className="flex items-center gap-3.5 min-w-0 cursor-pointer group"
+                  >
+                    <div className="w-[52px] h-[52px] rounded-full overflow-hidden shrink-0 bg-neutral-200 border border-black/5">
+                      <img
+                        src={f.avatar || '/audience/kyle-fisher.png'}
+                        alt={f.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = '/audience/kyle-fisher.png';
+                        }}
+                      />
+                    </div>
+                    <div className="flex flex-col justify-center min-w-0">
+                      <span className="text-[14px] font-semibold text-[#181818] leading-[18px] truncate group-hover:text-[#D9BA54] transition-colors">
+                        {f.name}
+                      </span>
+                      <span className="text-[10px] font-normal text-[#181818] leading-[15px] truncate mt-0.5">
+                        {f.role || 'Creator'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Right: Unfollow Button (91px x 32px, #D4AF37) */}
+                  <button
+                    type="button"
+                    onClick={() => handleToggleFollow(f.id, f.name)}
+                    className={`w-[91px] h-[32px] rounded-[4px] text-[12px] font-normal capitalize transition-colors cursor-pointer shrink-0 flex items-center justify-center ${
+                      isUnfollowed
+                        ? 'bg-white border border-[#D4AF37] text-[#D4AF37] hover:bg-amber-50/50'
+                        : 'bg-[#D4AF37] hover:bg-[#c49f2e] text-black'
+                    }`}
+                  >
+                    {isUnfollowed ? 'Follow' : 'Unfollow'}
+                  </button>
                 </div>
-                <div className="flex flex-col justify-center min-w-0">
-                  <span className="text-[16px] font-bold text-[#181818] leading-[22px] truncate group-hover:text-[#D9BA54] transition-colors">
-                    {f.name}
-                  </span>
-                  <span className="text-[13px] font-normal text-[#181818] leading-[150%] truncate mt-0.5">
-                    {f.role || 'Creator'}
-                  </span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
