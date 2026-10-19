@@ -48,6 +48,7 @@ export default function AudienceEditProfilePageView({
 
   // ─── Success Confirmation Popup Modal (Figma: Filter Popup 383px x 433px) ───
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [successPopupTitle, setSuccessPopupTitle] = useState<'Account settings changed' | 'Password updated'>('Account settings changed');
 
   // ─── 1. Form State (Personal Information) ───
   const [firstName, setFirstName] = useState('');
@@ -139,7 +140,8 @@ export default function AudienceEditProfilePageView({
       }
 
       await checkAuth();
-      // Launch Figma confirmation popup
+      // Launch Figma confirmation popup with "Account settings changed" title
+      setSuccessPopupTitle('Account settings changed');
       setShowSuccessPopup(true);
     } catch (err: any) {
       toast(err?.response?.data?.message || 'Could not save profile changes', 'error');
@@ -172,7 +174,8 @@ export default function AudienceEditProfilePageView({
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-      // Launch Figma confirmation popup
+      // Launch Figma confirmation popup with "Password updated" title
+      setSuccessPopupTitle('Password updated');
       setShowSuccessPopup(true);
     } catch (err: any) {
       toast(err?.response?.data?.message || 'Could not update password', 'error');
@@ -695,9 +698,9 @@ export default function AudienceEditProfilePageView({
               </div>
             </div>
 
-            {/* Title: Account settings changed (at top 224px, 20px font-semibold, #16151C) */}
+            {/* Title: Password updated / Account settings changed (at top 224px, 20px font-semibold, #16151C) */}
             <h3 className="absolute top-[224px] left-1/2 -translate-x-1/2 w-[280px] text-center font-['DM_Sans',sans-serif] font-semibold text-[20px] leading-[30px] text-[#16151C] m-0">
-              Account settings changed
+              {successPopupTitle}
             </h3>
 
             {/* Button: Finish (166px x 50px, #D4AF37, rounded 6px, top 307px) */}
