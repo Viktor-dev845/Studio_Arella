@@ -107,7 +107,7 @@ export default function AudienceMembershipModal({
         </div>
       </div>
 
-      {/* ─── Next Step: Frame 2121459681 Pay with a new card modal ─── */}
+      {/* ─── Next Step: Frame 2121459695 Pay with a new card modal ─── */}
       <AudiencePaymentModal
         isOpen={showPaymentModal}
         onClose={() => {
@@ -116,8 +116,8 @@ export default function AudienceMembershipModal({
         }}
         onBack={() => setShowPaymentModal(false)}
         title="Pay with a new card"
-        itemDescription={displayClubTitle}
-        amount={price}
+        itemDescription="Monthly subscription at"
+        amount={price === 'NGN 1,000' ? '#1,000' : price}
         onPaymentSuccess={handlePaymentSuccess}
       />
     </>
