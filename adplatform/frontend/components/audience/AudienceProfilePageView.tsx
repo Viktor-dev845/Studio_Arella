@@ -739,10 +739,13 @@ export default function AudienceProfilePageView({
             {/* 3 Columns Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
               {(isVisitorMode ? DEFAULT_PODCAST_ITEMS : (showAllPodcasts ? podcasts : podcasts.slice(0, 3))).map((pod) => (
-                <Link
+                <div
                   key={pod.id}
-                  href={`/podcast`}
-                  className="flex flex-col group text-decoration-none"
+                  onClick={() => {
+                    const title = pod.title === 'Zara redesign concept' ? 'Zara Design Concept Podcast' : pod.title;
+                    router.push(`/audience?view=podcast-player&title=${encodeURIComponent(title)}`);
+                  }}
+                  className="flex flex-col group cursor-pointer"
                 >
                   <div className="w-full aspect-[250/160] rounded-[2px] overflow-hidden bg-neutral-100 relative shadow-sm">
                     <img
@@ -763,7 +766,7 @@ export default function AudienceProfilePageView({
                   <p className="text-[10px] font-light text-[#181818]/70 leading-[150%] m-0 truncate">
                     {pod.subtitle}
                   </p>
-                </Link>
+                </div>
               ))}
             </div>
 

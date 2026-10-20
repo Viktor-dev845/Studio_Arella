@@ -16,6 +16,7 @@ import AudienceChatPageView from '@/components/audience/AudienceChatPageView';
 import AudienceNotificationsPageView from '@/components/audience/AudienceNotificationsPageView';
 import AudienceProfilePageView from '@/components/audience/AudienceProfilePageView';
 import AudienceEditProfilePageView from '@/components/audience/AudienceEditProfilePageView';
+import AudiencePodcastPlayerView from '@/components/audience/AudiencePodcastPlayerView';
 import AudiencePremiumCard from '@/components/audience/AudiencePremiumCard';
 import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/api';
@@ -26,7 +27,8 @@ function AudienceContent() {
   const queryView = searchParams.get('view');
 
   const { user } = useAuthStore();
-  const [activeMenu, setActiveMenu] = useState<'podcast' | 'trending' | 'memberships' | 'bookmarks' | 'subscriptions' | 'live' | 'live-detail' | 'chats' | 'notifications' | 'profile' | 'creator-profile' | 'edit-profile' | 'settings' | string>(() => {
+  const [activeMenu, setActiveMenu] = useState<'podcast' | 'trending' | 'memberships' | 'bookmarks' | 'subscriptions' | 'live' | 'live-detail' | 'chats' | 'notifications' | 'profile' | 'creator-profile' | 'podcast-player' | 'edit-profile' | 'settings' | string>(() => {
+    if (queryView === 'podcast-player' || queryView === 'podcast-detail' || queryView === 'episode') return 'podcast-player';
     if (queryView === 'creator-profile' || queryView === 'creator' || queryView === 'visitor-profile') return 'creator-profile';
     if (queryView === 'login-history' || queryView === 'change-password' || queryView === 'edit-profile' || queryView === 'settings') return 'edit-profile';
     if (queryView === 'profile') return 'profile';
@@ -48,7 +50,9 @@ function AudienceContent() {
   const [prevQueryView, setPrevQueryView] = useState(queryView);
   if (queryView !== prevQueryView) {
     setPrevQueryView(queryView);
-    if (queryView === 'creator-profile' || queryView === 'creator' || queryView === 'visitor-profile') {
+    if (queryView === 'podcast-player' || queryView === 'podcast-detail' || queryView === 'episode') {
+      setActiveMenu('podcast-player');
+    } else if (queryView === 'creator-profile' || queryView === 'creator' || queryView === 'visitor-profile') {
       setActiveMenu('creator-profile');
     } else if (queryView === 'login-history' || queryView === 'change-password' || queryView === 'edit-profile' || queryView === 'settings') {
       setActiveMenu('edit-profile');
@@ -148,6 +152,8 @@ function AudienceContent() {
       router.push('/audience?view=profile', { scroll: false });
     } else if (menuId === 'creator-profile') {
       router.push('/audience?view=creator-profile', { scroll: false });
+    } else if (menuId === 'podcast-player' || menuId === 'podcast-detail') {
+      router.push('/audience?view=podcast-player', { scroll: false });
     } else if (menuId === 'edit-profile' || menuId === 'settings') {
       router.push('/audience?view=edit-profile', { scroll: false });
     } else if (menuId === 'login-history') {
@@ -260,6 +266,12 @@ function AudienceContent() {
                     ? 'change-password' 
                     : 'profile'
                 }
+              />
+            ) : activeMenu === 'podcast-player' ? (
+              /* ─── Visitor's View of Creator Podcast Episode Player (530px player + 360px episodes card) ─── */
+              <AudiencePodcastPlayerView 
+                podcastTitle={searchParams.get('title') || 'Zara Design Concept Podcast'}
+                onBackToProfile={() => handleMenuChange('creator-profile')}
               />
             ) : (activeMenu === 'profile' || activeMenu === 'creator-profile') ? (
               /* ─── Profile View: Frame 2121459585 (850px wide container matching Figma) ─── */
