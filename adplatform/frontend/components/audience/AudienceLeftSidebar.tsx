@@ -136,7 +136,7 @@ export default function AudienceLeftSidebar({
           }`}
         >
           <Play size={20} strokeWidth={1.8} className="shrink-0 text-[#666666]" />
-          <span className="text-[16px] leading-[21px]">Podcast Feed</span>
+          <span className="text-[16px] leading-[21px]">Podcast</span>
         </button>
 
         {/* Item 2: Trending (Frame 2: Active in Figma with #F6F6F6 pill, rounded-full) */}

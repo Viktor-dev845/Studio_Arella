@@ -17,11 +17,16 @@ import {
   Users,
   ShieldCheck,
   LogOut,
-  UserX
+  UserX,
+  Share2,
+  Copy,
+  Flag,
+  ShieldAlert
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useToast } from '@/components/ui/ToastProvider';
 import api from '@/lib/api';
+import AudienceMembershipModal from './AudienceMembershipModal';
 
 interface ShowItem {
   id: string;
@@ -128,19 +133,19 @@ const DEFAULT_PODCAST_ITEMS: ShowItem[] = [
     id: 'p1',
     title: 'Zara redesign concept',
     subtitle: 'UX/UI design, 15.07.2019',
-    cover: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&auto=format&fit=crop&q=80',
+    cover: '/audience/podcast-zara.png',
   },
   {
     id: 'p2',
     title: 'SCTHON event brand identity',
     subtitle: 'Graphic design, 03.31.2019',
-    cover: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=600&auto=format&fit=crop&q=80',
+    cover: '/audience/podcast-scthon.png',
   },
   {
     id: 'p3',
     title: 'Drozd. Brand identity. 2016',
     subtitle: 'Graphic design, 03.04.2016',
-    cover: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80',
+    cover: '/audience/podcast-drozd.png',
   },
 ];
 
@@ -180,23 +185,59 @@ const DEFAULT_FAN_EVENTS: EventClubItem[] = [
       '/audience/steve-jobs.png',
       '/audience/nermmen-saif.png',
       '/audience/brandon-wilson.png',
-      '/audience/theresa-steward.png',
     ],
   },
 ];
 
 interface AudienceProfilePageViewProps {
   onEditProfileClick?: () => void;
+  isVisitor?: boolean;
 }
 
 export default function AudienceProfilePageView({
   onEditProfileClick,
+  isVisitor,
 }: AudienceProfilePageViewProps = {}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryTab = searchParams.get('tab');
+  const queryMode = searchParams.get('mode');
+  const queryView = searchParams.get('view');
   const { toast } = useToast();
   const { user, logout } = useAuthStore();
+
+  const isVisitorInitial = isVisitor !== undefined 
+    ? isVisitor 
+    : (queryMode === 'visitor' || queryView === 'creator-profile' || queryView === 'creator' || queryView === 'visitor-profile');
+
+  const [isVisitorMode, setIsVisitorMode] = useState<boolean>(isVisitorInitial);
+  const [prevVisitorProp, setPrevVisitorProp] = useState(isVisitor);
+  if (isVisitor !== prevVisitorProp) {
+    setPrevVisitorProp(isVisitor);
+    if (isVisitor !== undefined) {
+      setIsVisitorMode(isVisitor);
+    }
+  }
+
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [showMembershipModal, setShowMembershipModal] = useState(false);
+
+  const handleShareProfile = () => {
+    if (typeof window !== 'undefined') {
+      navigator.clipboard.writeText(window.location.href);
+      toast('Creator profile link copied to clipboard!', 'success');
+    }
+  };
+
+  const handleReportCreator = () => {
+    setShowMoreMenu(false);
+    toast('Creator report submitted to Trust & Safety team. Thank you.', 'info');
+  };
+
+  const handleBlockCreator = () => {
+    setShowMoreMenu(false);
+    toast('Creator has been blocked.', 'info');
+  };
 
   const [activeTab, setActiveTab] = useState<'profile' | 'followers' | 'following'>(() => {
     if (queryTab === 'followers') return 'followers';
@@ -379,44 +420,79 @@ export default function AudienceProfilePageView({
 
   return (
     <section className="w-full lg:w-[850px] flex flex-col gap-6 font-['DM_Sans',sans-serif]">
+      {/* ─── Mode Switcher Pill (Figma Visitor View vs Owner View) ─── */}
+      <div className="flex items-center justify-between px-1 -mb-2">
+        <div className="flex items-center bg-white p-1 rounded-full border border-gray-200/80 shadow-xs">
+          <button
+            type="button"
+            onClick={() => setIsVisitorMode(true)}
+            className={`px-3.5 py-1 text-[11px] font-medium rounded-full transition-all cursor-pointer ${
+              isVisitorMode 
+                ? 'bg-[#D9BA54] text-black font-semibold shadow-xs' 
+                : 'text-gray-500 hover:text-black'
+            }`}
+          >
+            Visitor View (Figma)
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsVisitorMode(false)}
+            className={`px-3.5 py-1 text-[11px] font-medium rounded-full transition-all cursor-pointer ${
+              !isVisitorMode 
+                ? 'bg-[#D9BA54] text-black font-semibold shadow-xs' 
+                : 'text-gray-500 hover:text-black'
+            }`}
+          >
+            Creator Owner View
+          </button>
+        </div>
+        {isVisitorMode && (
+          <span className="text-[11px] text-[#15411F] font-medium hidden sm:inline-block">
+            Viewing as Adam Udochi (Audience Member)
+          </span>
+        )}
+      </div>
+
       {/* ─── 1. Profile Hero Card (Figma: 850px x 360px, radius 4px) ─── */}
       <div className="w-full bg-white rounded-[4px] shadow-[0px_20px_60px_rgba(241,244,248,0.5)] border border-gray-100 overflow-hidden relative">
         {/* Banner (850px x 180px) */}
         <div className="w-full h-[180px] relative bg-neutral-200 overflow-hidden">
           <img
-            src={bannerUrl}
+            src={isVisitorMode ? '/audience/udo-banner.png' : bannerUrl}
             alt="Profile Banner"
             className="w-full h-full object-cover"
           />
 
-          {/* Banner Tools Overlay (Upload on left, Edit & More on right) */}
+          {/* Banner Tools Overlay (Upload/Share on left, Tools on right) */}
           <div className="absolute inset-0 p-5 flex items-start justify-between pointer-events-none">
-            {/* Upload Button */}
+            {/* Upload / Share Button (36px x 36px, radius 4px) */}
             <button
               type="button"
-              onClick={() => toast('Click Edit Profile to change your cover picture.', 'info')}
+              onClick={isVisitorMode ? handleShareProfile : () => toast('Click Edit Profile to change your cover picture.', 'info')}
               className="w-9 h-9 rounded-[4px] bg-white/90 backdrop-blur-sm shadow-[0px_10px_30px_rgba(113,123,133,0.05)] flex items-center justify-center text-[#181818] hover:bg-white transition-colors pointer-events-auto cursor-pointer"
-              title="Upload cover"
+              title={isVisitorMode ? "Share profile" : "Upload cover"}
             >
               <Upload size={16} />
             </button>
 
-            {/* Right Buttons: Edit profile + More (...) */}
+            {/* Right Buttons: Edit profile (owner only) + More (...) */}
             <div className="flex items-center gap-2 pointer-events-auto relative" ref={menuRef}>
-              <button
-                type="button"
-                onClick={() => {
-                  if (onEditProfileClick) {
-                    onEditProfileClick();
-                  } else {
-                    router.push('/audience?view=edit-profile');
-                  }
-                }}
-                className="h-9 px-4 rounded-[4px] bg-white/90 backdrop-blur-sm shadow-[0px_10px_30px_rgba(113,123,133,0.05)] flex items-center gap-2 text-[12px] font-normal uppercase tracking-wider text-[#181818] hover:bg-white transition-colors cursor-pointer"
-              >
-                <Edit3 size={15} />
-                <span>Edit Profile</span>
-              </button>
+              {!isVisitorMode && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (onEditProfileClick) {
+                      onEditProfileClick();
+                    } else {
+                      router.push('/audience?view=edit-profile');
+                    }
+                  }}
+                  className="h-9 px-4 rounded-[4px] bg-white/90 backdrop-blur-sm shadow-[0px_10px_30px_rgba(113,123,133,0.05)] flex items-center gap-2 text-[12px] font-normal uppercase tracking-wider text-[#181818] hover:bg-white transition-colors cursor-pointer"
+                >
+                  <Edit3 size={15} />
+                  <span>Edit Profile</span>
+                </button>
+              )}
 
               <button
                 type="button"
@@ -427,35 +503,74 @@ export default function AudienceProfilePageView({
                 <MoreVertical size={18} />
               </button>
 
-              {/* More Dropdown Menu (Frame 2121459585: 200px x 101px) */}
+              {/* More Dropdown Menu */}
               {showMoreMenu && (
                 <div
                   className="absolute right-0 top-11 w-[200px] bg-white rounded-[10px] shadow-[-4.75px_30px_30px_rgba(184,184,184,0.25)] border border-gray-100 p-4 z-50 flex items-center justify-between animate-in fade-in zoom-in-95 duration-100"
                 >
-                  <div className="flex flex-col gap-2.5">
-                    <button
-                      type="button"
-                      onClick={handleLogout}
-                      className="text-left text-[15px] font-normal text-[#F64A4A] hover:opacity-80 transition-opacity cursor-pointer flex items-center gap-2"
-                    >
-                      <LogOut size={16} />
-                      Log out
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowMoreMenu(false);
-                        toast('Account deactivation must be requested through Support.', 'info');
-                      }}
-                      className="text-left text-[15px] font-normal text-[#000000] hover:opacity-80 transition-opacity cursor-pointer flex items-center gap-2"
-                    >
-                      <UserX size={16} />
-                      Deactivate account
-                    </button>
+                  <div className="flex flex-col gap-2.5 w-full">
+                    {isVisitorMode ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={handleShareProfile}
+                          className="text-left text-[14px] font-normal text-[#181818] hover:text-[#D9BA54] transition-colors cursor-pointer flex items-center gap-2"
+                        >
+                          <Share2 size={16} />
+                          Share profile
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleShareProfile}
+                          className="text-left text-[14px] font-normal text-[#181818] hover:text-[#D9BA54] transition-colors cursor-pointer flex items-center gap-2"
+                        >
+                          <Copy size={16} />
+                          Copy profile link
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleReportCreator}
+                          className="text-left text-[14px] font-normal text-[#F64A4A] hover:opacity-80 transition-opacity cursor-pointer flex items-center gap-2"
+                        >
+                          <Flag size={16} />
+                          Report creator
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleBlockCreator}
+                          className="text-left text-[14px] font-normal text-black/70 hover:opacity-80 transition-opacity cursor-pointer flex items-center gap-2"
+                        >
+                          <ShieldAlert size={16} />
+                          Block creator
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          onClick={handleLogout}
+                          className="text-left text-[15px] font-normal text-[#F64A4A] hover:opacity-80 transition-opacity cursor-pointer flex items-center gap-2"
+                        >
+                          <LogOut size={16} />
+                          Log out
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowMoreMenu(false);
+                            toast('Account deactivation must be requested through Support.', 'info');
+                          }}
+                          className="text-left text-[15px] font-normal text-[#000000] hover:opacity-80 transition-opacity cursor-pointer flex items-center gap-2"
+                        >
+                          <UserX size={16} />
+                          Deactivate account
+                        </button>
+                      </>
+                    )}
                   </div>
 
                   {/* Golden vertical indicator line */}
-                  <div className="w-[2px] h-[63px] bg-[#D4AF37]/15 rounded-[10px] relative">
+                  <div className="w-[2px] h-[63px] bg-[#D4AF37]/15 rounded-[10px] relative ml-2 shrink-0">
                     <div className="w-[2px] h-[14px] bg-[#D4AF37] rounded-[20px] absolute top-[9px]" />
                   </div>
                 </div>
@@ -470,48 +585,73 @@ export default function AudienceProfilePageView({
             {/* Circular Avatar (170px x 170px, 10px white border, overlapping banner) */}
             <div className="-mt-[85px] w-[170px] h-[170px] rounded-full border-[10px] border-white overflow-hidden bg-neutral-100 shrink-0 shadow-[0_4px_16px_rgba(0,0,0,0.06)] relative z-10">
               <img
-                src={avatarUrl}
-                alt={name}
+                src={isVisitorMode ? '/audience/udo-emmanuel.png' : avatarUrl}
+                alt={isVisitorMode ? 'Udo Emmanuel' : name}
                 className="w-full h-full object-cover"
               />
             </div>
 
-            {/* Name & Tagline */}
+            {/* Name, Tagline & Visitor CTA */}
             <div className="flex flex-col mb-1">
               <h1 className="text-[18px] font-semibold text-[#181818] leading-[23px] m-0">
-                {name}
+                {isVisitorMode ? 'Udo Emmanuel' : name}
               </h1>
               <p className="text-[14px] font-normal text-[#181818] leading-[21px] mt-1 m-0">
-                {bio}
+                {isVisitorMode ? 'Family Life podcast creator for over 5years' : bio}
               </p>
+
+              {/* Primary CTA Button: SUBSCRIBE TO BE A MEMBERED FAN (Figma: 227px x 32px, #D9BA54) */}
+              {isVisitorMode && (
+                <div className="mt-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (isSubscribed) {
+                        toast('You are already subscribed to Udo Emmanuel!', 'info');
+                      } else {
+                        setShowMembershipModal(true);
+                      }
+                    }}
+                    className={`w-[227px] h-8 rounded-[6px] text-[12px] font-normal uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center shadow-xs font-['DM_Sans',sans-serif] ${
+                      isSubscribed 
+                        ? 'bg-[#15411F] text-white hover:bg-[#12381a]' 
+                        : 'bg-[#D9BA54] text-black hover:bg-[#c9a73e]'
+                    }`}
+                  >
+                    {isSubscribed ? 'MEMBERED FAN ✓' : 'SUBSCRIBE TO BE A MEMBERED FAN'}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Location on Right (Figma: Saint Petersburg, Russian Federation) */}
           <div className="flex items-center gap-1.5 text-[12px] font-normal text-[#181818] mb-2 self-start md:self-center shrink-0">
             <Navigation size={14} className="text-[#15411F] fill-[#15411F]" />
-            <span>{location}</span>
+            <span>{isVisitorMode ? 'Saint Petersburg, Russian Federation' : location}</span>
           </div>
         </div>
 
         {/* Action Buttons Row: CREATE AN EVENT & GET VERIFIED */}
-        <div className="px-7 pb-6 flex items-center gap-4 flex-wrap">
-          <button
-            type="button"
-            onClick={() => setShowCreateEventModal(true)}
-            className="w-[170px] h-8 bg-[#D9BA54] hover:bg-[#c9a73e] text-black text-[12px] font-normal uppercase tracking-wider rounded-[6px] transition-colors cursor-pointer flex items-center justify-center"
-          >
-            Create an Event
-          </button>
+        {!isVisitorMode && (
+          <div className="px-7 pb-6 flex items-center gap-4 flex-wrap">
+            <button
+              type="button"
+              onClick={() => setShowCreateEventModal(true)}
+              className="w-[170px] h-8 bg-[#D9BA54] hover:bg-[#c9a73e] text-black text-[12px] font-normal uppercase tracking-wider rounded-[6px] transition-colors cursor-pointer flex items-center justify-center"
+            >
+              Create an Event
+            </button>
 
-          <button
-            type="button"
-            onClick={() => setShowVerifyModal(true)}
-            className="w-[170px] h-8 bg-white hover:bg-amber-50/50 border border-[#D9BA54] text-[#D9BA54] text-[12px] font-medium uppercase tracking-wider rounded-[6px] transition-colors cursor-pointer flex items-center justify-center"
-          >
-            Get Verified
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={() => setShowVerifyModal(true)}
+              className="w-[170px] h-8 bg-white hover:bg-amber-50/50 border border-[#D9BA54] text-[#D9BA54] text-[12px] font-medium uppercase tracking-wider rounded-[6px] transition-colors cursor-pointer flex items-center justify-center"
+            >
+              Get Verified
+            </button>
+          </div>
+        )}
       </div>
 
       {/* ─── 2. Tabs Bar (Figma: 720px wide, PROFILE 50px high, FOLLOWERS/FOLLOWING 40px) ─── */}
@@ -1009,6 +1149,18 @@ export default function AudienceProfilePageView({
           </div>
         </div>
       )}
+
+      {/* ─── MODAL 4: Membership / Subscribe to Creator (Visitor Mode) ─── */}
+      <AudienceMembershipModal
+        isOpen={showMembershipModal}
+        onClose={() => setShowMembershipModal(false)}
+        clubName="Udo Emmanuel Fan Club"
+        price="NGN 1,000 / month"
+        onSubscribeSuccess={() => {
+          setIsSubscribed(true);
+          toast('Congratulations! You are now a membered fan of Udo Emmanuel.', 'success');
+        }}
+      />
     </section>
   );
 }

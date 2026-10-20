@@ -26,7 +26,8 @@ function AudienceContent() {
   const queryView = searchParams.get('view');
 
   const { user } = useAuthStore();
-  const [activeMenu, setActiveMenu] = useState<'podcast' | 'trending' | 'memberships' | 'bookmarks' | 'subscriptions' | 'live' | 'live-detail' | 'chats' | 'notifications' | 'profile' | 'edit-profile' | 'settings' | string>(() => {
+  const [activeMenu, setActiveMenu] = useState<'podcast' | 'trending' | 'memberships' | 'bookmarks' | 'subscriptions' | 'live' | 'live-detail' | 'chats' | 'notifications' | 'profile' | 'creator-profile' | 'edit-profile' | 'settings' | string>(() => {
+    if (queryView === 'creator-profile' || queryView === 'creator' || queryView === 'visitor-profile') return 'creator-profile';
     if (queryView === 'login-history' || queryView === 'change-password' || queryView === 'edit-profile' || queryView === 'settings') return 'edit-profile';
     if (queryView === 'profile') return 'profile';
     if (queryView === 'notifications') return 'notifications';
@@ -47,7 +48,9 @@ function AudienceContent() {
   const [prevQueryView, setPrevQueryView] = useState(queryView);
   if (queryView !== prevQueryView) {
     setPrevQueryView(queryView);
-    if (queryView === 'login-history' || queryView === 'change-password' || queryView === 'edit-profile' || queryView === 'settings') {
+    if (queryView === 'creator-profile' || queryView === 'creator' || queryView === 'visitor-profile') {
+      setActiveMenu('creator-profile');
+    } else if (queryView === 'login-history' || queryView === 'change-password' || queryView === 'edit-profile' || queryView === 'settings') {
       setActiveMenu('edit-profile');
     } else if (queryView === 'profile') {
       setActiveMenu('profile');
@@ -143,6 +146,8 @@ function AudienceContent() {
       router.push('/audience?view=notifications', { scroll: false });
     } else if (menuId === 'profile') {
       router.push('/audience?view=profile', { scroll: false });
+    } else if (menuId === 'creator-profile') {
+      router.push('/audience?view=creator-profile', { scroll: false });
     } else if (menuId === 'edit-profile' || menuId === 'settings') {
       router.push('/audience?view=edit-profile', { scroll: false });
     } else if (menuId === 'login-history') {
@@ -191,7 +196,7 @@ function AudienceContent() {
             ? 'notifications'
             : activeMenu === 'chats' 
             ? 'messages' 
-            : (activeMenu === 'profile' || activeMenu === 'edit-profile' || activeMenu === 'settings')
+            : (activeMenu === 'profile' || activeMenu === 'creator-profile' || activeMenu === 'edit-profile' || activeMenu === 'settings')
             ? 'profile'
             : activeMenu === 'podcast' 
             ? 'home' 
@@ -256,9 +261,12 @@ function AudienceContent() {
                     : 'profile'
                 }
               />
-            ) : activeMenu === 'profile' ? (
+            ) : (activeMenu === 'profile' || activeMenu === 'creator-profile') ? (
               /* ─── Profile View: Frame 2121459585 (850px wide container matching Figma) ─── */
-              <AudienceProfilePageView onEditProfileClick={() => handleMenuChange('edit-profile')} />
+              <AudienceProfilePageView 
+                isVisitor={activeMenu === 'creator-profile' || queryView === 'creator-profile' || queryView === 'creator' || queryView === 'visitor-profile' || searchParams.get('mode') === 'visitor'}
+                onEditProfileClick={() => handleMenuChange('edit-profile')} 
+              />
             ) : activeMenu === 'memberships' ? (
               /* ─── Memberships View: Row 1 (Post Composer + Premium Card) + Row 2 (862px Membership Card) ─── */
               <section className="w-full lg:w-[862px] flex flex-col gap-6">

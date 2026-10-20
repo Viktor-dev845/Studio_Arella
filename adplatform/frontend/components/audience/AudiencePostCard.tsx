@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { 
   MoreHorizontal, 
   Play, 
@@ -38,6 +39,7 @@ interface AudiencePostCardProps {
 }
 
 export default function AudiencePostCard({ post }: AudiencePostCardProps) {
+  const router = useRouter();
   const { user } = useAuthStore();
   const [isPlaying, setIsPlaying] = useState(false);
   const [likes, setLikes] = useState(post.initialLikes || 99);
@@ -112,15 +114,19 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
     <article className="w-full max-w-[570px] bg-white rounded-[18px] p-5 shadow-[0px_0px_2px_rgba(0,0,0,0.14),0px_0px_1px_rgba(0,0,0,0.12)] border border-gray-100/60 flex flex-col gap-4 font-['DM_Sans',sans-serif]">
       {/* ─── 1. Header (Group 48095426: Author Info & 3-Dot Menu) ─── */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+        <div 
+          onClick={() => router.push('/audience?view=creator-profile')}
+          className="flex items-center gap-3 cursor-pointer group"
+          title={`View ${post.author.name}'s profile`}
+        >
           {/* Avatar: 44x44, radius 18px */}
           <img 
             src={post.author.avatar} 
             alt={post.author.name} 
-            className="w-[44px] h-[44px] rounded-[18px] object-cover shrink-0 border border-gray-100 shadow-sm"
+            className="w-[44px] h-[44px] rounded-[18px] object-cover shrink-0 border border-gray-100 shadow-sm group-hover:scale-105 transition-transform"
           />
           <div className="flex flex-col">
-            <h4 className="text-[12px] font-normal text-[#000000] leading-[16px]">
+            <h4 className="text-[12px] font-normal text-[#000000] leading-[16px] group-hover:text-[#D9BA54] transition-colors">
               {post.author.name}
             </h4>
             <p className="text-[10px] font-normal text-black/45 leading-[13px] mt-0.5">
