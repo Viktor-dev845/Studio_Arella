@@ -28,6 +28,7 @@ import { useToast } from '@/components/ui/ToastProvider';
 import api from '@/lib/api';
 import AudienceMembershipModal from './AudienceMembershipModal';
 import AudienceLiveEventJoinModal from './AudienceLiveEventJoinModal';
+import AudienceCreateEventModal from './AudienceCreateEventModal';
 
 interface ShowItem {
   id: string;
@@ -1105,72 +1106,14 @@ export default function AudienceProfilePageView({
         </div>
       )}
 
-      {/* ─── MODAL 3: Create an Event ─── */}
-      {showCreateEventModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl w-full max-w-[500px] shadow-2xl p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between pb-4 border-b border-gray-100">
-              <h3 className="text-[18px] font-bold text-gray-900">Create Creator Event</h3>
-              <button
-                onClick={() => setShowCreateEventModal(false)}
-                className="text-gray-400 hover:text-gray-700"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            <p className="text-xs text-gray-500 mt-3 mb-5">
-              Choose the type of event you want to host for your community.
-            </p>
-
-            <div className="flex flex-col gap-3.5 mb-6">
-              <div
-                onClick={() => {
-                  setShowCreateEventModal(false);
-                  router.push('/audience?view=live');
-                }}
-                className="p-4 rounded-xl border border-gray-200 hover:border-[#D9BA54] bg-[#FCFDFD] cursor-pointer transition-all flex items-center gap-3.5"
-              >
-                <div className="w-10 h-10 rounded-lg bg-amber-50 text-[#D9BA54] flex items-center justify-center shrink-0">
-                  <Play size={20} />
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-gray-900 m-0">1View Live Audio Stream</h4>
-                  <p className="text-xs text-gray-500 m-0 mt-0.5">
-                    Broadcast a real-time audio event with live fan chat.
-                  </p>
-                </div>
-              </div>
-
-              <div
-                onClick={() => {
-                  setShowCreateEventModal(false);
-                  router.push('/bookings?tab=podcast');
-                }}
-                className="p-4 rounded-xl border border-gray-200 hover:border-[#D9BA54] bg-[#FCFDFD] cursor-pointer transition-all flex items-center gap-3.5"
-              >
-                <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                  <Calendar size={20} />
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-gray-900 m-0">Book Studio Arella Recording Time</h4>
-                  <p className="text-xs text-gray-500 m-0 mt-0.5">
-                    Reserve professional audio/video recording session.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setShowCreateEventModal(false)}
-              className="w-full h-11 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700 hover:bg-gray-50"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
+      {/* ─── MODAL 3: Create Creator Event (Figma Filter Popup: 1026px x 980px) ─── */}
+      <AudienceCreateEventModal
+        isOpen={showCreateEventModal}
+        onClose={() => setShowCreateEventModal(false)}
+        onEventCreated={(newEvent) => {
+          toast(`Event "${newEvent.title}" created successfully!`, 'success');
+        }}
+      />
 
       {/* ─── MODAL 4: Membership / Subscribe to Creator (Visitor Mode: Frame 2121459693) ─── */}
       <AudienceMembershipModal
