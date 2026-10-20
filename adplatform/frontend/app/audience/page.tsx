@@ -43,8 +43,10 @@ function AudienceContent() {
   const [posts, setPosts] = useState<PostData[]>([]);
   const [isLoadingPosts, setIsLoadingPosts] = useState<boolean>(true);
 
-  // Sync menu state when URL query changes
-  useEffect(() => {
+  // Sync menu state when URL query changes without cascading effect
+  const [prevQueryView, setPrevQueryView] = useState(queryView);
+  if (queryView !== prevQueryView) {
+    setPrevQueryView(queryView);
     if (queryView === 'login-history' || queryView === 'change-password' || queryView === 'edit-profile' || queryView === 'settings') {
       setActiveMenu('edit-profile');
     } else if (queryView === 'profile') {
@@ -68,11 +70,11 @@ function AudienceContent() {
     } else if (queryView === 'trending') {
       setActiveMenu('trending');
     }
-  }, [queryView]);
+  }
 
   // Fetch live posts from Creator Space API for the active view
   useEffect(() => {
-    setIsLoadingPosts(true);
+    let isMounted = true;
     let url = '/content/feed';
     if (activeMenu === 'bookmarks') {
       url = '/content/bookmarks';
@@ -82,33 +84,41 @@ function AudienceContent() {
 
     api.get(url)
       .then((res) => {
+        if (!isMounted) return;
         const feedPosts = res.data?.posts || [];
-        const mapped: PostData[] = feedPosts.map((p: any) => ({
-          id: p.id,
+        const mapped: PostData[] = feedPosts.map((p: Record<string, unknown>) => ({
+          id: String(p.id),
           author: {
-            name: p.author_name || 'Studio Arella Creator',
-            role: p.author_role || 'Creator',
-            avatar: p.author_avatar || '/audience/adam-udochi.png',
+            name: (p.author_name as string) || 'Studio Arella Creator',
+            role: (p.author_role as string) || 'Creator',
+            avatar: (p.author_avatar as string) || '/audience/adam-udochi.png',
           },
-          title: p.title?.startsWith('-') ? p.title : `-${p.title || 'Studio Podcast'}`,
-          mediaUrl: p.cover_url || p.media_url || '/audience/mockup-sphinx.png',
-          duration: p.duration_text || '02:35:19',
+          title: String(p.title || 'Studio Podcast').startsWith('-') ? String(p.title) : `-${p.title || 'Studio Podcast'}`,
+          mediaUrl: (p.cover_url as string) || (p.media_url as string) || '/audience/mockup-sphinx.png',
+          duration: (p.duration_text as string) || '02:35:19',
           currentTime: '00:04:15',
           progressPercent: 30,
-          initialLikes: parseInt(p.likes_count, 10) || 0,
-          initialComments: parseInt(p.comments_count, 10) || 0,
+          initialLikes: parseInt(String(p.likes_count), 10) || 0,
+          initialComments: parseInt(String(p.comments_count), 10) || 0,
           badgeTheme: p.badge_theme === 'green' ? 'green' : 'gold',
           isBookmarked: Boolean(p.is_bookmarked),
         }));
         setPosts(mapped);
       })
       .catch((err) => {
+        if (!isMounted) return;
         console.warn('Could not fetch creator feed from API:', err);
         setPosts([]);
       })
       .finally(() => {
-        setIsLoadingPosts(false);
+        if (isMounted) {
+          setIsLoadingPosts(false);
+        }
       });
+
+    return () => {
+      isMounted = false;
+    };
   }, [activeMenu]);
 
   const handleMenuChange = (menuId: string) => {

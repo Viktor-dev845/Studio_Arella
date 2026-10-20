@@ -61,29 +61,26 @@ export default function AudienceEditProfilePageView({
 
   // ─── Sub-view State ('profile', 'change-password', or 'login-history' matching Figma) ───
   const [activeSubView, setActiveSubView] = useState<'profile' | 'change-password' | 'login-history'>(initialSubView);
-
-  useEffect(() => {
-    if (initialSubView) {
-      setActiveSubView(initialSubView);
-      if (initialSubView === 'login-history') {
-        fetchSessions();
-      }
-    }
-  }, [initialSubView]);
+  const [prevInitialSubView, setPrevInitialSubView] = useState(initialSubView);
+  if (initialSubView !== prevInitialSubView) {
+    setPrevInitialSubView(initialSubView);
+    setActiveSubView(initialSubView);
+  }
 
   // ─── Success Confirmation Popup Modal (Figma: Filter Popup 383px x 433px) ───
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [successPopupTitle, setSuccessPopupTitle] = useState<'Account settings changed' | 'Password updated'>('Account settings changed');
 
   // ─── 1. Form State (Personal Information) ───
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [about, setAbout] = useState('');
+  const [firstName, setFirstName] = useState(() => user?.first_name || (user?.name ? user.name.trim().split(' ')[0] : 'Adela'));
+  const [lastName, setLastName] = useState(() => user?.last_name || (user?.name ? user.name.trim().split(' ').slice(1).join(' ') : 'Parkson'));
+  const [email, setEmail] = useState(() => user?.email || 'adelapark.@example.com');
+  const [about, setAbout] = useState(() => user?.about || user?.bio || 'Lorem ipsum');
   const [isSaving, setIsSaving] = useState(false);
 
-  // Initialize from user state or defaults matching Figma mockup
-  useEffect(() => {
+  const [prevUser, setPrevUser] = useState(user);
+  if (user !== prevUser) {
+    setPrevUser(user);
     if (user) {
       if (user.first_name || user.last_name) {
         setFirstName(user.first_name || '');
@@ -92,34 +89,25 @@ export default function AudienceEditProfilePageView({
         const parts = user.name.trim().split(' ');
         setFirstName(parts[0] || 'Adela');
         setLastName(parts.slice(1).join(' ') || 'Parkson');
-      } else {
-        setFirstName('Adela');
-        setLastName('Parkson');
       }
       setEmail(user.email || 'adelapark.@example.com');
       setAbout(user.about || user.bio || 'Lorem ipsum');
-    } else {
-      setFirstName('Adela');
-      setLastName('Parkson');
-      setEmail('adelapark.@example.com');
-      setAbout('Lorem ipsum');
     }
-  }, [user]);
+  }
 
   // ─── 2. Toggles State matching Figma ───
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(() => Boolean(user?.two_factor_enabled));
+  const [prev2FA, setPrev2FA] = useState(user?.two_factor_enabled);
+  if (user?.two_factor_enabled !== prev2FA) {
+    setPrev2FA(user?.two_factor_enabled);
+    setTwoFactorEnabled(Boolean(user?.two_factor_enabled));
+  }
+
   const [communityActivity, setCommunityActivity] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(true);
   const [eventReminders, setEventReminders] = useState(true);
   const [profileVisibility, setProfileVisibility] = useState(true);
   const [dataSharing, setDataSharing] = useState(true);
-
-  // Sync with user's stored 2FA status if available
-  useEffect(() => {
-    if (user?.two_factor_enabled !== undefined) {
-      setTwoFactorEnabled(Boolean(user.two_factor_enabled));
-    }
-  }, [user]);
 
   // ─── 3. Password State (with eye toggles matching Figma) ───
   const [currentPassword, setCurrentPassword] = useState('');
@@ -130,86 +118,11 @@ export default function AudienceEditProfilePageView({
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
-  // ─── 4. Login History Sessions State ───
-  const [sessions, setSessions] = useState<SessionItem[]>([]);
+  // ─── 4. Login History Sessions State & Handlers ───
+  const [sessions, setSessions] = useState<SessionItem[]>(DEFAULT_MOCK_SESSIONS);
   const [isLoadingSessions, setIsLoadingSessions] = useState(false);
 
-  // ─── Handlers ───
-  const handleSaveProfile = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    setIsSaving(true);
-    try {
-      const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
-      await api.put('/auth/profile', {
-        name: fullName || undefined,
-        first_name: firstName.trim() || undefined,
-        last_name: lastName.trim() || undefined,
-        email: email.trim() || undefined,
-        bio: about.trim() || undefined,
-        about: about.trim() || undefined,
-      });
-
-      // Save notification preferences if changed
-      try {
-        await api.put('/auth/notification-preferences', {
-          community_activity: communityActivity,
-          push_notifications: pushNotifications,
-          event_reminders: eventReminders,
-          profile_visibility: profileVisibility,
-          data_sharing: dataSharing,
-        });
-      } catch (err) {
-        // Soft fail for optional prefs
-        console.warn('Prefs sync note:', err);
-      }
-
-      await checkAuth();
-      // Launch Figma confirmation popup with "Account settings changed" title
-      setSuccessPopupTitle('Account settings changed');
-      setShowSuccessPopup(true);
-    } catch (err: any) {
-      toast(err?.response?.data?.message || 'Could not save profile changes', 'error');
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleChangePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!currentPassword) {
-      toast('Please enter your current password', 'error');
-      return;
-    }
-    if (newPassword.length < 6) {
-      toast('New password must be at least 6 characters', 'error');
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      toast('New passwords do not match', 'error');
-      return;
-    }
-
-    setIsChangingPassword(true);
-    try {
-      await api.put('/auth/password', {
-        currentPassword,
-        newPassword,
-      });
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-      // Launch Figma confirmation popup with "Password updated" title
-      setSuccessPopupTitle('Password updated');
-      setShowSuccessPopup(true);
-    } catch (err: any) {
-      toast(err?.response?.data?.message || 'Could not update password', 'error');
-    } finally {
-      setIsChangingPassword(false);
-    }
-  };
-
   const fetchSessions = async () => {
-    setIsLoadingSessions(true);
     try {
       const res = await api.get('/auth/sessions');
       const list: SessionItem[] = res.data?.sessions || res.data || [];
@@ -228,6 +141,30 @@ export default function AudienceEditProfilePageView({
       setIsLoadingSessions(false);
     }
   };
+
+  useEffect(() => {
+    let isSubscribed = true;
+    if (activeSubView === 'login-history') {
+      api.get('/auth/sessions')
+        .then((res) => {
+          if (!isSubscribed) return;
+          const list: SessionItem[] = res.data?.sessions || res.data || [];
+          if (Array.isArray(list) && list.length > 0) {
+            if (list.length === 1 && list[0].is_current) {
+              setSessions([...list, DEFAULT_MOCK_SESSIONS[1]]);
+            } else {
+              setSessions(list);
+            }
+          }
+        })
+        .catch(() => {
+          // Keep default mock sessions
+        });
+    }
+    return () => {
+      isSubscribed = false;
+    };
+  }, [activeSubView]);
 
   const handleSignOutDevice = async (sessionId: string) => {
     try {
@@ -307,6 +244,82 @@ export default function AudienceEditProfilePageView({
       timeStr,
     };
   }
+
+  // ─── Handlers ───
+  const handleSaveProfile = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setIsSaving(true);
+    try {
+      const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
+      await api.put('/auth/profile', {
+        name: fullName || undefined,
+        first_name: firstName.trim() || undefined,
+        last_name: lastName.trim() || undefined,
+        email: email.trim() || undefined,
+        bio: about.trim() || undefined,
+        about: about.trim() || undefined,
+      });
+
+      // Save notification preferences if changed
+      try {
+        await api.put('/auth/notification-preferences', {
+          community_activity: communityActivity,
+          push_notifications: pushNotifications,
+          event_reminders: eventReminders,
+          profile_visibility: profileVisibility,
+          data_sharing: dataSharing,
+        });
+      } catch (err) {
+        // Soft fail for optional prefs
+        console.warn('Prefs sync note:', err);
+      }
+
+      await checkAuth();
+      // Launch Figma confirmation popup with "Account settings changed" title
+      setSuccessPopupTitle('Account settings changed');
+      setShowSuccessPopup(true);
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      toast(msg || 'Could not save profile changes', 'error');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentPassword) {
+      toast('Please enter your current password', 'error');
+      return;
+    }
+    if (newPassword.length < 6) {
+      toast('New password must be at least 6 characters', 'error');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast('New passwords do not match', 'error');
+      return;
+    }
+
+    setIsChangingPassword(true);
+    try {
+      await api.put('/auth/password', {
+        currentPassword,
+        newPassword,
+      });
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      // Launch Figma confirmation popup with "Password updated" title
+      setSuccessPopupTitle('Password updated');
+      setShowSuccessPopup(true);
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      toast(msg || 'Could not update password', 'error');
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
 
   const handleToggle2FA = (val: boolean) => {
     setTwoFactorEnabled(val);
