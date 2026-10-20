@@ -19,8 +19,8 @@ export default function AudiencePaymentModal({
   onClose,
   onBack,
   title = 'Pay with a new card',
-  itemDescription = '3 months Ad space at',
-  amount = '#300,000',
+  itemDescription = 'Monthly subscription at',
+  amount = '#1,000',
   onPaymentSuccess,
 }: AudiencePaymentModalProps) {
   const [selectedBank, setSelectedBank] = useState('');
@@ -52,14 +52,18 @@ export default function AudiencePaymentModal({
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs font-['DM_Sans',sans-serif] animate-in fade-in duration-200">
-        {/* ─── Modal Container (Frame 2121459681: 625px x 836px, radius 32px) ─── */}
+      {/* ─── Backdrop: Background blur 20px, #A2A1A8 20% overlay (Figma Specs) ─── */}
+      <div 
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#A2A1A8]/20 backdrop-blur-[20px] font-['DM_Sans',sans-serif] animate-in fade-in duration-200"
+        onClick={onClose}
+      >
+        {/* ─── Modal Container (Frame 2121459692: 625px x 836px, radius 32px) ─── */}
         <div 
-          className="w-full max-w-[625px] min-h-[680px] md:h-[836px] bg-white rounded-[32px] p-6 sm:p-10 relative flex flex-col justify-between shadow-[0px_20px_50px_rgba(0,0,0,0.15)] overflow-hidden"
+          className="w-full max-w-[625px] h-[836px] max-h-[95vh] bg-white rounded-[32px] p-6 sm:p-10 relative flex flex-col justify-between shadow-[0px_20px_50px_rgba(0,0,0,0.15)] overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
           {/* ─── Top Bar: Back Arrow on left, Title center, Close X on right ─── */}
-          <div className="flex items-center justify-between w-full pt-1">
+          <div className="flex items-center justify-between w-full pt-1 px-1">
             <button
               type="button"
               onClick={onBack || onClose}
@@ -69,7 +73,7 @@ export default function AudiencePaymentModal({
               <ArrowLeft size={24} strokeWidth={2.5} className="text-black" />
             </button>
 
-            <h2 className="text-[18px] sm:text-[20px] font-semibold text-[#101828] text-center">
+            <h2 className="text-[20px] font-medium text-[#101828] text-center tracking-[-0.01em] leading-[30px] font-['DM_Sans',sans-serif] m-0">
               {title}
             </h2>
 
@@ -83,28 +87,28 @@ export default function AudiencePaymentModal({
             </button>
           </div>
 
-          {/* ─── Center Content Area: Form ─── */}
-          <form onSubmit={handlePay} className="flex flex-col items-center flex-1 justify-center max-w-[468px] w-full mx-auto my-4 sm:my-6">
-            {/* Header Amount Info */}
-            <div className="text-center mb-8 sm:mb-10">
-              <p className="text-[16px] font-bold text-[#101828] leading-[22px]">
+          {/* ─── Center Content Area: Form (Frame 1000001032: 420px wide) ─── */}
+          <form onSubmit={handlePay} className="flex flex-col items-center flex-1 justify-center max-w-[420px] w-full mx-auto my-2">
+            {/* Header Amount Info (Monthly subscription at #1,000) */}
+            <div className="text-center mb-7 sm:mb-8">
+              <p className="text-[16px] font-bold text-[#101828] leading-[21px] font-['DM_Sans',sans-serif] m-0">
                 {itemDescription}
               </p>
-              <p className="text-[16px] font-bold text-[#101828] leading-[22px]">
+              <p className="text-[16px] font-bold text-[#101828] leading-[21px] font-['DM_Sans',sans-serif] m-0">
                 {amount}
               </p>
             </div>
 
-            {/* Form Fields: gap 4 */}
-            <div className="w-full flex flex-col gap-3.5 sm:gap-4">
-              {/* 1. Select Bank Dropdown */}
+            {/* Form Fields: gap 20px / 24px matching Figma Frame 1000000999 */}
+            <div className="w-full flex flex-col gap-5">
+              {/* 1. Select Bank Dropdown (Frame 1000000996) */}
               <div className="relative w-full">
                 <select
                   value={selectedBank}
                   onChange={(e) => setSelectedBank(e.target.value)}
-                  className="w-full h-[52px] sm:h-[56px] px-4 bg-white border border-[#D7D7D7] rounded-[10px] text-[15px] text-gray-800 outline-none appearance-none cursor-pointer focus:border-[#D4AF37]"
+                  className="w-full h-[56px] px-4 bg-white border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[17px] font-light text-[#101828] outline-none appearance-none cursor-pointer focus:border-[#D4AF37] transition-colors font-['DM_Sans',sans-serif]"
                 >
-                  <option value="">--- Select bank ---</option>
+                  <option value="" className="text-[rgba(162,161,168,0.8)]">--- Select bank ---</option>
                   <option value="access">Access Bank</option>
                   <option value="gtb">Guaranty Trust Bank (GTB)</option>
                   <option value="zenith">Zenith Bank</option>
@@ -112,23 +116,24 @@ export default function AudiencePaymentModal({
                   <option value="uba">United Bank for Africa (UBA)</option>
                   <option value="kuda">Kuda Microfinance Bank</option>
                   <option value="opay">OPay</option>
+                  <option value="palmpay">PalmPay</option>
                 </select>
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
-                  <ChevronDown size={20} />
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#101828]">
+                  <ChevronDown size={18} strokeWidth={2} />
                 </div>
               </div>
 
-              {/* 2. Enter Card Name */}
+              {/* 2. Enter Card Name (Frame 1000001005) */}
               <input
                 type="text"
                 required
                 value={cardName}
                 onChange={(e) => setCardName(e.target.value)}
                 placeholder="Enter card name"
-                className="w-full h-[52px] sm:h-[56px] px-4 bg-white border border-[#D7D7D7] rounded-[10px] text-[15px] text-gray-800 placeholder:text-gray-400 outline-none focus:border-[#D4AF37]"
+                className="w-full h-[56px] px-4 bg-white border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[17px] font-light text-[#101828] placeholder:text-[rgba(162,161,168,0.8)] placeholder:font-light outline-none focus:border-[#D4AF37] transition-colors font-['DM_Sans',sans-serif]"
               />
 
-              {/* 3. Enter Card Number with Mastercard Logo */}
+              {/* 3. Enter Card Number with Mastercard Logo (Frame 1000001002) */}
               <div className="relative w-full">
                 <input
                   type="text"
@@ -140,17 +145,19 @@ export default function AudiencePaymentModal({
                     setCardNumber(val);
                   }}
                   placeholder="Enter card number"
-                  className="w-full h-[52px] sm:h-[56px] pl-4 pr-14 bg-white border border-[#D7D7D7] rounded-[10px] text-[15px] text-gray-800 placeholder:text-gray-400 outline-none focus:border-[#D4AF37]"
+                  className="w-full h-[56px] pl-4 pr-14 bg-white border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[17px] font-light text-[#101828] placeholder:text-[rgba(162,161,168,0.8)] placeholder:font-light outline-none focus:border-[#D4AF37] transition-colors font-['DM_Sans',sans-serif]"
                 />
-                {/* Mastercard overlapping circles icon */}
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center">
-                  <div className="w-[18px] h-[18px] rounded-full bg-[#EB001B]" />
-                  <div className="w-[18px] h-[18px] rounded-full bg-[#F79E1B] -ml-2 opacity-90" />
+                {/* Mastercard icon badge (logos:mastercard 20px x 16px, border 0.7px solid #C5CDD0) */}
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 w-[22px] h-[16px] bg-white border border-[#C5CDD0] rounded-[2px] flex items-center justify-center overflow-hidden pointer-events-none shadow-2xs">
+                  <div className="flex items-center -space-x-1.5">
+                    <div className="w-[10px] h-[10px] rounded-full bg-[#EB001B]" />
+                    <div className="w-[10px] h-[10px] rounded-full bg-[#F79E1B] opacity-90" />
+                  </div>
                 </div>
               </div>
 
-              {/* 4. Expiry Date & CVV Row */}
-              <div className="w-full grid grid-cols-2 gap-3.5">
+              {/* 4. Expiry Date & CVV Row (Frame 1000001003) */}
+              <div className="w-full grid grid-cols-2 gap-5">
                 <input
                   type="text"
                   required
@@ -162,7 +169,7 @@ export default function AudiencePaymentModal({
                     setExpiryDate(v);
                   }}
                   placeholder="Expiry date (MM/YY)"
-                  className="w-full h-[52px] sm:h-[56px] px-4 bg-white border border-[#D7D7D7] rounded-[10px] text-[15px] text-gray-800 placeholder:text-gray-400 outline-none focus:border-[#D4AF37]"
+                  className="w-full h-[56px] px-4 bg-white border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[17px] font-light text-[#101828] placeholder:text-[rgba(162,161,168,0.8)] placeholder:font-light outline-none focus:border-[#D4AF37] transition-colors font-['DM_Sans',sans-serif]"
                 />
                 <input
                   type="password"
@@ -171,32 +178,32 @@ export default function AudiencePaymentModal({
                   value={cvv}
                   onChange={(e) => setCvv(e.target.value.replace(/\D/g, ''))}
                   placeholder="CVV"
-                  className="w-full h-[52px] sm:h-[56px] px-4 bg-white border border-[#D7D7D7] rounded-[10px] text-[15px] text-gray-800 placeholder:text-gray-400 outline-none focus:border-[#D4AF37]"
+                  className="w-full h-[56px] px-4 bg-white border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[17px] font-light text-[#101828] placeholder:text-[rgba(162,161,168,0.8)] placeholder:font-light outline-none focus:border-[#D4AF37] transition-colors font-['DM_Sans',sans-serif]"
                 />
               </div>
 
-              {/* 5. Checkbox: Add this card */}
+              {/* 5. Checkbox: Add this card (square checkbox solid 20px x 20px, #D4AF37) */}
               <label 
                 onClick={() => setSaveCard(!saveCard)}
-                className="flex items-center gap-2.5 pt-1 cursor-pointer select-none group w-fit"
+                className="flex items-center gap-3 pt-1 cursor-pointer select-none group w-fit"
               >
-                <div className={`w-[18px] h-[18px] rounded-[4px] flex items-center justify-center transition-all ${
-                  saveCard ? 'bg-[#D4AF37] text-white shadow-xs' : 'border border-[#D7D7D7] group-hover:border-black'
+                <div className={`w-5 h-5 rounded-[4px] flex items-center justify-center transition-all ${
+                  saveCard ? 'bg-[#D4AF37] text-white shadow-2xs' : 'border border-[rgba(162,161,168,0.5)] group-hover:border-black'
                 }`}>
-                  {saveCard && <Check size={13} strokeWidth={3} />}
+                  {saveCard && <Check size={14} strokeWidth={3} className="text-white" />}
                 </div>
-                <span className="text-[14px] text-gray-600 group-hover:text-black transition-colors">
+                <span className="text-[16px] font-normal leading-[21px] text-[#696F79] group-hover:text-black transition-colors font-['DM_Sans',sans-serif]">
                   Add this card
                 </span>
               </label>
             </div>
 
-            {/* 6. Pay Action Button (468px x 56px, background #D4AF37) */}
-            <div className="w-full mt-8 sm:mt-12">
+            {/* 6. Pay Action Button (Frame 9720: 420px x 56px, background #D4AF37, radius 6px) */}
+            <div className="w-full mt-7 sm:mt-8">
               <button
                 type="submit"
                 disabled={isProcessing}
-                className="w-full h-[56px] bg-[#D4AF37] hover:bg-[#c29f31] text-black rounded-[6px] text-[16px] font-medium leading-[21px] transition-all shadow-sm active:scale-[0.99] flex items-center justify-center cursor-pointer disabled:opacity-75"
+                className="w-full h-[56px] bg-[#D4AF37] hover:bg-[#c29f31] text-black rounded-[6px] text-[16px] font-medium leading-[21px] font-['DM_Sans',sans-serif] transition-all shadow-xs active:scale-[0.99] flex items-center justify-center cursor-pointer disabled:opacity-75"
               >
                 {isProcessing ? (
                   <div className="w-6 h-6 border-2 border-black border-t-transparent rounded-full animate-spin" />
