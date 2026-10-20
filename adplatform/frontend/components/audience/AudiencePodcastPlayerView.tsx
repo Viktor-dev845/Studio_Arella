@@ -7,9 +7,7 @@ import {
   Pause, 
   Play, 
   SkipBack, 
-  Check, 
-  MessageSquare, 
-  Send
+  Check 
 } from 'lucide-react';
 import { useToast } from '@/components/ui/ToastProvider';
 
@@ -72,26 +70,26 @@ export default function AudiencePodcastPlayerView({
   const { toast } = useToast();
 
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'discussion'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'discussion'>('discussion');
   const [currentEpisodeId, setCurrentEpisodeId] = useState<number>(1);
   const [episodes, setEpisodes] = useState<EpisodeItem[]>(DEFAULT_EPISODES);
   const [progressPercent, setProgressPercent] = useState<number>(16.6); // ~4m 15s into 25m
 
-  // Discussion comments
+  // Discussion comments matching Figma Frame 1618873086 (Chukuemeka Azor)
   const [discussionList, setDiscussionList] = useState<Array<{ id: string; author: string; text: string; time: string; avatar: string }>>([
     {
       id: 'd1',
-      author: 'Adam Udochi',
-      avatar: '/audience/adam-udochi.png',
-      text: 'Great standard breakdown on forensic analysis! Looking forward to episode 3.',
-      time: '2 hours ago',
+      author: 'Chukuemeka Azor',
+      avatar: '/audience/chukuemeka-azor.png',
+      text: 'Dolor eget eleifend in facilisis aliquam platea purus. Proin faucibus vulputate ipsum morbi enim. Adipiscing pharetra sed massa orci. Risus duis laoreet sed aenean volutpat.',
+      time: '2hrs ago',
     },
     {
       id: 'd2',
-      author: 'Audrey Alexander',
-      avatar: '/audience/audrey-alexander.png',
-      text: 'The explanation on platea purus in the first half was really clear.',
-      time: '5 hours ago',
+      author: 'Chukuemeka Azor',
+      avatar: '/audience/chukuemeka-azor.png',
+      text: 'Dolor eget eleifend in facilisis aliquam platea purus. Proin faucibus vulputate ipsum morbi enim. Adipiscing pharetra sed massa orci. Risus duis laoreet sed aenean volutpat.',
+      time: '2hrs ago',
     },
   ]);
   const [newComment, setNewComment] = useState('');
@@ -119,14 +117,14 @@ export default function AudiencePodcastPlayerView({
     e.preventDefault();
     if (!newComment.trim()) return;
     setDiscussionList(prev => [
+      ...prev,
       {
         id: String(Date.now()),
-        author: 'Adam Udochi',
-        avatar: '/audience/adam-udochi.png',
+        author: 'Chukuemeka Azor',
+        avatar: '/audience/chukuemeka-azor.png',
         text: newComment.trim(),
         time: 'Just now',
       },
-      ...prev,
     ]);
     setNewComment('');
     toast('Comment posted to podcast discussion!', 'success');
@@ -184,7 +182,7 @@ export default function AudiencePodcastPlayerView({
               }}
             />
 
-            {/* Big Center Play/Pause button on hover */}
+            {/* Center Play/Pause button on hover */}
             <button
               type="button"
               onClick={() => setIsPlaying(!isPlaying)}
@@ -262,14 +260,14 @@ export default function AudiencePodcastPlayerView({
           </div>
 
           {/* C. Tabs: Overview vs Discussion (Frame 1618873029) */}
-          <div className="flex items-center gap-10 border-b border-gray-200/70 pt-2">
+          <div className="flex items-center gap-[40px] h-[44px] pt-1">
             <button
               type="button"
               onClick={() => setActiveTab('overview')}
-              className={`pb-2.5 text-[16px] leading-[24px] tracking-[-0.01em] transition-all cursor-pointer bg-transparent border-none p-0 ${
+              className={`h-[44px] flex items-center justify-center font-['DM_Sans',sans-serif] text-[16px] leading-[24px] tracking-[-0.01em] transition-all cursor-pointer bg-transparent border-0 p-0 ${
                 activeTab === 'overview'
-                  ? 'font-semibold text-[#D9BA54] border-b-[2px] border-[#D9BA54]'
-                  : 'font-normal text-[#757575] hover:text-black'
+                  ? 'font-semibold text-[#D9BA54] border-b-[1.5px] border-[#D9BA54]'
+                  : 'font-normal text-[#757575] hover:text-[#333333]'
               }`}
             >
               Overview
@@ -278,72 +276,82 @@ export default function AudiencePodcastPlayerView({
             <button
               type="button"
               onClick={() => setActiveTab('discussion')}
-              className={`pb-2.5 text-[16px] leading-[24px] tracking-[-0.01em] transition-all cursor-pointer bg-transparent border-none p-0 ${
+              className={`h-[44px] flex items-center justify-center font-['DM_Sans',sans-serif] text-[16px] leading-[24px] tracking-[-0.01em] transition-all cursor-pointer bg-transparent border-0 p-0 ${
                 activeTab === 'discussion'
-                  ? 'font-semibold text-[#D9BA54] border-b-[2px] border-[#D9BA54]'
-                  : 'font-normal text-[#757575] hover:text-black'
+                  ? 'font-semibold text-[#D9BA54] border-b-[1.5px] border-[#D9BA54]'
+                  : 'font-normal text-[#757575] hover:text-[#333333]'
               }`}
             >
               Discussion
             </button>
           </div>
 
-          {/* D. Tab Content Area (Frame 1618873073) */}
+          {/* D. Tab Content Area */}
           {activeTab === 'overview' ? (
-            <div className="flex flex-col gap-2 pt-1">
-              <h3 className="text-[18px] font-medium leading-[24px] tracking-[-0.02em] text-[#333333] m-0">
+            /* Frame 1618873073: Course Description */
+            <div className="flex flex-col gap-2 pt-2 max-w-[530px]">
+              <h3 className="font-['DM_Sans',sans-serif] text-[18px] font-semibold leading-[24px] tracking-[-0.02em] text-[#333333] m-0">
                 Course Description
               </h3>
 
-              <p className="text-[16px] font-normal leading-[24px] tracking-[-0.02em] text-[#757575] m-0">
+              <p className="font-['DM_Sans',sans-serif] text-[16px] font-normal leading-[24px] tracking-[-0.02em] text-[#757575] m-0">
                 Dolor eget eleifend in facilisis aliquam platea purus. Proin faucibus vulputate ipsum morbi enim. Adipiscing pharetra sed massa orci. Adipiscing pharetra sed massa orci.
               </p>
             </div>
           ) : (
-            /* Discussion Tab */
-            <div className="flex flex-col gap-4 pt-1">
-              <h3 className="text-[18px] font-medium leading-[24px] tracking-[-0.02em] text-[#333333] m-0 flex items-center gap-2">
-                <MessageSquare size={18} className="text-[#D9BA54]" />
-                Listener Discussion ({discussionList.length})
-              </h3>
+            /* Frame 1618873087: Discussion List + Input Form */
+            <div className="flex flex-col gap-5 pt-1 w-full max-w-[530px]">
+              {/* Frame 1618873086: Comments list */}
+              <div className="flex flex-col gap-4">
+                {discussionList.map((c) => (
+                  <div key={c.id} className="flex flex-col gap-1 w-full max-w-[530px]">
+                    {/* Frame 1618873055: Avatar + Name + Time */}
+                    <div className="flex items-center gap-4">
+                      {/* Ellipse 41: 56px x 56px */}
+                      <img 
+                        src={c.avatar} 
+                        alt={c.author} 
+                        className="w-[56px] h-[56px] rounded-full object-cover shrink-0 shadow-2xs" 
+                      />
+                      
+                      {/* Frame 1618873054: Name + Time */}
+                      <div className="flex flex-col gap-1">
+                        <span className="font-['DM_Sans',sans-serif] font-medium text-[18px] leading-[24px] tracking-[-0.02em] text-[#333333]">
+                          {c.author}
+                        </span>
+                        <span className="font-['DM_Sans',sans-serif] font-normal text-[16px] leading-[24px] tracking-[-0.02em] text-[#757575]">
+                          {c.time}
+                        </span>
+                      </div>
+                    </div>
 
-              {/* Add comment box */}
-              <form onSubmit={handleAddComment} className="flex gap-2">
+                    {/* Comment text paragraph (width: 530px) */}
+                    <p className="font-['DM_Sans',sans-serif] font-normal text-[16px] leading-[24px] tracking-[-0.02em] text-[#757575] m-0 pt-0.5">
+                      {c.text}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Frame 1618873075: Input text field (408px) + Send button (106px) */}
+              <form onSubmit={handleAddComment} className="flex items-center gap-4 pt-1 w-full max-w-[530px]">
+                {/* text field: 408px x 53px */}
                 <input
                   type="text"
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
-                  placeholder="Join the discussion..."
-                  className="flex-1 h-10 px-3.5 rounded-[8px] bg-white border border-gray-200 text-sm focus:outline-none focus:border-[#D9BA54]"
+                  placeholder="Type message . . ."
+                  className="w-full sm:w-[408px] h-[53px] px-4 rounded-[8px] bg-white border-0 outline-none font-['DM_Sans',sans-serif] text-[16px] leading-[24px] text-[#333333] placeholder:text-[#757575] shadow-[0px_2px_8px_rgba(0,0,0,0.03)] focus:ring-1 focus:ring-[#D9BA54]"
                 />
+
+                {/* Frame 1618873058: Send button (106px x 53px) */}
                 <button
                   type="submit"
-                  className="h-10 px-4 bg-[#D9BA54] hover:bg-[#c9a73e] text-black font-medium text-xs rounded-[8px] flex items-center gap-1.5 transition-colors cursor-pointer"
+                  className="w-[106px] h-[53px] bg-[#D9BA54] hover:bg-[#c9a73e] active:scale-[0.98] rounded-[8px] flex items-center justify-center font-['DM_Sans',sans-serif] font-semibold text-[16px] leading-[21px] tracking-[-0.02em] text-[#000000] transition-all cursor-pointer border-0 shrink-0"
                 >
-                  <Send size={13} />
-                  <span>Post</span>
+                  Send
                 </button>
               </form>
-
-              {/* Comments list */}
-              <div className="flex flex-col gap-3 mt-1">
-                {discussionList.map((c) => (
-                  <div key={c.id} className="p-3 bg-white rounded-[10px] border border-gray-100 shadow-2xs flex items-start gap-3">
-                    <img 
-                      src={c.avatar} 
-                      alt={c.author} 
-                      className="w-8 h-8 rounded-full object-cover shrink-0" 
-                    />
-                    <div className="flex flex-col flex-1">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[13px] font-semibold text-[#181818]">{c.author}</span>
-                        <span className="text-[11px] text-gray-400">{c.time}</span>
-                      </div>
-                      <p className="text-[13px] text-[#464646] m-0 mt-0.5 leading-relaxed">{c.text}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
             </div>
           )}
 
@@ -362,8 +370,8 @@ export default function AudiencePodcastPlayerView({
             </span>
           </div>
 
-          {/* Episodes List (Frame 1618873052: Episodes 1 to 5) */}
-          <div className="flex flex-col divide-y divide-gray-100/80 pt-2">
+          {/* Episodes List (Frame 1618873052: Episodes 1 to 5, gap: 32px) */}
+          <div className="flex flex-col gap-8 pt-6">
             {episodes.map((ep) => {
               const isCurrent = currentEpisodeId === ep.id;
               const isGoldHighlight = ep.completed || isCurrent;
@@ -372,21 +380,19 @@ export default function AudiencePodcastPlayerView({
                 <div
                   key={ep.id}
                   onClick={() => handleToggleEpisode(ep.id)}
-                  className={`py-4 sm:py-5 flex flex-col gap-1 transition-all cursor-pointer rounded-[8px] px-2 -mx-2 ${
-                    isCurrent ? 'bg-amber-50/40' : 'hover:bg-gray-50/80'
-                  }`}
+                  className="flex flex-col gap-1 transition-all cursor-pointer group"
                 >
-                  {/* Top row: Episode Title, Duration & Checkbox */}
+                  {/* Top row: Episode Title, Duration & Checkbox (Frame 1618873051) */}
                   <div className="flex items-center justify-between">
                     <span 
-                      className={`text-[18px] font-medium leading-[24px] tracking-[-0.02em] ${
+                      className={`text-[18px] font-medium leading-[24px] tracking-[-0.02em] group-hover:text-[#D9BA54] transition-colors ${
                         isGoldHighlight ? 'text-[#D9BA54]' : 'text-[#333333]'
                       }`}
                     >
                       {ep.title}
                     </span>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-4">
                       <span 
                         className={`text-[16px] leading-[24px] tracking-[-0.02em] font-medium ${
                           isGoldHighlight ? 'text-[#D9BA54]' : 'text-[#757575]'
@@ -395,14 +401,14 @@ export default function AudiencePodcastPlayerView({
                         {ep.duration}
                       </span>
 
-                      {/* Checkbox (fi-rr-checkbox) */}
+                      {/* Checkbox (fi-rr-checkbox: 24px x 24px) */}
                       <button
                         type="button"
                         onClick={(e) => handleToggleCompleted(e, ep.id)}
                         className={`w-6 h-6 rounded-[4px] flex items-center justify-center transition-colors cursor-pointer shrink-0 ${
                           ep.completed 
                             ? 'border-2 border-[#D9BA54] text-[#D9BA54] bg-transparent' 
-                            : 'border-2 border-[#757575] text-transparent hover:border-black'
+                            : 'border-2 border-[#757575] text-transparent hover:border-[#333333]'
                         }`}
                         title={ep.completed ? "Mark as uncompleted" : "Mark as completed"}
                       >
