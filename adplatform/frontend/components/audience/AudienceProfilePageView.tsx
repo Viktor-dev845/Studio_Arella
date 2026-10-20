@@ -27,6 +27,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useToast } from '@/components/ui/ToastProvider';
 import api from '@/lib/api';
 import AudienceMembershipModal from './AudienceMembershipModal';
+import AudienceLiveEventJoinModal from './AudienceLiveEventJoinModal';
 
 interface ShowItem {
   id: string;
@@ -260,6 +261,14 @@ export default function AudienceProfilePageView({
   const [showEditModal, setShowEditModal] = useState(false);
   const [showVerifyModal, setShowVerifyModal] = useState(false);
   const [showCreateEventModal, setShowCreateEventModal] = useState(false);
+  const [selectedEventForModal, setSelectedEventForModal] = useState<EventClubItem | null>(() => {
+    const queryModal = searchParams.get('modal');
+    const queryEvent = searchParams.get('event');
+    if (queryModal === 'live-event' || queryModal === 'filter-popup' || queryEvent) {
+      return DEFAULT_FAN_EVENTS[0];
+    }
+    return null;
+  });
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isRequestingVerification, setIsRequestingVerification] = useState(false);
 
@@ -798,11 +807,11 @@ export default function AudienceProfilePageView({
               {(showAllEvents ? DEFAULT_FAN_EVENTS : DEFAULT_FAN_EVENTS.slice(0, 3)).map((ev) => (
                 <div
                   key={ev.id}
-                  onClick={() => router.push('/audience?view=live')}
-                  className="w-full h-[80px] bg-white border border-[#F4F4F4] rounded-[6px] px-4 py-3 flex flex-col justify-between hover:border-gray-300 transition-colors cursor-pointer shadow-sm"
+                  onClick={() => setSelectedEventForModal(ev)}
+                  className="w-full h-[80px] bg-white border border-[#F4F4F4] rounded-[6px] px-4 py-3 flex flex-col justify-between hover:border-gray-300 transition-colors cursor-pointer shadow-sm group"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-[14px] font-medium text-[#181818] truncate pr-2">
+                    <span className="text-[14px] font-medium text-[#181818] truncate pr-2 group-hover:text-[#D9BA54] transition-colors">
                       {ev.title}
                     </span>
                     <span className="text-[14px] font-semibold text-[#15411F]">
@@ -837,10 +846,10 @@ export default function AudienceProfilePageView({
             <div className="mt-6">
               <button
                 type="button"
-                onClick={() => router.push('/audience?view=live')}
+                onClick={() => setShowAllEvents(!showAllEvents)}
                 className="text-[12px] font-semibold uppercase tracking-wider text-[#D9BA54] hover:underline cursor-pointer bg-transparent border-none p-0"
               >
-                SHOW ALL (17)
+                {showAllEvents ? 'SHOW LESS' : 'SHOW ALL (17)'}
               </button>
             </div>
           </div>
@@ -1166,6 +1175,19 @@ export default function AudienceProfilePageView({
         onSubscribeSuccess={() => {
           setIsSubscribed(true);
           toast('Congratulations! You are now a membered fan of Udo Emmanuel.', 'success');
+        }}
+      />
+
+      {/* ─── MODAL 5: Live Event Join Modal / Filter Popup (Figma: Filter Popup) ─── */}
+      <AudienceLiveEventJoinModal
+        isOpen={Boolean(selectedEventForModal)}
+        onClose={() => setSelectedEventForModal(null)}
+        eventTitle={selectedEventForModal?.title || 'User experience (UX)'}
+        onJoin={() => {
+          const eventTitle = selectedEventForModal?.title || 'User experience live event';
+          setSelectedEventForModal(null);
+          toast(`Joining ${eventTitle}...`, 'success');
+          router.push('/audience?view=live');
         }}
       />
     </section>
