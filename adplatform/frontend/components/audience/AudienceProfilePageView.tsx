@@ -1150,12 +1150,13 @@ export default function AudienceProfilePageView({
         </div>
       )}
 
-      {/* ─── MODAL 4: Membership / Subscribe to Creator (Visitor Mode) ─── */}
+      {/* ─── MODAL 4: Membership / Subscribe to Creator (Visitor Mode: Frame 2121459693) ─── */}
       <AudienceMembershipModal
         isOpen={showMembershipModal}
         onClose={() => setShowMembershipModal(false)}
-        clubName="Udo Emmanuel Fan Club"
-        price="NGN 1,000 / month"
+        creatorName="Udo Emmanuel"
+        clubName="Subscribe to follow Udo Emmanuel"
+        price="NGN 1,000"
         onSubscribeSuccess={() => {
           setIsSubscribed(true);
           toast('Congratulations! You are now a membered fan of Udo Emmanuel.', 'success');
