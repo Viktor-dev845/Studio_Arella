@@ -221,7 +221,14 @@ export default function AudienceProfilePageView({
     }
   }
 
-  const [isSubscribed, setIsSubscribed] = useState(true);
+  const querySubscribed = searchParams.get('subscribed');
+  const [isSubscribed, setIsSubscribed] = useState<boolean>(() => {
+    if (querySubscribed === 'true') return true;
+    if (querySubscribed === 'false') return false;
+    // In visitor mode, default to false so visitor sees the subscription CTA & subscription prompt
+    if (isVisitorInitial) return false;
+    return true;
+  });
   const [showMembershipModal, setShowMembershipModal] = useState(false);
 
   const handleShareProfile = () => {
@@ -1182,7 +1189,12 @@ export default function AudienceProfilePageView({
       <AudienceLiveEventJoinModal
         isOpen={Boolean(selectedEventForModal)}
         onClose={() => setSelectedEventForModal(null)}
+        isSubscribed={isSubscribed}
         eventTitle={selectedEventForModal?.title || 'User experience (UX)'}
+        onSubscribe={() => {
+          setSelectedEventForModal(null);
+          setShowMembershipModal(true);
+        }}
         onJoin={() => {
           const eventTitle = selectedEventForModal?.title || 'User experience live event';
           setSelectedEventForModal(null);
