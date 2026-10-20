@@ -185,6 +185,7 @@ const DEFAULT_FAN_EVENTS: EventClubItem[] = [
       '/audience/steve-jobs.png',
       '/audience/nermmen-saif.png',
       '/audience/brandon-wilson.png',
+      '/audience/darlene-black.png',
     ],
   },
 ];
@@ -219,7 +220,7 @@ export default function AudienceProfilePageView({
     }
   }
 
-  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [isSubscribed, setIsSubscribed] = useState(true);
   const [showMembershipModal, setShowMembershipModal] = useState(false);
 
   const handleShareProfile = () => {
@@ -600,25 +601,23 @@ export default function AudienceProfilePageView({
                 {isVisitorMode ? 'Family Life podcast creator for over 5years' : bio}
               </p>
 
-              {/* Primary CTA Button: SUBSCRIBE TO BE A MEMBERED FAN (Figma: 227px x 32px, #D9BA54) */}
+              {/* Primary CTA Button: MEMBERED FAN (Figma: 131px x 32px, #D9BA54, uppercase) */}
               {isVisitorMode && (
                 <div className="mt-3">
                   <button
                     type="button"
                     onClick={() => {
                       if (isSubscribed) {
-                        toast('You are already subscribed to Udo Emmanuel!', 'info');
+                        toast('You are a Membered Fan of Udo Emmanuel with full access to live events and activities!', 'info');
                       } else {
                         setShowMembershipModal(true);
                       }
                     }}
-                    className={`w-[227px] h-8 rounded-[6px] text-[12px] font-normal uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center shadow-xs font-['DM_Sans',sans-serif] ${
-                      isSubscribed 
-                        ? 'bg-[#15411F] text-white hover:bg-[#12381a]' 
-                        : 'bg-[#D9BA54] text-black hover:bg-[#c9a73e]'
+                    className={`h-8 rounded-[6px] text-[12px] font-normal uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center font-['DM_Sans',sans-serif] bg-[#D9BA54] hover:bg-[#c9a73e] text-black shadow-xs ${
+                      isSubscribed ? 'w-[131px]' : 'w-[227px]'
                     }`}
                   >
-                    {isSubscribed ? 'MEMBERED FAN ✓' : 'SUBSCRIBE TO BE A MEMBERED FAN'}
+                    {isSubscribed ? 'MEMBERED FAN' : 'SUBSCRIBE TO BE A MEMBERED FAN'}
                   </button>
                 </div>
               )}
@@ -654,8 +653,8 @@ export default function AudienceProfilePageView({
         )}
       </div>
 
-      {/* ─── 2. Tabs Bar (Figma: 720px wide, PROFILE 50px high, FOLLOWERS/FOLLOWING 40px) ─── */}
-      <div className="w-full max-w-[720px] flex items-end border-b border-[#E7E7E7] relative">
+      {/* ─── 2. Tabs Bar (Figma: 480px wide in Visitor Mode: PROFILE 50px high, FOLLOWERS (1043) 40px high) ─── */}
+      <div className={`w-full ${isVisitorMode ? 'max-w-[480px]' : 'max-w-[720px]'} flex items-end border-b border-[#E7E7E7] relative`}>
         <button
           type="button"
           onClick={() => handleTabChange('profile')}
@@ -677,20 +676,22 @@ export default function AudienceProfilePageView({
               : 'h-[40px] bg-white text-[#181818] border border-[#E7E7E7] border-b-0 hover:bg-gray-50'
           }`}
         >
-          Followers ({followersCount})
+          Followers ({isVisitorMode ? 1043 : followersCount})
         </button>
 
-        <button
-          type="button"
-          onClick={() => handleTabChange('following')}
-          className={`w-[240px] text-[12px] font-semibold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center ${
-            activeTab === 'following'
-              ? 'h-[50px] bg-[#D9BA54] text-black rounded-t-[6px]'
-              : 'h-[40px] bg-white text-[#181818] border border-[#E7E7E7] border-b-0 hover:bg-gray-50'
-          }`}
-        >
-          Following ({followingCount})
-        </button>
+        {!isVisitorMode && (
+          <button
+            type="button"
+            onClick={() => handleTabChange('following')}
+            className={`w-[240px] text-[12px] font-semibold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center ${
+              activeTab === 'following'
+                ? 'h-[50px] bg-[#D9BA54] text-black rounded-t-[6px]'
+                : 'h-[40px] bg-white text-[#181818] border border-[#E7E7E7] border-b-0 hover:bg-gray-50'
+            }`}
+          >
+            Following ({followingCount})
+          </button>
+        )}
       </div>
 
       {/* ─── 3. Tab Contents ─── */}
@@ -707,7 +708,9 @@ export default function AudienceProfilePageView({
                   isAboutExpanded ? '' : 'line-clamp-2'
                 }`}
               >
-                {about}
+                {isVisitorMode 
+                  ? "I'm more experienced in eCommerce web projects and mobile banking apps, but also like to work with creative projects, such as landing pages or unusual corporate websites." 
+                  : about}
               </p>
             </div>
 
@@ -717,7 +720,7 @@ export default function AudienceProfilePageView({
                 onClick={() => setIsAboutExpanded((prev) => !prev)}
                 className="text-[12px] font-medium uppercase tracking-wider text-[#D9BA54] hover:underline cursor-pointer bg-transparent border-none p-0"
               >
-                {isAboutExpanded ? 'See Less' : 'See More'}
+                {isAboutExpanded ? 'SEE LESS' : 'SEE MORE'}
               </button>
             </div>
           </div>
@@ -729,13 +732,13 @@ export default function AudienceProfilePageView({
                 Podcast
               </h2>
               <span className="text-[18px] font-normal text-[#747474]">
-                {Math.min(3, podcasts.length)} of {podcasts.length > 3 ? podcasts.length : 12}
+                {isVisitorMode ? '3 of 12' : `${Math.min(3, podcasts.length)} of ${podcasts.length > 3 ? podcasts.length : 12}`}
               </span>
             </div>
 
             {/* 3 Columns Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-              {(showAllPodcasts ? podcasts : podcasts.slice(0, 3)).map((pod) => (
+              {(isVisitorMode ? DEFAULT_PODCAST_ITEMS : (showAllPodcasts ? podcasts : podcasts.slice(0, 3))).map((pod) => (
                 <Link
                   key={pod.id}
                   href={`/podcast`}
@@ -768,7 +771,7 @@ export default function AudienceProfilePageView({
               <button
                 type="button"
                 onClick={() => {
-                  if (podcasts.length > 3) {
+                  if (podcasts.length > 3 && !isVisitorMode) {
                     setShowAllPodcasts((prev) => !prev);
                   } else {
                     router.push('/podcast');
@@ -776,7 +779,7 @@ export default function AudienceProfilePageView({
                 }}
                 className="text-[12px] font-semibold uppercase tracking-wider text-[#D9BA54] hover:underline cursor-pointer bg-transparent border-none p-0"
               >
-                {showAllPodcasts ? 'Show Less' : `Show All (${podcasts.length > 3 ? podcasts.length : 12})`}
+                {showAllPodcasts && !isVisitorMode ? 'SHOW LESS' : 'SHOW ALL (12)'}
               </button>
             </div>
           </div>
@@ -834,7 +837,7 @@ export default function AudienceProfilePageView({
                 onClick={() => router.push('/audience?view=live')}
                 className="text-[12px] font-semibold uppercase tracking-wider text-[#D9BA54] hover:underline cursor-pointer bg-transparent border-none p-0"
               >
-                Show All (17)
+                SHOW ALL (17)
               </button>
             </div>
           </div>
