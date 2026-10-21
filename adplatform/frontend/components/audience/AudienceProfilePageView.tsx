@@ -31,6 +31,7 @@ import AudienceLiveEventJoinModal from './AudienceLiveEventJoinModal';
 import AudienceCreateEventModal from './AudienceCreateEventModal';
 import AudienceSetupAccountModal from './AudienceSetupAccountModal';
 import AudienceEventCreatedSuccessModal from './AudienceEventCreatedSuccessModal';
+import AudienceGetVerifiedView from './AudienceGetVerifiedView';
 
 interface ShowItem {
   id: string;
@@ -269,7 +270,10 @@ export default function AudienceProfilePageView({
 
   // Modals
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showVerifyModal, setShowVerifyModal] = useState(false);
+  const [showVerifyModal, setShowVerifyModal] = useState<boolean>(() => {
+    const queryModal = searchParams.get('modal');
+    return queryModal === 'get-verified' || queryModal === 'verify' || queryModal === 'pricing';
+  });
   const [showCreateEventModal, setShowCreateEventModal] = useState<boolean>(() => {
     const queryModal = searchParams.get('modal');
     return queryModal === 'create-event' || queryModal === 'create';
@@ -286,7 +290,9 @@ export default function AudienceProfilePageView({
 
   useEffect(() => {
     const queryModal = searchParams.get('modal');
-    if (queryModal === 'create-event' || queryModal === 'create') {
+    if (queryModal === 'get-verified' || queryModal === 'verify' || queryModal === 'pricing') {
+      setShowVerifyModal(true);
+    } else if (queryModal === 'create-event' || queryModal === 'create') {
       setShowCreateEventModal(true);
     } else if (queryModal === 'setup-account' || queryModal === 'bank-account') {
       setShowSetupAccountModal(true);
@@ -1077,58 +1083,16 @@ export default function AudienceProfilePageView({
         </div>
       )}
 
-      {/* ─── MODAL 2: Get Verified ─── */}
+      {/* ─── MODAL 2: Get Verified Screen (Figma: 1366px x 1616px) ─── */}
       {showVerifyModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl w-full max-w-[480px] shadow-2xl p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-150 text-center">
-            <div className="w-14 h-14 rounded-full bg-amber-50 text-[#D9BA54] flex items-center justify-center mx-auto mb-4">
-              <ShieldCheck size={32} />
-            </div>
-
-            <h3 className="text-[18px] font-bold text-gray-900 mb-1">
-              Studio Arella Creator Verification
-            </h3>
-            <p className="text-xs text-gray-500 max-w-sm mx-auto mb-6">
-              Verified creators receive the golden checkmark, priority ranking in the Audience feed, and access to ticketed 1View Live Streams.
-            </p>
-
-            <div className="bg-gray-50 rounded-xl p-4 text-left text-xs text-gray-700 flex flex-col gap-2 mb-6">
-              <div className="flex items-center gap-2">
-                <Check size={14} className="text-emerald-600 shrink-0" />
-                <span>Active account with published podcast content</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Check size={14} className="text-emerald-600 shrink-0" />
-                <span>Valid contact details and Nigerian bank account linked</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Check size={14} className="text-emerald-600 shrink-0" />
-                <span>Adheres to Studio Arella Community Guidelines</span>
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => setShowVerifyModal(false)}
-                className="flex-1 h-11 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700 hover:bg-gray-50"
-              >
-                Close
-              </button>
-              <button
-                type="button"
-                onClick={handleRequestVerification}
-                disabled={isRequestingVerification}
-                className="flex-1 h-11 rounded-lg bg-[#D9BA54] hover:bg-[#c9a73e] text-black text-sm font-bold flex items-center justify-center gap-2"
-              >
-                {isRequestingVerification ? (
-                  <Loader2 size={16} className="animate-spin" />
-                ) : (
-                  'Submit Request'
-                )}
-              </button>
-            </div>
-          </div>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto animate-in fade-in duration-200">
+          <AudienceGetVerifiedView
+            onBackToProfile={() => setShowVerifyModal(false)}
+            onSelectPlan={(plan, cycle) => {
+              setShowVerifyModal(false);
+              toast(`Selected ${plan} plan on ${cycle} billing. Redirecting...`, 'success');
+            }}
+          />
         </div>
       )}
 

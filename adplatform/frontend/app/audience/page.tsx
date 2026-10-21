@@ -18,6 +18,7 @@ import AudienceProfilePageView from '@/components/audience/AudienceProfilePageVi
 import AudienceEditProfilePageView from '@/components/audience/AudienceEditProfilePageView';
 import AudiencePodcastPlayerView from '@/components/audience/AudiencePodcastPlayerView';
 import AudiencePremiumCard from '@/components/audience/AudiencePremiumCard';
+import AudienceGetVerifiedView from '@/components/audience/AudienceGetVerifiedView';
 import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/api';
 
@@ -27,7 +28,8 @@ function AudienceContent() {
   const queryView = searchParams.get('view');
 
   const { user } = useAuthStore();
-  const [activeMenu, setActiveMenu] = useState<'podcast' | 'trending' | 'memberships' | 'bookmarks' | 'subscriptions' | 'live' | 'live-detail' | 'chats' | 'notifications' | 'profile' | 'creator-profile' | 'podcast-player' | 'edit-profile' | 'settings' | string>(() => {
+  const [activeMenu, setActiveMenu] = useState<'podcast' | 'trending' | 'memberships' | 'bookmarks' | 'subscriptions' | 'live' | 'live-detail' | 'chats' | 'notifications' | 'profile' | 'creator-profile' | 'podcast-player' | 'edit-profile' | 'settings' | 'get-verified' | string>(() => {
+    if (queryView === 'get-verified' || queryView === 'verify' || queryView === 'pricing') return 'get-verified';
     if (queryView === 'podcast-player' || queryView === 'podcast-detail' || queryView === 'episode') return 'podcast-player';
     if (queryView === 'creator-profile' || queryView === 'creator' || queryView === 'visitor-profile') return 'creator-profile';
     if (queryView === 'login-history' || queryView === 'change-password' || queryView === 'edit-profile' || queryView === 'settings') return 'edit-profile';
@@ -50,7 +52,9 @@ function AudienceContent() {
   const [prevQueryView, setPrevQueryView] = useState(queryView);
   if (queryView !== prevQueryView) {
     setPrevQueryView(queryView);
-    if (queryView === 'podcast-player' || queryView === 'podcast-detail' || queryView === 'episode') {
+    if (queryView === 'get-verified' || queryView === 'verify' || queryView === 'pricing') {
+      setActiveMenu('get-verified');
+    } else if (queryView === 'podcast-player' || queryView === 'podcast-detail' || queryView === 'episode') {
       setActiveMenu('podcast-player');
     } else if (queryView === 'creator-profile' || queryView === 'creator' || queryView === 'visitor-profile') {
       setActiveMenu('creator-profile');
@@ -236,6 +240,13 @@ function AudienceContent() {
           /* ─── Dedicated Chats Screen (1440px x 1024px: Visitors 278px + Chat 911px) ─── */
           <main className="w-full">
             <AudienceChatPageView />
+          </main>
+        ) : (activeMenu === 'get-verified' || activeMenu === 'verify') ? (
+          /* ─── Dedicated Get Verified Pricing Screen (1366px x 1616px) ─── */
+          <main className="w-full">
+            <AudienceGetVerifiedView 
+              onBackToProfile={() => handleMenuChange('creator-profile')}
+            />
           </main>
         ) : (
           <main className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
