@@ -325,7 +325,7 @@ export default function AudienceProfilePageView({
   });
   const [showDeactivateModal, setShowDeactivateModal] = useState<boolean>(() => {
     const queryModal = searchParams.get('modal');
-    return queryModal === 'deactivate' || queryModal === 'deactivate-account';
+    return queryModal === 'deactivate' || queryModal === 'deactivate-account' || queryModal === 'account-deactivated' || queryModal === 'deactivated';
   });
   const [pendingCreatedEvent, setPendingCreatedEvent] = useState<any>(null);
 
@@ -339,7 +339,7 @@ export default function AudienceProfilePageView({
       setShowSetupAccountModal(true);
     } else if (queryModal === 'event-created' || queryModal === 'event-success' || queryModal === 'created') {
       setShowSuccessModal(true);
-    } else if (queryModal === 'deactivate' || queryModal === 'deactivate-account') {
+    } else if (queryModal === 'deactivate' || queryModal === 'deactivate-account' || queryModal === 'account-deactivated' || queryModal === 'deactivated') {
       setShowDeactivateModal(true);
     }
   }, [searchParams]);
@@ -1202,10 +1202,15 @@ export default function AudienceProfilePageView({
         }}
       />
 
-      {/* ─── MODAL 6: Deactivate Account Filter Popup (Figma: 383px x 320px, radius 20px) ─── */}
+      {/* ─── MODAL 6: Deactivate Account Filter Popup (Figma: 383px x 320px & 383px x 433px) ─── */}
       <AudienceDeactivateAccountModal
         isOpen={showDeactivateModal}
         onClose={() => setShowDeactivateModal(false)}
+        initialStep={
+          searchParams.get('modal') === 'account-deactivated' || searchParams.get('modal') === 'deactivated'
+            ? 'deactivated'
+            : 'confirm'
+        }
       />
     </section>
   );
