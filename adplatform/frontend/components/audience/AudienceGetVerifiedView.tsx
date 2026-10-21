@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Check } from 'lucide-react';
 import AudienceVerifyPaymentModal from './AudienceVerifyPaymentModal';
+import AudienceVerifySuccessModal from './AudienceVerifySuccessModal';
 
 interface AudienceGetVerifiedViewProps {
   onBackToProfile?: () => void;
@@ -15,8 +16,11 @@ export default function AudienceGetVerifiedView({
 }: AudienceGetVerifiedViewProps) {
   const [billingCycle, setBillingCycle] = useState<'payg' | 'monthly' | 'yearly'>('monthly');
   const [selectedPlanForPayment, setSelectedPlanForPayment] = useState<'Standard' | 'Pro' | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [lastSelectedPlan, setLastSelectedPlan] = useState<'Standard' | 'Pro'>('Standard');
 
   const handleChoosePlan = (plan: 'Standard' | 'Pro') => {
+    setLastSelectedPlan(plan);
     setSelectedPlanForPayment(plan);
   };
 
@@ -162,7 +166,7 @@ export default function AudienceGetVerifiedView({
               {/* Card 1 Button: Get Started */}
               <button
                 type="button"
-                onClick={() => handleChoosePlan('standard')}
+                onClick={() => handleChoosePlan('Standard')}
                 className="w-full h-[46px] bg-[#FAF8F1] hover:bg-[#f3eedd] text-[#D4AF37] font-['Public_Sans',sans-serif] font-medium text-[18px] rounded-[10px] flex items-center justify-center transition-colors cursor-pointer mt-8"
               >
                 Get Started
@@ -260,7 +264,7 @@ export default function AudienceGetVerifiedView({
               {/* Card 2 Button: Schedule Demo */}
               <button
                 type="button"
-                onClick={() => handleChoosePlan('pro')}
+                onClick={() => handleChoosePlan('Pro')}
                 className="w-full h-[46px] bg-[#D4AF37] hover:bg-[#c29f31] text-[#000000] font-['Public_Sans',sans-serif] font-medium text-[18px] rounded-[10px] flex items-center justify-center transition-colors cursor-pointer mt-8"
               >
                 Schedule Demo
@@ -294,16 +298,34 @@ export default function AudienceGetVerifiedView({
         <AudienceVerifyPaymentModal
           isOpen={Boolean(selectedPlanForPayment)}
           onClose={() => setSelectedPlanForPayment(null)}
-          planName={selectedPlanForPayment || 'Standard'}
-          price={selectedPlanForPayment === 'Pro' ? '$69' : '$12'}
+          planName={selectedPlanForPayment || lastSelectedPlan}
+          price={(selectedPlanForPayment || lastSelectedPlan) === 'Pro' ? '$69' : '$12'}
           billingPeriod={billingCycle === 'yearly' ? 'yearly' : 'monthly'}
           onPaymentSuccess={() => {
-            const plan = selectedPlanForPayment || 'Standard';
+            const plan = selectedPlanForPayment || lastSelectedPlan;
             setSelectedPlanForPayment(null);
+            setShowSuccessModal(true);
             if (onSelectPlan) {
               onSelectPlan(plan.toLowerCase() as 'standard' | 'pro', billingCycle);
             }
           }}
+        />
+
+        {/* ─── Verification Success Confirmation Modal (Frame 2121459666: 625px x 565px, radius 32px) ─── */}
+        <AudienceVerifySuccessModal
+          isOpen={showSuccessModal}
+          onClose={() => setShowSuccessModal(false)}
+          onBack={() => {
+            setShowSuccessModal(false);
+            setSelectedPlanForPayment(lastSelectedPlan);
+          }}
+          onFinish={() => {
+            setShowSuccessModal(false);
+            if (onBackToProfile) {
+              onBackToProfile();
+            }
+          }}
+          billingPeriod={billingCycle}
         />
       </div>
     </div>
