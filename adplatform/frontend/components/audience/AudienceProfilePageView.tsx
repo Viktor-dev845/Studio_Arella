@@ -268,7 +268,18 @@ export default function AudienceProfilePageView({
   // Modals
   const [showEditModal, setShowEditModal] = useState(false);
   const [showVerifyModal, setShowVerifyModal] = useState(false);
-  const [showCreateEventModal, setShowCreateEventModal] = useState(false);
+  const [showCreateEventModal, setShowCreateEventModal] = useState<boolean>(() => {
+    const queryModal = searchParams.get('modal');
+    return queryModal === 'create-event' || queryModal === 'create';
+  });
+
+  useEffect(() => {
+    const queryModal = searchParams.get('modal');
+    if (queryModal === 'create-event' || queryModal === 'create') {
+      setShowCreateEventModal(true);
+    }
+  }, [searchParams]);
+
   const [selectedEventForModal, setSelectedEventForModal] = useState<EventClubItem | null>(() => {
     const queryModal = searchParams.get('modal');
     const queryEvent = searchParams.get('event');
