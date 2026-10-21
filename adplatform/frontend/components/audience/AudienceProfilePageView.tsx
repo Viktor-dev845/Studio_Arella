@@ -30,6 +30,7 @@ import AudienceMembershipModal from './AudienceMembershipModal';
 import AudienceLiveEventJoinModal from './AudienceLiveEventJoinModal';
 import AudienceCreateEventModal from './AudienceCreateEventModal';
 import AudienceSetupAccountModal from './AudienceSetupAccountModal';
+import AudienceEventCreatedSuccessModal from './AudienceEventCreatedSuccessModal';
 
 interface ShowItem {
   id: string;
@@ -277,6 +278,10 @@ export default function AudienceProfilePageView({
     const queryModal = searchParams.get('modal');
     return queryModal === 'setup-account' || queryModal === 'bank-account';
   });
+  const [showSuccessModal, setShowSuccessModal] = useState<boolean>(() => {
+    const queryModal = searchParams.get('modal');
+    return queryModal === 'event-created' || queryModal === 'event-success' || queryModal === 'created';
+  });
   const [pendingCreatedEvent, setPendingCreatedEvent] = useState<any>(null);
 
   useEffect(() => {
@@ -285,6 +290,8 @@ export default function AudienceProfilePageView({
       setShowCreateEventModal(true);
     } else if (queryModal === 'setup-account' || queryModal === 'bank-account') {
       setShowSetupAccountModal(true);
+    } else if (queryModal === 'event-created' || queryModal === 'event-success' || queryModal === 'created') {
+      setShowSuccessModal(true);
     }
   }, [searchParams]);
 
@@ -1147,9 +1154,19 @@ export default function AudienceProfilePageView({
           setShowSetupAccountModal(false);
           setShowCreateEventModal(true);
         }}
-        onFinish={(bankDetails) => {
+        onFinish={(_bankDetails) => {
+          setShowSetupAccountModal(false);
+          setShowSuccessModal(true);
+        }}
+      />
+
+      {/* ─── MODAL 3.6: Event Created Success Modal (Figma Filter Popup: 383px x 433px, radius 20px) ─── */}
+      <AudienceEventCreatedSuccessModal
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        onFinish={() => {
           const title = pendingCreatedEvent?.title || 'User experience (UX)';
-          toast(`Event "${title}" published! Escrow bank account configured (${bankDetails.bank}).`, 'success');
+          toast(`Event "${title}" published and live on your profile!`, 'success');
         }}
       />
 
