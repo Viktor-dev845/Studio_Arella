@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Check } from 'lucide-react';
+import AudienceVerifyPaymentModal from './AudienceVerifyPaymentModal';
 
 interface AudienceGetVerifiedViewProps {
   onBackToProfile?: () => void;
@@ -13,11 +14,10 @@ export default function AudienceGetVerifiedView({
   onSelectPlan,
 }: AudienceGetVerifiedViewProps) {
   const [billingCycle, setBillingCycle] = useState<'payg' | 'monthly' | 'yearly'>('monthly');
+  const [selectedPlanForPayment, setSelectedPlanForPayment] = useState<'Standard' | 'Pro' | null>(null);
 
-  const handleChoosePlan = (plan: 'standard' | 'pro') => {
-    if (onSelectPlan) {
-      onSelectPlan(plan, billingCycle);
-    }
+  const handleChoosePlan = (plan: 'Standard' | 'Pro') => {
+    setSelectedPlanForPayment(plan);
   };
 
   return (
@@ -274,7 +274,7 @@ export default function AudienceGetVerifiedView({
           {/* Frame 9407: Get Started Button (219px x 39px) */}
           <button
             type="button"
-            onClick={() => handleChoosePlan('pro')}
+            onClick={() => handleChoosePlan('Standard')}
             className="w-[219px] h-[39px] bg-[#D4AF37] hover:bg-[#c29f31] text-black font-['Public_Sans',sans-serif] font-bold text-[18px] rounded-[10px] flex items-center justify-center transition-all shadow-md active:scale-[0.98] cursor-pointer"
           >
             Get Started
@@ -289,6 +289,22 @@ export default function AudienceGetVerifiedView({
             Back to profile
           </button>
         </div>
+
+        {/* ─── Payment Modal (Frame 2121459663: 625px x 836px, radius 32px) ─── */}
+        <AudienceVerifyPaymentModal
+          isOpen={Boolean(selectedPlanForPayment)}
+          onClose={() => setSelectedPlanForPayment(null)}
+          planName={selectedPlanForPayment || 'Standard'}
+          price={selectedPlanForPayment === 'Pro' ? '$69' : '$12'}
+          billingPeriod={billingCycle === 'yearly' ? 'yearly' : 'monthly'}
+          onPaymentSuccess={() => {
+            const plan = selectedPlanForPayment || 'Standard';
+            setSelectedPlanForPayment(null);
+            if (onSelectPlan) {
+              onSelectPlan(plan.toLowerCase() as 'standard' | 'pro', billingCycle);
+            }
+          }}
+        />
       </div>
     </div>
   );
