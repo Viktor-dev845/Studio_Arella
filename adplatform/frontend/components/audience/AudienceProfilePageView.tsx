@@ -32,6 +32,7 @@ import AudienceCreateEventModal from './AudienceCreateEventModal';
 import AudienceSetupAccountModal from './AudienceSetupAccountModal';
 import AudienceEventCreatedSuccessModal from './AudienceEventCreatedSuccessModal';
 import AudienceGetVerifiedView from './AudienceGetVerifiedView';
+import AudienceDeactivateAccountModal from './AudienceDeactivateAccountModal';
 
 interface ShowItem {
   id: string;
@@ -138,7 +139,7 @@ export const DEFAULT_DESIGNER_FOLLOWING: FollowerProfile[] = [
     id: 'ing4',
     name: 'Eduardo Russell',
     role: 'Full stack developer at Yandex',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80',
+    avatar: '/audience/brandon-wilson.png',
   },
   {
     id: 'ing5',
@@ -162,7 +163,7 @@ export const DEFAULT_DESIGNER_FOLLOWING: FollowerProfile[] = [
     id: 'ing8',
     name: 'Eduardo Russell',
     role: 'Full stack developer at Yandex',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80',
+    avatar: '/audience/brandon-wilson.png',
   },
 ];
 
@@ -231,11 +232,13 @@ const DEFAULT_FAN_EVENTS: EventClubItem[] = [
 interface AudienceProfilePageViewProps {
   onEditProfileClick?: () => void;
   isVisitor?: boolean;
+  initialTab?: 'profile' | 'followers' | 'following';
 }
 
 export default function AudienceProfilePageView({
   onEditProfileClick,
   isVisitor,
+  initialTab,
 }: AudienceProfilePageViewProps = {}) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -288,7 +291,8 @@ export default function AudienceProfilePageView({
   const [activeTab, setActiveTab] = useState<'profile' | 'followers' | 'following'>(() => {
     if (queryTab === 'followers') return 'followers';
     if (queryTab === 'following') return 'following';
-    return 'profile';
+    if (queryTab === 'profile') return 'profile';
+    return initialTab || 'profile';
   });
 
   useEffect(() => {
@@ -319,6 +323,10 @@ export default function AudienceProfilePageView({
     const queryModal = searchParams.get('modal');
     return queryModal === 'event-created' || queryModal === 'event-success' || queryModal === 'created';
   });
+  const [showDeactivateModal, setShowDeactivateModal] = useState<boolean>(() => {
+    const queryModal = searchParams.get('modal');
+    return queryModal === 'deactivate' || queryModal === 'deactivate-account';
+  });
   const [pendingCreatedEvent, setPendingCreatedEvent] = useState<any>(null);
 
   useEffect(() => {
@@ -331,6 +339,8 @@ export default function AudienceProfilePageView({
       setShowSetupAccountModal(true);
     } else if (queryModal === 'event-created' || queryModal === 'event-success' || queryModal === 'created') {
       setShowSuccessModal(true);
+    } else if (queryModal === 'deactivate' || queryModal === 'deactivate-account') {
+      setShowDeactivateModal(true);
     }
   }, [searchParams]);
 
@@ -603,7 +613,7 @@ export default function AudienceProfilePageView({
                           type="button"
                           onClick={() => {
                             setShowMoreMenu(false);
-                            toast('Account deactivation must be requested through Support.', 'info');
+                            setShowDeactivateModal(true);
                           }}
                           className="text-left text-[15px] leading-[18px] font-normal text-[#000000] hover:opacity-80 transition-opacity cursor-pointer bg-transparent border-none p-0 whitespace-nowrap font-['Karla',sans-serif]"
                         >
@@ -697,13 +707,13 @@ export default function AudienceProfilePageView({
       </div>
 
       {/* ─── 2. Tabs Bar (Figma: 720px wide: PROFILE 50px high, FOLLOWERS 40px, FOLLOWING 40px) ─── */}
-      <div className="w-full max-w-[720px] flex items-end border-b border-[#E7E7E7] relative font-['DM_Sans',sans-serif]">
+      <div className="w-full max-w-[720px] flex items-end border-b border-[#E7E7E7] relative font-['DM_Sans',sans-serif] z-10">
         <button
           type="button"
           onClick={() => handleTabChange('profile')}
           className={`w-[240px] text-[12px] font-semibold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center ${
             activeTab === 'profile'
-              ? 'h-[50px] bg-[#D9BA54] text-black rounded-t-[6px]'
+              ? 'h-[50px] bg-[#D9BA54] text-black rounded-t-[6px] shadow-sm'
               : 'h-[40px] bg-white text-[#181818] border border-[#E7E7E7] border-b-0 hover:bg-gray-50'
           }`}
         >
@@ -715,7 +725,7 @@ export default function AudienceProfilePageView({
           onClick={() => handleTabChange('followers')}
           className={`w-[240px] text-[12px] font-semibold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center ${
             activeTab === 'followers'
-              ? 'h-[50px] bg-[#D9BA54] text-black rounded-t-[6px]'
+              ? 'h-[50px] bg-[#D9BA54] text-black rounded-t-[6px] shadow-sm'
               : 'h-[40px] bg-white text-[#181818] border border-[#E7E7E7] border-b-0 hover:bg-gray-50'
           }`}
         >
@@ -727,13 +737,21 @@ export default function AudienceProfilePageView({
           onClick={() => handleTabChange('following')}
           className={`w-[240px] text-[12px] font-semibold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center ${
             activeTab === 'following'
-              ? 'h-[50px] bg-[#D9BA54] text-black rounded-t-[6px]'
+              ? 'h-[50px] bg-[#D9BA54] text-black rounded-t-[6px] shadow-sm'
               : 'h-[40px] bg-white text-[#181818] border border-[#E7E7E7] border-b-0 hover:bg-gray-50'
           }`}
         >
           Following ({followingCount})
         </button>
       </div>
+
+      {/* Downward Gradient Under Tab Strip matching Figma */}
+      <div 
+        className="w-full max-w-[720px] h-[35px] -mt-6 mb-2 pointer-events-none"
+        style={{
+          background: 'linear-gradient(180deg, rgba(241, 244, 248, 0.8) 0%, rgba(241, 244, 248, 0) 100%)',
+        }}
+      />
 
       {/* ─── 3. Tab Contents ─── */}
       {activeTab === 'profile' ? (
@@ -957,14 +975,14 @@ export default function AudienceProfilePageView({
             <div className="flex-1 h-[1px] bg-[#E7E7E7]" />
           </div>
 
-          {/* 2-Column Grid of 420px x 95px Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* 2-Column Grid of 420px x 95px Cards with 10px gap matching Figma */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
             {(following.length > 0 ? following : DEFAULT_DESIGNER_FOLLOWING).map((f: any) => {
               const isUnfollowed = Boolean(unfollowedMap[f.id]);
               return (
                 <div
                   key={f.id}
-                  className="w-full h-[95px] bg-white rounded-[4px] shadow-[0px_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 flex items-center justify-between px-6 py-4 transition-all"
+                  className="w-full h-[95px] bg-white rounded-[4px] shadow-[0px_2px_8px_rgba(0,0,0,0.04)] border border-gray-100/80 flex items-center justify-between pl-[24px] sm:pl-[30px] pr-[24px] py-4 transition-all"
                 >
                   {/* Left: Avatar + Details */}
                   <div
@@ -1182,6 +1200,12 @@ export default function AudienceProfilePageView({
           toast(`Joining ${eventTitle}...`, 'success');
           router.push('/audience?view=live');
         }}
+      />
+
+      {/* ─── MODAL 6: Deactivate Account Filter Popup (Figma: 383px x 320px, radius 20px) ─── */}
+      <AudienceDeactivateAccountModal
+        isOpen={showDeactivateModal}
+        onClose={() => setShowDeactivateModal(false)}
       />
     </section>
   );

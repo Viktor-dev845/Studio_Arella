@@ -5,6 +5,8 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import { PageTransition } from '@/components/ui/Animations';
 import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/api';
+import Link from 'next/link';
+import AudienceDeactivateAccountModal from '@/components/audience/AudienceDeactivateAccountModal';
 import { 
   Briefcase, 
   Mail,
@@ -22,7 +24,8 @@ import {
   ArrowLeft,
   X,
   Check,
-  SlidersHorizontal
+  SlidersHorizontal,
+  ExternalLink
 } from 'lucide-react';
 
 export default function UserProfileOverview() {
@@ -37,6 +40,7 @@ export default function UserProfileOverview() {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showLogoutSuccessModal, setShowLogoutSuccessModal] = useState(false);
   const [showReportSuccessModal, setShowReportSuccessModal] = useState(false);
+  const [showDeactivateModal, setShowDeactivateModal] = useState(false);
 
   const [personalForm, setPersonalForm] = useState({ first_name: '', last_name: '', phone: '', email: '', location: '' });
   const [businessForm, setBusinessForm] = useState({ business_name: '', email: '', phone: '', location: '' });
@@ -186,13 +190,22 @@ export default function UserProfileOverview() {
               </div>
             </div>
             
-            <button 
-              onClick={() => setEditingMode(activeTab as 'personal' | 'business')}
-              className="flex items-center justify-center gap-2 bg-[#D4AF37] hover:bg-[#c29f31] transition-colors text-black h-[50px] px-6 rounded-[6px] text-[16px] font-light shadow-sm"
-            >
-              <Edit2 size={20} strokeWidth={1.5} />
-              Edit Profile
-            </button>
+            <div className="flex items-center gap-3">
+              <Link 
+                href="/user-profile"
+                className="flex items-center justify-center gap-2 border border-[#D4AF37] hover:bg-[#D4AF37]/10 transition-colors text-black h-[50px] px-5 rounded-[6px] text-[15px] font-medium shadow-sm"
+              >
+                <ExternalLink size={18} strokeWidth={1.5} />
+                View Fan Profile
+              </Link>
+              <button 
+                onClick={() => setEditingMode(activeTab as 'personal' | 'business')}
+                className="flex items-center justify-center gap-2 bg-[#D4AF37] hover:bg-[#c29f31] transition-colors text-black h-[50px] px-6 rounded-[6px] text-[16px] font-light shadow-sm"
+              >
+                <Edit2 size={20} strokeWidth={1.5} />
+                Edit Profile
+              </button>
+            </div>
           </div>
 
           <div className="w-full h-[1px] bg-[#A2A1A8]/20 mb-10"></div>
@@ -556,6 +569,17 @@ export default function UserProfileOverview() {
                       <div>
                         <div className="text-[16px] font-medium text-[#16151C] mb-1">Log out of all devices</div>
                         <div className="text-[14px] text-[#16151C] font-light">Disconnect your account from all devices you are logged into</div>
+                      </div>
+                      <ArrowRight size={20} className="text-[#5F6D7E] group-hover:text-black transition-colors" />
+                    </div>
+
+                    <div 
+                      className="flex items-center justify-between cursor-pointer group pt-2 border-t border-[#A2A1A8]/10"
+                      onClick={() => setShowDeactivateModal(true)}
+                    >
+                      <div>
+                        <div className="text-[16px] font-medium text-[#F64A4A] mb-1">Deactivate account</div>
+                        <div className="text-[14px] text-[#16151C] font-light">Temporarily or permanently close your Studio Arella account</div>
                       </div>
                       <ArrowRight size={20} className="text-[#5F6D7E] group-hover:text-black transition-colors" />
                     </div>
@@ -1051,6 +1075,12 @@ export default function UserProfileOverview() {
           </div>
         </div>
       )}
+
+      {/* Deactivate Account Confirmation Filter Popup */}
+      <AudienceDeactivateAccountModal
+        isOpen={showDeactivateModal}
+        onClose={() => setShowDeactivateModal(false)}
+      />
     </DashboardLayout>
   );
 }
