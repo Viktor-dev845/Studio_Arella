@@ -7,12 +7,14 @@ interface AudienceCreateEventModalProps {
   isOpen: boolean;
   onClose: () => void;
   onEventCreated?: (event: any) => void;
+  onProceedToAccountSetup?: (eventData: any) => void;
 }
 
 export default function AudienceCreateEventModal({
   isOpen,
   onClose,
   onEventCreated,
+  onProceedToAccountSetup,
 }: AudienceCreateEventModalProps) {
   const [eventTitle, setEventTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -60,8 +62,12 @@ export default function AudienceCreateEventModal({
 
     setTimeout(() => {
       setIsSubmitting(false);
-      if (onEventCreated) onEventCreated(newEvent);
-      onClose();
+      if (onProceedToAccountSetup) {
+        onProceedToAccountSetup(newEvent);
+      } else {
+        if (onEventCreated) onEventCreated(newEvent);
+        onClose();
+      }
     }, 600);
   };
 

@@ -29,6 +29,7 @@ import api from '@/lib/api';
 import AudienceMembershipModal from './AudienceMembershipModal';
 import AudienceLiveEventJoinModal from './AudienceLiveEventJoinModal';
 import AudienceCreateEventModal from './AudienceCreateEventModal';
+import AudienceSetupAccountModal from './AudienceSetupAccountModal';
 
 interface ShowItem {
   id: string;
@@ -272,11 +273,18 @@ export default function AudienceProfilePageView({
     const queryModal = searchParams.get('modal');
     return queryModal === 'create-event' || queryModal === 'create';
   });
+  const [showSetupAccountModal, setShowSetupAccountModal] = useState<boolean>(() => {
+    const queryModal = searchParams.get('modal');
+    return queryModal === 'setup-account' || queryModal === 'bank-account';
+  });
+  const [pendingCreatedEvent, setPendingCreatedEvent] = useState<any>(null);
 
   useEffect(() => {
     const queryModal = searchParams.get('modal');
     if (queryModal === 'create-event' || queryModal === 'create') {
       setShowCreateEventModal(true);
+    } else if (queryModal === 'setup-account' || queryModal === 'bank-account') {
+      setShowSetupAccountModal(true);
     }
   }, [searchParams]);
 
@@ -1121,8 +1129,27 @@ export default function AudienceProfilePageView({
       <AudienceCreateEventModal
         isOpen={showCreateEventModal}
         onClose={() => setShowCreateEventModal(false)}
+        onProceedToAccountSetup={(newEvent) => {
+          setShowCreateEventModal(false);
+          setPendingCreatedEvent(newEvent);
+          setShowSetupAccountModal(true);
+        }}
         onEventCreated={(newEvent) => {
           toast(`Event "${newEvent.title}" created successfully!`, 'success');
+        }}
+      />
+
+      {/* ─── MODAL 3.5: Set Up Escrow Bank Account (Figma Frame 2121459663: 625px x 733px, radius 32px) ─── */}
+      <AudienceSetupAccountModal
+        isOpen={showSetupAccountModal}
+        onClose={() => setShowSetupAccountModal(false)}
+        onBack={() => {
+          setShowSetupAccountModal(false);
+          setShowCreateEventModal(true);
+        }}
+        onFinish={(bankDetails) => {
+          const title = pendingCreatedEvent?.title || 'User experience (UX)';
+          toast(`Event "${title}" published! Escrow bank account configured (${bankDetails.bank}).`, 'success');
         }}
       />
 
