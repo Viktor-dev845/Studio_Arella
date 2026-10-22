@@ -57,115 +57,8 @@ export interface FollowerProfile {
   isFollowing?: boolean;
 }
 
-export const DEFAULT_DESIGNER_FOLLOWERS: FollowerProfile[] = [
-  {
-    id: 'f1',
-    name: 'Audrey Alexander',
-    role: 'Team lead at Google',
-    avatar: '/audience/audrey-alexander.png',
-    isFollowing: true,
-  },
-  {
-    id: 'f2',
-    name: 'Kyle Fisher',
-    role: 'Product designer at Commandor Corp',
-    avatar: '/audience/kyle-fisher.png',
-    isFollowing: false,
-  },
-  {
-    id: 'f3',
-    name: 'Darlene Black',
-    role: 'HR-manager, 10 000 connections',
-    avatar: '/audience/darlene-black.png',
-    isFollowing: true,
-  },
-  {
-    id: 'f4',
-    name: 'Eduardo Russell',
-    role: 'Full stack developer at Yandex',
-    avatar: '/audience/brandon-wilson.png',
-    isFollowing: true,
-  },
-  {
-    id: 'f5',
-    name: 'Audrey Alexander',
-    role: 'Team lead at Google',
-    avatar: '/audience/audrey-alexander.png',
-    isFollowing: false,
-  },
-  {
-    id: 'f6',
-    name: 'Kyle Fisher',
-    role: 'Product designer at Commandor Corp',
-    avatar: '/audience/kyle-fisher.png',
-    isFollowing: false,
-  },
-  {
-    id: 'f7',
-    name: 'Darlene Black',
-    role: 'HR-manager, 10 000 connections',
-    avatar: '/audience/darlene-black.png',
-    isFollowing: true,
-  },
-  {
-    id: 'f8',
-    name: 'Dylan Field',
-    role: 'Design technologist at Figma',
-    avatar: '/audience/dylan-field.png',
-    isFollowing: true,
-  },
-];
-
-export const DEFAULT_DESIGNER_FOLLOWING: FollowerProfile[] = [
-  {
-    id: 'ing1',
-    name: 'Audrey Alexander',
-    role: 'Team lead at Google',
-    avatar: '/audience/audrey-alexander.png',
-  },
-  {
-    id: 'ing2',
-    name: 'Kyle Fisher',
-    role: 'Product designer at Commandor Corp',
-    avatar: '/audience/kyle-fisher.png',
-  },
-  {
-    id: 'ing3',
-    name: 'Darlene Black',
-    role: 'HR-manager, 10 000 connections',
-    avatar: '/audience/darlene-black.png',
-  },
-  {
-    id: 'ing4',
-    name: 'Eduardo Russell',
-    role: 'Full stack developer at Yandex',
-    avatar: '/audience/brandon-wilson.png',
-  },
-  {
-    id: 'ing5',
-    name: 'Audrey Alexander',
-    role: 'Team lead at Google',
-    avatar: '/audience/audrey-alexander.png',
-  },
-  {
-    id: 'ing6',
-    name: 'Kyle Fisher',
-    role: 'Product designer at Commandor Corp',
-    avatar: '/audience/kyle-fisher.png',
-  },
-  {
-    id: 'ing7',
-    name: 'Darlene Black',
-    role: 'HR-manager, 10 000 connections',
-    avatar: '/audience/darlene-black.png',
-  },
-  {
-    id: 'ing8',
-    name: 'Eduardo Russell',
-    role: 'Full stack developer at Yandex',
-    avatar: '/audience/brandon-wilson.png',
-  },
-];
+export const DEFAULT_DESIGNER_FOLLOWERS: FollowerProfile[] = [];
+export const DEFAULT_DESIGNER_FOLLOWING: FollowerProfile[] = [];
 
 const DEFAULT_PODCAST_ITEMS: ShowItem[] = [
   {
@@ -368,8 +261,8 @@ export default function AudienceProfilePageView({
   // Live Followers & Following lists
   const [followers, setFollowers] = useState<any[]>([]);
   const [following, setFollowing] = useState<any[]>([]);
-  const [followersCount, setFollowersCount] = useState<number>(1043);
-  const [followingCount, setFollowingCount] = useState<number>(143);
+  const [followersCount, setFollowersCount] = useState<number>(0);
+  const [followingCount, setFollowingCount] = useState<number>(0);
   const [podcasts, setPodcasts] = useState<ShowItem[]>(DEFAULT_PODCAST_ITEMS);
 
   const menuRef = useRef<HTMLDivElement>(null);
@@ -916,52 +809,55 @@ export default function AudienceProfilePageView({
             <div className="flex-1 h-[1px] bg-[#E7E7E7]" />
           </div>
 
-          {/* 2-Column Grid of 420px x 95px Cards (8 cards in 4 rows) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {DEFAULT_DESIGNER_FOLLOWERS.map((f) => {
-              const isFollowing = followerStatusMap[f.id] ?? Boolean(f.isFollowing);
-              return (
-                <div
-                  key={f.id}
-                  className="w-full h-[95px] bg-white rounded-[4px] shadow-[0px_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 flex items-center justify-between px-6 py-4 transition-all"
-                >
-                  {/* Left: Avatar + Details */}
+          {/* Grid of Followers */}
+          {followers.length === 0 ? (
+            <div className="w-full bg-white rounded-[4px] p-10 text-center flex flex-col items-center justify-center gap-2 border border-gray-100 shadow-2xs">
+              <Users size={24} className="text-gray-400 mb-1" />
+              <h4 className="text-[15px] font-semibold text-[#181818]">No followers yet</h4>
+              <p className="text-[12px] text-gray-500 max-w-sm">When users follow your creator profile, they will appear here.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {followers.map((f) => {
+                const isFollowing = followerStatusMap[f.id] ?? Boolean(f.isFollowing);
+                return (
                   <div
-                    onClick={() => toast(`Viewing ${f.name}'s profile`, 'info')}
-                    className="flex items-center gap-3.5 min-w-0 cursor-pointer group"
+                    key={f.id}
+                    className="w-full h-[95px] bg-white rounded-[4px] shadow-[0px_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 flex items-center justify-between px-6 py-4 transition-all"
                   >
-                    <div className="w-[52px] h-[52px] rounded-full overflow-hidden shrink-0 bg-neutral-200 border border-black/5">
-                      <img
-                        src={f.avatar}
-                        alt={f.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = '/audience/audrey-alexander.png';
-                        }}
-                      />
+                    <div
+                      onClick={() => toast(`Viewing ${f.name}'s profile`, 'info')}
+                      className="flex items-center gap-3.5 min-w-0 cursor-pointer group"
+                    >
+                      <div className="w-[52px] h-[52px] rounded-full overflow-hidden shrink-0 bg-neutral-200 border border-black/5">
+                        <img
+                          src={f.avatar || '/audience/audrey-alexander.png'}
+                          alt={f.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                        />
+                      </div>
+                      <div className="flex flex-col justify-center min-w-0">
+                        <span className="text-[14px] font-semibold text-[#181818] leading-[18px] truncate group-hover:text-[#D9BA54] transition-colors font-['DM_Sans',sans-serif]">
+                          {f.name}
+                        </span>
+                        <span className="text-[10px] font-normal text-[#181818] leading-[15px] truncate mt-0.5 font-['DM_Sans',sans-serif]">
+                          {f.role || 'Member'}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex flex-col justify-center min-w-0">
-                      <span className="text-[14px] font-semibold text-[#181818] leading-[18px] truncate group-hover:text-[#D9BA54] transition-colors font-['DM_Sans',sans-serif]">
-                        {f.name}
-                      </span>
-                      <span className="text-[10px] font-normal text-[#181818] leading-[15px] truncate mt-0.5 font-['DM_Sans',sans-serif]">
-                        {f.role}
-                      </span>
-                    </div>
-                  </div>
 
-                  {/* Right: Follow / Following Button (91px x 32px, background #D4AF37, radius 4px) */}
-                  <button
-                    type="button"
-                    onClick={() => handleToggleFollowerItem(f.id, f.name)}
-                    className="w-[91px] h-[32px] bg-[#D4AF37] hover:bg-[#c49f2e] text-black rounded-[4px] text-[12px] font-normal capitalize transition-colors cursor-pointer shrink-0 flex items-center justify-center font-['DM_Sans',sans-serif]"
-                  >
-                    {isFollowing ? 'Following' : 'Follow'}
-                  </button>
-                </div>
-              );
-            })}
-          </div>
+                    <button
+                      type="button"
+                      onClick={() => handleToggleFollowerItem(f.id, f.name)}
+                      className="w-[91px] h-[32px] bg-[#D4AF37] hover:bg-[#c49f2e] text-black rounded-[4px] text-[12px] font-normal capitalize transition-colors cursor-pointer shrink-0 flex items-center justify-center font-['DM_Sans',sans-serif]"
+                    >
+                      {isFollowing ? 'Following' : 'Follow'}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       ) : (
         /* ─── Following Tab Content: Filter line + 2-Column Cards matching Figma specs ─── */
@@ -975,56 +871,59 @@ export default function AudienceProfilePageView({
             <div className="flex-1 h-[1px] bg-[#E7E7E7]" />
           </div>
 
-          {/* 2-Column Grid of 420px x 95px Cards with 10px gap matching Figma */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-            {(following.length > 0 ? following : DEFAULT_DESIGNER_FOLLOWING).map((f: any) => {
-              const isUnfollowed = Boolean(unfollowedMap[f.id]);
-              return (
-                <div
-                  key={f.id}
-                  className="w-full h-[95px] bg-white rounded-[4px] shadow-[0px_2px_8px_rgba(0,0,0,0.04)] border border-gray-100/80 flex items-center justify-between pl-[24px] sm:pl-[30px] pr-[24px] py-4 transition-all"
-                >
-                  {/* Left: Avatar + Details */}
+          {/* Grid of Following */}
+          {following.length === 0 ? (
+            <div className="w-full bg-white rounded-[4px] p-10 text-center flex flex-col items-center justify-center gap-2 border border-gray-100/80 shadow-2xs">
+              <Users size={24} className="text-gray-400 mb-1" />
+              <h4 className="text-[15px] font-semibold text-[#181818]">Not following anyone yet</h4>
+              <p className="text-[12px] text-gray-500 max-w-sm">Follow creators to stay up to date with their podcasts and live streams.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+              {following.map((f: any) => {
+                const isUnfollowed = Boolean(unfollowedMap[f.id]);
+                return (
                   <div
-                    onClick={() => toast(`Viewing ${f.name}'s profile`, 'info')}
-                    className="flex items-center gap-3.5 min-w-0 cursor-pointer group"
+                    key={f.id}
+                    className="w-full h-[95px] bg-white rounded-[4px] shadow-[0px_2px_8px_rgba(0,0,0,0.04)] border border-gray-100/80 flex items-center justify-between pl-[24px] sm:pl-[30px] pr-[24px] py-4 transition-all"
                   >
-                    <div className="w-[52px] h-[52px] rounded-full overflow-hidden shrink-0 bg-neutral-200 border border-black/5">
-                      <img
-                        src={f.avatar || '/audience/kyle-fisher.png'}
-                        alt={f.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = '/audience/kyle-fisher.png';
-                        }}
-                      />
+                    <div
+                      onClick={() => toast(`Viewing ${f.name}'s profile`, 'info')}
+                      className="flex items-center gap-3.5 min-w-0 cursor-pointer group"
+                    >
+                      <div className="w-[52px] h-[52px] rounded-full overflow-hidden shrink-0 bg-neutral-200 border border-black/5">
+                        <img
+                          src={f.avatar || '/audience/audrey-alexander.png'}
+                          alt={f.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                        />
+                      </div>
+                      <div className="flex flex-col justify-center min-w-0">
+                        <span className="text-[14px] font-semibold text-[#181818] leading-[18px] truncate group-hover:text-[#D9BA54] transition-colors">
+                          {f.name}
+                        </span>
+                        <span className="text-[10px] font-normal text-[#181818] leading-[15px] truncate mt-0.5">
+                          {f.role || 'Creator'}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex flex-col justify-center min-w-0">
-                      <span className="text-[14px] font-semibold text-[#181818] leading-[18px] truncate group-hover:text-[#D9BA54] transition-colors">
-                        {f.name}
-                      </span>
-                      <span className="text-[10px] font-normal text-[#181818] leading-[15px] truncate mt-0.5">
-                        {f.role || 'Creator'}
-                      </span>
-                    </div>
-                  </div>
 
-                  {/* Right: Unfollow Button (91px x 32px, #D4AF37) */}
-                  <button
-                    type="button"
-                    onClick={() => handleToggleFollow(f.id, f.name)}
-                    className={`w-[91px] h-[32px] rounded-[4px] text-[12px] font-normal capitalize transition-colors cursor-pointer shrink-0 flex items-center justify-center ${
-                      isUnfollowed
-                        ? 'bg-white border border-[#D4AF37] text-[#D4AF37] hover:bg-amber-50/50'
-                        : 'bg-[#D4AF37] hover:bg-[#c49f2e] text-black'
-                    }`}
-                  >
-                    {isUnfollowed ? 'Follow' : 'Unfollow'}
-                  </button>
-                </div>
-              );
-            })}
-          </div>
+                    <button
+                      type="button"
+                      onClick={() => handleToggleFollow(f.id, f.name)}
+                      className={`w-[91px] h-[32px] rounded-[4px] text-[12px] font-normal capitalize transition-colors cursor-pointer shrink-0 flex items-center justify-center ${
+                        isUnfollowed
+                          ? 'bg-white border border-[#D4AF37] text-[#D4AF37] hover:bg-amber-50/50'
+                          : 'bg-[#D4AF37] hover:bg-[#c49f2e] text-black'
+                      }`}
+                    >
+                      {isUnfollowed ? 'Follow' : 'Following'}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 

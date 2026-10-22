@@ -1,7 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { MessageSquare } from 'lucide-react';
+import api from '@/lib/api';
 
 interface ChatItem {
   id: string;
@@ -14,54 +16,7 @@ interface ChatItem {
   isComposite?: boolean;
 }
 
-const CHAT_LIST: ChatItem[] = [
-  {
-    id: '2aeff3a5-c640-49bb-9c54-b20cfcde4932',
-    name: 'Darlene Black',
-    message: 'Hey, how is your project?',
-    avatar: '/audience/darlene-black.png',
-    statusType: 'solid',
-  },
-  {
-    id: '7b7d0a58-3f58-48c6-8b94-e9b93f278bae',
-    name: 'Theresa Steward',
-    message: 'Loved the latest podcast session! Let’s connect.',
-    avatar: '/audience/theresa-steward.png',
-    statusType: 'solid',
-    nameColor: 'text-[#15411F]',
-    hasGradientSnippet: true,
-  },
-  {
-    id: 'db9c8abc-87b6-45d1-99dd-1eb6d5959b27',
-    name: 'Brandon Wilson',
-    message: 'Studio Arella audio screens are performing great.',
-    avatar: '/audience/brandon-wilson.png',
-    statusType: 'ring',
-    hasGradientSnippet: true,
-  },
-  {
-    id: '723ccc51-044c-4509-a32a-e93aaf649248',
-    name: 'Kyle Fisher',
-    message: 'So, It’s up to you!',
-    avatar: '/audience/kyle-fisher.png',
-    statusType: 'none',
-  },
-  {
-    id: '3ebd44d6-54c1-4e6b-8519-6bc67753f631',
-    name: 'Audrey Alexander',
-    message: 'When you got it?',
-    avatar: '/audience/audrey-alexander.png',
-    statusType: 'solid',
-  },
-  {
-    id: 'design-conference-group',
-    name: 'Design Conference',
-    message: 'Can you guys help me with it?',
-    avatar: '/audience/design-conference.png',
-    statusType: 'none',
-    isComposite: true,
-  },
-];
+const CHAT_LIST: ChatItem[] = [];
 
 export default function AudienceChatsCard({
   onSelectChat,
@@ -69,8 +24,27 @@ export default function AudienceChatsCard({
   onSelectChat?: (chat: ChatItem) => void;
 }) {
   const router = useRouter();
-  // Kyle Fisher active by default as in Figma
-  const [activeChatId, setActiveChatId] = useState<string>('723ccc51-044c-4509-a32a-e93aaf649248');
+  const [chats, setChats] = useState<ChatItem[]>(CHAT_LIST);
+  const [activeChatId, setActiveChatId] = useState<string>('');
+
+  useEffect(() => {
+    api.get('/chats/conversations')
+      .then((res) => {
+        const convos = res.data?.conversations || [];
+        if (convos.length > 0) {
+          const mapped: ChatItem[] = convos.map((c: any) => ({
+            id: c.contact_id,
+            name: c.contact_name,
+            message: c.last_message || 'Started a conversation',
+            avatar: c.contact_avatar || '',
+            statusType: 'solid',
+          }));
+          setChats(mapped);
+          setActiveChatId(mapped[0].id);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleSelect = (chat: ChatItem) => {
     setActiveChatId(chat.id);
@@ -93,8 +67,21 @@ export default function AudienceChatsCard({
       <div className="w-full h-[1px] bg-[#F4F4F4]" />
 
       {/* ─── Chat Items ─── */}
-      <div className="flex flex-col">
-        {CHAT_LIST.map((chat) => {
+      <div className="flex flex-col flex-1">
+        {chats.length === 0 ? (
+          <div className="py-16 flex flex-col items-center justify-center text-center px-4">
+            <div className="w-12 h-12 rounded-full bg-amber-50/80 border border-[#D4AF37]/25 flex items-center justify-center text-[#D4AF37] mb-3 shadow-2xs">
+              <MessageSquare size={20} strokeWidth={1.8} />
+            </div>
+            <h5 className="text-[14px] font-semibold text-[#181818]">
+              No active chats
+            </h5>
+            <p className="text-[12px] text-gray-500 mt-1 max-w-[200px] leading-relaxed">
+              Direct messages with creators and listeners will appear here.
+            </p>
+          </div>
+        ) : (
+          chats.map((chat) => {
           const isSelected = activeChatId === chat.id;
 
           return (
@@ -169,7 +156,8 @@ export default function AudienceChatsCard({
               <div className="w-full h-[1px] bg-[#F4F4F4]" />
             </div>
           );
-        })}
+        })
+      )}
       </div>
     </div>
   );

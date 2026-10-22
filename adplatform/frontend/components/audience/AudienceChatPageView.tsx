@@ -27,69 +27,7 @@ export interface ChatMessage {
   bgColor?: string;
 }
 
-const INITIAL_CONTACTS: ChatContact[] = [
-  {
-    id: '2aeff3a5-c640-49bb-9c54-b20cfcde4932',
-    name: 'Darlene Black',
-    lastMessage: 'Hey, how is your project?',
-    avatar: '/audience/darlene-black.png',
-    isOnline: true,
-    onlineDotStyle: 'solid-green',
-    lastOnline: 'ONLINE NOW',
-    sharedMediaCount: 8,
-  },
-  {
-    id: '7b7d0a58-3f58-48c6-8b94-e9b93f278bae',
-    name: 'Theresa Steward',
-    lastMessage: 'Hi, Dmitry! I have a work for you. We',
-    avatar: '/audience/theresa-steward.png',
-    isOnline: true,
-    onlineDotStyle: 'solid-green',
-    nameColor: 'text-[#15411F]',
-    lastOnline: 'ONLINE NOW',
-    sharedMediaCount: 14,
-  },
-  {
-    id: 'db9c8abc-87b6-45d1-99dd-1eb6d5959b27',
-    name: 'Brandon Wilson',
-    lastMessage: 'Studio Arella audio screens are performing great',
-    avatar: '/audience/brandon-wilson.png',
-    isOnline: true,
-    onlineDotStyle: 'hollow-green',
-    lastOnline: 'LAST ONLINE: 1 HOUR AGO',
-    sharedMediaCount: 5,
-  },
-  {
-    id: '723ccc51-044c-4509-a32a-e93aaf649248',
-    name: 'Kyle Fisher',
-    lastMessage: 'So, It’s up to you!',
-    avatar: '/audience/kyle-fisher.png',
-    isOnline: false,
-    onlineDotStyle: 'none',
-    lastOnline: 'LAST ONLINE: 4 HOURS AGO',
-    sharedMediaCount: 12,
-  },
-  {
-    id: '3ebd44d6-54c1-4e6b-8519-6bc67753f631',
-    name: 'Audrey Alexander',
-    lastMessage: 'When you got it?',
-    avatar: '/audience/audrey-alexander.png',
-    isOnline: true,
-    onlineDotStyle: 'solid-green',
-    lastOnline: 'ONLINE NOW',
-    sharedMediaCount: 3,
-  },
-  {
-    id: 'd69c7e9f-c990-4c72-a6d6-02d00794f282',
-    name: 'Nermmen Saif',
-    lastMessage: 'Great insights on the new soundscape!',
-    avatar: '/audience/nermmen-saif.png',
-    isOnline: false,
-    onlineDotStyle: 'none',
-    lastOnline: 'LAST ACTIVE: YESTERDAY',
-    sharedMediaCount: 19,
-  },
-];
+const INITIAL_CONTACTS: ChatContact[] = [];
 
 /* Custom Double Blue Check Icon matching Figma Vector border: 1px solid #0275B1 */
 function DoubleBlueCheck() {
@@ -123,7 +61,7 @@ function DoubleBlueCheck() {
 export default function AudienceChatPageView() {
   const { user } = useAuthStore();
   const [contacts, setContacts] = useState<ChatContact[]>(INITIAL_CONTACTS);
-  const [activeContactId, setActiveContactId] = useState<string>('723ccc51-044c-4509-a32a-e93aaf649248');
+  const [activeContactId, setActiveContactId] = useState<string>('');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoadingMessages, setIsLoadingMessages] = useState<boolean>(true);
   const [inputMessage, setInputMessage] = useState('');
@@ -192,7 +130,7 @@ export default function AudienceChatPageView() {
       });
   }, [activeContactId, user?.id]);
 
-  const activeContact = contacts.find((c) => c.id === activeContactId) || contacts[3];
+  const activeContact = contacts.find((c) => c.id === activeContactId) || contacts[0] || null;
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -245,8 +183,19 @@ export default function AudienceChatPageView() {
           <div className="w-full h-[1px] bg-[#F4F4F4]" />
 
           {/* Contact Items List */}
-          <div className="flex flex-col">
-            {contacts.map((contact) => {
+          <div className="flex flex-col flex-1">
+            {contacts.length === 0 ? (
+              <div className="py-16 px-4 flex flex-col items-center justify-center text-center">
+                <div className="w-12 h-12 rounded-full bg-amber-50/80 border border-[#D4AF37]/25 flex items-center justify-center text-[#D4AF37] mb-3 shadow-2xs">
+                  <MessageSquare size={20} strokeWidth={1.8} />
+                </div>
+                <h5 className="text-[14px] font-semibold text-[#181818]">No chats yet</h5>
+                <p className="text-[12px] text-gray-500 mt-1 max-w-[200px]">
+                  Direct messages with creators and listeners will appear here.
+                </p>
+              </div>
+            ) : (
+              contacts.map((contact) => {
               const isSelected = contact.id === activeContactId;
 
               return (
@@ -312,7 +261,8 @@ export default function AudienceChatPageView() {
                   <div className="w-full h-[1px] bg-[#F4F4F4]" />
                 </div>
               );
-            })}
+            })
+          )}
           </div>
         </aside>
 
@@ -325,15 +275,26 @@ export default function AudienceChatPageView() {
 
           {/* Inner Chat Box: Rectangle 2 (850px x 655px, rounded 4px, white) */}
           <div className="w-full bg-white rounded-[4px] shadow-[0px_0px_2px_rgba(0,0,0,0.08),0px_0px_1px_rgba(0,0,0,0.06)] border border-gray-100/80 flex flex-col flex-1 overflow-hidden">
-            
-            {/* Top Bar: Group 5 (850px x 40px) */}
-            <div className="w-full h-[52px] px-6 flex items-center justify-between border-b border-[#F4F4F4] text-[12px] font-normal uppercase tracking-wider text-[#181818]">
-              {/* Left: Chat with <Name> */}
-              <div className="flex items-center gap-2">
-                <span className="font-normal text-[#181818]">
-                  CHAT WITH {activeContact.name}
-                </span>
+            {!activeContact ? (
+              <div className="flex-1 p-12 flex flex-col items-center justify-center text-center">
+                <div className="w-14 h-14 rounded-full bg-amber-50/80 border border-[#D4AF37]/25 flex items-center justify-center text-[#D4AF37] mb-3">
+                  <MessageSquare size={24} strokeWidth={1.8} />
+                </div>
+                <h4 className="text-[17px] font-semibold text-[#181818]">No active conversation</h4>
+                <p className="text-[13px] text-gray-500 mt-1.5 max-w-sm">
+                  Conversations you have with creators or other members will be displayed here in real time.
+                </p>
               </div>
+            ) : (
+              <>
+                {/* Top Bar: Group 5 (850px x 40px) */}
+                <div className="w-full h-[52px] px-6 flex items-center justify-between border-b border-[#F4F4F4] text-[12px] font-normal uppercase tracking-wider text-[#181818]">
+                  {/* Left: Chat with <Name> */}
+                  <div className="flex items-center gap-2">
+                    <span className="font-normal text-[#181818]">
+                      CHAT WITH {activeContact.name}
+                    </span>
+                  </div>
 
               {/* Middle: Last Online (hidden on mobile) */}
               <div className="hidden sm:block text-[#181818]/60 text-center font-normal">
@@ -439,40 +400,39 @@ export default function AudienceChatPageView() {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Bottom Message Input Bar: Group 4 (850px x 53px) */}
-            <form
-              onSubmit={handleSendMessage}
-              className="w-full min-h-[53px] px-6 py-3 border-t border-[#F4F4F4] flex items-center justify-between gap-4 bg-white"
-            >
-              <input
-                type="text"
-                value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
-                placeholder="Write your message"
-                className="flex-1 bg-transparent text-[16px] sm:text-[18px] text-[#181818] placeholder:text-[rgba(24,24,24,0.2)] outline-none leading-[23px]"
-              />
-
-              <div className="flex items-center gap-4 shrink-0">
-                {/* Paperclip */}
-                <button
-                  type="button"
-                  className="text-black opacity-15 hover:opacity-75 transition-opacity p-1 cursor-pointer"
-                  title="Attach file"
+                {/* Bottom Message Input Bar */}
+                <form
+                  onSubmit={handleSendMessage}
+                  className="w-full min-h-[53px] px-6 py-3 border-t border-[#F4F4F4] flex items-center justify-between gap-4 bg-white"
                 >
-                  <Paperclip size={24} />
-                </button>
+                  <input
+                    type="text"
+                    value={inputMessage}
+                    onChange={(e) => setInputMessage(e.target.value)}
+                    placeholder="Write your message"
+                    className="flex-1 bg-transparent text-[16px] sm:text-[18px] text-[#181818] placeholder:text-[rgba(24,24,24,0.2)] outline-none leading-[23px]"
+                  />
 
-                {/* Send Button (32px x 32px, #D4AF37, radius 4px) */}
-                <button
-                  type="submit"
-                  className="w-[32px] h-[32px] bg-[#D4AF37] hover:bg-[#c49f30] text-black rounded-[4px] flex items-center justify-center transition-all hover:scale-105 active:scale-95 shadow-sm cursor-pointer"
-                  title="Send message"
-                >
-                  <Send size={15} strokeWidth={2.2} />
-                </button>
-              </div>
-            </form>
+                  <div className="flex items-center gap-4 shrink-0">
+                    <button
+                      type="button"
+                      className="text-black opacity-15 hover:opacity-75 transition-opacity p-1 cursor-pointer"
+                      title="Attach file"
+                    >
+                      <Paperclip size={24} />
+                    </button>
 
+                    <button
+                      type="submit"
+                      className="w-[32px] h-[32px] bg-[#D4AF37] hover:bg-[#c49f30] text-black rounded-[4px] flex items-center justify-center transition-all hover:scale-105 active:scale-95 shadow-sm cursor-pointer"
+                      title="Send message"
+                    >
+                      <Send size={15} strokeWidth={2.2} />
+                    </button>
+                  </div>
+                </form>
+              </>
+            )}
           </div>
         </section>
 

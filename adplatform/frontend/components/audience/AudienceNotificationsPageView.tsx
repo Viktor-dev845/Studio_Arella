@@ -25,36 +25,7 @@ function formatRelativeTime(dateString?: string): string {
   return `${Math.floor(diffSec / 86400)} days ago`;
 }
 
-const DEFAULT_NOTIFICATIONS: NotificationItem[] = [
-  {
-    id: 'notif-1',
-    message: 'Darlene Black started following you.',
-    avatarUrl: '/audience/darlene-black.png',
-    timeAgo: '2 min ago',
-    isUnread: true,
-  },
-  {
-    id: 'notif-2',
-    message: 'Kyle Fisher scheduled a live experience: Product Design System Architecture.',
-    avatarUrl: '/audience/kyle-fisher.png',
-    timeAgo: '1 hour ago',
-    isUnread: true,
-  },
-  {
-    id: 'notif-3',
-    message: 'Your membership payment for UI Design Fan Club was processed successfully.',
-    avatarUrl: '/audience/adam-udochi.png',
-    timeAgo: 'Yesterday',
-    isUnread: false,
-  },
-  {
-    id: 'notif-4',
-    message: 'Theresa Steward left a comment on your podcast episode: -Healthy Tracking podcast.',
-    avatarUrl: '/audience/theresa-steward.png',
-    timeAgo: '2 days ago',
-    isUnread: false,
-  },
-];
+const DEFAULT_NOTIFICATIONS: NotificationItem[] = [];
 
 export default function AudienceNotificationsPageView() {
   const [notifications, setNotifications] = useState<NotificationItem[]>(DEFAULT_NOTIFICATIONS);
