@@ -340,7 +340,7 @@ export default function AudienceEditProfilePageView({
   };
 
   return (
-    <div className="w-full lg:w-[866px] flex flex-col gap-6 font-['DM_Sans',sans-serif]">
+    <div className="flex-1 w-full min-w-0 flex flex-col gap-6 font-['DM_Sans',sans-serif]">
 
       {/* ─── DEDICATED CHANGE PASSWORD VIEW (Matching Figma 'change passwprd' screen: 1440px x 939px layout) ─── */}
       {activeSubView === 'change-password' ? (

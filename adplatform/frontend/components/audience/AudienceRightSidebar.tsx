@@ -112,7 +112,7 @@ export default function AudienceRightSidebar({
   };
 
   return (
-    <aside className="w-full lg:w-[278px] flex flex-col gap-6 shrink-0 relative font-['DM_Sans',sans-serif]">
+    <aside className="w-full lg:w-[300px] xl:w-[340px] flex flex-col gap-6 shrink-0 relative font-['DM_Sans',sans-serif]">
       {/* ─── 1. Try Premium for Free Card ─── */}
       <AudiencePremiumCard />
 
@@ -120,8 +120,8 @@ export default function AudienceRightSidebar({
       {view === 'bookmarks' ? (
         <AudienceChatsCard />
       ) : view === 'trending' ? (
-        /* ─── Trending Topics & Live Experience (Frame 1618873129: 278px x 505px) ─── */
-        <div className="w-[278px] min-h-[505px] bg-[#FCFDFD] rounded-[16px] p-5 shadow-[0px_0px_2px_rgba(0,0,0,0.08),0px_0px_1px_rgba(0,0,0,0.06)] border border-gray-100/70 flex flex-col gap-8">
+        /* ─── Trending Topics & Live Experience ─── */
+        <div className="w-full min-h-[505px] bg-[#FCFDFD] rounded-[16px] p-5 shadow-[0px_0px_2px_rgba(0,0,0,0.08),0px_0px_1px_rgba(0,0,0,0.06)] border border-gray-100/70 flex flex-col gap-8">
           {/* Section A: Trending Topics */}
           <div className="flex flex-col gap-4">
             <h4 className="text-[20px] font-semibold text-[#666666] leading-[26px]">
@@ -294,8 +294,8 @@ export default function AudienceRightSidebar({
         </>
       )}
 
-      {/* ─── 3. Floating Bottom Messages Drawer (Chat: 278px x 56px) ─── */}
-      <div className="w-[278px] bg-white rounded-t-[16px] shadow-[0px_0px_2px_rgba(0,0,0,0.14),0px_0px_1px_rgba(0,0,0,0.12)] border border-b-0 border-gray-100 flex flex-col overflow-hidden sticky bottom-0 z-20">
+      {/* ─── 3. Floating Bottom Messages Drawer ─── */}
+      <div className="w-full bg-white rounded-t-[16px] shadow-[0px_0px_2px_rgba(0,0,0,0.14),0px_0px_1px_rgba(0,0,0,0.12)] border border-b-0 border-gray-100 flex flex-col overflow-hidden sticky bottom-0 z-20">
         <button
           type="button"
           onClick={() => setMessagesOpen(!messagesOpen)}

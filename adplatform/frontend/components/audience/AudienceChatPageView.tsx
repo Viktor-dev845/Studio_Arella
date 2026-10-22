@@ -230,11 +230,11 @@ export default function AudienceChatPageView() {
   }, [messages]);
 
   return (
-    <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 font-['DM_Sans',sans-serif]">
-      <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 justify-center items-start">
+    <div className="w-full max-w-[1780px] mx-auto px-4 sm:px-6 lg:px-10 xl:px-14 py-6 font-['DM_Sans',sans-serif]">
+      <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start w-full">
         
-        {/* ─── 1. Left Column: Visitors / Chats List (278px x 560px) ─── */}
-        <aside className="w-full lg:w-[278px] min-h-[560px] bg-white rounded-[4px] shadow-[0px_0px_2px_rgba(0,0,0,0.14),0px_0px_1px_rgba(0,0,0,0.12)] border border-gray-100/80 flex flex-col shrink-0 overflow-hidden">
+        {/* ─── 1. Left Column: Visitors / Chats List ─── */}
+        <aside className="w-full lg:w-[300px] xl:w-[340px] min-h-[560px] bg-white rounded-[16px] shadow-[0px_0px_2px_rgba(0,0,0,0.14),0px_0px_1px_rgba(0,0,0,0.12)] border border-gray-100/80 flex flex-col shrink-0 overflow-hidden">
           {/* Header: CHATS (12px uppercase) */}
           <div className="px-5 py-4">
             <h3 className="text-[12px] font-normal text-[#181818] tracking-wider uppercase">
@@ -316,8 +316,8 @@ export default function AudienceChatPageView() {
           </div>
         </aside>
 
-        {/* ─── 2. Right Column: Group 48095428 (911px x 868px) ─── */}
-        <section className="w-full lg:w-[911px] min-h-[868px] bg-[#FCFDFD] rounded-[18px] p-5 sm:p-7 md:p-8 flex flex-col gap-6 shadow-[0px_0px_2px_rgba(0,0,0,0.06)] border border-gray-100/60">
+        {/* ─── 2. Right Column: Conversation View ─── */}
+        <section className="flex-1 w-full min-w-0 min-h-[868px] bg-[#FCFDFD] rounded-[18px] p-5 sm:p-7 md:p-8 flex flex-col gap-6 shadow-[0px_0px_2px_rgba(0,0,0,0.06)] border border-gray-100/60">
           {/* Header Title: Chats (DM Sans 21px 500 #3A3A3A) */}
           <h2 className="text-[21px] font-medium text-[#3A3A3A] leading-[27px]">
             Chats

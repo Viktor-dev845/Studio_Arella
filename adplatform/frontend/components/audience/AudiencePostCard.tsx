@@ -111,7 +111,7 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
   };
 
   return (
-    <article className="w-full max-w-[570px] bg-white rounded-[18px] p-5 shadow-[0px_0px_2px_rgba(0,0,0,0.14),0px_0px_1px_rgba(0,0,0,0.12)] border border-gray-100/60 flex flex-col gap-4 font-['DM_Sans',sans-serif]">
+    <article className="w-full bg-white rounded-[18px] p-5 shadow-[0px_0px_2px_rgba(0,0,0,0.14),0px_0px_1px_rgba(0,0,0,0.12)] border border-gray-100/60 flex flex-col gap-4 font-['DM_Sans',sans-serif]">
       {/* ─── 1. Header (Group 48095426: Author Info & 3-Dot Menu) ─── */}
       <div className="flex items-center justify-between">
         <div 

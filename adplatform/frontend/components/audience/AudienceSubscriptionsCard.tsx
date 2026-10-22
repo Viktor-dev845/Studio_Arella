@@ -147,7 +147,7 @@ export default function AudienceSubscriptionsCard() {
   };
 
   return (
-    <div className="w-full max-w-[862px] min-h-[580px] bg-white rounded-[18px] p-7 sm:p-9 md:px-10 md:py-9 shadow-[0px_0px_2px_rgba(0,0,0,0.1),0px_0px_1px_rgba(0,0,0,0.06)] border border-gray-100/80 flex flex-col gap-8 font-['DM_Sans',sans-serif]">
+    <div className="w-full min-h-[580px] bg-white rounded-[18px] p-7 sm:p-9 md:px-10 md:py-9 shadow-[0px_0px_2px_rgba(0,0,0,0.1),0px_0px_1px_rgba(0,0,0,0.06)] border border-gray-100/80 flex flex-col gap-8 font-['DM_Sans',sans-serif]">
       {/* ─── Header: 21px font-medium #3A3A3A (Frame 2121459678: Subscriptions) ─── */}
       <h2 className="text-[21px] font-medium text-[#3A3A3A] leading-[27px]">
         Subscriptions

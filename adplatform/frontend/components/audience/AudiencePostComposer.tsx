@@ -29,7 +29,7 @@ export default function AudiencePostComposer({
   };
 
   return (
-    <div className="w-full max-w-[570px] h-[168px] bg-white rounded-[16px] shadow-[0px_0px_2px_rgba(0,0,0,0.14),0px_0px_1px_rgba(0,0,0,0.12)] overflow-hidden flex flex-col justify-between font-['DM_Sans',sans-serif]">
+    <div className="w-full h-[168px] bg-white rounded-[16px] shadow-[0px_0px_2px_rgba(0,0,0,0.14),0px_0px_1px_rgba(0,0,0,0.12)] overflow-hidden flex flex-col justify-between font-['DM_Sans',sans-serif]">
       {/* ─── Top Input Row (height ~98px) ─── */}
       <div className="px-6 pt-4 pb-2 flex items-center gap-4 flex-1">
         {/* User Avatar: 40x40, border-radius 18px */}

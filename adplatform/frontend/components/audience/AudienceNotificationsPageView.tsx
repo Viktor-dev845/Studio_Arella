@@ -105,7 +105,7 @@ export default function AudienceNotificationsPageView() {
   const unreadCount = notifications.filter((n) => n.isUnread).length;
 
   return (
-    <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-8 md:px-14 lg:px-[140px] py-8 sm:py-10 font-['DM_Sans',sans-serif]">
+    <div className="w-full max-w-[1780px] mx-auto px-4 sm:px-6 lg:px-10 xl:px-14 py-8 sm:py-10 font-['DM_Sans',sans-serif]">
       {/* ─── Top Header: Notification Title + Actions ─── */}
       <div className="flex items-center justify-between mb-8 sm:mb-10">
         <div className="flex items-center gap-3">
@@ -130,8 +130,8 @@ export default function AudienceNotificationsPageView() {
         )}
       </div>
 
-      {/* ─── Notifications List (Frame 2121459687: gap 40px) ─── */}
-      <div className="flex flex-col gap-6 sm:gap-8 lg:gap-[40px] w-full max-w-[1152px]">
+      {/* ─── Notifications List ─── */}
+      <div className="flex flex-col gap-6 sm:gap-8 lg:gap-[40px] w-full max-w-[1400px]">
         {isLoading ? (
           /* Sleek Skeleton Loading Cards */
           [1, 2, 3].map((n) => (

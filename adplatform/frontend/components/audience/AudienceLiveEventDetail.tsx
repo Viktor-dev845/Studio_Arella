@@ -182,7 +182,7 @@ export default function AudienceLiveEventDetail({ onClose, eventId }: AudienceLi
   };
 
   return (
-    <section className="w-full max-w-[958px] flex flex-col gap-6 font-['DM_Sans',sans-serif]">
+    <section className="w-full flex flex-col gap-6 font-['DM_Sans',sans-serif]">
       {/* ─── 1. Header Bar: 958px x 75px, rounded-full (#FFFFFF) ─── */}
       <div className="w-full bg-white rounded-full px-6 py-4 shadow-[0px_0px_2px_rgba(0,0,0,0.1),0px_0px_1px_rgba(0,0,0,0.06)] border border-gray-100 flex items-center justify-between gap-4 flex-wrap sm:flex-nowrap">
         {/* Title & Stats */}

@@ -524,7 +524,7 @@ export default function AudienceProfilePageView({
   };
 
   return (
-    <section className="w-full lg:w-[850px] flex flex-col gap-6 font-['DM_Sans',sans-serif]">
+    <section className="flex-1 w-full min-w-0 flex flex-col gap-6 font-['DM_Sans',sans-serif]">
       {/* ─── 1. Profile Hero Card (Figma: 850px x 360px, radius 4px) ─── */}
       <div className="w-full bg-white rounded-[4px] shadow-[0px_20px_60px_rgba(241,244,248,0.5)] border border-gray-100 overflow-hidden relative">
         {/* Banner (850px x 180px) */}

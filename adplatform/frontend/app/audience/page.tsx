@@ -256,8 +256,8 @@ function AudienceContent() {
             />
           </main>
         ) : (
-          <main className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-            <div className="flex flex-col lg:flex-row gap-6 justify-center items-start">
+          <main className="w-full max-w-[1780px] mx-auto px-4 sm:px-6 lg:px-10 xl:px-14 py-6 sm:py-8">
+            <div className="flex flex-col lg:flex-row gap-6 xl:gap-8 items-start w-full">
               
               {/* 1. Left Sidebar Column (278px: Profile Card + Menu + Hashtags) */}
               <AudienceLeftSidebar 
@@ -298,42 +298,44 @@ function AudienceContent() {
                 onEditProfileClick={() => handleMenuChange('edit-profile')} 
               />
             ) : activeMenu === 'memberships' ? (
-              /* ─── Memberships View: Row 1 (Post Composer + Premium Card) + Row 2 (862px Membership Card) ─── */
-              <section className="w-full lg:w-[862px] flex flex-col gap-6">
-                {/* Row 1: Composer (570px) + Try Premium (278px) */}
+              /* ─── Memberships View: Row 1 (Post Composer + Premium Card) + Row 2 (Membership Card) ─── */
+              <section className="flex-1 w-full min-w-0 flex flex-col gap-6">
+                {/* Row 1: Composer + Try Premium */}
                 <div className="flex flex-col md:flex-row gap-4 items-stretch">
-                  <div className="flex-1 max-w-[570px]">
+                  <div className="flex-1 min-w-0">
                     <AudiencePostComposer 
                       onPostSubmit={handleCreatePost}
                       onLiveExperienceClick={() => handleMenuChange('live')}
                     />
                   </div>
-                  <AudiencePremiumCard />
+                  <div className="w-full md:w-[280px] lg:w-[320px] shrink-0">
+                    <AudiencePremiumCard />
+                  </div>
                 </div>
 
-                {/* Row 2: Membership Card (862px wide) */}
+                {/* Row 2: Membership Card */}
                 <AudienceMembershipsCard />
               </section>
             ) : activeMenu === 'subscriptions' ? (
-              /* ─── Subscriptions View: Frame 2121459680 (862px wide directly at top) ─── */
-              <section className="w-full lg:w-[862px] flex flex-col gap-6">
+              /* ─── Subscriptions View ─── */
+              <section className="flex-1 w-full min-w-0 flex flex-col gap-6">
                 <AudienceSubscriptionsCard />
               </section>
             ) : activeMenu === 'live-detail' ? (
-              /* ─── Live Experience Detail Stream View: Frame 2121459695 (958px wide) ─── */
-              <section className="w-full lg:w-[958px] flex flex-col gap-6">
+              /* ─── Live Experience Detail Stream View ─── */
+              <section className="flex-1 w-full min-w-0 flex flex-col gap-6">
                 <AudienceLiveEventDetail onClose={() => handleMenuChange('live')} />
               </section>
             ) : activeMenu === 'live' ? (
-              /* ─── Live Experiences View: Frame 2121459680 (862px wide directly at top) ─── */
-              <section className="w-full lg:w-[862px] flex flex-col gap-6">
+              /* ─── Live Experiences View ─── */
+              <section className="flex-1 w-full min-w-0 flex flex-col gap-6">
                 <AudienceLiveExperiencesCard onJoinEvent={() => handleMenuChange('live-detail')} />
               </section>
             ) : (
               /* ─── Default Feed / Trending / Bookmarks 3-Column Layout ─── */
               <>
-                {/* Middle Column (570px: Write New Post + Feed Cards; composer omitted in bookmarks view) */}
-                <section className="w-full lg:w-[570px] flex-1 max-w-[570px] flex flex-col gap-6">
+                {/* Middle Column: Write New Post + Feed Cards; composer omitted in bookmarks view */}
+                <section className="flex-1 w-full min-w-0 flex flex-col gap-6">
                   {activeMenu !== 'bookmarks' && (
                     <AudiencePostComposer 
                       onPostSubmit={handleCreatePost}

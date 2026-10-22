@@ -7,7 +7,7 @@ export default function AudiencePremiumCard({ className = '' }: { className?: st
 
   return (
     <div 
-      className={`w-[278px] min-h-[168px] rounded-[18px] p-5 relative overflow-hidden bg-gradient-to-br from-[#1E1E1E] to-[#121212] text-white shadow-md border border-white/10 shrink-0 cursor-pointer group flex flex-col justify-between font-['DM_Sans',sans-serif] ${className}`}
+      className={`w-full min-h-[168px] rounded-[18px] p-5 relative overflow-hidden bg-gradient-to-br from-[#1E1E1E] to-[#121212] text-white shadow-md border border-white/10 shrink-0 cursor-pointer group flex flex-col justify-between font-['DM_Sans',sans-serif] ${className}`}
       onClick={() => router.push('/audience?view=get-verified')}
       title="Try Premium for free"
     >
