@@ -52,75 +52,29 @@ export default function AudienceLeftSidebar({
 
   return (
     <aside className="w-full lg:w-[278px] flex flex-col gap-6 shrink-0 font-['DM_Sans',sans-serif]">
-      {/* ─── 1. User Mini Profile Card (Group 48095422) ─── */}
-      <div className={`w-[278px] h-[168px] bg-white rounded-[18px] shadow-[0px_0px_2px_rgba(0,0,0,0.14),0px_0px_1px_rgba(0,0,0,0.12)] border overflow-hidden flex flex-col justify-between transition-all ${
-        currentMenu === 'profile' ? 'border-[#D9BA54] ring-1 ring-[#D9BA54]/50' : 'border-gray-100/60'
-      }`}>
-        {/* Banner + Avatar Row */}
-        <div 
-          onClick={() => handleMenuClick('profile')}
-          className="cursor-pointer hover:opacity-95 transition-opacity"
-          title="View profile"
-        >
-          {/* Top Banner (Rectangle 19: 278px x 82px) */}
-          <div className="w-[278px] h-[82px] relative bg-gradient-to-r from-gray-50 via-gray-100 to-amber-50/50 overflow-hidden">
-            <img 
-              src="/audience/user-card.png" 
-              alt="Banner" 
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                (e.target as HTMLElement).style.display = 'none';
-              }}
-            />
-          </div>
-
-          {/* User Info with overlapping Avatar */}
-          <div className="px-3.5 pt-1.5 flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              {/* Avatar (Rectangle 16: 44x44, radius 18px) overlapping banner */}
-              <div className="-mt-6 shrink-0">
-                <img 
-                  src={userAvatar} 
-                  alt={userName}
-                  className="w-[44px] h-[44px] rounded-[18px] object-cover border-2 border-white shadow-sm"
-                />
-              </div>
-
-              {/* Name & Title */}
-              <div className="flex flex-col">
-                <span className="text-[12px] font-normal text-[#000000] leading-[16px] truncate max-w-[85px]">
-                  {userName}
-                </span>
-                <span className="text-[10px] font-normal text-black/45 leading-[13px] truncate max-w-[85px]">
-                  {userTitle}
-                </span>
-              </div>
-            </div>
-
-            {/* Profile Progress (90% + Bar) */}
-            <div className="flex items-center gap-1.5 shrink-0 -mt-2">
-              <div className="w-[61px] h-[4px] bg-[#F6F6F6] rounded-full overflow-hidden relative">
-                <div className="w-[43px] h-full bg-[#15411F] rounded-full" />
-              </div>
-              <span className="text-[10px] font-normal text-[#15411F] leading-[13px]">
-                90%
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom Section: Divider + Add another account */}
-        <div>
-          <div className="w-full h-[1px] bg-[#F6F6F6]" />
-          <div className="px-3.5 py-2.5 flex items-center gap-2 cursor-pointer hover:bg-gray-50/80 transition-colors">
-            <div className="w-4 h-4 flex items-center justify-center text-[#666666]">
-              <Plus size={14} strokeWidth={2} />
-            </div>
-            <span className="text-[10px] font-normal text-black/45 leading-[13px]">
-              Add another account
-            </span>
-          </div>
-        </div>
+      {/* ─── 1. User Mini Profile Card (Group 48095422: 278px x 168px) ─── */}
+      <div 
+        onClick={() => handleMenuClick('profile')}
+        className={`w-[278px] h-[168px] bg-white rounded-[18px] shadow-[0px_0px_2px_rgba(0,0,0,0.14),0px_0px_1px_rgba(0,0,0,0.12)] border overflow-hidden relative transition-all cursor-pointer group ${
+          currentMenu === 'profile' ? 'border-[#D9BA54] ring-1 ring-[#D9BA54]/50' : 'border-gray-100/60'
+        }`}
+        title="View profile"
+      >
+        <img 
+          src="/audience/user-card.png" 
+          alt={userName} 
+          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.01]"
+        />
+        {/* Clickable zone for 'Add another account' */}
+        <button 
+          type="button" 
+          onClick={(e) => {
+            e.stopPropagation();
+            handleMenuClick('profile');
+          }}
+          className="absolute bottom-0 left-0 right-0 h-[40px] opacity-0 cursor-pointer"
+          title="Add another account"
+        />
       </div>
 
       {/* ─── 2. Navigation Menu Card (Menu: 278px x 312px) ─── */}

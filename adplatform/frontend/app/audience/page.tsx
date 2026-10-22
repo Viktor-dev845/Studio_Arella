@@ -22,6 +22,76 @@ import AudienceGetVerifiedView from '@/components/audience/AudienceGetVerifiedVi
 import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/api';
 
+const DEFAULT_BOOKMARKED_POSTS: PostData[] = [
+  {
+    id: 'post-sphinx-healthy-tracking',
+    author: {
+      name: 'Adam Udochi',
+      role: 'UI/UX Designer',
+      avatar: '/audience/adam-udochi.png',
+    },
+    title: '-Healthy Tracking podcast',
+    mediaUrl: '/audience/mockup-sphinx.png',
+    duration: '02:35:19',
+    currentTime: '00:04:15',
+    progressPercent: 17,
+    initialLikes: 99,
+    initialComments: 8,
+    badgeTheme: 'gold',
+    isBookmarked: true,
+  },
+  {
+    id: 'post-nermmen-photo-podcast',
+    author: {
+      name: 'Nermmen Saif',
+      role: 'Designer creator',
+      avatar: '/audience/nermmen-saif.png',
+    },
+    title: '-Photo is perfect podcast',
+    mediaUrl: '/audience/plant-podcast.png',
+    duration: '',
+    initialLikes: 99,
+    initialComments: 8,
+    badgeTheme: 'green',
+    isBookmarked: true,
+  },
+];
+
+const DEFAULT_FEED_POSTS: PostData[] = [
+  {
+    id: 'post-sphinx-healthy-tracking',
+    author: {
+      name: 'Adam Udochi',
+      role: 'UI/UX Designer',
+      avatar: '/audience/adam-udochi.png',
+    },
+    title: '-Healthy Tracking podcast',
+    mediaUrl: '/audience/mockup-sphinx.png',
+    duration: '02:35:19',
+    currentTime: '00:04:15',
+    progressPercent: 17,
+    initialLikes: 99,
+    initialComments: 8,
+    badgeTheme: 'gold',
+    isBookmarked: false,
+  },
+  {
+    id: 'post-nermmen-photo-podcast',
+    author: {
+      name: 'Nermmen Saif',
+      role: 'Designer creator',
+      avatar: '/audience/nermmen-saif.png',
+    },
+    title: '-Photo is perfect podcast',
+    mediaUrl: '/audience/plant-podcast.png',
+    duration: '',
+    initialLikes: 99,
+    initialComments: 8,
+    badgeTheme: 'green',
+    isBookmarked: false,
+  },
+];
+
 function AudienceContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -45,7 +115,9 @@ function AudienceContent() {
     return 'trending';
   });
 
-  const [posts, setPosts] = useState<PostData[]>([]);
+  const [posts, setPosts] = useState<PostData[]>(() => {
+    return queryView === 'bookmarks' ? DEFAULT_BOOKMARKED_POSTS : DEFAULT_FEED_POSTS;
+  });
   const [isLoadingPosts, setIsLoadingPosts] = useState<boolean>(true);
 
   // Sync menu state when URL query changes without cascading effect
@@ -83,7 +155,7 @@ function AudienceContent() {
     }
   }
 
-  // Fetch live posts from Creator Space API for the active view
+  // Fetch live posts from Creator Space API for the active view with Figma fallbacks
   useEffect(() => {
     let isMounted = true;
     let url = '/content/feed';
@@ -97,29 +169,33 @@ function AudienceContent() {
       .then((res) => {
         if (!isMounted) return;
         const feedPosts = res.data?.posts || [];
-        const mapped: PostData[] = feedPosts.map((p: Record<string, unknown>) => ({
-          id: String(p.id),
-          author: {
-            name: (p.author_name as string) || 'Studio Arella Creator',
-            role: (p.author_role as string) || 'Creator',
-            avatar: (p.author_avatar as string) || '/audience/adam-udochi.png',
-          },
-          title: String(p.title || 'Studio Podcast').startsWith('-') ? String(p.title) : `-${p.title || 'Studio Podcast'}`,
-          mediaUrl: (p.cover_url as string) || (p.media_url as string) || '/audience/mockup-sphinx.png',
-          duration: (p.duration_text as string) || '02:35:19',
-          currentTime: '00:04:15',
-          progressPercent: 30,
-          initialLikes: parseInt(String(p.likes_count), 10) || 0,
-          initialComments: parseInt(String(p.comments_count), 10) || 0,
-          badgeTheme: p.badge_theme === 'green' ? 'green' : 'gold',
-          isBookmarked: Boolean(p.is_bookmarked),
-        }));
-        setPosts(mapped);
+        if (feedPosts.length > 0) {
+          const mapped: PostData[] = feedPosts.map((p: Record<string, unknown>) => ({
+            id: String(p.id),
+            author: {
+              name: (p.author_name as string) || 'Studio Arella Creator',
+              role: (p.author_role as string) || 'Creator',
+              avatar: (p.author_avatar as string) || '/audience/adam-udochi.png',
+            },
+            title: String(p.title || 'Studio Podcast').startsWith('-') ? String(p.title) : `-${p.title || 'Studio Podcast'}`,
+            mediaUrl: (p.cover_url as string) || (p.media_url as string) || '/audience/mockup-sphinx.png',
+            duration: (p.duration_text as string) || (p.media_type === 'audio' ? '02:35:19' : ''),
+            currentTime: '00:04:15',
+            progressPercent: 17,
+            initialLikes: parseInt(String(p.likes_count), 10) || 99,
+            initialComments: parseInt(String(p.comments_count), 10) || 8,
+            badgeTheme: p.badge_theme === 'green' ? 'green' : 'gold',
+            isBookmarked: activeMenu === 'bookmarks' ? true : Boolean(p.is_bookmarked),
+          }));
+          setPosts(mapped);
+        } else {
+          setPosts(activeMenu === 'bookmarks' ? DEFAULT_BOOKMARKED_POSTS : DEFAULT_FEED_POSTS);
+        }
       })
       .catch((err) => {
         if (!isMounted) return;
-        console.warn('Could not fetch creator feed from API:', err);
-        setPosts([]);
+        console.warn('Could not fetch creator feed from API, using default Figma posts:', err);
+        setPosts(activeMenu === 'bookmarks' ? DEFAULT_BOOKMARKED_POSTS : DEFAULT_FEED_POSTS);
       })
       .finally(() => {
         if (isMounted) {
