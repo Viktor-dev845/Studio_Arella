@@ -355,12 +355,12 @@ export default function AudienceProfilePageView({
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isRequestingVerification, setIsRequestingVerification] = useState(false);
 
-  // Edit form state with Mike uchechi defaults from Figma (/* fan User profile */)
-  const [name, setName] = useState('Mike uchechi');
-  const [bio, setBio] = useState('Family Life podcast creator for over 5years');
-  const [location, setLocation] = useState('Saint Petersburg, Russian Federation');
+  // Edit form state with realistic Studio Arella defaults
+  const [name, setName] = useState(user?.name || (user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : null) || 'Mike Uchechi');
+  const [bio, setBio] = useState('Podcast creator & community broadcaster');
+  const [location, setLocation] = useState('Umuahia, Abia State');
   const [about, setAbout] = useState(
-    "I'm more experienced in eCommerce web projects and mobile banking apps, but also like to work with creative projects, such as landing pages or unusual corporate websites."
+    'Creative podcast builder and audio host sharing community conversations, local culture, and business insights across Eastern Nigeria.'
   );
   const [avatarUrl, setAvatarUrl] = useState('/audience/udo-emmanuel.png');
   const [bannerUrl, setBannerUrl] = useState('/audience/udo-banner.png');
@@ -677,7 +677,7 @@ export default function AudienceProfilePageView({
             </div>
           </div>
 
-          {/* Location on Right (Figma: Saint Petersburg, Russian Federation) */}
+          {/* Location on Right (e.g. Umuahia, Abia State) */}
           <div className="flex items-center gap-1.5 text-[12px] font-normal text-[#181818] mb-2 self-start md:self-center shrink-0">
             <Navigation size={14} className="text-[#15411F] fill-[#15411F]" />
             <span className="font-['DM_Sans',sans-serif]">{location}</span>
@@ -1078,7 +1078,7 @@ export default function AudienceProfilePageView({
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   className="w-full h-11 px-3.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-[#D9BA54]"
-                  placeholder="e.g. Saint Petersburg, Russian Federation"
+                  placeholder="e.g. Umuahia, Abia State"
                 />
               </div>
 

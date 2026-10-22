@@ -25,7 +25,7 @@ const CHAT_LIST: ChatItem[] = [
   {
     id: '7b7d0a58-3f58-48c6-8b94-e9b93f278bae',
     name: 'Theresa Steward',
-    message: 'Hi, Dmitry! I have a work for you. We',
+    message: 'Loved the latest podcast session! Let’s connect.',
     avatar: '/audience/theresa-steward.png',
     statusType: 'solid',
     nameColor: 'text-[#15411F]',
@@ -34,7 +34,7 @@ const CHAT_LIST: ChatItem[] = [
   {
     id: 'db9c8abc-87b6-45d1-99dd-1eb6d5959b27',
     name: 'Brandon Wilson',
-    message: 'I am Russian and I am learning Engl',
+    message: 'Studio Arella audio screens are performing great.',
     avatar: '/audience/brandon-wilson.png',
     statusType: 'ring',
     hasGradientSnippet: true,

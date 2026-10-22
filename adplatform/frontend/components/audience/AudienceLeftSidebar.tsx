@@ -18,10 +18,10 @@ interface AudienceLeftSidebarProps {
   onTagSelect?: (tag: string) => void;
 }
 
-const HASHTAGS_ROW_1 = ['#work', '#business', '#hr'];
-const HASHTAGS_ROW_2 = ['#userinterface', '#digital'];
-const HASHTAGS_ROW_3 = ['#userexperience', '#ux'];
-const HASHTAGS_ROW_4 = ['#ui', '#freelance'];
+const HASHTAGS_ROW_1 = ['#podcasts', '#billboards'];
+const HASHTAGS_ROW_2 = ['#umuahia', '#creators'];
+const HASHTAGS_ROW_3 = ['#music', '#events'];
+const HASHTAGS_ROW_4 = ['#business', '#entertainment'];
 
 export default function AudienceLeftSidebar({
   activeMenu = 'trending',
@@ -36,9 +36,9 @@ export default function AudienceLeftSidebar({
     setCurrentMenu(activeMenu);
   }, [activeMenu]);
 
-  const userName = user?.name || 'Adam Udochi';
-  const userTitle = user?.role === 'screen_owner' ? 'Screen Owner' : user?.role === 'admin' ? 'Administrator' : 'UI/UX Designer';
-  const userAvatar = user?.avatar || '/audience/adam-udochi.png';
+  const userName = user?.name || (user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : null) || 'Guest Fan';
+  const userTitle = user?.role === 'screen_owner' ? 'Media Partner' : user?.role === 'admin' ? 'Administrator' : user ? 'Audience Member' : 'Studio Arella Fan';
+  const userAvatar = user?.avatar;
 
   const handleMenuClick = (menuId: string) => {
     setCurrentMenu(menuId);
@@ -52,29 +52,44 @@ export default function AudienceLeftSidebar({
 
   return (
     <aside className="w-full lg:w-[278px] flex flex-col gap-6 shrink-0 font-['DM_Sans',sans-serif]">
-      {/* ─── 1. User Mini Profile Card (Group 48095422: 278px x 168px) ─── */}
+      {/* ─── 1. User Mini Profile Card (278px x 168px dynamic) ─── */}
       <div 
         onClick={() => handleMenuClick('profile')}
-        className={`w-[278px] h-[168px] bg-white rounded-[18px] shadow-[0px_0px_2px_rgba(0,0,0,0.14),0px_0px_1px_rgba(0,0,0,0.12)] border overflow-hidden relative transition-all cursor-pointer group ${
-          currentMenu === 'profile' ? 'border-[#D9BA54] ring-1 ring-[#D9BA54]/50' : 'border-gray-100/60'
+        className={`w-[278px] min-h-[168px] bg-gradient-to-br from-white via-[#FCFDFD] to-[#FBF8EF] rounded-[18px] p-5 shadow-[0px_0px_2px_rgba(0,0,0,0.1),0px_2px_10px_rgba(0,0,0,0.04)] border overflow-hidden relative transition-all cursor-pointer group flex flex-col justify-between ${
+          currentMenu === 'profile' ? 'border-[#D9BA54] ring-1 ring-[#D9BA54]/50' : 'border-gray-200/60 hover:border-[#D9BA54]/50'
         }`}
         title="View profile"
       >
-        <img 
-          src="/audience/user-card.png" 
-          alt={userName} 
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.01]"
-        />
-        {/* Clickable zone for 'Add another account' */}
-        <button 
-          type="button" 
-          onClick={(e) => {
-            e.stopPropagation();
-            handleMenuClick('profile');
-          }}
-          className="absolute bottom-0 left-0 right-0 h-[40px] opacity-0 cursor-pointer"
-          title="Add another account"
-        />
+        <div className="flex items-center gap-3.5">
+          <div className="w-[52px] h-[52px] rounded-[16px] overflow-hidden border border-[#D9BA54]/30 bg-[#FAF3DE] shrink-0 shadow-sm flex items-center justify-center">
+            {userAvatar ? (
+              <img src={userAvatar} alt={userName} className="w-full h-full object-cover" />
+            ) : (
+              <span className="font-bold text-[#D4AF37] text-xl">
+                {userName.charAt(0).toUpperCase()}
+              </span>
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-[16px] font-bold text-[#181818] truncate leading-tight group-hover:text-[#8B7322] transition-colors">
+              {userName}
+            </h3>
+            <p className="text-[12px] font-medium text-gray-500 truncate mt-1">
+              {userTitle}
+            </p>
+          </div>
+        </div>
+
+        {/* Profile Status & Action */}
+        <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
+          <span className="text-[11px] font-semibold text-[#8B7322] bg-[#FAF5E6] px-2.5 py-1 rounded-full border border-[#D9BA54]/20 flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]" />
+            {user ? 'Active Fan' : 'Community'}
+          </span>
+          <span className="text-[12px] font-semibold text-[#8B7322] group-hover:translate-x-0.5 transition-transform">
+            {user ? 'My Profile →' : 'Sign in →'}
+          </span>
+        </div>
       </div>
 
       {/* ─── 2. Navigation Menu Card (Menu: 278px x 312px) ─── */}

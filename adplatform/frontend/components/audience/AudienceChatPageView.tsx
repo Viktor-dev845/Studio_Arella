@@ -52,7 +52,7 @@ const INITIAL_CONTACTS: ChatContact[] = [
   {
     id: 'db9c8abc-87b6-45d1-99dd-1eb6d5959b27',
     name: 'Brandon Wilson',
-    lastMessage: 'I am Russian and I am learning Engl',
+    lastMessage: 'Studio Arella audio screens are performing great',
     avatar: '/audience/brandon-wilson.png',
     isOnline: true,
     onlineDotStyle: 'hollow-green',

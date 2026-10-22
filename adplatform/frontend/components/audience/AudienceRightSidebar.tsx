@@ -263,40 +263,23 @@ export default function AudienceRightSidebar({
           {/* Memberships / Pages Card */}
           <div className="w-full bg-[#FCFDFD] rounded-[16px] p-5 shadow-[0px_0px_2px_rgba(0,0,0,0.1),0px_0px_1px_rgba(0,0,0,0.06)] border border-gray-100/60 flex flex-col gap-4">
             <div className="flex items-center gap-3 cursor-pointer group">
-              <div className="w-6 h-6 rounded-md flex items-center justify-center shrink-0">
-                <img 
-                  src="/audience/figma-logo.png" 
-                  alt="Figma" 
-                  className="w-full h-full object-contain"
-                  onError={(e) => {
-                    (e.target as HTMLElement).style.display = 'none';
-                  }}
-                />
+              <div className="w-6 h-6 rounded-md bg-amber-50 border border-amber-200/60 flex items-center justify-center shrink-0 text-xs">
+                🎙️
               </div>
               <span className="text-[14px] text-[#666666] group-hover:text-black transition-colors font-normal truncate">
-                Design podcast membership
+                Studio Arella Creator Club
               </span>
             </div>
 
             <div className="flex items-center justify-between gap-2 cursor-pointer group">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-6 h-6 rounded-md flex items-center justify-center shrink-0">
-                  <img 
-                    src="/audience/rocket-logo.png" 
-                    alt="Rocket" 
-                    className="w-full h-full object-contain"
-                    onError={(e) => {
-                      (e.target as HTMLElement).style.display = 'none';
-                    }}
-                  />
+                <div className="w-6 h-6 rounded-md bg-emerald-50 border border-emerald-200/60 flex items-center justify-center shrink-0 text-xs">
+                  📡
                 </div>
                 <span className="text-[14px] text-[#666666] group-hover:text-black transition-colors font-normal truncate">
-                  UI Design membership
+                  Eastern Media & Audio Lounge
                 </span>
               </div>
-              <span className="min-w-[28px] h-[16px] px-1 bg-[#FF1930] text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white shrink-0">
-                +99
-              </span>
             </div>
 
             <div className="flex items-center gap-3 cursor-pointer group pt-1">
@@ -326,11 +309,8 @@ export default function AudienceRightSidebar({
             </span>
           </div>
 
-          {/* Right: Badge "6" + Chevron */}
+          {/* Right: Chevron */}
           <div className="flex items-center gap-3">
-            <div className="w-[16px] h-[16px] bg-[#FF1930] border-2 border-white rounded-[8px] flex items-center justify-center text-white text-[10px] font-['Roboto',sans-serif] font-normal shadow-sm">
-              6
-            </div>
             {messagesOpen ? (
               <ChevronDown size={20} strokeWidth={1.8} className="text-[#666666]" />
             ) : (
@@ -341,25 +321,10 @@ export default function AudienceRightSidebar({
 
         {/* Collapsible Messages Popover */}
         {messagesOpen && (
-          <div className="p-3.5 border-t border-gray-100 bg-white flex flex-col gap-2 max-h-[220px] overflow-y-auto">
-            <div className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-gray-50 cursor-pointer">
-              <div className="w-8 h-8 rounded-full bg-[#D4AF37]/20 flex items-center justify-center font-bold text-xs text-[#D4AF37]">
-                NU
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-gray-900 truncate">Nermmen Saif</p>
-                <p className="text-[11px] text-gray-500 truncate">Great discussion on the wealth podcast!</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-gray-50 cursor-pointer">
-              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center font-bold text-xs text-blue-600">
-                SA
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-gray-900 truncate">Studio Arella Team</p>
-                <p className="text-[11px] text-gray-500 truncate">Your ad slot booking is confirmed.</p>
-              </div>
-            </div>
+          <div className="p-5 border-t border-gray-100 bg-white flex flex-col items-center justify-center text-center gap-1.5">
+            <MessageSquare size={24} className="text-gray-300 mb-1" />
+            <p className="text-xs font-semibold text-gray-800">No active messages</p>
+            <p className="text-[11px] text-gray-400 max-w-[200px]">Conversations with creators and listeners will appear here.</p>
           </div>
         )}
       </div>

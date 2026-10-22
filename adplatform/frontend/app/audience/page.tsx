@@ -22,75 +22,8 @@ import AudienceGetVerifiedView from '@/components/audience/AudienceGetVerifiedVi
 import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/api';
 
-const DEFAULT_BOOKMARKED_POSTS: PostData[] = [
-  {
-    id: 'post-sphinx-healthy-tracking',
-    author: {
-      name: 'Adam Udochi',
-      role: 'UI/UX Designer',
-      avatar: '/audience/adam-udochi.png',
-    },
-    title: '-Healthy Tracking podcast',
-    mediaUrl: '/audience/mockup-sphinx.png',
-    duration: '02:35:19',
-    currentTime: '00:04:15',
-    progressPercent: 17,
-    initialLikes: 99,
-    initialComments: 8,
-    badgeTheme: 'gold',
-    isBookmarked: true,
-  },
-  {
-    id: 'post-nermmen-photo-podcast',
-    author: {
-      name: 'Nermmen Saif',
-      role: 'Designer creator',
-      avatar: '/audience/nermmen-saif.png',
-    },
-    title: '-Photo is perfect podcast',
-    mediaUrl: '/audience/plant-podcast.png',
-    duration: '',
-    initialLikes: 99,
-    initialComments: 8,
-    badgeTheme: 'green',
-    isBookmarked: true,
-  },
-];
-
-const DEFAULT_FEED_POSTS: PostData[] = [
-  {
-    id: 'post-sphinx-healthy-tracking',
-    author: {
-      name: 'Adam Udochi',
-      role: 'UI/UX Designer',
-      avatar: '/audience/adam-udochi.png',
-    },
-    title: '-Healthy Tracking podcast',
-    mediaUrl: '/audience/mockup-sphinx.png',
-    duration: '02:35:19',
-    currentTime: '00:04:15',
-    progressPercent: 17,
-    initialLikes: 99,
-    initialComments: 8,
-    badgeTheme: 'gold',
-    isBookmarked: false,
-  },
-  {
-    id: 'post-nermmen-photo-podcast',
-    author: {
-      name: 'Nermmen Saif',
-      role: 'Designer creator',
-      avatar: '/audience/nermmen-saif.png',
-    },
-    title: '-Photo is perfect podcast',
-    mediaUrl: '/audience/plant-podcast.png',
-    duration: '',
-    initialLikes: 99,
-    initialComments: 8,
-    badgeTheme: 'green',
-    isBookmarked: false,
-  },
-];
+const DEFAULT_BOOKMARKED_POSTS: PostData[] = [];
+const DEFAULT_FEED_POSTS: PostData[] = [];
 
 function AudienceContent() {
   const router = useRouter();
@@ -115,9 +48,7 @@ function AudienceContent() {
     return 'trending';
   });
 
-  const [posts, setPosts] = useState<PostData[]>(() => {
-    return queryView === 'bookmarks' ? DEFAULT_BOOKMARKED_POSTS : DEFAULT_FEED_POSTS;
-  });
+  const [posts, setPosts] = useState<PostData[]>([]);
   const [isLoadingPosts, setIsLoadingPosts] = useState<boolean>(false);
 
   // Sync menu state when URL query changes without cascading effect
@@ -189,13 +120,12 @@ function AudienceContent() {
           }));
           setPosts(mapped);
         } else {
-          setPosts(activeMenu === 'bookmarks' ? DEFAULT_BOOKMARKED_POSTS : DEFAULT_FEED_POSTS);
+          setPosts([]);
         }
       })
-      .catch((err) => {
+      .catch(() => {
         if (!isMounted) return;
-        console.warn('Could not fetch creator feed from API, using default Figma posts:', err);
-        setPosts(activeMenu === 'bookmarks' ? DEFAULT_BOOKMARKED_POSTS : DEFAULT_FEED_POSTS);
+        setPosts([]);
       })
       .finally(() => {
         if (isMounted) {
@@ -244,19 +174,20 @@ function AudienceContent() {
   };
 
   const handleCreatePost = async (content: string) => {
+    const authorName = user?.name || (user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : null) || 'You';
+    const authorRole = user?.role === 'screen_owner' ? 'Media Partner' : user?.role === 'admin' ? 'Administrator' : 'Audience Member';
+    const authorAvatar = user?.avatar || '/audience/kyle-fisher.png';
+
     const tempPost: PostData = {
-      id: `custom-${Date.now()}`,
+      id: `post-${Date.now()}`,
       author: {
-        name: user?.name || 'Adam Udochi',
-        role: user?.role === 'creator' ? 'Creator' : 'UI/UX Designer',
-        avatar: user?.avatar || '/audience/adam-udochi.png',
+        name: authorName,
+        role: authorRole,
+        avatar: authorAvatar,
       },
-      title: `-${content}`,
-      mediaUrl: '/audience/mockup-sphinx.png',
-      duration: '00:45:00',
-      currentTime: '00:00:00',
-      progressPercent: 5,
-      initialLikes: 1,
+      title: content,
+      mediaUrl: '',
+      initialLikes: 0,
       initialComments: 0,
       badgeTheme: 'gold',
     };
@@ -265,7 +196,7 @@ function AudienceContent() {
     try {
       await api.post('/content', {
         title: content,
-        contentType: 'audio',
+        contentType: 'post',
         description: content,
       });
     } catch (err) {

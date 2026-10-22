@@ -152,49 +152,51 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
         {post.title}
       </div>
 
-      {/* ─── 3. Media Card & Audio Player Bar (Rectangle 22: 516px x 307px) ─── */}
-      <div className="relative w-full h-[280px] sm:h-[307px] rounded-[18px] overflow-hidden bg-gray-900 group shadow-inner">
-        <img 
-          src={post.mediaUrl} 
-          alt={post.title} 
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-101"
-        />
+      {/* ─── 3. Media Card & Audio Player Bar (optional) ─── */}
+      {post.mediaUrl ? (
+        <div className="relative w-full h-[280px] sm:h-[307px] rounded-[18px] overflow-hidden bg-gray-900 group shadow-inner">
+          <img 
+            src={post.mediaUrl} 
+            alt={post.title} 
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-101"
+          />
 
-        {/* Audio Player Overlay Bar at bottom of media (Group 427319004: only when post has audio duration) */}
-        {post.duration && (
-          <div className="absolute bottom-3 left-4 right-4 bg-white/85 backdrop-blur-md rounded-[14px] p-3 shadow-md flex flex-col gap-2 border border-white/60">
-            {/* Progress Track (Group 427319002: 459px x 4px, fill #E1C875) */}
-            <div className="w-full h-[4px] bg-[#F6F6F6]/90 rounded-[20px] overflow-hidden cursor-pointer relative">
-              <div 
-                className="h-full bg-[#E1C875] rounded-[20px] transition-all" 
-                style={{ width: `${post.progressPercent || 17}%` }}
-              />
-            </div>
+          {/* Audio Player Overlay Bar at bottom of media (Group 427319004: only when post has audio duration) */}
+          {post.duration && (
+            <div className="absolute bottom-3 left-4 right-4 bg-white/85 backdrop-blur-md rounded-[14px] p-3 shadow-md flex flex-col gap-2 border border-white/60">
+              {/* Progress Track (Group 427319002: 459px x 4px, fill #E1C875) */}
+              <div className="w-full h-[4px] bg-[#F6F6F6]/90 rounded-[20px] overflow-hidden cursor-pointer relative">
+                <div 
+                  className="h-full bg-[#E1C875] rounded-[20px] transition-all" 
+                  style={{ width: `${post.progressPercent || 17}%` }}
+                />
+              </div>
 
-            {/* Controls Row (Frame 1618873026) */}
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setIsPlaying(!isPlaying)}
-                className="w-6 h-6 rounded flex items-center justify-center text-[#28303F] hover:opacity-80 transition-opacity cursor-pointer"
-                title={isPlaying ? 'Pause' : 'Play'}
-              >
-                {isPlaying ? (
-                  <div className="flex gap-[3px] items-center">
-                    <span className="w-[3px] h-[14px] bg-[#28303F] rounded-[2px]" />
-                    <span className="w-[3px] h-[14px] bg-[#28303F] rounded-[2px]" />
-                  </div>
-                ) : (
-                  <Play size={15} fill="#28303F" className="text-[#28303F]" />
-                )}
-              </button>
-              <span className="text-[14px] font-semibold text-black/50 tracking-[-0.01em] leading-[24px]">
-                {post.currentTime || '00:04:15'} / {post.duration || '02:35:19'}
-              </span>
+              {/* Controls Row (Frame 1618873026) */}
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsPlaying(!isPlaying)}
+                  className="w-6 h-6 rounded flex items-center justify-center text-[#28303F] hover:opacity-80 transition-opacity cursor-pointer"
+                  title={isPlaying ? 'Pause' : 'Play'}
+                >
+                  {isPlaying ? (
+                    <div className="flex gap-[3px] items-center">
+                      <span className="w-[3px] h-[14px] bg-[#28303F] rounded-[2px]" />
+                      <span className="w-[3px] h-[14px] bg-[#28303F] rounded-[2px]" />
+                    </div>
+                  ) : (
+                    <Play size={15} fill="#28303F" className="text-[#28303F]" />
+                  )}
+                </button>
+                <span className="text-[14px] font-semibold text-black/50 tracking-[-0.01em] leading-[24px]">
+                  {post.currentTime || '00:04:15'} / {post.duration || '02:35:19'}
+                </span>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      ) : null}
 
       {/* ─── 4. Engagement Row (Icons: width 518px, height 31px) ─── */}
       <div className="flex items-center justify-between pt-1">

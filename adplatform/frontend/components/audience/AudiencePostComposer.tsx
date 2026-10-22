@@ -18,7 +18,8 @@ export default function AudiencePostComposer({
   const { user } = useAuthStore();
   const [content, setContent] = useState('');
 
-  const userAvatar = user?.avatar || '/audience/adam-udochi.png';
+  const userAvatar = user?.avatar;
+  const userName = user?.name || (user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : null) || 'Fan';
 
   const handleSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -32,11 +33,17 @@ export default function AudiencePostComposer({
       {/* ─── Top Input Row (height ~98px) ─── */}
       <div className="px-6 pt-4 pb-2 flex items-center gap-4 flex-1">
         {/* User Avatar: 40x40, border-radius 18px */}
-        <img 
-          src={userAvatar} 
-          alt={user?.name || 'User'} 
-          className="w-[40px] h-[40px] rounded-[18px] object-cover shrink-0 border border-gray-100 shadow-sm"
-        />
+        {userAvatar ? (
+          <img 
+            src={userAvatar} 
+            alt={userName} 
+            className="w-[40px] h-[40px] rounded-[18px] object-cover shrink-0 border border-gray-100 shadow-sm"
+          />
+        ) : (
+          <div className="w-[40px] h-[40px] rounded-[18px] bg-[#FAF5E6] border border-[#D4AF37]/30 flex items-center justify-center font-bold text-[#D4AF37] text-sm shrink-0 shadow-sm">
+            {userName.charAt(0).toUpperCase()}
+          </div>
+        )}
 
         {/* Text Input + Edit/Pencil Icon */}
         <div className="flex-1 flex items-center justify-between gap-3">
