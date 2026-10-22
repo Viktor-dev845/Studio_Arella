@@ -62,17 +62,40 @@ function PinwheelLogo({ className = 'w-10 h-10' }: { className?: string }) {
   );
 }
 
+const DEFAULT_LIVE_EXPERIENCES: LiveExperienceItem[] = [
+  {
+    id: 'exp-1',
+    name: 'Autonft Ultra Audio Summit',
+    description: 'A live interactive deep-dive into digital media monetization and billboard screen synchronization',
+    participantsCount: 18,
+    isJoined: true,
+  },
+  {
+    id: 'exp-2',
+    name: 'UI/UX Design Systems Live Review',
+    description: 'Live critique of audience mobile concepts and layout hierarchies with Dmitry & Adam',
+    participantsCount: 42,
+    isJoined: false,
+  },
+  {
+    id: 'exp-3',
+    name: 'Sound Branding & Sonic Identity',
+    description: 'Exploring how modern creators craft audio signatures for podcasts and broadcast networks',
+    participantsCount: 29,
+    isJoined: false,
+  },
+];
+
 interface AudienceLiveExperiencesCardProps {
   onJoinEvent?: (id: string) => void;
 }
 
 export default function AudienceLiveExperiencesCard({ onJoinEvent }: AudienceLiveExperiencesCardProps = {}) {
-  const [experiences, setExperiences] = useState<LiveExperienceItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [experiences, setExperiences] = useState<LiveExperienceItem[]>(DEFAULT_LIVE_EXPERIENCES);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Fetch real live experiences from backend
   useEffect(() => {
-    setIsLoading(true);
     api.get('/live-experiences')
       .then((res) => {
         const events = res.data?.events || [];
@@ -88,10 +111,7 @@ export default function AudienceLiveExperiencesCard({ onJoinEvent }: AudienceLiv
         }
       })
       .catch((err) => {
-        console.warn('Could not fetch live experiences from API:', err);
-      })
-      .finally(() => {
-        setIsLoading(false);
+        console.warn('Could not fetch live experiences from API, using default items:', err);
       });
   }, []);
 

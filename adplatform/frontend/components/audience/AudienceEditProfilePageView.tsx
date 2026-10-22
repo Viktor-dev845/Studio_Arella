@@ -75,7 +75,7 @@ export default function AudienceEditProfilePageView({
   const [firstName, setFirstName] = useState(() => user?.first_name || (user?.name ? user.name.trim().split(' ')[0] : 'Adela'));
   const [lastName, setLastName] = useState(() => user?.last_name || (user?.name ? user.name.trim().split(' ').slice(1).join(' ') : 'Parkson'));
   const [email, setEmail] = useState(() => user?.email || 'adelapark.@example.com');
-  const [about, setAbout] = useState(() => user?.about || user?.bio || 'Lorem ipsum');
+  const [about, setAbout] = useState(() => user?.about || user?.bio || 'Passionate UI/UX designer and audio creator building interactive community experiences.');
   const [isSaving, setIsSaving] = useState(false);
 
   const [prevUser, setPrevUser] = useState(user);
@@ -91,7 +91,7 @@ export default function AudienceEditProfilePageView({
         setLastName(parts.slice(1).join(' ') || 'Parkson');
       }
       setEmail(user.email || 'adelapark.@example.com');
-      setAbout(user.about || user.bio || 'Lorem ipsum');
+      setAbout(user.about || user.bio || 'Passionate UI/UX designer and audio creator building interactive community experiences.');
     }
   }
 
@@ -637,7 +637,7 @@ export default function AudienceEditProfilePageView({
                   type="text"
                   value={about}
                   onChange={(e) => setAbout(e.target.value)}
-                  placeholder="Lorem ipsum"
+                  placeholder="Tell the community about your work and creative projects"
                   className="w-full h-[52.85px] px-4 rounded-[12.3px] border border-[rgba(152,152,154,0.5)] bg-white text-[15px] text-[#141414] placeholder-[#98989A] focus:outline-none focus:border-[#D9BA54] focus:ring-1 focus:ring-[#D9BA54] transition-all font-['DM_Sans',sans-serif]"
                 />
               </div>

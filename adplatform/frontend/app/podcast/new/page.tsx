@@ -206,7 +206,7 @@ export default function AddPodcastPage() {
             <div>
               <input
                 type="text"
-                placeholder="Title"
+                placeholder="Show title (e.g. The Creative Blueprint Podcast)"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 style={commonInputStyle}
@@ -216,7 +216,7 @@ export default function AddPodcastPage() {
             {/* Title description Textarea */}
             <div>
               <textarea
-                placeholder="Title description"
+                placeholder="Show description (e.g. In-depth conversations with Eastern Nigeria brand architects, founders, and creators...)"
                 value={titleDescription}
                 onChange={(e) => setTitleDescription(e.target.value)}
                 style={{
@@ -308,7 +308,7 @@ export default function AddPodcastPage() {
               <div style={{ flex: 1 }}>
                 <input
                   type="text"
-                  placeholder="Episode title"
+                  placeholder="Episode title (e.g. Ep 01: Transforming Regional Brand Identity)"
                   value={episodeTitle}
                   onChange={(e) => setEpisodeTitle(e.target.value)}
                   style={commonInputStyle}
@@ -319,7 +319,7 @@ export default function AddPodcastPage() {
             {/* Episode description Textarea */}
             <div>
               <textarea
-                placeholder="Episode description"
+                placeholder="Episode description & show notes (e.g. In this inaugural episode we break down the creative roadmap...)"
                 value={episodeDescription}
                 onChange={(e) => setEpisodeDescription(e.target.value)}
                 style={{

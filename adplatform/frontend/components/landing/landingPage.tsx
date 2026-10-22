@@ -144,9 +144,9 @@ function HeroBackgroundCarousel() {
   const [idx, setIdx] = useState(0);
   const items = [
     { src: "/billboards/dennis-maliepaard-7b7wSvGn2W4-unsplash.jpg" },
-    { src: "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=800&q=80" },
+    { src: "/billboards/s-o-c-i-a-l-c-u-t-r0saAQNjEjQ-unsplash.jpg" },
     { src: "/billboards/lee-soo-hyun-Z5cyBi5CLPg-unsplash.jpg" },
-    { src: "https://images.unsplash.com/photo-1589903308904-1010c2294adc?w=800&q=80" },
+    { src: "/billboards/tania-mousinho-6tCgnd2xNfI-unsplash.jpg" },
     { src: "/billboards/pawel-czerwinski-_9dSF0Hwitw-unsplash.jpg" }
   ];
 
@@ -180,9 +180,9 @@ function ImageCarousel() {
   const [idx, setIdx] = useState(0);
   const items = [
     { src: "/billboards/dennis-maliepaard-7b7wSvGn2W4-unsplash.jpg", caption: "Premium Outdoor Displays" },
-    { src: "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=800&q=80", caption: "Professional Podcast Studio" },
+    { src: "/billboards/s-o-c-i-a-l-c-u-t-r0saAQNjEjQ-unsplash.jpg", caption: "Professional Podcast Studio" },
     { src: "/billboards/lee-soo-hyun-Z5cyBi5CLPg-unsplash.jpg", caption: "High-Traffic City Billboards" },
-    { src: "https://images.unsplash.com/photo-1589903308904-1010c2294adc?w=800&q=80", caption: "Soundproof Environment" },
+    { src: "/billboards/tania-mousinho-6tCgnd2xNfI-unsplash.jpg", caption: "Soundproof Environment" },
     { src: "/billboards/pawel-czerwinski-_9dSF0Hwitw-unsplash.jpg", caption: "Vibrant Digital Screens" }
   ];
 
@@ -536,7 +536,7 @@ export default function LandingPage() {
           </div>
           <div style={{ position: 'relative', perspective: 1000 }}>
             <div style={{ borderRadius: 32, overflow: 'hidden', boxShadow: '0 30px 60px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.05)', transform: 'rotateY(5deg) rotateX(2deg)' }}>
-              <img src="https://images.unsplash.com/photo-1511268559489-34b624fbfcf5?w=700&q=85&auto=format&fit=crop" alt="Digital billboard" style={{ width: '100%', height: 500, objectFit: 'cover', display: 'block' }} />
+              <img src="/billboard.jpg" alt="Digital billboard" style={{ width: '100%', height: 500, objectFit: 'cover', display: 'block' }} />
               <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,rgba(255,255,255,0.8) 0%,transparent 50%)' }} />
               <div style={{ position: 'absolute', bottom: 24, left: 24, right: 24 }}>
                 <div style={{ background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(12px)', border: '1px solid rgba(0,0,0,0.1)', borderRadius: 20, padding: '20px 24px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
@@ -558,7 +558,7 @@ export default function LandingPage() {
             <h2 style={{ fontSize: 'clamp(32px,3.5vw,52px)', fontWeight: 900, letterSpacing: '-1.5px', color: theme.color.text1, margin: 0 }}>Trusted by Umuahia businesses</h2>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%, 320px),1fr))', gap: 24 }}>
-            {[{ name: 'Chukwuemeka Agu', role: 'Owner, Agu Supermarket', text: "I listed my shop-front screen and had my first booking within the week. No phone calls, no negotiation — the ad was running. That's exactly what we needed.", color: '#D4AF37', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&q=80&auto=format&fit=crop&crop=face' }, { name: 'Ngozi Obi', role: 'Marketing Officer, Abia SME', text: 'We booked two slots near Umuahia market for a product launch, uploaded our graphic, and it went live the same day. The real-time data was a bonus we did not expect.', color: '#22c55e', avatar: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=80&h=80&q=80&auto=format&fit=crop&crop=face' }, { name: 'Ifeanyi Nwosu', role: 'Brand Manager, Nwosu & Sons', text: 'No minimum spend, no agency fees. We spent ₦15,000 on a one-week booking and got proper impression reports. Will definitely scale this up.', color: '#06B6D4', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&q=80&auto=format&fit=crop&crop=face' }].map(t => (
+            {[{ name: 'Chukwuemeka Agu', role: 'Owner, Agu Supermarket', text: "I listed my shop-front screen and had my first booking within the week. No phone calls, no negotiation — the ad was running. That's exactly what we needed.", color: '#D4AF37', avatar: '/audience/adam-udochi.png' }, { name: 'Ngozi Obi', role: 'Marketing Officer, Abia SME', text: 'We booked two slots near Umuahia market for a product launch, uploaded our graphic, and it went live the same day. The real-time data was a bonus we did not expect.', color: '#22c55e', avatar: '/audience/theresa-steward.png' }, { name: 'Ifeanyi Nwosu', role: 'Brand Manager, Nwosu & Sons', text: 'No minimum spend, no agency fees. We spent ₦15,000 on a one-week booking and got proper impression reports. Will definitely scale this up.', color: '#06B6D4', avatar: '/audience/kyle-fisher.png' }].map(t => (
               <motion.div key={t.name} whileHover={{ y: -4 }} style={{ background: 'rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 24, padding: '32px', backdropFilter: 'blur(16px)' }}>
                 <div style={{ display: 'flex', gap: 4, marginBottom: 16 }}>{[...Array(5)].map((_, i) => <FaStar key={i} size={16} color="#EAB308" />)}</div>
                 <p style={{ fontSize: 16, color: '#475569', lineHeight: 1.75, margin: '0 0 28px', fontStyle: 'italic', fontWeight: 500 }}>&ldquo;{t.text}&rdquo;</p>

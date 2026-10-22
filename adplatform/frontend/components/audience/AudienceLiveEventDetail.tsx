@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import api from '@/lib/api';
+import { useAuthStore } from '@/store/authStore';
 import { 
   X, 
   Trophy, 
@@ -34,18 +35,18 @@ interface CommentItem {
 const DEFAULT_LIVE_COMMENTS: CommentItem[] = [
   {
     id: 'c-1',
-    author: 'JOHN DOE',
-    role: 'Creator',
-    avatarUrl: '/audience/live-avatar-john-doe.png',
-    text: 'Nice event. Leaning more about the autonft ultra project is an eye opener for community members looking forward to massive reward like this',
-    likes: 8,
+    author: 'Sarah Jenkins',
+    role: 'Brand Producer',
+    avatarUrl: '/audience/theresa-steward.png',
+    text: 'Fantastic live experience! Seeing how Studio Arella links interactive creator audio directly to Umuahia billboard displays gives brand sponsors an unprecedented multi-touchpoint advantage.',
+    likes: 14,
     hasLiked: false,
     replies: [
       {
         id: 'c-1-1',
-        author: 'Hamilton',
-        avatarUrl: '/audience/live-avatar-john-doe.png',
-        text: 'Nice event. Leaning more about the autonft ultra project is an eye opener for community members looking forward to massive reward like this',
+        author: 'Hamilton Eze',
+        avatarUrl: '/audience/chukuemeka-azor.png',
+        text: 'Agreed Sarah! The real-time synchronized audio stream alongside the central city screens completely redefines DOOH advertising.',
         likes: 8,
         hasLiked: false,
       },
@@ -53,17 +54,18 @@ const DEFAULT_LIVE_COMMENTS: CommentItem[] = [
   },
   {
     id: 'c-2',
-    author: 'JOHN DOE',
-    role: 'Creator',
-    avatarUrl: '/audience/live-avatar-john-doe.png',
-    text: 'Nice event. Leaning more about the autonft ultra project is an eye opener for community members looking forward to massive reward like this',
-    likes: 8,
+    author: 'Marcus Thorne',
+    role: 'Audio Engineer',
+    avatarUrl: '/audience/kyle-fisher.png',
+    text: 'The low-latency stream audio fidelity during live audience interactions is super crisp. Great work on the sound stage setup!',
+    likes: 11,
     hasLiked: false,
     replies: [],
   },
 ];
 
 export default function AudienceLiveEventDetail({ onClose, eventId }: AudienceLiveEventDetailProps) {
+  const { user } = useAuthStore();
   const [activeEventId, setActiveEventId] = useState<string | null>(eventId || null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'comments'>('overview');
@@ -73,6 +75,13 @@ export default function AudienceLiveEventDetail({ onClose, eventId }: AudienceLi
   const [comments, setComments] = useState<CommentItem[]>(DEFAULT_LIVE_COMMENTS);
   const [commentInput, setCommentInput] = useState('');
   const [activeThumbnailIndex, setActiveThumbnailIndex] = useState(0);
+
+  const THUMBNAILS = [
+    { img: '/audience/podcast-video-thumb.png', label: 'Main Stream' },
+    { img: '/audience/mockup-sphinx.png', label: 'UI Concept' },
+    { img: '/audience/plant-podcast.png', label: 'Soundstage' },
+    { img: '/audience/podcast-scthon.png', label: 'Audience Q&A' },
+  ];
 
   // Optional: load dynamic messages from backend if available
   useEffect(() => {
@@ -153,8 +162,8 @@ export default function AudienceLiveEventDetail({ onClose, eventId }: AudienceLi
     const text = commentInput.trim();
     const newComment: CommentItem = {
       id: `c-${Date.now()}`,
-      author: 'JOHN DOE',
-      avatarUrl: '/audience/live-avatar-john-doe.png',
+      author: user?.name || 'Adam Udochi',
+      avatarUrl: user?.avatar || '/audience/adam-udochi.png',
       text,
       likes: 0,
       replies: [],
@@ -214,29 +223,42 @@ export default function AudienceLiveEventDetail({ onClose, eventId }: AudienceLi
       <div className="w-full flex flex-col md:flex-row gap-2 items-stretch">
         {/* ─── Left Panel: 700px Player & Thumbnails (height: 509.75px) ─── */}
         <div className="flex-1 max-w-[700px] flex flex-col gap-2">
-          {/* Main Video View: 700px x 393.75px (16:9 ratio, royal blue background #0047AB) */}
-          <div className="relative w-full aspect-video rounded-[4px] overflow-hidden bg-[#0047AB] flex items-center justify-center group shadow-sm">
+          {/* Main Video View: 700px x 393.75px with Real Studio Live Broadcast Media */}
+          <div className="relative w-full aspect-video rounded-[4px] overflow-hidden bg-gray-950 flex items-center justify-center group shadow-sm">
+            <img 
+              src={THUMBNAILS[activeThumbnailIndex]?.img || '/audience/podcast-video-thumb.png'} 
+              alt="Live Stream" 
+              className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-black/40" />
+            
+            {/* Live Indicator Badge */}
+            <div className="absolute top-4 left-4 z-20 flex items-center gap-2 px-3 py-1 bg-red-600/90 text-white rounded-full text-xs font-bold tracking-wider uppercase shadow-md">
+              <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+              LIVE BROADCAST
+            </div>
+
             {/* Big Center Play Circle Outline: 180px x 180px (Figma Spec) */}
             <button
               type="button"
               onClick={() => setIsPlaying(!isPlaying)}
-              className="relative z-10 w-[140px] sm:w-[180px] h-[140px] sm:h-[180px] flex items-center justify-center text-white/80 hover:text-white hover:scale-105 transition-all cursor-pointer"
+              className="relative z-10 w-[140px] sm:w-[180px] h-[140px] sm:h-[180px] flex items-center justify-center text-white/90 hover:text-white hover:scale-105 transition-all cursor-pointer"
               title={isPlaying ? 'Pause stream' : 'Play stream'}
             >
               <svg 
                 viewBox="0 0 180 180" 
                 fill="none" 
                 xmlns="http://www.w3.org/2000/svg"
-                className="w-full h-full drop-shadow-md"
+                className="w-full h-full drop-shadow-lg"
               >
-                <circle cx="90" cy="90" r="82" stroke="white" strokeWidth="15" strokeOpacity="0.8" />
+                <circle cx="90" cy="90" r="82" stroke="white" strokeWidth="15" strokeOpacity="0.85" />
                 {isPlaying ? (
                   <>
-                    <rect x="68" y="60" width="16" height="60" rx="4" fill="white" fillOpacity="0.8" />
-                    <rect x="96" y="60" width="16" height="60" rx="4" fill="white" fillOpacity="0.8" />
+                    <rect x="68" y="60" width="16" height="60" rx="4" fill="white" fillOpacity="0.9" />
+                    <rect x="96" y="60" width="16" height="60" rx="4" fill="white" fillOpacity="0.9" />
                   </>
                 ) : (
-                  <path d="M72 58L126 90L72 122V58Z" fill="white" fillOpacity="0.8" />
+                  <path d="M72 58L126 90L72 122V58Z" fill="white" fillOpacity="0.9" />
                 )}
               </svg>
             </button>
@@ -247,28 +269,27 @@ export default function AudienceLiveEventDetail({ onClose, eventId }: AudienceLi
             {/* Left Chevron Nav Button (32px x 64px, rgba(135,138,153,0.2)) */}
             <button
               type="button"
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-[32px] h-[64px] bg-[rgba(135,138,153,0.2)] hover:bg-[rgba(135,138,153,0.35)] text-white/80 flex items-center justify-center transition-colors rounded-r-sm cursor-pointer"
+              onClick={() => setActiveThumbnailIndex((prev) => (prev > 0 ? prev - 1 : THUMBNAILS.length - 1))}
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-[32px] h-[64px] bg-[rgba(135,138,153,0.4)] hover:bg-[rgba(135,138,153,0.6)] text-white flex items-center justify-center transition-colors rounded-r-sm cursor-pointer"
               title="Previous"
             >
-              <ChevronLeft size={22} className="text-white/80" />
+              <ChevronLeft size={22} className="text-white" />
             </button>
 
-            {/* 4 Thumbnails (177.78px x 100px, rounded 4px, royal blue) */}
-            {[0, 1, 2, 3].map((idx) => (
+            {/* 4 Thumbnails with real images */}
+            {THUMBNAILS.map((thumb, idx) => (
               <div
                 key={idx}
                 onClick={() => setActiveThumbnailIndex(idx)}
                 className={`relative w-[177.78px] h-[100px] shrink-0 rounded-[4px] overflow-hidden cursor-pointer transition-all ${
-                  activeThumbnailIndex === idx ? 'ring-2 ring-[#D4AF37]' : 'opacity-95 hover:opacity-100'
+                  activeThumbnailIndex === idx ? 'ring-2 ring-[#D4AF37] scale-[1.02]' : 'opacity-85 hover:opacity-100'
                 }`}
               >
-                <div className="w-full h-full bg-[#0047AB] flex items-center justify-center">
-                  {idx === 0 && (
-                    <svg width="50" height="50" viewBox="0 0 50 50" fill="none">
-                      <circle cx="25" cy="25" r="22" stroke="white" strokeWidth="4" strokeOpacity="0.8" />
-                      <path d="M20 16L34 25L20 34V16Z" fill="white" fillOpacity="0.8" />
-                    </svg>
-                  )}
+                <img src={thumb.img} alt={thumb.label} className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-black/30 flex items-end p-2">
+                  <span className="text-[11px] font-medium text-white truncate shadow-xs">
+                    {thumb.label}
+                  </span>
                 </div>
               </div>
             ))}

@@ -83,7 +83,7 @@ export const DEFAULT_DESIGNER_FOLLOWERS: FollowerProfile[] = [
     id: 'f4',
     name: 'Eduardo Russell',
     role: 'Full stack developer at Yandex',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80',
+    avatar: '/audience/brandon-wilson.png',
     isFollowing: true,
   },
   {
@@ -109,9 +109,9 @@ export const DEFAULT_DESIGNER_FOLLOWERS: FollowerProfile[] = [
   },
   {
     id: 'f8',
-    name: 'Eduardo Russell',
-    role: 'Full stack developer at Yandex',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80',
+    name: 'Dylan Field',
+    role: 'Design technologist at Figma',
+    avatar: '/audience/dylan-field.png',
     isFollowing: true,
   },
 ];

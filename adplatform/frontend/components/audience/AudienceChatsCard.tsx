@@ -127,8 +127,7 @@ export default function AudienceChatsCard({
                         isSelected ? 'opacity-60' : ''
                       }`}
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src =
-                          'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80';
+                        (e.target as HTMLImageElement).src = '/audience/darlene-black.png';
                       }}
                     />
                   )}

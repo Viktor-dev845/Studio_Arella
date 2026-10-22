@@ -67,15 +67,41 @@ import AudienceMembershipModal from './AudienceMembershipModal';
 import { useEffect } from 'react';
 import api from '@/lib/api';
 
+const DEFAULT_MEMBERSHIPS: MembershipItem[] = [
+  {
+    id: 'mem-1',
+    name: 'UI Design Membership',
+    description: 'Access exclusive design teardowns, source UI files, and private live design streams',
+    price: 1000,
+    membersCount: 115,
+    status: 'join',
+  },
+  {
+    id: 'mem-2',
+    name: 'Design Podcast Membership',
+    description: 'Early access to all podcast episodes, behind-the-scenes audio, and community Q&As',
+    price: 1500,
+    membersCount: 94,
+    status: 'join',
+  },
+  {
+    id: 'mem-3',
+    name: 'Studio Arella Creator VIP',
+    description: 'Full platform VIP pass including billboard ad credits and creator masterclasses',
+    price: 2500,
+    membersCount: 230,
+    status: 'join',
+  },
+];
+
 export default function AudienceMembershipsCard() {
-  const [memberships, setMemberships] = useState<MembershipItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [memberships, setMemberships] = useState<MembershipItem[]>(DEFAULT_MEMBERSHIPS);
+  const [isLoading, setIsLoading] = useState(false);
   const [selectedClub, setSelectedClub] = useState<MembershipItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Fetch real membership plans from backend
   useEffect(() => {
-    setIsLoading(true);
     api.get('/memberships/plans')
       .then((res) => {
         const plans = res.data?.plans || [];
@@ -93,10 +119,7 @@ export default function AudienceMembershipsCard() {
         }
       })
       .catch((err) => {
-        console.warn('Could not load membership plans from API:', err);
-      })
-      .finally(() => {
-        setIsLoading(false);
+        console.warn('Could not load membership plans from API, using default items:', err);
       });
   }, []);
 

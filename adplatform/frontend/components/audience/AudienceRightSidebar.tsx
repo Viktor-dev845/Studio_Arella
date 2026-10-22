@@ -220,7 +220,7 @@ export default function AudienceRightSidebar({
                       alt={creator.name} 
                       className="w-[38px] h-[38px] rounded-full object-cover shrink-0 border border-gray-100"
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80';
+                        (e.target as HTMLImageElement).src = '/audience/kyle-fisher.png';
                       }}
                     />
                     <div className="min-w-0">

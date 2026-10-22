@@ -118,7 +118,7 @@ function AudienceContent() {
   const [posts, setPosts] = useState<PostData[]>(() => {
     return queryView === 'bookmarks' ? DEFAULT_BOOKMARKED_POSTS : DEFAULT_FEED_POSTS;
   });
-  const [isLoadingPosts, setIsLoadingPosts] = useState<boolean>(true);
+  const [isLoadingPosts, setIsLoadingPosts] = useState<boolean>(false);
 
   // Sync menu state when URL query changes without cascading effect
   const [prevQueryView, setPrevQueryView] = useState(queryView);

@@ -155,9 +155,9 @@ export default function UserProfileOverview() {
   // Fallbacks to match the Figma design precisely if user data is missing
   const firstName = user?.first_name || 'Robert';
   const lastName = user?.last_name || 'Johnson';
-  const email = user?.email || 'robert.j@example.com';
+  const email = user?.email || 'robert.johnson@studioarella.com';
   const phone = user?.phone || '07025550122';
-  const avatarUrl = user?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80';
+  const avatarUrl = user?.avatar || '/audience/kyle-fisher.png';
 
   return (
     <DashboardLayout>

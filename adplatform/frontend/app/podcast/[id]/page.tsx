@@ -430,7 +430,37 @@ export default function PodcastDetailPage() {
                 {loadingShow ? (
                   <p style={{ fontSize: 12, color: theme.color.text4 }}>Loading episodes…</p>
                 ) : episodes.length === 0 ? (
-                  <p style={{ fontSize: 12, color: theme.color.text4 }}>No episodes published yet.</p>
+                  <div
+                    style={{
+                      padding: '32px 20px',
+                      background: '#FAFAFA',
+                      borderRadius: 12,
+                      border: '1px dashed #E2E8F0',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <p style={{ fontSize: 13, fontWeight: 600, color: theme.color.text1, margin: '0 0 6px' }}>
+                      No episodes published for this show yet.
+                    </p>
+                    <p style={{ fontSize: 12, color: theme.color.text4, margin: '0 0 14px' }}>
+                      Upload your first MP3 or WAV audio track to start streaming to your audience.
+                    </p>
+                    <Link
+                      href={`/podcast/${params.id}/episode/new`}
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color: '#EA580C',
+                        textDecoration: 'none',
+                        background: '#FFF7ED',
+                        padding: '8px 16px',
+                        borderRadius: 8,
+                        display: 'inline-block',
+                      }}
+                    >
+                      + Upload Episode 1
+                    </Link>
+                  </div>
                 ) : episodes.map((ep) => {
                   const duration = formatEpisodeDuration(ep.duration_seconds);
                   const uploaded = new Date(ep.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -446,13 +476,11 @@ export default function PodcastDetailPage() {
                           flexShrink: 0,
                         }}
                       >
-                        {ep.cover_url && (
-                          <img
-                            src={ep.cover_url}
-                            alt={`${ep.title} cover`}
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                          />
-                        )}
+                        <img
+                          src={ep.cover_url || show?.cover_url || '/audience/podcast-zara.png'}
+                          alt={`${ep.title} cover`}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
                       </div>
                       <div>
                         <p style={{ fontSize: 15, fontWeight: 700, color: theme.color.text1, margin: '0 0 4px' }}>

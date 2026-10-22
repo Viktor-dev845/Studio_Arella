@@ -272,8 +272,7 @@ export default function AudienceChatPageView() {
                           isSelected ? 'opacity-60' : ''
                         }`}
                         onError={(e) => {
-                          (e.target as HTMLImageElement).src =
-                            'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80';
+                          (e.target as HTMLImageElement).src = '/audience/adam-udochi.png';
                         }}
                       />
 
@@ -416,8 +415,7 @@ export default function AudienceChatPageView() {
                               alt="Sender"
                               className="w-[46px] h-[46px] rounded-[26px] object-cover shrink-0"
                               onError={(e) => {
-                                (e.target as HTMLImageElement).src =
-                                  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80';
+                                (e.target as HTMLImageElement).src = '/audience/kyle-fisher.png';
                               }}
                             />
                           )}

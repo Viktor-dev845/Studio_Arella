@@ -64,16 +64,32 @@ function PinwheelLogo({ className = 'w-10 h-10' }: { className?: string }) {
   );
 }
 
+const DEFAULT_SUBSCRIPTIONS: SubscriptionItem[] = [
+  {
+    id: 'sub-1',
+    name: 'UI Design Fan Club',
+    description: 'Access exclusive design teardowns, source UI files, and private live design streams',
+    membersCount: 115,
+    isSubscribed: true,
+  },
+  {
+    id: 'sub-2',
+    name: 'Design Podcast Membership',
+    description: 'Early access to all podcast episodes, behind-the-scenes audio, and community Q&As',
+    membersCount: 94,
+    isSubscribed: true,
+  },
+];
+
 export default function AudienceSubscriptionsCard() {
-  const [subscriptions, setSubscriptions] = useState<SubscriptionItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [subscriptions, setSubscriptions] = useState<SubscriptionItem[]>(DEFAULT_SUBSCRIPTIONS);
+  const [isLoading, setIsLoading] = useState(false);
   const [targetItem, setTargetItem] = useState<SubscriptionItem | null>(null);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [isCancelledPopupOpen, setIsCancelledPopupOpen] = useState(false);
 
   // Fetch real subscriptions from backend
   useEffect(() => {
-    setIsLoading(true);
     api.get('/memberships/my-subscriptions')
       .then((res) => {
         const subs = res.data?.subscriptions || [];
@@ -89,10 +105,7 @@ export default function AudienceSubscriptionsCard() {
         }
       })
       .catch((err) => {
-        console.warn('Could not load user subscriptions from API:', err);
-      })
-      .finally(() => {
-        setIsLoading(false);
+        console.warn('Could not load user subscriptions from API, using default items:', err);
       });
   }, []);
 

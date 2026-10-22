@@ -81,15 +81,15 @@ export default function AudiencePodcastPlayerView({
       id: 'd1',
       author: 'Chukuemeka Azor',
       avatar: '/audience/chukuemeka-azor.png',
-      text: 'Dolor eget eleifend in facilisis aliquam platea purus. Proin faucibus vulputate ipsum morbi enim. Adipiscing pharetra sed massa orci. Risus duis laoreet sed aenean volutpat.',
+      text: 'The breakdown of the mobile UI information architecture was eye-opening! Especially the discussion around balancing typography hierarchy with subtle audio feedback loops.',
       time: '2hrs ago',
     },
     {
       id: 'd2',
-      author: 'Chukuemeka Azor',
-      avatar: '/audience/chukuemeka-azor.png',
-      text: 'Dolor eget eleifend in facilisis aliquam platea purus. Proin faucibus vulputate ipsum morbi enim. Adipiscing pharetra sed massa orci. Risus duis laoreet sed aenean volutpat.',
-      time: '2hrs ago',
+      author: 'Theresa Steward',
+      avatar: '/audience/theresa-steward.png',
+      text: 'Loved the practical insights on design systems. Are there going to be downloadable Figma assets or templates shared for this audio companion episode?',
+      time: '1hr ago',
     },
   ]);
   const [newComment, setNewComment] = useState('');
@@ -295,7 +295,7 @@ export default function AudiencePodcastPlayerView({
               </h3>
 
               <p className="font-['DM_Sans',sans-serif] text-[16px] font-normal leading-[24px] tracking-[-0.02em] text-[#757575] m-0">
-                Dolor eget eleifend in facilisis aliquam platea purus. Proin faucibus vulputate ipsum morbi enim. Adipiscing pharetra sed massa orci. Adipiscing pharetra sed massa orci.
+                Explore the foundational principles of modern digital product design and brand storytelling. In this masterclass series, we break down design systems, user journeys, sound design integration, and how high-growth creators build lasting community connections through interactive audio.
               </p>
             </div>
           ) : (

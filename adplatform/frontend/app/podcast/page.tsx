@@ -21,6 +21,49 @@ interface PodcastShow {
   created_at?: string;
 }
 
+const CURATED_SHOWS: PodcastShow[] = [
+  {
+    id: 'creative-blueprint',
+    title: 'The Creative Blueprint',
+    description: 'Conversations with Eastern Nigeria top brand architects, designers, and digital makers.',
+    cover_url: '/audience/podcast-zara.png',
+    creator_name: 'Adam Udochi',
+    episode_count: 8,
+  },
+  {
+    id: 'eastern-pulse',
+    title: 'Eastern Pulse Audio',
+    description: 'Weekly breakdown of commerce, media trends, and consumer culture in Abia State.',
+    cover_url: '/audience/podcast-scthon.png',
+    creator_name: 'Kyle Fisher',
+    episode_count: 14,
+  },
+  {
+    id: 'tech-voices-umuahia',
+    title: 'Tech Voices Umuahia',
+    description: 'Spotlighting founders and creative builders scaling regional startups from the South-East.',
+    cover_url: '/audience/podcast-drozd.png',
+    creator_name: 'Theresa Steward',
+    episode_count: 6,
+  },
+  {
+    id: 'soundscapes-session',
+    title: 'Soundscapes & Frequencies',
+    description: 'Studio Arella live acoustic sessions, audio mixing masterclasses, and artist profiles.',
+    cover_url: '/audience/mockup-sphinx.png',
+    creator_name: 'Studio Arella Sound Team',
+    episode_count: 12,
+  },
+  {
+    id: 'growth-and-grit',
+    title: 'Growth & Grit Marketing',
+    description: 'Practical playbooks for outdoor billboard reach, retail conversions, and audience growth.',
+    cover_url: '/audience/plant-podcast.png',
+    creator_name: 'Brandon Wilson',
+    episode_count: 5,
+  },
+];
+
 export default function PodcastsPage() {
   const [trendingView, setTrendingView] = useState<'board' | 'list'>('board');
   const [allView, setAllView] = useState<'board' | 'list'>('board');
@@ -48,7 +91,7 @@ export default function PodcastsPage() {
   }, []);
 
   const renderCard = (pod: PodcastShow) => {
-    const img = pod.cover_url || 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=500&auto=format&fit=crop&q=80';
+    const img = pod.cover_url || '/audience/podcast-zara.png';
     const epCount = pod.episode_count ? `${pod.episode_count} episode${Number(pod.episode_count) === 1 ? '' : 's'}` : '0 episodes';
     const subtitle = pod.creator_name ? `By ${pod.creator_name}` : (pod.description || 'Studio Arella');
 
@@ -131,7 +174,7 @@ export default function PodcastsPage() {
   };
 
   const renderListItem = (pod: PodcastShow) => {
-    const img = pod.cover_url || 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=500&auto=format&fit=crop&q=80';
+    const img = pod.cover_url || '/audience/podcast-zara.png';
     const epCount = pod.episode_count ? `${pod.episode_count} episode${Number(pod.episode_count) === 1 ? '' : 's'}` : '0 episodes';
     const subtitle = pod.creator_name ? `By ${pod.creator_name}` : (pod.description || 'Studio Arella');
 
@@ -178,8 +221,8 @@ export default function PodcastsPage() {
     );
   };
 
-  const displayTrending = myShows.length > 0 ? myShows : allShows.slice(0, 5);
-  const displayAll = allShows.length > 0 ? allShows : myShows;
+  const displayTrending = myShows.length > 0 ? myShows : allShows.length > 0 ? allShows.slice(0, 5) : CURATED_SHOWS;
+  const displayAll = allShows.length > 0 ? allShows : myShows.length > 0 ? myShows : CURATED_SHOWS;
 
   return (
     <DashboardLayout>

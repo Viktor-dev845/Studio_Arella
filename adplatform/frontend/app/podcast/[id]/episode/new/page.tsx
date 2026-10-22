@@ -303,7 +303,7 @@ export default function AddNewEpisodePage() {
               <div style={{ flex: 1 }}>
                 <input
                   type="text"
-                  placeholder="Episode title"
+                  placeholder="Episode title (e.g. Ep 02: Scaling Production Quality on a Budget)"
                   value={episodeTitle}
                   onChange={(e) => setEpisodeTitle(e.target.value)}
                   style={commonInputStyle}
@@ -314,7 +314,7 @@ export default function AddNewEpisodePage() {
             {/* Episode description Textarea */}
             <div>
               <textarea
-                placeholder="Episode description"
+                placeholder="Episode description & show notes (e.g. Key topics covered, timestamps, and guest insights...)"
                 value={episodeDescription}
                 onChange={(e) => setEpisodeDescription(e.target.value)}
                 style={{
