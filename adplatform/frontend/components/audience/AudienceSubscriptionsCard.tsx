@@ -64,22 +64,7 @@ function PinwheelLogo({ className = 'w-10 h-10' }: { className?: string }) {
   );
 }
 
-const DEFAULT_SUBSCRIPTIONS: SubscriptionItem[] = [
-  {
-    id: 'sub-1',
-    name: 'UI Design Fan Club',
-    description: 'Access exclusive design teardowns, source UI files, and private live design streams',
-    membersCount: 115,
-    isSubscribed: true,
-  },
-  {
-    id: 'sub-2',
-    name: 'Design Podcast Membership',
-    description: 'Early access to all podcast episodes, behind-the-scenes audio, and community Q&As',
-    membersCount: 94,
-    isSubscribed: true,
-  },
-];
+const DEFAULT_SUBSCRIPTIONS: SubscriptionItem[] = [];
 
 export default function AudienceSubscriptionsCard() {
   const [subscriptions, setSubscriptions] = useState<SubscriptionItem[]>(DEFAULT_SUBSCRIPTIONS);

@@ -42,20 +42,34 @@ export default function UserProfileOverview() {
   const [showReportSuccessModal, setShowReportSuccessModal] = useState(false);
   const [showDeactivateModal, setShowDeactivateModal] = useState(false);
 
-  const [personalForm, setPersonalForm] = useState({ first_name: '', last_name: '', phone: '', email: '', location: '' });
-  const [businessForm, setBusinessForm] = useState({ business_name: '', email: '', phone: '', location: '' });
+  const [personalForm, setPersonalForm] = useState({ 
+    first_name: '', 
+    last_name: '', 
+    phone: '', 
+    email: '', 
+    location: '', 
+    bio: '' 
+  });
+  const [businessForm, setBusinessForm] = useState({ 
+    business_name: '', 
+    email: '', 
+    phone: '', 
+    location: '' 
+  });
   const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
   const [reportForm, setReportForm] = useState({ message: '' });
   const [sessions, setSessions] = useState<any[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (user) {
       setPersonalForm({
-        first_name: user.first_name || user.name?.split(' ')[0] || '',
-        last_name: user.last_name || user.name?.split(' ')[1] || '',
+        first_name: user.first_name || (user.name ? user.name.split(' ')[0] : '') || '',
+        last_name: user.last_name || (user.name ? user.name.split(' ').slice(1).join(' ') : '') || '',
         phone: user.phone || '',
         email: user.email || '',
-        location: user.location || ''
+        location: user.location || '',
+        bio: user.bio || ''
       });
       setBusinessForm({
         business_name: user.business_name || '',
@@ -67,13 +81,18 @@ export default function UserProfileOverview() {
   }, [user, editingMode]);
 
   const handleSaveProfile = async (type: 'personal' | 'business') => {
+    setIsSaving(true);
     try {
       const payload = type === 'personal' ? personalForm : businessForm;
       await api.put('/auth/profile', payload);
-      useAuthStore.getState().checkAuth();
+      await useAuthStore.getState().checkAuth();
+      setShowSuccessModal(true);
       setEditingMode(null);
     } catch (err) {
       console.error('Failed to update profile', err);
+      alert('Failed to update profile. Please try again.');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -152,12 +171,20 @@ export default function UserProfileOverview() {
     promo: false
   });
 
-  // Fallbacks to match the Figma design precisely if user data is missing
-  const firstName = user?.first_name || 'Robert';
-  const lastName = user?.last_name || 'Johnson';
-  const email = user?.email || 'robert.johnson@studioarella.com';
-  const phone = user?.phone || '07025550122';
-  const avatarUrl = user?.avatar || '/audience/kyle-fisher.png';
+  // User profile details with real user data or clean empty state
+  const firstName = user?.first_name || (user?.name ? user.name.split(' ')[0] : '') || '';
+  const lastName = user?.last_name || (user?.name ? user.name.split(' ').slice(1).join(' ') : '') || '';
+  const fullName = [firstName, lastName].filter(Boolean).join(' ') || user?.name || 'Studio Arella User';
+  const email = user?.email || '—';
+  const phone = user?.phone || '—';
+  const userRole = user?.role === 'screen_owner' 
+    ? 'Media Partner' 
+    : user?.role === 'admin' 
+    ? 'Administrator' 
+    : user?.role 
+    ? (user.role.charAt(0).toUpperCase() + user.role.slice(1)) 
+    : 'Audience Member';
+  const avatarUrl = user?.avatar;
 
   return (
     <DashboardLayout>
@@ -170,22 +197,30 @@ export default function UserProfileOverview() {
           {/* Avatar & Header Section */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
             <div className="flex items-center gap-6">
-              <img 
-                src={avatarUrl} 
-                alt="Profile Avatar" 
-                className="w-[100px] h-[100px] rounded-[10px] object-cover"
-              />
+              {avatarUrl ? (
+                <img 
+                  src={avatarUrl} 
+                  alt={fullName} 
+                  className="w-[100px] h-[100px] rounded-[10px] object-cover border border-gray-100 shadow-sm"
+                />
+              ) : (
+                <div className="w-[100px] h-[100px] rounded-[10px] bg-[#FAF5E6] border border-[#D4AF37]/30 flex items-center justify-center font-bold text-[#D4AF37] text-3xl shadow-xs">
+                  {fullName.charAt(0).toUpperCase()}
+                </div>
+              )}
               <div className="flex flex-col gap-2">
-                <h2 className="text-[24px] font-semibold text-[#16151C]">{`${firstName} ${lastName}`}</h2>
+                <h2 className="text-[24px] font-semibold text-[#16151C]">{fullName}</h2>
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-2.5 text-[#16151C] text-[16px] font-light">
                     <Briefcase size={20} strokeWidth={1.5} />
-                    <span>Creator</span>
+                    <span>{userRole}</span>
                   </div>
-                  <div className="flex items-center gap-2.5 text-[#16151C] text-[16px] font-light">
-                    <Mail size={20} strokeWidth={1.5} />
-                    <span>{email}</span>
-                  </div>
+                  {email !== '—' && (
+                    <div className="flex items-center gap-2.5 text-[#16151C] text-[16px] font-light">
+                      <Mail size={20} strokeWidth={1.5} />
+                      <span>{email}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -305,52 +340,40 @@ export default function UserProfileOverview() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
                   <div className="border-b border-[#A2A1A8]/10 pb-2">
                     <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">First Name</label>
-                    <div className="text-[16px] text-[#16151C] font-light">{firstName}</div>
+                    <div className="text-[16px] text-[#16151C] font-light">{firstName || '—'}</div>
                   </div>
                   <div className="border-b border-[#A2A1A8]/10 pb-2">
                     <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Last Name</label>
-                    <div className="text-[16px] text-[#16151C] font-light">{lastName}</div>
+                    <div className="text-[16px] text-[#16151C] font-light">{lastName || '—'}</div>
                   </div>
                   
                   <div className="border-b border-[#A2A1A8]/10 pb-2">
                     <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Mobile Number</label>
-                    <div className="text-[16px] text-[#16151C] font-light">{phone}</div>
+                    <div className="text-[16px] text-[#16151C] font-light">{phone || '—'}</div>
                   </div>
                   <div className="border-b border-[#A2A1A8]/10 pb-2">
                     <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Email Address</label>
-                    <div className="text-[16px] text-[#16151C] font-light">{email}</div>
+                    <div className="text-[16px] text-[#16151C] font-light">{email || '—'}</div>
                   </div>
 
                   <div className="border-b border-[#A2A1A8]/10 pb-2">
-                    <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Date of Birth</label>
-                    <div className="text-[16px] text-[#16151C] font-light">July 14, 1995</div>
+                    <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Location</label>
+                    <div className="text-[16px] text-[#16151C] font-light">{user?.location || '—'}</div>
                   </div>
                   <div className="border-b border-[#A2A1A8]/10 pb-2">
-                    <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Marital Status</label>
-                    <div className="text-[16px] text-[#16151C] font-light">Married</div>
+                    <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Bio</label>
+                    <div className="text-[16px] text-[#16151C] font-light">{user?.bio || '—'}</div>
                   </div>
 
                   <div className="border-b border-[#A2A1A8]/10 pb-2">
-                    <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Gender</label>
-                    <div className="text-[16px] text-[#16151C] font-light">Female</div>
+                    <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Account Role</label>
+                    <div className="text-[16px] text-[#16151C] font-light">{userRole}</div>
                   </div>
                   <div className="border-b border-[#A2A1A8]/10 pb-2">
-                    <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Nationality</label>
-                    <div className="text-[16px] text-[#16151C] font-light">Nigerian</div>
-                  </div>
-
-                  <div className="border-b border-[#A2A1A8]/10 pb-2">
-                    <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Address</label>
-                    <div className="text-[16px] text-[#16151C] font-light">24, Royal Ln. Isi Court, Umuahia</div>
-                  </div>
-                  <div className="border-b border-[#A2A1A8]/10 pb-2">
-                    <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">City</label>
-                    <div className="text-[16px] text-[#16151C] font-light">Umuahia</div>
-                  </div>
-
-                  <div className="border-b border-[#A2A1A8]/10 pb-2 md:col-span-1">
-                    <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">State</label>
-                    <div className="text-[16px] text-[#16151C] font-light">Abia</div>
+                    <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Member Since</label>
+                    <div className="text-[16px] text-[#16151C] font-light">
+                      {user?.created_at ? new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '—'}
+                    </div>
                   </div>
                 </div>
               )}
@@ -359,25 +382,20 @@ export default function UserProfileOverview() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
                   <div className="border-b border-[#A2A1A8]/10 pb-2">
                     <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Business Name</label>
-                    <div className="text-[16px] text-[#16151C] font-light">Acme Digital Ltd</div>
+                    <div className="text-[16px] text-[#16151C] font-light">{user?.business_name || '—'}</div>
                   </div>
                   <div className="border-b border-[#A2A1A8]/10 pb-2">
-                    <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Business email</label>
-                    <div className="text-[16px] text-[#16151C] font-light">hello@acme.com</div>
+                    <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Business Email</label>
+                    <div className="text-[16px] text-[#16151C] font-light">{user?.business_email || (user?.business_name ? user?.email : '') || '—'}</div>
                   </div>
                   
                   <div className="border-b border-[#A2A1A8]/10 pb-2">
                     <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Business Phone</label>
-                    <div className="text-[16px] text-[#16151C] font-light">Nil</div>
+                    <div className="text-[16px] text-[#16151C] font-light">{user?.phone || '—'}</div>
                   </div>
                   <div className="border-b border-[#A2A1A8]/10 pb-2">
-                    <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Business Address</label>
-                    <div className="text-[16px] text-[#16151C] font-light">Nil</div>
-                  </div>
-
-                  <div className="border-b border-[#A2A1A8]/10 pb-2">
-                    <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Industry</label>
-                    <div className="text-[16px] text-[#16151C] font-light">Nil</div>
+                    <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Business Location</label>
+                    <div className="text-[16px] text-[#16151C] font-light">{user?.location || '—'}</div>
                   </div>
                 </div>
               )}
@@ -764,49 +782,31 @@ export default function UserProfileOverview() {
                 <input 
                   type="text" 
                   placeholder="Business name"
+                  value={businessForm.business_name}
+                  onChange={(e) => setBusinessForm(prev => ({ ...prev, business_name: e.target.value }))}
                   className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37]"
                 />
                 <input 
                   type="email" 
                   placeholder="Business email"
+                  value={businessForm.email}
+                  onChange={(e) => setBusinessForm(prev => ({ ...prev, email: e.target.value }))}
                   className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37]"
                 />
                 <input 
                   type="tel" 
                   placeholder="Business phone"
+                  value={businessForm.phone}
+                  onChange={(e) => setBusinessForm(prev => ({ ...prev, phone: e.target.value }))}
                   className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37]"
                 />
                 <input 
                   type="text" 
-                  placeholder="Business address"
+                  placeholder="Business location"
+                  value={businessForm.location}
+                  onChange={(e) => setBusinessForm(prev => ({ ...prev, location: e.target.value }))}
                   className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37]"
                 />
-                
-                <div className="relative">
-                  <select 
-                    className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#A2A1A8]/80 appearance-none outline-none focus:border-[#D4AF37]"
-                    defaultValue=""
-                  >
-                    <option value="" disabled>Industry</option>
-                    <option value="tech" className="text-[#16151C]">Tech</option>
-                    <option value="advertising" className="text-[#16151C]">Advertising</option>
-                    <option value="finance" className="text-[#16151C]">Finance</option>
-                  </select>
-                  <ChevronDown size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#16151C]" />
-                </div>
-
-                <div className="relative">
-                  <select 
-                    className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#A2A1A8]/80 appearance-none outline-none focus:border-[#D4AF37]"
-                    defaultValue=""
-                  >
-                    <option value="" disabled>State</option>
-                    <option value="abia" className="text-[#16151C]">Abia</option>
-                    <option value="adamawa" className="text-[#16151C]">Adamawa</option>
-                    <option value="akwa_ibom" className="text-[#16151C]">Akwa Ibom</option>
-                  </select>
-                  <ChevronDown size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#16151C]" />
-                </div>
               </div>
 
               <div className="flex items-center gap-5">
@@ -817,10 +817,11 @@ export default function UserProfileOverview() {
                   Cancel
                 </button>
                 <button 
-                  onClick={() => setEditingMode(null)}
-                  className="h-[40px] px-8 rounded-[6px] bg-[#D4AF37] text-[14px] text-black hover:bg-[#c29f31] transition-colors flex items-center justify-center min-w-[116px]"
+                  onClick={() => handleSaveProfile('business')}
+                  disabled={isSaving}
+                  className="h-[40px] px-8 rounded-[6px] bg-[#D4AF37] text-[14px] text-black hover:bg-[#c29f31] transition-colors flex items-center justify-center min-w-[116px] cursor-pointer disabled:opacity-50"
                 >
-                  Save
+                  {isSaving ? 'Saving...' : 'Save'}
                 </button>
               </div>
             </div>
@@ -837,85 +838,50 @@ export default function UserProfileOverview() {
                 <h2 className="text-[16px] font-semibold text-[#16151C]">Edit profile (Personal information)</h2>
               </div>
 
-              <div className="mb-10">
-                <div className="w-[100px] h-[100px] rounded-[10px] border border-dashed border-[#A2A1A8]/60 bg-[#A2A1A8]/5 flex flex-col items-center justify-center mb-3">
-                  <Camera size={24} strokeWidth={1.5} className="text-[#16151C]" />
-                </div>
-                <div className="text-[17px] font-light text-[#16151C]">Add profile photo</div>
-              </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 mb-10">
                 <input 
                   type="text" 
                   placeholder="First name"
+                  value={personalForm.first_name}
+                  onChange={(e) => setPersonalForm(prev => ({ ...prev, first_name: e.target.value }))}
                   className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37]"
                 />
                 <input 
                   type="text" 
                   placeholder="Last name"
+                  value={personalForm.last_name}
+                  onChange={(e) => setPersonalForm(prev => ({ ...prev, last_name: e.target.value }))}
                   className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37]"
                 />
                 <input 
                   type="tel" 
                   placeholder="Mobile number"
+                  value={personalForm.phone}
+                  onChange={(e) => setPersonalForm(prev => ({ ...prev, phone: e.target.value }))}
                   className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37]"
                 />
                 <input 
                   type="email" 
                   placeholder="Email address"
-                  className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37]"
+                  value={personalForm.email}
+                  disabled
+                  title="Email cannot be changed directly"
+                  className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-[#A2A1A8]/5 text-[17px] font-light text-[#16151C]/70 placeholder:text-[#A2A1A8]/80 outline-none cursor-not-allowed"
                 />
-                
-                <div className="relative">
-                  <select 
-                    className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#A2A1A8]/80 appearance-none outline-none focus:border-[#D4AF37]"
-                    defaultValue=""
-                  >
-                    <option value="" disabled>Gender</option>
-                    <option value="male" className="text-[#16151C]">Male</option>
-                    <option value="female" className="text-[#16151C]">Female</option>
-                    <option value="other" className="text-[#16151C]">Other</option>
-                  </select>
-                  <ChevronDown size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#16151C]" />
-                </div>
-                
                 <input 
                   type="text" 
-                  placeholder="Nationality (e.g Nigerian)"
+                  placeholder="Location / Address"
+                  value={personalForm.location}
+                  onChange={(e) => setPersonalForm(prev => ({ ...prev, location: e.target.value }))}
                   className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37]"
                 />
-
                 <input 
                   type="text" 
-                  placeholder="Address"
+                  placeholder="Bio"
+                  value={personalForm.bio}
+                  onChange={(e) => setPersonalForm(prev => ({ ...prev, bio: e.target.value }))}
                   className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37]"
                 />
-
-                <div className="relative">
-                  <select 
-                    className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#A2A1A8]/80 appearance-none outline-none focus:border-[#D4AF37]"
-                    defaultValue=""
-                  >
-                    <option value="" disabled>City</option>
-                    <option value="umuahia" className="text-[#16151C]">Umuahia</option>
-                    <option value="aba" className="text-[#16151C]">Aba</option>
-                    <option value="lagos" className="text-[#16151C]">Lagos</option>
-                  </select>
-                  <ChevronDown size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#16151C]" />
-                </div>
-
-                <div className="relative">
-                  <select 
-                    className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#A2A1A8]/80 appearance-none outline-none focus:border-[#D4AF37]"
-                    defaultValue=""
-                  >
-                    <option value="" disabled>State</option>
-                    <option value="abia" className="text-[#16151C]">Abia</option>
-                    <option value="adamawa" className="text-[#16151C]">Adamawa</option>
-                    <option value="akwa_ibom" className="text-[#16151C]">Akwa Ibom</option>
-                  </select>
-                  <ChevronDown size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#16151C]" />
-                </div>
               </div>
 
               <div className="flex items-center gap-5">
@@ -926,10 +892,11 @@ export default function UserProfileOverview() {
                   Cancel
                 </button>
                 <button 
-                  onClick={() => setEditingMode(null)}
-                  className="h-[40px] px-8 rounded-[6px] bg-[#D4AF37] text-[14px] text-black hover:bg-[#c29f31] transition-colors flex items-center justify-center min-w-[116px]"
+                  onClick={() => handleSaveProfile('personal')}
+                  disabled={isSaving}
+                  className="h-[40px] px-8 rounded-[6px] bg-[#D4AF37] text-[14px] text-black hover:bg-[#c29f31] transition-colors flex items-center justify-center min-w-[116px] cursor-pointer disabled:opacity-50"
                 >
-                  Save
+                  {isSaving ? 'Saving...' : 'Save'}
                 </button>
               </div>
             </div>

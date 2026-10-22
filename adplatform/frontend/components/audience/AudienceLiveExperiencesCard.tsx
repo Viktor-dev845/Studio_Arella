@@ -62,29 +62,7 @@ function PinwheelLogo({ className = 'w-10 h-10' }: { className?: string }) {
   );
 }
 
-const DEFAULT_LIVE_EXPERIENCES: LiveExperienceItem[] = [
-  {
-    id: 'exp-1',
-    name: 'Autonft Ultra Audio Summit',
-    description: 'A live interactive deep-dive into digital media monetization and billboard screen synchronization',
-    participantsCount: 18,
-    isJoined: true,
-  },
-  {
-    id: 'exp-2',
-    name: 'UI/UX Design Systems Live Review',
-    description: 'Live critique of audience mobile concepts and layout hierarchies with Dmitry & Adam',
-    participantsCount: 42,
-    isJoined: false,
-  },
-  {
-    id: 'exp-3',
-    name: 'Sound Branding & Sonic Identity',
-    description: 'Exploring how modern creators craft audio signatures for podcasts and broadcast networks',
-    participantsCount: 29,
-    isJoined: false,
-  },
-];
+const DEFAULT_LIVE_EXPERIENCES: LiveExperienceItem[] = [];
 
 interface AudienceLiveExperiencesCardProps {
   onJoinEvent?: (id: string) => void;
