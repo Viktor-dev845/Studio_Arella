@@ -239,7 +239,7 @@ export default function ChatPage() {
             style={{
               flex: 1,
               width: '100%',
-              // height: '100%',
+              height: '100vh',
               minHeight: 0,
               background: '#EAEAEA',
               borderRadius: 20,
