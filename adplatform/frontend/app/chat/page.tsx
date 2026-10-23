@@ -2,15 +2,14 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, Pencil, RotateCcw, User, Sparkles, Send } from 'lucide-react';
+import { ChevronLeft, Pencil, RotateCcw, User, Sparkles } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { PageTransition } from '@/components/ui/Animations';
 import { useToast } from '@/components/ui/ToastProvider';
 import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/api';
-import { theme } from '@/lib/theme';
 
-const F = theme.font.body;
+const DM_SANS = "'DM Sans', sans-serif";
 
 interface Message {
   id: string;
@@ -19,7 +18,7 @@ interface Message {
   timestamp: string;
 }
 
-// Gentle audio chime on completion
+// Gentle pleasant audio chime on reply completion
 function playChime() {
   try {
     const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
@@ -42,8 +41,7 @@ function playChime() {
   }
 }
 
-// The API is stateless — we resend the whole conversation as {role, content}
-// pairs on every turn, same shape the Anthropic Messages API expects.
+// Transform history to format expected by backend /api/chat
 function toApiHistory(msgs: Message[]) {
   return msgs.map((m) => ({ role: m.sender === 'user' ? 'user' : 'assistant', content: m.text }));
 }
@@ -75,13 +73,13 @@ export default function ChatPage() {
     {
       id: 'init-u',
       sender: 'user',
-      text: 'Hello Arella!',
+      text: 'Nice!',
       timestamp: 'Just now',
     },
     {
       id: 'init-a',
       sender: 'arella',
-      text: `👋 **Hi ${firstName}! I'm Arella, your AI copilot for Studio Arella in Umuahia.**\n\nI can assist you across all our media services:\n\n1. **Digital LED Screen Ads**: Check prime billboard slots, rates, and schedule your video ads at Bems Junction.\n2. **4K Podcast Studio**: Reserve acoustic soundproof studio slots, multi-camera setups, and sound engineer support.\n3. **Wallet & Billing**: Instant wallet funding, receipt verification, and payment monitoring.\n4. **Creative Design Services**: Commission high-converting motion graphics, flyers, and branding tailored for your business.\n\nWhat would you like to explore or book today?`,
+      text: `Artificial Intelligence (AI) offers numerous advantages and has the potential to revolutionize various aspects of our lives. Here are some key advantages of AI:\n\n1. Automation: AI can automate repetitive and mundane tasks, saving time and effort for humans. It can handle large volumes of data, perform complex calculations, and execute tasks with precision and consistency. This automation leads to increased productivity and efficiency in various industries.\n\n2. Decision-making: AI systems can analyze vast amounts of data, identify patterns, and make informed decisions based on that analysis. This ability is particularly useful in complex scenarios where humans may struggle to process large datasets or where quick and accurate decisions are crucial.\n\n3. Improved accuracy: AI algorithms can achieve high levels of accuracy and precision in tasks such as image recognition, natural language processing, and data analysis. They can eliminate human errors caused by fatigue, distractions, or bias, leading to more reliable and consistent results.\n\n4. Continuous operation: AI systems can work tirelessly without the need for breaks, resulting in uninterrupted 24/7 operations. This capability is especially beneficial in applications like customer support chatbots, manufacturing processes, and surveillance systems.`,
       timestamp: 'Just now',
     },
   ]);
@@ -89,7 +87,7 @@ export default function ChatPage() {
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
 
-  // Auto-scroll to latest message
+  // Auto-scroll to latest message inside the conversation area
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
@@ -160,210 +158,352 @@ export default function ChatPage() {
   return (
     <DashboardLayout>
       <PageTransition>
-        <div style={{ fontFamily: F, maxWidth: 1040, margin: '0 auto', padding: '16px 20px 32px' }}>
-          
+        {/* Full-screen fitting outer wrapper without double scrollbars */}
+        <div
+          style={{
+            fontFamily: DM_SANS,
+            width: '100%',
+            height: 'calc(100vh - 84px)',
+            display: 'flex',
+            flexDirection: 'column',
+            padding: '12px 24px 16px',
+            boxSizing: 'border-box',
+          }}
+        >
           {/* Header Navigation */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 16,
+              marginBottom: 10,
+              flexShrink: 0,
+            }}
+          >
             <Link
               href="/dashboard"
-              className="inline-flex items-center gap-1.5 text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white transition-colors text-xs font-semibold"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 4,
+                color: '#718096',
+                textDecoration: 'none',
+                fontSize: 13,
+                fontWeight: 600,
+                fontFamily: DM_SANS,
+                transition: 'color 0.2s',
+              }}
+              className="hover:text-black dark:hover:text-white"
             >
-              <ChevronLeft size={16} /> Back to Dashboard
+              <ChevronLeft size={16} /> Back
             </Link>
-            <div className="flex items-center gap-2">
-              <h1 className="text-[15px] font-bold text-neutral-900 dark:text-white font-display">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <h1
+                style={{
+                  fontFamily: DM_SANS,
+                  fontSize: 16,
+                  fontWeight: 700,
+                  color: '#121212',
+                  margin: 0,
+                }}
+                className="dark:text-white"
+              >
                 Arella AI Chat
               </h1>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#CCA336]/15 text-[#CCA336] text-[10px] font-bold uppercase tracking-wider">
+              <span
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 3,
+                  padding: '2px 8px',
+                  borderRadius: 20,
+                  background: 'rgba(212, 175, 55, 0.15)',
+                  color: '#D4AF37',
+                  fontSize: 10,
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                }}
+              >
                 <Sparkles size={10} /> Copilot
               </span>
             </div>
           </div>
 
-          {/* Outer Chat Box Card (Matching Figma Frame 2121459599) */}
+          {/* ─── EXACT FIGMA LAYOUT CONTAINER (background: #EAEAEA, border-radius: 20px) ─── */}
           <div
-            className="bg-[#F1F1F1] dark:bg-[#161618] border border-neutral-200/60 dark:border-white/10"
             style={{
-              borderRadius: 24,
-              padding: '32px 36px 24px',
-              minHeight: 'calc(100vh - 150px)',
+              flex: 1,
+              width: '100%',
+              minHeight: 0,
+              background: '#EAEAEA',
+              borderRadius: 20,
+              padding: '22px 28px 16px',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
-              boxShadow: '0 2px 16px rgba(0,0,0,0.03)',
+              boxShadow: '0 4px 24px rgba(0,0,0,0.03)',
+              boxSizing: 'border-box',
+              position: 'relative',
+              overflow: 'hidden',
             }}
+            className="dark:bg-[#18181B] dark:border dark:border-white/10"
           >
-            {/* Conversation Content Area */}
-            <div style={{ maxWidth: 760, margin: '0 auto', width: '100%', flex: 1, display: 'flex', flexDirection: 'column' }}>
-              
-              {/* Centered 'Your response' subtitle */}
-              <p
-                className="text-neutral-400 dark:text-neutral-500"
-                style={{
-                  textAlign: 'center',
-                  fontSize: 12,
-                  fontWeight: 600,
-                  margin: '0 0 20px',
-                  letterSpacing: '0.02em',
-                }}
-              >
-                Your response
-              </p>
+            {/* Centered 'Your response' subtitle */}
+            <p
+              style={{
+                fontFamily: DM_SANS,
+                fontStyle: 'normal',
+                fontWeight: 500,
+                fontSize: 14,
+                lineHeight: '26px',
+                textAlign: 'center',
+                color: '#718096',
+                margin: '0 0 10px',
+                flexShrink: 0,
+              }}
+            >
+              Your response
+            </p>
 
-              {/* Messages Flow */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                {messages.map((m) => {
-                  if (m.sender === 'user') {
-                    return (
-                      <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                        {/* User Circular Avatar */}
-                        <div
-                          className="bg-white dark:bg-[#202024] border border-neutral-200 dark:border-white/10"
-                          style={{
-                            width: 36,
-                            height: 36,
-                            borderRadius: '50%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            flexShrink: 0,
-                            boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
-                          }}
-                        >
-                          <User size={18} color="#CCA336" />
-                        </div>
-
-                        {/* User Input Bubble with Edit Pencil */}
-                        <div
-                          className="border border-neutral-300/80 dark:border-white/15 bg-white/60 dark:bg-white/5 text-neutral-800 dark:text-neutral-200"
-                          style={{
-                            flex: 1,
-                            borderRadius: 24,
-                            padding: '12px 18px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            fontSize: 14,
-                            fontWeight: 500,
-                          }}
-                        >
-                          <span>{m.text}</span>
-                          <button
-                            type="button"
-                            onClick={() => handleEditPrompt(m.text)}
-                            className="text-neutral-400 hover:text-neutral-800 dark:hover:text-white transition-colors p-1 rounded-full cursor-pointer"
-                            title="Edit prompt in input bar"
-                          >
-                            <Pencil size={15} />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  }
-
+            {/* ─── CONVERSATION STREAM (SCROLLABLE INSIDE) ─── */}
+            <div
+              style={{
+                flex: 1,
+                minHeight: 0,
+                overflowY: 'auto',
+                width: '100%',
+                maxWidth: 960,
+                margin: '0 auto',
+                paddingRight: 8,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 16,
+              }}
+            >
+              {messages.map((m) => {
+                if (m.sender === 'user') {
                   return (
-                    <div key={m.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
-                      {/* Arella AI Signature Radial Orb Avatar */}
+                    <div
+                      key={m.id}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 14,
+                        width: '100%',
+                      }}
+                    >
+                      {/* User Avatar (Figma: width 40, height 40, border 1px solid #98989A, border-radius 14px, squircle with gold vector) */}
                       <div
                         style={{
-                          width: 36,
-                          height: 36,
-                          borderRadius: '50%',
-                          background: 'radial-gradient(circle at 30% 30%, #5CEAEA 0%, #D987EF 30%, #FCB902 60%, #C73FCC 100%)',
+                          width: 40,
+                          height: 40,
+                          borderRadius: 14,
+                          background: '#FFFFFF',
+                          border: '1px solid #98989A',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                           flexShrink: 0,
-                          marginTop: 4,
-                          boxShadow: 'inset -2px -2px 5px rgba(0,0,0,0.25), 0 3px 8px rgba(0,0,0,0.12)',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
                         }}
-                      />
+                        className="dark:bg-[#202024] dark:border-white/20"
+                      >
+                        <User size={18} color="#D4AF37" strokeWidth={2.2} />
+                      </div>
 
-                      {/* AI Response Card Container */}
+                      {/* Question Card (Figma: width 940, height 60 / min-height 54, border 1px solid #98989A, border-radius 14px) */}
                       <div
-                        className="bg-white dark:bg-[#1E1E22] border border-neutral-100 dark:border-white/5 text-[#52525B] dark:text-neutral-300"
                         style={{
                           flex: 1,
-                          borderRadius: 20,
-                          padding: '30px 34px',
-                          boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
-                          fontSize: 14,
-                          lineHeight: 1.8,
+                          minHeight: 54,
+                          border: '1px solid #98989A',
+                          borderRadius: 14,
+                          padding: '12px 20px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: 12,
+                          background: 'rgba(255, 255, 255, 0.4)',
                         }}
+                        className="dark:bg-white/5 dark:border-white/20"
                       >
-                        {m.text.split('\n\n').map((paragraph, idx) => {
-                          const match = paragraph.match(/^(\d+\.\s+[^:]+:)([\s\S]*)$/);
-                          if (match) {
-                            return (
-                              <p key={idx} style={{ margin: '0 0 14px', lineHeight: 1.7 }}>
-                                <strong className="font-bold text-neutral-900 dark:text-white">
-                                  {renderInlineMarkdown(match[1])}
-                                </strong>
-                                {renderInlineMarkdown(match[2])}
-                              </p>
-                            );
-                          }
-                          return (
-                            <p key={idx} style={{ margin: '0 0 14px', lineHeight: 1.7 }}>
-                              {renderInlineMarkdown(paragraph)}
-                            </p>
-                          );
-                        })}
+                        <span
+                          style={{
+                            fontFamily: DM_SANS,
+                            fontStyle: 'normal',
+                            fontWeight: 600,
+                            fontSize: 16,
+                            lineHeight: '100%',
+                            color: '#121212',
+                          }}
+                          className="dark:text-white"
+                        >
+                          {m.text}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleEditPrompt(m.text)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            color: '#718096',
+                            padding: 4,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: 'color 0.2s',
+                          }}
+                          className="hover:text-black dark:hover:text-white"
+                          title="Edit prompt"
+                        >
+                          <Pencil size={20} />
+                        </button>
                       </div>
                     </div>
                   );
-                })}
+                }
 
-                {/* Thinking Indicator */}
-                {isTyping && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                return (
+                  <div
+                    key={m.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: 14,
+                      width: '100%',
+                    }}
+                  >
+                    {/* Arella AI Avatar (Figma Asset 3 1: width 40, height 40, border-radius 14px) */}
                     <div
                       style={{
-                        width: 36,
-                        height: 36,
-                        borderRadius: '50%',
+                        width: 40,
+                        height: 40,
+                        borderRadius: 14,
                         background: 'radial-gradient(circle at 30% 30%, #5CEAEA 0%, #D987EF 30%, #FCB902 60%, #C73FCC 100%)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         flexShrink: 0,
-                        animation: 'pulse 1.8s infinite',
+                        marginTop: 2,
+                        boxShadow: 'inset -2px -2px 5px rgba(0,0,0,0.25), 0 3px 8px rgba(0,0,0,0.12)',
                       }}
                     />
+
+                    {/* Response Card (Figma: width 940, height 474 / auto, background #FFFFFF, box-shadow: 14px 27px 45px 4px rgba(170, 170, 170, 0.2), border-radius 14px) */}
                     <div
-                      className="bg-white dark:bg-[#1E1E22] border border-neutral-200 dark:border-white/10 text-neutral-600 dark:text-neutral-400"
                       style={{
-                        borderRadius: 16,
-                        padding: '12px 20px',
-                        fontSize: 13,
-                        fontWeight: 600,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 8,
+                        flex: 1,
+                        background: '#FFFFFF',
+                        boxShadow: '14px 27px 45px 4px rgba(170, 170, 170, 0.2)',
+                        borderRadius: 14,
+                        padding: '24px 28px',
+                        fontFamily: DM_SANS,
+                        fontStyle: 'normal',
+                        fontWeight: 500,
+                        fontSize: 14,
+                        lineHeight: '24px',
+                        color: 'rgba(18, 18, 18, 0.7)',
                       }}
+                      className="dark:bg-[#1E1E22] dark:text-neutral-200 dark:shadow-none dark:border dark:border-white/10"
                     >
-                      <span>Arella AI is thinking</span>
-                      <span className="flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#CCA336] animate-bounce [animation-delay:-0.3s]" />
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#CCA336] animate-bounce [animation-delay:-0.15s]" />
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#CCA336] animate-bounce" />
-                      </span>
+                      {m.text.split('\n\n').map((paragraph, idx) => {
+                        const match = paragraph.match(/^(\d+\.\s+[^:]+:)([\s\S]*)$/);
+                        if (match) {
+                          return (
+                            <p key={idx} style={{ margin: '0 0 14px', lineHeight: '24px' }}>
+                              <strong
+                                style={{
+                                  fontWeight: 700,
+                                  color: '#121212',
+                                  fontFamily: DM_SANS,
+                                }}
+                                className="dark:text-white"
+                              >
+                                {renderInlineMarkdown(match[1])}
+                              </strong>
+                              {renderInlineMarkdown(match[2])}
+                            </p>
+                          );
+                        }
+                        return (
+                          <p key={idx} style={{ margin: '0 0 14px', lineHeight: '24px' }}>
+                            {renderInlineMarkdown(paragraph)}
+                          </p>
+                        );
+                      })}
                     </div>
                   </div>
-                )}
+                );
+              })}
 
-                <div ref={messagesEndRef} />
-              </div>
+              {/* Thinking Indicator */}
+              {isTyping && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14, width: '100%' }}>
+                  <div
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 14,
+                      background: 'radial-gradient(circle at 30% 30%, #5CEAEA 0%, #D987EF 30%, #FCB902 60%, #C73FCC 100%)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                      animation: 'pulse 1.8s infinite',
+                    }}
+                  />
+                  <div
+                    style={{
+                      background: '#FFFFFF',
+                      borderRadius: 14,
+                      padding: '12px 20px',
+                      fontSize: 13,
+                      fontWeight: 600,
+                      fontFamily: DM_SANS,
+                      color: '#718096',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      boxShadow: '0 4px 14px rgba(0,0,0,0.04)',
+                    }}
+                    className="dark:bg-[#1E1E22] dark:text-neutral-300"
+                  >
+                    <span>Arella AI is thinking</span>
+                    <span className="flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-bounce [animation-delay:-0.3s]" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-bounce [animation-delay:-0.15s]" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37] animate-bounce" />
+                    </span>
+                  </div>
+                </div>
+              )}
 
               {/* Quick Action Suggestion Chips */}
               {messages.length <= 3 && !isTyping && (
-                <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 4 }}>
                   {quickPrompts.map((q) => (
                     <button
                       key={q.label}
                       type="button"
                       onClick={() => handleSend(q.query)}
-                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white dark:bg-[#1E1E22] border border-neutral-200 dark:border-white/10 text-neutral-700 dark:text-neutral-300 hover:border-[#CCA336] hover:text-[#CCA336] text-xs font-semibold transition-all duration-150 shadow-2xs hover:scale-102 cursor-pointer"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        padding: '6px 14px',
+                        borderRadius: 20,
+                        background: '#FFFFFF',
+                        border: '1px solid #98989A',
+                        color: '#121212',
+                        fontFamily: DM_SANS,
+                        fontSize: 12,
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease',
+                      }}
+                      className="hover:border-[#D4AF37] hover:text-[#D4AF37] dark:bg-[#1E1E22] dark:text-neutral-300 dark:border-white/20"
                     >
                       <span>{q.label}</span>
                     </button>
@@ -371,83 +511,145 @@ export default function ChatPage() {
                 </div>
               )}
 
-              {/* Regenerate response button — only once there's an actual reply to regenerate */}
+              {/* Regenerate Response Button (Figma: width 218px, height 54px, border 1px solid #98989A, border-radius 45px) */}
               {messages.some((m) => m.sender === 'arella') && !isTyping && (
-                <div style={{ display: 'flex', justifyContent: 'center', marginTop: 24 }}>
+                <div style={{ display: 'flex', justifyContent: 'center', marginTop: 12, marginBottom: 4 }}>
                   <button
                     type="button"
                     onClick={handleRegenerate}
-                    className="inline-flex items-center gap-2 bg-transparent hover:bg-neutral-200/50 dark:hover:bg-white/5 border border-neutral-300 dark:border-white/15 text-neutral-600 dark:text-neutral-400 px-6 py-2.5 rounded-full text-[13px] font-semibold transition-all cursor-pointer"
+                    style={{
+                      boxSizing: 'border-box',
+                      display: 'flex',
+                      flexDirection: 'row',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      padding: '0px',
+                      gap: 10,
+                      width: 218,
+                      height: 54,
+                      border: '1px solid #98989A',
+                      borderRadius: 45,
+                      background: 'transparent',
+                      fontFamily: DM_SANS,
+                      fontStyle: 'normal',
+                      fontWeight: 600,
+                      fontSize: 14,
+                      lineHeight: '16px',
+                      color: '#98989A',
+                      opacity: 0.98,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                    }}
+                    className="hover:bg-neutral-200/50 dark:hover:bg-white/5 hover:text-black dark:hover:text-white"
                   >
-                    <RotateCcw size={14} />
+                    <RotateCcw size={14} color="#1B2559" className="dark:text-white" />
                     <span>Regenerate response</span>
                   </button>
                 </div>
               )}
 
+              <div ref={messagesEndRef} />
             </div>
 
-            {/* Bottom Input Area & Disclaimer */}
-            <div style={{ maxWidth: 760, margin: '20px auto 0', width: '100%' }}>
-              <form onSubmit={handleSubmit} style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            {/* ─── BOTTOM CONTROLS (Figma Frame 2121459100 + Disclaimer) ─── */}
+            <div
+              style={{
+                width: '100%',
+                maxWidth: 960,
+                margin: '12px auto 0',
+                flexShrink: 0,
+              }}
+            >
+              {/* Frame 2121459100 (Input + Submit Button) */}
+              <form
+                onSubmit={handleSubmit}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 20,
+                  width: '100%',
+                  height: 54,
+                }}
+              >
+                {/* Input (Figma: width 738, height 54, border 1px solid #98989A, border-radius 45px) */}
                 <input
                   ref={inputRef}
                   type="text"
-                  placeholder="Chat with Arella (e.g., How much are screen ads at Bems Junction?)"
+                  placeholder="Chat with Arella"
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
                   disabled={isTyping}
-                  className="bg-white/80 dark:bg-white/5 border border-neutral-300 dark:border-white/15 text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:border-[#CCA336] focus:ring-2 focus:ring-[#CCA336]/20 transition-all"
                   style={{
+                    boxSizing: 'border-box',
                     flex: 1,
-                    padding: '16px 24px',
-                    borderRadius: 30,
+                    height: 54,
+                    border: '1px solid #98989A',
+                    borderRadius: 45,
+                    padding: '0 24px',
+                    fontFamily: DM_SANS,
+                    fontStyle: 'normal',
+                    fontWeight: 600,
                     fontSize: 14,
-                    fontWeight: 500,
-                    fontFamily: F,
+                    lineHeight: '100%',
+                    color: '#121212',
+                    background: 'transparent',
                     outline: 'none',
                   }}
+                  className="placeholder:text-[#98989A] dark:text-white dark:border-white/30"
                 />
 
+                {/* Submit Button (Figma: width 192px, height 54px, background #D4AF37, box-shadow: 0px 21px 27px -10px rgba(170, 170, 170, 0.48), border-radius: 6px) */}
                 <button
                   type="submit"
                   disabled={!inputText.trim() || isTyping}
                   style={{
-                    padding: '16px 36px',
-                    background: '#CCA336',
-                    color: '#000000',
+                    boxSizing: 'border-box',
+                    display: 'flex',
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    padding: '0px',
+                    width: 192,
+                    height: 54,
+                    background: '#D4AF37',
+                    boxShadow: '0px 21px 27px -10px rgba(170, 170, 170, 0.48)',
+                    borderRadius: 6,
                     border: 'none',
-                    borderRadius: 8,
+                    fontFamily: DM_SANS,
+                    fontStyle: 'normal',
+                    fontWeight: 600,
                     fontSize: 14,
-                    fontWeight: 700,
+                    lineHeight: '16px',
+                    color: '#000000',
                     cursor: !inputText.trim() || isTyping ? 'not-allowed' : 'pointer',
-                    fontFamily: F,
-                    transition: 'all 0.2s',
-                    whiteSpace: 'nowrap',
                     opacity: !inputText.trim() || isTyping ? 0.6 : 1,
+                    transition: 'all 0.2s',
+                    flexShrink: 0,
                   }}
-                  className="hover:brightness-95 active:scale-98 shadow-sm flex items-center gap-2"
+                  className="hover:brightness-95 active:scale-98"
                 >
                   <span>Submit</span>
-                  <Send size={14} />
                 </button>
               </form>
 
+              {/* Free Research Preview. Arella AI may produce inaccurate information about people, places, or facts. */}
               <p
-                className="text-neutral-400 dark:text-neutral-500"
                 style={{
-                  textAlign: 'center',
-                  fontSize: 11,
+                  fontFamily: DM_SANS,
+                  fontStyle: 'normal',
                   fontWeight: 500,
-                  margin: '12px 0 0',
+                  fontSize: 12,
+                  lineHeight: '100%',
+                  textAlign: 'center',
+                  color: '#718096',
+                  margin: '10px 0 0',
                 }}
               >
                 Free Research Preview. Arella AI may produce inaccurate information about people, places, or facts.
               </p>
             </div>
-
           </div>
-
         </div>
       </PageTransition>
     </DashboardLayout>
