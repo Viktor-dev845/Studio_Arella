@@ -159,7 +159,7 @@ export default function ChatPage() {
   return (
     <DashboardLayout>
       <PageTransition style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, height: '100%' }}>
-        {/* Full-screen fitting outer wrapper stretching to fill the main container */}
+        {/* Full-height container that stretches all the way to the bottom */}
         <div
           style={{
             fontFamily: F,
@@ -168,7 +168,7 @@ export default function ChatPage() {
             display: 'flex',
             flexDirection: 'column',
             minHeight: 0,
-            padding: '12px 24px 16px',
+            padding: '10px 24px 0 24px',
             boxSizing: 'border-box',
           }}
         >
@@ -178,7 +178,7 @@ export default function ChatPage() {
               display: 'flex',
               alignItems: 'center',
               gap: 16,
-              marginBottom: 10,
+              marginBottom: 8,
               flexShrink: 0,
             }}
           >
@@ -233,19 +233,18 @@ export default function ChatPage() {
             </div>
           </div>
 
-          {/* ─── EXACT FIGMA LAYOUT CONTAINER (background: #EAEAEA, border-radius: 20px) ─── */}
+          {/* ─── EXACT FIGMA LAYOUT CONTAINER (PULLED ALL THE WAY TO THE BOTTOM) ─── */}
           <div
             style={{
               flex: 1,
               width: '100%',
-              height: 'calc(100vh - 135px)',
-              minHeight: 'calc(100vh - 135px)',
+              minHeight: 0,
               background: '#EAEAEA',
-              borderRadius: 20,
-              padding: '22px 28px 16px',
+              borderRadius: '20px 20px 0 0',
+              padding: '18px 28px 12px',
               display: 'flex',
               flexDirection: 'column',
-              boxShadow: '0 4px 24px rgba(0,0,0,0.03)',
+              boxShadow: '0 -2px 20px rgba(0,0,0,0.03)',
               boxSizing: 'border-box',
               position: 'relative',
               overflow: 'hidden',
@@ -259,7 +258,7 @@ export default function ChatPage() {
                 fontStyle: 'normal',
                 fontWeight: 600,
                 fontSize: 14,
-                lineHeight: '26px',
+                lineHeight: '22px',
                 textAlign: 'center',
                 color: '#718096',
                 margin: '0 0 10px',
@@ -294,6 +293,7 @@ export default function ChatPage() {
                         alignItems: 'center',
                         gap: 14,
                         width: '100%',
+                        flexShrink: 0,
                       }}
                     >
                       {/* User Avatar (Figma: width 40, height 40, border 1px solid #98989A, border-radius 14px, squircle with gold vector) */}
@@ -319,7 +319,7 @@ export default function ChatPage() {
                       <div
                         style={{
                           flex: 1,
-                          minHeight: 54,
+                          minHeight: 52,
                           border: '1px solid #98989A',
                           borderRadius: 14,
                           padding: '12px 20px',
@@ -327,7 +327,7 @@ export default function ChatPage() {
                           alignItems: 'center',
                           justifyContent: 'space-between',
                           gap: 12,
-                          background: 'rgba(255, 255, 255, 0.4)',
+                          background: 'rgba(255, 255, 255, 0.5)',
                         }}
                         className="dark:bg-white/5 dark:border-white/20"
                       >
@@ -336,7 +336,7 @@ export default function ChatPage() {
                             fontFamily: F,
                             fontStyle: 'normal',
                             fontWeight: 600,
-                            fontSize: 16,
+                            fontSize: 15,
                             lineHeight: '100%',
                             color: '#121212',
                           }}
@@ -361,7 +361,7 @@ export default function ChatPage() {
                           className="hover:text-black dark:hover:text-white"
                           title="Edit prompt"
                         >
-                          <Pencil size={20} />
+                          <Pencil size={18} />
                         </button>
                       </div>
                     </div>
@@ -376,6 +376,7 @@ export default function ChatPage() {
                       alignItems: 'flex-start',
                       gap: 14,
                       width: '100%',
+                      flexShrink: 0,
                     }}
                   >
                     {/* Arella AI Avatar (Figma Asset 3 1: width 40, height 40, border-radius 14px) */}
@@ -394,20 +395,20 @@ export default function ChatPage() {
                       }}
                     />
 
-                    {/* Response Card (Figma: width 940, height 474 / auto, background #FFFFFF, box-shadow: 14px 27px 45px 4px rgba(170, 170, 170, 0.2), border-radius 14px) */}
+                    {/* Response Card (Figma: width 940, auto height, background #FFFFFF, box-shadow, border-radius 14px) */}
                     <div
                       style={{
                         flex: 1,
                         background: '#FFFFFF',
-                        boxShadow: '14px 27px 45px 4px rgba(170, 170, 170, 0.2)',
+                        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
                         borderRadius: 14,
-                        padding: '24px 28px',
+                        padding: '22px 26px',
                         fontFamily: F,
                         fontStyle: 'normal',
                         fontWeight: 500,
                         fontSize: 14,
                         lineHeight: '24px',
-                        color: 'rgba(18, 18, 18, 0.75)',
+                        color: 'rgba(18, 18, 18, 0.8)',
                       }}
                       className="dark:bg-[#1E1E22] dark:text-neutral-200 dark:shadow-none dark:border dark:border-white/10"
                     >
@@ -443,7 +444,7 @@ export default function ChatPage() {
 
               {/* Thinking Indicator */}
               {isTyping && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 14, width: '100%' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14, width: '100%', flexShrink: 0 }}>
                   <div
                     style={{
                       width: 40,
@@ -485,7 +486,7 @@ export default function ChatPage() {
 
               {/* Quick Action Suggestion Chips */}
               {messages.length <= 3 && !isTyping && (
-                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 4 }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 4, flexShrink: 0 }}>
                   {quickPrompts.map((q) => (
                     <button
                       key={q.label}
@@ -516,7 +517,7 @@ export default function ChatPage() {
 
               {/* Regenerate Response Button (Figma: width 218px, height 54px, border 1px solid #98989A, border-radius 45px) */}
               {messages.some((m) => m.sender === 'arella') && !isTyping && (
-                <div style={{ display: 'flex', justifyContent: 'center', marginTop: 12, marginBottom: 4 }}>
+                <div style={{ display: 'flex', justifyContent: 'center', marginTop: 10, marginBottom: 4, flexShrink: 0 }}>
                   <button
                     type="button"
                     onClick={handleRegenerate}
@@ -529,14 +530,14 @@ export default function ChatPage() {
                       padding: '0px',
                       gap: 10,
                       width: 218,
-                      height: 54,
+                      height: 48,
                       border: '1px solid #98989A',
                       borderRadius: 45,
                       background: 'transparent',
                       fontFamily: F,
                       fontStyle: 'normal',
                       fontWeight: 600,
-                      fontSize: 14,
+                      fontSize: 13.5,
                       lineHeight: '16px',
                       color: '#98989A',
                       opacity: 0.98,
@@ -554,12 +555,12 @@ export default function ChatPage() {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* ─── BOTTOM CONTROLS (Figma Frame 2121459100 + Disclaimer) ─── */}
+            {/* ─── BOTTOM CONTROLS (PULLED TO BOTTOM, NEVER OVERLAPPING) ─── */}
             <div
               style={{
                 width: '100%',
                 maxWidth: 960,
-                margin: '12px auto 0',
+                margin: '10px auto 0',
                 flexShrink: 0,
               }}
             >
@@ -570,12 +571,12 @@ export default function ChatPage() {
                   display: 'flex',
                   flexDirection: 'row',
                   alignItems: 'center',
-                  gap: 20,
+                  gap: 16,
                   width: '100%',
-                  height: 54,
+                  height: 52,
                 }}
               >
-                {/* Input (Figma: width 738, height 54, border 1px solid #98989A, border-radius 45px) */}
+                {/* Input (Figma: height 54, border 1px solid #98989A, border-radius 45px) */}
                 <input
                   ref={inputRef}
                   type="text"
@@ -586,7 +587,7 @@ export default function ChatPage() {
                   style={{
                     boxSizing: 'border-box',
                     flex: 1,
-                    height: 54,
+                    height: 52,
                     border: '1px solid #98989A',
                     borderRadius: 45,
                     padding: '0 24px',
@@ -595,13 +596,13 @@ export default function ChatPage() {
                     fontWeight: 600,
                     fontSize: 14,
                     color: '#121212',
-                    background: 'transparent',
+                    background: '#FFFFFF',
                     outline: 'none',
                   }}
-                  className="placeholder:text-[#98989A] dark:text-white dark:border-white/30"
+                  className="placeholder:text-[#98989A] dark:bg-[#1E1E22] dark:text-white dark:border-white/30"
                 />
 
-                {/* Submit Button (Figma: width 192px, height 54px, background #D4AF37, box-shadow: 0px 21px 27px -10px rgba(170, 170, 170, 0.48), border-radius: 6px) */}
+                {/* Submit Button (Figma: width 192px / 180px, background #D4AF37, border-radius 6px) */}
                 <button
                   type="submit"
                   disabled={!inputText.trim() || isTyping}
@@ -612,15 +613,15 @@ export default function ChatPage() {
                     justifyContent: 'center',
                     alignItems: 'center',
                     padding: '0px',
-                    width: 192,
-                    height: 54,
+                    width: 180,
+                    height: 52,
                     background: '#D4AF37',
-                    boxShadow: '0px 21px 27px -10px rgba(170, 170, 170, 0.48)',
-                    borderRadius: 6,
+                    boxShadow: '0px 10px 20px -5px rgba(212, 175, 55, 0.4)',
+                    borderRadius: 8,
                     border: 'none',
                     fontFamily: F,
                     fontStyle: 'normal',
-                    fontWeight: 600,
+                    fontWeight: 700,
                     fontSize: 14,
                     lineHeight: '16px',
                     color: '#000000',
@@ -641,11 +642,11 @@ export default function ChatPage() {
                   fontFamily: F,
                   fontStyle: 'normal',
                   fontWeight: 500,
-                  fontSize: 12,
+                  fontSize: 11.5,
                   lineHeight: '100%',
                   textAlign: 'center',
                   color: '#718096',
-                  margin: '8px 0 0',
+                  margin: '8px 0 2px',
                 }}
               >
                 Free Research Preview. Arella AI may produce inaccurate information about people, places, or facts.
