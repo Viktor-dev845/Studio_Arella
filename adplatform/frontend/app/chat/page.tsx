@@ -158,18 +158,18 @@ export default function ChatPage() {
 
   return (
     <DashboardLayout>
-      <PageTransition style={{ height: 'calc(100vh - 65px)', display: 'flex', flexDirection: 'column' }}>
-        {/* Full-screen fitting outer wrapper with Quicksand platform font */}
+      <PageTransition style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, height: '100%' }}>
+        {/* Full-screen fitting outer wrapper stretching to fill the main container */}
         <div
           style={{
             fontFamily: F,
             width: '100%',
-            height: '100%',
+            flex: 1,
             display: 'flex',
             flexDirection: 'column',
-            padding: '12px 24px 20px',
+            minHeight: 0,
+            padding: '12px 24px 16px',
             boxSizing: 'border-box',
-            overflow: 'hidden',
           }}
         >
           {/* Header Navigation */}
@@ -238,10 +238,11 @@ export default function ChatPage() {
             style={{
               flex: 1,
               width: '100%',
-              minHeight: 0,
+              height: 'calc(100vh - 135px)',
+              minHeight: 'calc(100vh - 135px)',
               background: '#EAEAEA',
               borderRadius: 20,
-              padding: '18px 28px 16px',
+              padding: '22px 28px 16px',
               display: 'flex',
               flexDirection: 'column',
               boxShadow: '0 4px 24px rgba(0,0,0,0.03)',
@@ -558,7 +559,7 @@ export default function ChatPage() {
               style={{
                 width: '100%',
                 maxWidth: 960,
-                margin: '10px auto 0',
+                margin: '12px auto 0',
                 flexShrink: 0,
               }}
             >
