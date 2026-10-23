@@ -1,6 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Inter+Tight:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700&family=Jost:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap');
 @import 'tailwindcss';
 
+@theme {
+  --font-sans: var(--font-quicksand), 'Quicksand', sans-serif;
+}
+
 /* Tailwind v4 ignores the classic tailwind.config.ts `darkMode` option —
    dark: variants must be defined in CSS. This makes `dark:` match the
    existing manual `.dark` class the theme toggle already puts on <html>
@@ -152,6 +156,10 @@ html, body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   zoom: 0.9; /* Global 10% scale down to match 1440px Figma designs on smaller screens */
+}
+
+button, input, select, textarea, optgroup {
+  font-family: inherit;
 }
 
 /* ── Scrollbar ── */

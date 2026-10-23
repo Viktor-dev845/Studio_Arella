@@ -27,6 +27,9 @@ import {
   SlidersHorizontal,
   ExternalLink
 } from 'lucide-react';
+import { theme } from '@/lib/theme';
+
+const F = theme.font.body;
 
 export default function UserProfileOverview() {
   const { user } = useAuthStore();
@@ -189,7 +192,7 @@ export default function UserProfileOverview() {
   return (
     <DashboardLayout>
       <PageTransition>
-        <div className="w-full max-w-[1200px] mx-auto p-6 lg:p-10 pb-24">
+        <div className="w-full max-w-[1200px] mx-auto p-6 lg:p-10 pb-24" style={{ fontFamily: F }}>
           {!editingMode ? (
             <>
               <h1 className="text-[24px] font-semibold text-[#16151C] mb-8">Profile Details</h1>
