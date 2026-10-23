@@ -8,6 +8,7 @@ import Navbar from './Navbar';
 import ThemeProvider from '@/components/ui/ThemeProvider';
 import PreferencesProvider from '@/components/ui/PreferencesProvider';
 import TermsModal from '@/components/ui/TermsModal';
+import ArellaFloatingAssistant from '@/components/chat/ArellaFloatingAssistant';
 import { theme } from '@/lib/theme';
 
 const F = theme.font.body;
@@ -76,6 +77,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {children}
         </main>
       </div>
+
+      {/* Floating AI Assistant for all dashboard pages */}
+      <ArellaFloatingAssistant />
       
       {/* Media query for mobile to override margin-left */}
       <style>{`

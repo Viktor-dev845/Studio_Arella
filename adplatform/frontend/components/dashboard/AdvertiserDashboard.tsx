@@ -676,26 +676,32 @@ export default function AdvertiserDashboard() {
         </div>
 
         {/* Chat with Arella Speech Bubble Widget at bottom right */}
-        <div style={{ display: 'flex', justifyContent: 'center', marginTop: 6, position: 'relative' }}>
-          <Link
-            href="/chat"
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: 10, position: 'relative' }}>
+          <button
+            type="button"
+            onClick={() => {
+              if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('openArellaAssistant'));
+              }
+            }}
             style={{
               position: 'relative',
               display: 'inline-flex',
               alignItems: 'center',
-              gap: 8,
+              gap: 9,
               padding: '10px 18px',
               background: theme.color.surface,
               border: `1px solid ${theme.color.border}`,
               borderRadius: 24,
-              boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
-              textDecoration: 'none',
+              boxShadow: '0 4px 18px rgba(0,0,0,0.06)',
               color: theme.color.text1,
               fontSize: 13,
               fontWeight: 700,
               fontFamily: F,
+              cursor: 'pointer',
               transition: 'all 0.2s',
             }}
+            className="hover:scale-105 active:scale-95"
           >
             <span>Chat with Arella</span>
             <div
@@ -739,7 +745,7 @@ export default function AdvertiserDashboard() {
                 filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))',
               }}
             />
-          </Link>
+          </button>
         </div>
       </div>
     </div>
