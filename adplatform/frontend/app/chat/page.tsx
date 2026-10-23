@@ -237,10 +237,8 @@ export default function ChatPage() {
           {/* ─── EXACT FIGMA LAYOUT CONTAINER (STRETCHED TO BOTTOM LEVEL WITH LOGOUT) ─── */}
           <div
             style={{
-              flex: 1,
               width: '100%',
-              height: '100vh',
-              minHeight: 0,
+              height: 'calc(100vh - 138px)',
               background: '#EAEAEA',
               borderRadius: 20,
               padding: '16px 28px 12px',
@@ -562,7 +560,8 @@ export default function ChatPage() {
               style={{
                 width: '100%',
                 maxWidth: 960,
-                margin: '10px auto 0',
+                margin: 'auto auto 0',
+                paddingTop: 12,
                 flexShrink: 0,
               }}
             >
