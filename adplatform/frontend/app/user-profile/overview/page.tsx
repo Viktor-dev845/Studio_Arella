@@ -340,45 +340,68 @@ export default function UserProfileOverview() {
 
               {/* Form Grid */}
               {activeTab === 'personal' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
-                  <div className="border-b border-[#A2A1A8]/10 pb-2">
-                    <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">First Name</label>
-                    <div className="text-[16px] text-[#16151C] font-light">{firstName || '—'}</div>
-                  </div>
-                  <div className="border-b border-[#A2A1A8]/10 pb-2">
-                    <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Last Name</label>
-                    <div className="text-[16px] text-[#16151C] font-light">{lastName || '—'}</div>
-                  </div>
-                  
-                  <div className="border-b border-[#A2A1A8]/10 pb-2">
-                    <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Mobile Number</label>
-                    <div className="text-[16px] text-[#16151C] font-light">{phone || '—'}</div>
-                  </div>
-                  <div className="border-b border-[#A2A1A8]/10 pb-2">
-                    <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Email Address</label>
-                    <div className="text-[16px] text-[#16151C] font-light">{email || '—'}</div>
-                  </div>
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+                    <div className="border-b border-[#A2A1A8]/10 pb-2">
+                      <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">First Name</label>
+                      <div className="text-[16px] text-[#16151C] font-light">{firstName || '—'}</div>
+                    </div>
+                    <div className="border-b border-[#A2A1A8]/10 pb-2">
+                      <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Last Name</label>
+                      <div className="text-[16px] text-[#16151C] font-light">{lastName || '—'}</div>
+                    </div>
+                    
+                    <div className="border-b border-[#A2A1A8]/10 pb-2">
+                      <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Mobile Number</label>
+                      <div className="text-[16px] text-[#16151C] font-light">{phone || '—'}</div>
+                    </div>
+                    <div className="border-b border-[#A2A1A8]/10 pb-2">
+                      <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Email Address</label>
+                      <div className="text-[16px] text-[#16151C] font-light">{email || '—'}</div>
+                    </div>
 
-                  <div className="border-b border-[#A2A1A8]/10 pb-2">
-                    <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Location</label>
-                    <div className="text-[16px] text-[#16151C] font-light">{user?.location || '—'}</div>
-                  </div>
-                  <div className="border-b border-[#A2A1A8]/10 pb-2">
-                    <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Bio</label>
-                    <div className="text-[16px] text-[#16151C] font-light">{user?.bio || '—'}</div>
-                  </div>
+                    <div className="border-b border-[#A2A1A8]/10 pb-2">
+                      <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Location / Address</label>
+                      <div className="text-[16px] text-[#16151C] font-light">{user?.location || '—'}</div>
+                    </div>
+                    <div className="border-b border-[#A2A1A8]/10 pb-2">
+                      <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Account Role</label>
+                      <div className="text-[16px] text-[#16151C] font-light">{userRole}</div>
+                    </div>
 
-                  <div className="border-b border-[#A2A1A8]/10 pb-2">
-                    <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Account Role</label>
-                    <div className="text-[16px] text-[#16151C] font-light">{userRole}</div>
-                  </div>
-                  <div className="border-b border-[#A2A1A8]/10 pb-2">
-                    <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Member Since</label>
-                    <div className="text-[16px] text-[#16151C] font-light">
-                      {user?.created_at ? new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '—'}
+                    <div className="border-b border-[#A2A1A8]/10 pb-2 md:col-span-2">
+                      <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Member Since</label>
+                      <div className="text-[16px] text-[#16151C] font-light">
+                        {user?.created_at ? new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '—'}
+                      </div>
                     </div>
                   </div>
-                </div>
+
+                  {/* Dedicated Full-Width Creator Bio Section */}
+                  <div className="mt-8 pt-6 border-t border-[#A2A1A8]/15">
+                    <div className="flex items-center justify-between mb-2.5">
+                      <div className="flex items-center gap-2">
+                        <label className="text-[15px] text-[#16151C] font-medium block">Creator Bio / About Me</label>
+                        <span className="text-[11px] font-semibold text-[#D4AF37] bg-[#D4AF37]/15 px-2 py-0.5 rounded-full uppercase tracking-wider">Public</span>
+                      </div>
+                    </div>
+                    {user?.bio ? (
+                      <p className="text-[15px] text-[#16151C] font-light leading-[160%] bg-[#FAF5E6]/40 p-4 rounded-[10px] border border-[#D4AF37]/20 whitespace-pre-wrap">
+                        {user.bio}
+                      </p>
+                    ) : (
+                      <div className="p-4 rounded-[10px] border border-dashed border-[#A2A1A8]/30 bg-[#F9F9FB] text-[14px] text-[#A2A1A8] flex items-center justify-between">
+                        <span>No creator bio added yet. Tell your listeners and sponsors about yourself.</span>
+                        <button
+                          onClick={() => setEditingMode('personal')}
+                          className="text-[13px] font-medium text-[#D4AF37] hover:underline cursor-pointer"
+                        >
+                          + Add Bio
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </>
               )}
 
               {activeTab === 'business' && (
@@ -841,7 +864,7 @@ export default function UserProfileOverview() {
                 <h2 className="text-[16px] font-semibold text-[#16151C]">Edit profile (Personal information)</h2>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 mb-10">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 mb-8">
                 <input 
                   type="text" 
                   placeholder="First name"
@@ -876,15 +899,32 @@ export default function UserProfileOverview() {
                   placeholder="Location / Address"
                   value={personalForm.location}
                   onChange={(e) => setPersonalForm(prev => ({ ...prev, location: e.target.value }))}
-                  className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37]"
+                  className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37] md:col-span-2"
                 />
-                <input 
-                  type="text" 
-                  placeholder="Bio"
+              </div>
+
+              {/* Dedicated Full-Width Creator Bio Textarea */}
+              <div className="flex flex-col gap-2 mb-10">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <label className="text-[15px] font-medium text-[#16151C]">Creator Bio / About Me</label>
+                    <span className="text-[11px] font-semibold text-[#D4AF37] bg-[#D4AF37]/15 px-2 py-0.5 rounded-full uppercase tracking-wider">Public</span>
+                  </div>
+                  <span className={`text-[12px] ${personalForm.bio.length > 280 ? 'text-[#C9483A] font-semibold' : 'text-[#A2A1A8]'}`}>
+                    {personalForm.bio.length} / 300
+                  </span>
+                </div>
+                <textarea 
+                  rows={4}
+                  maxLength={300}
+                  placeholder="Write a short bio introducing yourself, your podcast shows, or what you create. This will be visible on your public creator profile..."
                   value={personalForm.bio}
                   onChange={(e) => setPersonalForm(prev => ({ ...prev, bio: e.target.value }))}
-                  className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37]"
+                  className="w-full p-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[16px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37] resize-none leading-[150%]"
                 />
+                <p className="text-[12px] text-[#A2A1A8]">
+                  Keep it brief and engaging — listeners and sponsors will see this on your public profile.
+                </p>
               </div>
 
               <div className="flex items-center gap-5">
