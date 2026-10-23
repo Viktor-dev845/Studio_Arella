@@ -677,13 +677,8 @@ export default function AdvertiserDashboard() {
 
         {/* Chat with Arella Speech Bubble Widget at bottom right */}
         <div style={{ display: 'flex', justifyContent: 'center', marginTop: 10, position: 'relative' }}>
-          <button
-            type="button"
-            onClick={() => {
-              if (typeof window !== 'undefined') {
-                window.dispatchEvent(new CustomEvent('openArellaAssistant'));
-              }
-            }}
+          <Link
+            href="/chat"
             style={{
               position: 'relative',
               display: 'inline-flex',
@@ -698,38 +693,25 @@ export default function AdvertiserDashboard() {
               fontSize: 13,
               fontWeight: 700,
               fontFamily: F,
+              textDecoration: 'none',
               cursor: 'pointer',
               transition: 'all 0.2s',
             }}
-            className="hover:scale-105 active:scale-95"
+            className="hover:scale-105 active:scale-95 group"
           >
             <span>Chat with Arella</span>
             <div
               style={{
-                width: 20,
-                height: 20,
+                width: 22,
+                height: 22,
                 borderRadius: '50%',
-                background: 'linear-gradient(135deg, #6366F1, #A855F7, #EC4899)',
-                padding: 1,
+                background: 'radial-gradient(circle at 30% 30%, #5CEAEA 0%, #D987EF 30%, #FCB902 60%, #C73FCC 100%)',
+                boxShadow: 'inset -1px -1px 3px rgba(0,0,0,0.25), 0 2px 4px rgba(0,0,0,0.1)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
-            >
-              <div
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  background: theme.color.surface,
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Globe size={11} color="#4F46E5" />
-              </div>
-            </div>
+            />
 
             {/* Speech bubble small triangle pointer */}
             <div
@@ -745,7 +727,7 @@ export default function AdvertiserDashboard() {
                 filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))',
               }}
             />
-          </button>
+          </Link>
         </div>
       </div>
     </div>
