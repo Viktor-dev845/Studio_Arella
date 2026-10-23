@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import api from '@/lib/api';
 
-interface User {
+export interface User {
   id: string;
   name: string;
   first_name?: string;
@@ -12,6 +12,7 @@ interface User {
   avatar?: string;
   language?: string;
   business_name?: string;
+  business_email?: string;
   phone?: string;
   logo_url?: string;
   email_verified?: boolean;
@@ -27,6 +28,7 @@ interface User {
   display_currency?: string;
   display_timezone?: string;
   sound_enabled?: boolean;
+  created_at?: string;
 }
 
 interface TwoFactorChallenge {

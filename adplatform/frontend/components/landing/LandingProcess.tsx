@@ -46,17 +46,17 @@ export default function LandingProcess() {
   ];
 
   return (
-    <section id="process" className="py-20 md:py-28 bg-white relative">
-      <div className="max-w-[1440px] mx-auto px-5 sm:px-10 lg:px-20">
+    <section id="process" className="py-24 md:py-36 bg-white relative">
+      <div className="max-w-[1520px] mx-auto px-5 sm:px-10 lg:px-16">
         {/* Section Header */}
-        <div className="flex flex-col items-center text-center max-w-3xl mx-auto mb-16 md:mb-20 space-y-4">
-          <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-white border border-gray-200/90 text-xs font-semibold text-[#5E5F5C] shadow-2xs">
+        <div className="flex flex-col items-center text-center max-w-4xl mx-auto mb-16 md:mb-20 space-y-5">
+          <div className="inline-flex items-center px-5 py-2 rounded-full bg-[#FAFAFA] border border-gray-200/90 text-sm font-bold text-gray-700 shadow-2xs">
             The Process
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#000000] tracking-tight leading-tight">
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-black text-[#000000] tracking-tight leading-[1.08]">
             From sign-up to screen<br className="hidden sm:inline" /> in four simple steps
           </h2>
-          <p className="text-base sm:text-lg text-[#5E5F5C]">
+          <p className="text-xl sm:text-2xl text-[#4A4B48] leading-relaxed">
             Fast, transparent, and completely self-service.
           </p>
         </div>
@@ -70,27 +70,27 @@ export default function LandingProcess() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: idx * 0.1 }}
-              className="bg-[#FAFAFA] rounded-3xl border border-gray-200/80 overflow-hidden flex flex-col justify-between group hover:border-gray-300 hover:shadow-lg transition-all duration-300"
+              className="bg-[#FAFAFA] rounded-[32px] border border-gray-200/80 overflow-hidden flex flex-col justify-between group hover:border-gray-300 hover:shadow-2xl transition-all duration-300"
             >
               {/* Image Preview */}
-              <div className="relative h-60 sm:h-72 w-full overflow-hidden bg-gray-100">
+              <div className="relative h-72 sm:h-88 md:h-[380px] w-full overflow-hidden bg-gray-100">
                 <img
                   src={step.image}
                   alt={step.title}
                   className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
                 />
-                <div className="absolute top-4 left-4 w-10 h-10 rounded-full bg-white/95 backdrop-blur-md border border-gray-200 flex items-center justify-center font-bold text-sm text-black shadow-sm">
+                <div className="absolute top-5 left-5 w-14 h-14 rounded-2xl bg-white/95 backdrop-blur-md border border-gray-200 flex items-center justify-center font-black text-lg text-black shadow-md">
                   {step.number}
                 </div>
               </div>
 
               {/* Text & Content */}
-              <div className="p-6 sm:p-8 flex flex-col justify-between flex-1">
-                <div className="space-y-3 mb-6">
-                  <h3 className="text-xl sm:text-2xl font-bold text-gray-900 leading-snug">
+              <div className="p-8 sm:p-10 flex flex-col justify-between flex-1">
+                <div className="space-y-3.5 mb-8">
+                  <h3 className="text-2xl sm:text-3xl font-black text-gray-900 leading-snug">
                     {step.title}
                   </h3>
-                  <p className="text-sm sm:text-base text-[#5E5F5C] leading-relaxed">
+                  <p className="text-base sm:text-lg text-[#5E5F5C] leading-relaxed">
                     {step.description}
                   </p>
                 </div>
@@ -99,10 +99,10 @@ export default function LandingProcess() {
                 <div>
                   <Link
                     href={step.actionHref}
-                    className="inline-flex items-center gap-2 text-sm font-semibold text-black hover:text-amber-600 transition-colors group/link"
+                    className="inline-flex items-center gap-2.5 text-base sm:text-lg font-bold text-black hover:text-amber-600 transition-colors group/link"
                   >
                     <span>{step.actionText}</span>
-                    <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover/link:translate-x-1" />
+                    <ArrowRight className="w-5 h-5 transition-transform duration-200 group-hover/link:translate-x-1.5" />
                   </Link>
                 </div>
               </div>

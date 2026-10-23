@@ -40,23 +40,23 @@ export default function LandingFAQ() {
   };
 
   return (
-    <section id="faq" className="py-20 md:py-28 bg-white relative">
-      <div className="max-w-[1440px] mx-auto px-5 sm:px-10 lg:px-20">
+    <section id="faq" className="py-24 md:py-36 bg-white relative">
+      <div className="max-w-[1520px] mx-auto px-5 sm:px-10 lg:px-16">
         {/* Section Header */}
-        <div className="flex flex-col items-center text-center max-w-3xl mx-auto mb-16 space-y-4">
-          <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-[#FAFAFA] border border-gray-200/90 text-xs font-semibold text-[#5E5F5C] shadow-2xs">
-            FAQ
+        <div className="flex flex-col items-center text-center max-w-4xl mx-auto mb-16 md:mb-20 space-y-5">
+          <div className="inline-flex items-center px-5 py-2 rounded-full bg-[#FAFAFA] border border-gray-200/90 text-sm font-bold text-gray-700 shadow-2xs">
+            Frequently Asked Questions
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#000000] tracking-tight leading-tight">
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-black text-[#000000] tracking-tight leading-[1.08]">
             Your Questions Answered
           </h2>
-          <p className="text-base sm:text-lg text-[#5E5F5C]">
+          <p className="text-xl sm:text-2xl text-[#4A4B48] leading-relaxed">
             Got questions? We&apos;ve got answers.
           </p>
         </div>
 
         {/* FAQ Accordion List */}
-        <div className="max-w-3xl mx-auto space-y-4">
+        <div className="max-w-4xl mx-auto space-y-5">
           {faqs.map((faq, index) => {
             const isOpen = openIndex === index;
             return (
@@ -66,27 +66,27 @@ export default function LandingFAQ() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: index * 0.05 }}
-                className={`rounded-2xl border transition-all duration-200 overflow-hidden ${
+                className={`rounded-[24px] border transition-all duration-200 overflow-hidden ${
                   isOpen
-                    ? 'border-gray-300 bg-[#FCFDFD] shadow-xs'
-                    : 'border-gray-200/80 bg-white hover:border-gray-300'
+                    ? 'border-gray-300 bg-[#FCFDFD] shadow-md'
+                    : 'border-gray-200/80 bg-white hover:border-gray-300 hover:shadow-xs'
                 }`}
               >
                 <button
                   type="button"
                   onClick={() => toggleFAQ(index)}
-                  className="w-full flex items-center justify-between text-left p-6 sm:p-7 gap-4 focus:outline-hidden"
+                  className="w-full flex items-center justify-between text-left p-7 sm:p-8 gap-5 focus:outline-hidden"
                   aria-expanded={isOpen}
                 >
-                  <span className="text-base sm:text-lg font-bold text-gray-900 leading-snug">
+                  <span className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 leading-snug">
                     {faq.question}
                   </span>
                   <div
-                    className={`w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center flex-shrink-0 transition-transform duration-200 ${
-                      isOpen ? 'rotate-180 bg-black text-white border-black' : 'text-gray-500 bg-gray-50'
+                    className={`w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center flex-shrink-0 transition-transform duration-200 ${
+                      isOpen ? 'rotate-180 bg-black text-white border-black' : 'text-gray-600 bg-gray-50'
                     }`}
                   >
-                    <ChevronDown className="w-4 h-4" />
+                    <ChevronDown className="w-5 h-5" />
                   </div>
                 </button>
 
@@ -98,7 +98,7 @@ export default function LandingFAQ() {
                       exit={{ height: 0, opacity: 0 }}
                       transition={{ duration: 0.25, ease: 'easeInOut' }}
                     >
-                      <div className="px-6 pb-6 sm:px-7 sm:pb-7 pt-0 text-sm sm:text-base text-[#5E5F5C] leading-relaxed border-t border-gray-100">
+                      <div className="px-7 pb-7 sm:px-8 sm:pb-8 pt-0 text-base sm:text-lg md:text-[19px] text-[#5E5F5C] leading-relaxed border-t border-gray-100">
                         {faq.answer}
                       </div>
                     </motion.div>

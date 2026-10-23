@@ -57,23 +57,23 @@ export default function LandingTestimonials() {
   ];
 
   return (
-    <section id="testimonials" className="py-20 md:py-28 bg-[#FAFAFA] relative">
-      <div className="max-w-[1440px] mx-auto px-5 sm:px-10 lg:px-20">
+    <section id="testimonials" className="py-24 md:py-36 bg-[#FAFAFA] relative">
+      <div className="max-w-[1520px] mx-auto px-5 sm:px-10 lg:px-16">
         {/* Section Header */}
-        <div className="flex flex-col items-center text-center max-w-3xl mx-auto mb-16 space-y-4">
-          <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-white border border-gray-200/90 text-xs font-semibold text-[#5E5F5C] shadow-2xs">
-            Testimonials
+        <div className="flex flex-col items-center text-center max-w-4xl mx-auto mb-16 md:mb-20 space-y-5">
+          <div className="inline-flex items-center px-5 py-2 rounded-full bg-white border border-gray-200/90 text-sm font-bold text-gray-700 shadow-2xs">
+            Testimonials &amp; Verified Results
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#000000] tracking-tight leading-tight">
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-black text-[#000000] tracking-tight leading-[1.08]">
             What Our Users Say
           </h2>
-          <p className="text-base sm:text-lg text-[#5E5F5C]">
+          <p className="text-xl sm:text-2xl text-[#4A4B48] leading-relaxed">
             Real businesses and creators growing their reach with Studio Arella.
           </p>
         </div>
 
         {/* Stats Row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 mb-16 md:mb-20">
           {stats.map((stat, idx) => {
             const Icon = stat.icon;
             return (
@@ -83,16 +83,16 @@ export default function LandingTestimonials() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: idx * 0.1 }}
-                className="bg-white rounded-2xl p-6 sm:p-8 border border-gray-200/80 shadow-xs flex items-center gap-5"
+                className="bg-white rounded-[28px] p-7 sm:p-9 border border-gray-200/80 shadow-xs flex items-center gap-6 hover:shadow-md transition-shadow"
               >
-                <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-600 flex-shrink-0">
-                  <Icon className="w-7 h-7" />
+                <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-600 flex-shrink-0">
+                  <Icon className="w-8 h-8" />
                 </div>
                 <div>
-                  <p className="text-3xl sm:text-4xl font-extrabold text-black tracking-tight">
+                  <p className="text-4xl sm:text-5xl lg:text-6xl font-black text-black tracking-tight leading-none mb-1.5">
                     {stat.value}
                   </p>
-                  <p className="text-sm text-[#5E5F5C] font-medium mt-0.5">
+                  <p className="text-base sm:text-lg text-[#4A4B48] font-bold">
                     {stat.label}
                   </p>
                 </div>
@@ -110,37 +110,37 @@ export default function LandingTestimonials() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: idx * 0.1 }}
-              className="bg-white rounded-3xl p-7 sm:p-8 border border-gray-200/80 shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow duration-300"
+              className="bg-white rounded-[32px] p-8 sm:p-10 border border-gray-200/80 shadow-xs flex flex-col justify-between hover:shadow-xl transition-all duration-300"
             >
               <div>
                 {/* 5-Star Rating */}
-                <div className="flex items-center gap-1 text-amber-400 mb-5">
+                <div className="flex items-center gap-1.5 text-amber-400 mb-6">
                   {[...Array(t.rating)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-current" />
+                    <Star key={i} className="w-5 h-5 fill-current" />
                   ))}
                 </div>
 
                 {/* Highlight */}
-                <p className="text-lg font-bold text-gray-900 mb-3 leading-snug">
+                <p className="text-xl sm:text-2xl font-black text-gray-900 mb-3.5 leading-snug">
                   {t.highlight}
                 </p>
 
                 {/* Body Quote */}
-                <p className="text-sm text-[#5E5F5C] leading-relaxed mb-6">
+                <p className="text-base sm:text-lg text-[#5E5F5C] leading-relaxed mb-8">
                   {t.quote}
                 </p>
               </div>
 
               {/* Author Info */}
-              <div className="flex items-center gap-3.5 pt-5 border-t border-gray-100">
+              <div className="flex items-center gap-4 pt-6 border-t border-gray-100">
                 <img
                   src={t.avatar}
                   alt={t.name}
-                  className="w-12 h-12 rounded-full object-cover border border-gray-200"
+                  className="w-14 h-14 rounded-full object-cover border-2 border-white shadow-xs"
                 />
                 <div>
-                  <p className="text-sm font-bold text-gray-900">{t.name}</p>
-                  <p className="text-xs text-[#5E5F5C]">{t.role}</p>
+                  <p className="text-base sm:text-lg font-black text-gray-900">{t.name}</p>
+                  <p className="text-sm sm:text-base text-[#5E5F5C] font-medium">{t.role}</p>
                 </div>
               </div>
             </motion.div>
