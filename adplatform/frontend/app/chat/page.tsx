@@ -8,8 +8,9 @@ import { PageTransition } from '@/components/ui/Animations';
 import { useToast } from '@/components/ui/ToastProvider';
 import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/api';
+import { theme } from '@/lib/theme';
 
-const DM_SANS = "'DM Sans', sans-serif";
+const F = theme.font.body;
 
 interface Message {
   id: string;
@@ -52,7 +53,7 @@ function renderInlineMarkdown(text: string) {
   return parts.map((part, i) => {
     if (part.startsWith('**') && part.endsWith('**')) {
       return (
-        <strong key={i} className="font-bold text-neutral-900 dark:text-white">
+        <strong key={i} className="font-bold text-neutral-900 dark:text-white" style={{ fontFamily: F }}>
           {part.slice(2, -2)}
         </strong>
       );
@@ -157,17 +158,18 @@ export default function ChatPage() {
 
   return (
     <DashboardLayout>
-      <PageTransition>
-        {/* Full-screen fitting outer wrapper without double scrollbars */}
+      <PageTransition style={{ height: 'calc(100vh - 65px)', display: 'flex', flexDirection: 'column' }}>
+        {/* Full-screen fitting outer wrapper with Quicksand platform font */}
         <div
           style={{
-            fontFamily: DM_SANS,
+            fontFamily: F,
             width: '100%',
-            height: 'calc(100vh - 84px)',
+            height: '100%',
             display: 'flex',
             flexDirection: 'column',
-            padding: '12px 24px 16px',
+            padding: '12px 24px 20px',
             boxSizing: 'border-box',
+            overflow: 'hidden',
           }}
         >
           {/* Header Navigation */}
@@ -190,7 +192,7 @@ export default function ChatPage() {
                 textDecoration: 'none',
                 fontSize: 13,
                 fontWeight: 600,
-                fontFamily: DM_SANS,
+                fontFamily: F,
                 transition: 'color 0.2s',
               }}
               className="hover:text-black dark:hover:text-white"
@@ -200,7 +202,7 @@ export default function ChatPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <h1
                 style={{
-                  fontFamily: DM_SANS,
+                  fontFamily: F,
                   fontSize: 16,
                   fontWeight: 700,
                   color: '#121212',
@@ -221,6 +223,7 @@ export default function ChatPage() {
                   color: '#D4AF37',
                   fontSize: 10,
                   fontWeight: 700,
+                  fontFamily: F,
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
                 }}
@@ -238,10 +241,9 @@ export default function ChatPage() {
               minHeight: 0,
               background: '#EAEAEA',
               borderRadius: 20,
-              padding: '22px 28px 16px',
+              padding: '18px 28px 16px',
               display: 'flex',
               flexDirection: 'column',
-              justifyContent: 'space-between',
               boxShadow: '0 4px 24px rgba(0,0,0,0.03)',
               boxSizing: 'border-box',
               position: 'relative',
@@ -252,9 +254,9 @@ export default function ChatPage() {
             {/* Centered 'Your response' subtitle */}
             <p
               style={{
-                fontFamily: DM_SANS,
+                fontFamily: F,
                 fontStyle: 'normal',
-                fontWeight: 500,
+                fontWeight: 600,
                 fontSize: 14,
                 lineHeight: '26px',
                 textAlign: 'center',
@@ -330,7 +332,7 @@ export default function ChatPage() {
                       >
                         <span
                           style={{
-                            fontFamily: DM_SANS,
+                            fontFamily: F,
                             fontStyle: 'normal',
                             fontWeight: 600,
                             fontSize: 16,
@@ -399,12 +401,12 @@ export default function ChatPage() {
                         boxShadow: '14px 27px 45px 4px rgba(170, 170, 170, 0.2)',
                         borderRadius: 14,
                         padding: '24px 28px',
-                        fontFamily: DM_SANS,
+                        fontFamily: F,
                         fontStyle: 'normal',
                         fontWeight: 500,
                         fontSize: 14,
                         lineHeight: '24px',
-                        color: 'rgba(18, 18, 18, 0.7)',
+                        color: 'rgba(18, 18, 18, 0.75)',
                       }}
                       className="dark:bg-[#1E1E22] dark:text-neutral-200 dark:shadow-none dark:border dark:border-white/10"
                     >
@@ -412,12 +414,12 @@ export default function ChatPage() {
                         const match = paragraph.match(/^(\d+\.\s+[^:]+:)([\s\S]*)$/);
                         if (match) {
                           return (
-                            <p key={idx} style={{ margin: '0 0 14px', lineHeight: '24px' }}>
+                            <p key={idx} style={{ margin: '0 0 14px', lineHeight: '24px', fontFamily: F }}>
                               <strong
                                 style={{
                                   fontWeight: 700,
                                   color: '#121212',
-                                  fontFamily: DM_SANS,
+                                  fontFamily: F,
                                 }}
                                 className="dark:text-white"
                               >
@@ -428,7 +430,7 @@ export default function ChatPage() {
                           );
                         }
                         return (
-                          <p key={idx} style={{ margin: '0 0 14px', lineHeight: '24px' }}>
+                          <p key={idx} style={{ margin: '0 0 14px', lineHeight: '24px', fontFamily: F }}>
                             {renderInlineMarkdown(paragraph)}
                           </p>
                         );
@@ -461,7 +463,7 @@ export default function ChatPage() {
                       padding: '12px 20px',
                       fontSize: 13,
                       fontWeight: 600,
-                      fontFamily: DM_SANS,
+                      fontFamily: F,
                       color: '#718096',
                       display: 'flex',
                       alignItems: 'center',
@@ -497,7 +499,7 @@ export default function ChatPage() {
                         background: '#FFFFFF',
                         border: '1px solid #98989A',
                         color: '#121212',
-                        fontFamily: DM_SANS,
+                        fontFamily: F,
                         fontSize: 12,
                         fontWeight: 600,
                         cursor: 'pointer',
@@ -530,7 +532,7 @@ export default function ChatPage() {
                       border: '1px solid #98989A',
                       borderRadius: 45,
                       background: 'transparent',
-                      fontFamily: DM_SANS,
+                      fontFamily: F,
                       fontStyle: 'normal',
                       fontWeight: 600,
                       fontSize: 14,
@@ -556,7 +558,7 @@ export default function ChatPage() {
               style={{
                 width: '100%',
                 maxWidth: 960,
-                margin: '12px auto 0',
+                margin: '10px auto 0',
                 flexShrink: 0,
               }}
             >
@@ -587,11 +589,10 @@ export default function ChatPage() {
                     border: '1px solid #98989A',
                     borderRadius: 45,
                     padding: '0 24px',
-                    fontFamily: DM_SANS,
+                    fontFamily: F,
                     fontStyle: 'normal',
                     fontWeight: 600,
                     fontSize: 14,
-                    lineHeight: '100%',
                     color: '#121212',
                     background: 'transparent',
                     outline: 'none',
@@ -616,7 +617,7 @@ export default function ChatPage() {
                     boxShadow: '0px 21px 27px -10px rgba(170, 170, 170, 0.48)',
                     borderRadius: 6,
                     border: 'none',
-                    fontFamily: DM_SANS,
+                    fontFamily: F,
                     fontStyle: 'normal',
                     fontWeight: 600,
                     fontSize: 14,
@@ -636,14 +637,14 @@ export default function ChatPage() {
               {/* Free Research Preview. Arella AI may produce inaccurate information about people, places, or facts. */}
               <p
                 style={{
-                  fontFamily: DM_SANS,
+                  fontFamily: F,
                   fontStyle: 'normal',
                   fontWeight: 500,
                   fontSize: 12,
                   lineHeight: '100%',
                   textAlign: 'center',
                   color: '#718096',
-                  margin: '10px 0 0',
+                  margin: '8px 0 0',
                 }}
               >
                 Free Research Preview. Arella AI may produce inaccurate information about people, places, or facts.

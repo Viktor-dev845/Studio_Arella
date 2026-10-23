@@ -5,9 +5,16 @@ import { theme } from '@/lib/theme';
 
 const F = theme.font.body;
 
-export function PageTransition({ children }: { children: React.ReactNode }) {
+export function PageTransition({ children, className, style }: { children: React.ReactNode; className?: string; style?: React.CSSProperties }) {
   return (
-    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}>
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
+      className={className}
+      style={style}
+    >
       {children}
     </motion.div>
   );
