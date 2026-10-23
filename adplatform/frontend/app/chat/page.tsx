@@ -158,17 +158,18 @@ export default function ChatPage() {
 
   return (
     <DashboardLayout>
-      <PageTransition style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, height: '100%' }}>
-        {/* Full-height container that stretches all the way to the bottom */}
+      <PageTransition style={{ height: 'calc(100vh - 65px)', maxHeight: 'calc(100vh - 65px)', display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
+        {/* Full-height container that stretches all the way to the bottom level with Logout */}
         <div
           style={{
             fontFamily: F,
             width: '100%',
+            height: '100%',
             flex: 1,
             display: 'flex',
             flexDirection: 'column',
             minHeight: 0,
-            padding: '10px 24px 0 24px',
+            padding: '12px 24px 16px 24px',
             boxSizing: 'border-box',
           }}
         >
@@ -178,7 +179,7 @@ export default function ChatPage() {
               display: 'flex',
               alignItems: 'center',
               gap: 16,
-              marginBottom: 8,
+              marginBottom: 10,
               flexShrink: 0,
             }}
           >
@@ -233,18 +234,19 @@ export default function ChatPage() {
             </div>
           </div>
 
-          {/* ─── EXACT FIGMA LAYOUT CONTAINER (PULLED ALL THE WAY TO THE BOTTOM) ─── */}
+          {/* ─── EXACT FIGMA LAYOUT CONTAINER (STRETCHED TO BOTTOM LEVEL WITH LOGOUT) ─── */}
           <div
             style={{
               flex: 1,
               width: '100%',
+              height: '100%',
               minHeight: 0,
               background: '#EAEAEA',
-              borderRadius: '20px 20px 0 0',
-              padding: '18px 28px 12px',
+              borderRadius: 20,
+              padding: '16px 28px 12px',
               display: 'flex',
               flexDirection: 'column',
-              boxShadow: '0 -2px 20px rgba(0,0,0,0.03)',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
               boxSizing: 'border-box',
               position: 'relative',
               overflow: 'hidden',
