@@ -305,7 +305,8 @@ export default function UserProfileOverview() {
             </div>
 
             {/* Content Area */}
-            <div className="flex-1 max-w-[768px]">
+            {/* Content Area */}
+            <div className="flex-1 min-w-0">
               
               {activeSidebar === 'profile' && (
                 <>
@@ -314,7 +315,7 @@ export default function UserProfileOverview() {
                 <button 
                   onClick={() => setActiveTab('personal')}
                   className={`flex items-center gap-2.5 pb-3 relative transition-colors ${
-                    activeTab === 'personal' ? 'text-[#D4AF37] font-semibold text-[17px]' : 'text-[#16151C] font-light text-[17px] hover:text-gray-600'
+                    activeTab === 'personal' ? 'text-[#D4AF37] font-semibold text-[17px]' : 'text-[#16151C] font-medium text-[17px] hover:text-gray-600'
                   }`}
                 >
                   <User size={20} strokeWidth={activeTab === 'personal' ? 2 : 1.5} />
@@ -327,7 +328,7 @@ export default function UserProfileOverview() {
                 <button 
                   onClick={() => setActiveTab('business')}
                   className={`flex items-center gap-2.5 pb-3 relative transition-colors ${
-                    activeTab === 'business' ? 'text-[#D4AF37] font-semibold text-[17px]' : 'text-[#16151C] font-light text-[17px] hover:text-gray-600'
+                    activeTab === 'business' ? 'text-[#D4AF37] font-semibold text-[17px]' : 'text-[#16151C] font-medium text-[17px] hover:text-gray-600'
                   }`}
                 >
                   <Briefcase size={20} strokeWidth={activeTab === 'business' ? 2 : 1.5} />
@@ -341,60 +342,60 @@ export default function UserProfileOverview() {
               {/* Form Grid */}
               {activeTab === 'personal' && (
                 <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
-                    <div className="border-b border-[#A2A1A8]/10 pb-2">
-                      <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">First Name</label>
-                      <div className="text-[16px] text-[#16151C] font-light">{firstName || '—'}</div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-7">
+                    <div className="border-b border-neutral-200 dark:border-white/10 pb-3">
+                      <label className="text-[13px] text-neutral-500 font-medium block mb-1">First Name</label>
+                      <div className="text-[16px] text-[#16151C] dark:text-white font-medium">{firstName || '—'}</div>
                     </div>
-                    <div className="border-b border-[#A2A1A8]/10 pb-2">
-                      <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Last Name</label>
-                      <div className="text-[16px] text-[#16151C] font-light">{lastName || '—'}</div>
+                    <div className="border-b border-neutral-200 dark:border-white/10 pb-3">
+                      <label className="text-[13px] text-neutral-500 font-medium block mb-1">Last Name</label>
+                      <div className="text-[16px] text-[#16151C] dark:text-white font-medium">{lastName || '—'}</div>
                     </div>
                     
-                    <div className="border-b border-[#A2A1A8]/10 pb-2">
-                      <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Mobile Number</label>
-                      <div className="text-[16px] text-[#16151C] font-light">{phone || '—'}</div>
+                    <div className="border-b border-neutral-200 dark:border-white/10 pb-3">
+                      <label className="text-[13px] text-neutral-500 font-medium block mb-1">Mobile Number</label>
+                      <div className="text-[16px] text-[#16151C] dark:text-white font-medium">{phone || '—'}</div>
                     </div>
-                    <div className="border-b border-[#A2A1A8]/10 pb-2">
-                      <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Email Address</label>
-                      <div className="text-[16px] text-[#16151C] font-light">{email || '—'}</div>
-                    </div>
-
-                    <div className="border-b border-[#A2A1A8]/10 pb-2">
-                      <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Location / Address</label>
-                      <div className="text-[16px] text-[#16151C] font-light">{user?.location || '—'}</div>
-                    </div>
-                    <div className="border-b border-[#A2A1A8]/10 pb-2">
-                      <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Account Role</label>
-                      <div className="text-[16px] text-[#16151C] font-light">{userRole}</div>
+                    <div className="border-b border-neutral-200 dark:border-white/10 pb-3">
+                      <label className="text-[13px] text-neutral-500 font-medium block mb-1">Email Address</label>
+                      <div className="text-[16px] text-[#16151C] dark:text-white font-medium">{email || '—'}</div>
                     </div>
 
-                    <div className="border-b border-[#A2A1A8]/10 pb-2 md:col-span-2">
-                      <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Member Since</label>
-                      <div className="text-[16px] text-[#16151C] font-light">
+                    <div className="border-b border-neutral-200 dark:border-white/10 pb-3">
+                      <label className="text-[13px] text-neutral-500 font-medium block mb-1">Location / Address</label>
+                      <div className="text-[16px] text-[#16151C] dark:text-white font-medium">{user?.location || '—'}</div>
+                    </div>
+                    <div className="border-b border-neutral-200 dark:border-white/10 pb-3">
+                      <label className="text-[13px] text-neutral-500 font-medium block mb-1">Account Role</label>
+                      <div className="text-[16px] text-[#16151C] dark:text-white font-medium">{userRole}</div>
+                    </div>
+
+                    <div className="border-b border-neutral-200 dark:border-white/10 pb-3 md:col-span-2">
+                      <label className="text-[13px] text-neutral-500 font-medium block mb-1">Member Since</label>
+                      <div className="text-[16px] text-[#16151C] dark:text-white font-medium">
                         {user?.created_at ? new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : '—'}
                       </div>
                     </div>
                   </div>
 
                   {/* Dedicated Full-Width Creator Bio Section */}
-                  <div className="mt-8 pt-6 border-t border-[#A2A1A8]/15">
-                    <div className="flex items-center justify-between mb-2.5">
+                  <div className="mt-8 pt-6 border-t border-neutral-200 dark:border-white/10">
+                    <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
-                        <label className="text-[15px] text-[#16151C] font-medium block">Creator Bio / About Me</label>
-                        <span className="text-[11px] font-semibold text-[#D4AF37] bg-[#D4AF37]/15 px-2 py-0.5 rounded-full uppercase tracking-wider">Public</span>
+                        <label className="text-[15px] text-[#16151C] dark:text-white font-semibold block">Creator Bio / About Me</label>
+                        <span className="text-[11px] font-bold text-[#D4AF37] bg-[#D4AF37]/15 px-2.5 py-0.5 rounded-full uppercase tracking-wider">Public</span>
                       </div>
                     </div>
                     {user?.bio ? (
-                      <p className="text-[15px] text-[#16151C] font-light leading-[160%] bg-[#FAF5E6]/40 p-4 rounded-[10px] border border-[#D4AF37]/20 whitespace-pre-wrap">
+                      <p className="text-[15px] text-[#16151C] dark:text-neutral-100 font-normal leading-[160%] bg-[#FAF5E6]/60 dark:bg-[#D4AF37]/10 p-5 rounded-[12px] border border-[#D4AF37]/30 whitespace-pre-wrap">
                         {user.bio}
                       </p>
                     ) : (
-                      <div className="p-4 rounded-[10px] border border-dashed border-[#A2A1A8]/30 bg-[#F9F9FB] text-[14px] text-[#A2A1A8] flex items-center justify-between">
+                      <div className="p-4 rounded-[10px] border border-dashed border-neutral-300 dark:border-white/20 bg-neutral-50 dark:bg-white/5 text-[14px] text-neutral-500 flex items-center justify-between">
                         <span>No creator bio added yet. Tell your listeners and sponsors about yourself.</span>
                         <button
                           onClick={() => setEditingMode('personal')}
-                          className="text-[13px] font-medium text-[#D4AF37] hover:underline cursor-pointer"
+                          className="text-[13px] font-semibold text-[#D4AF37] hover:underline cursor-pointer"
                         >
                           + Add Bio
                         </button>
@@ -405,23 +406,23 @@ export default function UserProfileOverview() {
               )}
 
               {activeTab === 'business' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
-                  <div className="border-b border-[#A2A1A8]/10 pb-2">
-                    <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Business Name</label>
-                    <div className="text-[16px] text-[#16151C] font-light">{user?.business_name || '—'}</div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-7">
+                  <div className="border-b border-neutral-200 dark:border-white/10 pb-3">
+                    <label className="text-[13px] text-neutral-500 font-medium block mb-1">Business Name</label>
+                    <div className="text-[16px] text-[#16151C] dark:text-white font-medium">{user?.business_name || '—'}</div>
                   </div>
-                  <div className="border-b border-[#A2A1A8]/10 pb-2">
-                    <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Business Email</label>
-                    <div className="text-[16px] text-[#16151C] font-light">{user?.business_email || (user?.business_name ? user?.email : '') || '—'}</div>
+                  <div className="border-b border-neutral-200 dark:border-white/10 pb-3">
+                    <label className="text-[13px] text-neutral-500 font-medium block mb-1">Business Email</label>
+                    <div className="text-[16px] text-[#16151C] dark:text-white font-medium">{user?.business_email || (user?.business_name ? user?.email : '') || '—'}</div>
                   </div>
                   
-                  <div className="border-b border-[#A2A1A8]/10 pb-2">
-                    <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Business Phone</label>
-                    <div className="text-[16px] text-[#16151C] font-light">{user?.phone || '—'}</div>
+                  <div className="border-b border-neutral-200 dark:border-white/10 pb-3">
+                    <label className="text-[13px] text-neutral-500 font-medium block mb-1">Business Phone</label>
+                    <div className="text-[16px] text-[#16151C] dark:text-white font-medium">{user?.phone || '—'}</div>
                   </div>
-                  <div className="border-b border-[#A2A1A8]/10 pb-2">
-                    <label className="text-[14px] text-[#A2A1A8] font-light block mb-1">Business Location</label>
-                    <div className="text-[16px] text-[#16151C] font-light">{user?.location || '—'}</div>
+                  <div className="border-b border-neutral-200 dark:border-white/10 pb-3">
+                    <label className="text-[13px] text-neutral-500 font-medium block mb-1">Business Location</label>
+                    <div className="text-[16px] text-[#16151C] dark:text-white font-medium">{user?.location || '—'}</div>
                   </div>
                 </div>
               )}
@@ -527,44 +528,44 @@ export default function UserProfileOverview() {
                     <div className="flex flex-col gap-[33px]">
                       
                       {/* Language */}
-                      <div className="flex flex-col gap-[13px] w-full max-w-[460px]">
-                        <label className="text-[16px] font-medium text-[#16151C]">Language</label>
+                      <div className="flex flex-col gap-[10px] w-full max-w-[460px]">
+                        <label className="text-[15px] font-semibold text-neutral-800 dark:text-neutral-200">Language</label>
                         <div className="relative">
                           <select 
-                            className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#A2A1A8]/80 appearance-none outline-none focus:border-[#D4AF37]"
+                            className="w-full h-[50px] px-4 rounded-[10px] border border-neutral-300 dark:border-white/20 bg-white dark:bg-[#2A2A2E] text-[15px] font-medium text-neutral-900 dark:text-white appearance-none outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all shadow-xs"
                             defaultValue="English"
                           >
                             <option value="English">English</option>
                           </select>
-                          <ChevronDown size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#16151C]" />
+                          <ChevronDown size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-600 pointer-events-none" />
                         </div>
                       </div>
 
                       {/* Currency */}
-                      <div className="flex flex-col gap-[13px] w-full max-w-[460px]">
-                        <label className="text-[16px] font-medium text-[#16151C]">Currency</label>
+                      <div className="flex flex-col gap-[10px] w-full max-w-[460px]">
+                        <label className="text-[15px] font-semibold text-neutral-800 dark:text-neutral-200">Currency</label>
                         <div className="relative">
                           <select 
-                            className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#A2A1A8]/80 appearance-none outline-none focus:border-[#D4AF37]"
+                            className="w-full h-[50px] px-4 rounded-[10px] border border-neutral-300 dark:border-white/20 bg-white dark:bg-[#2A2A2E] text-[15px] font-medium text-neutral-900 dark:text-white appearance-none outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all shadow-xs"
                             defaultValue="Naira (NGN)"
                           >
                             <option value="Naira (NGN)">Naira (NGN)</option>
                           </select>
-                          <ChevronDown size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#16151C]" />
+                          <ChevronDown size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-600 pointer-events-none" />
                         </div>
                       </div>
 
                       {/* Theme */}
-                      <div className="flex flex-col gap-[13px] w-full max-w-[460px]">
-                        <label className="text-[16px] font-medium text-[#16151C]">Theme</label>
+                      <div className="flex flex-col gap-[10px] w-full max-w-[460px]">
+                        <label className="text-[15px] font-semibold text-neutral-800 dark:text-neutral-200">Theme</label>
                         <div className="relative">
                           <select 
-                            className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#A2A1A8]/80 appearance-none outline-none focus:border-[#D4AF37]"
+                            className="w-full h-[50px] px-4 rounded-[10px] border border-neutral-300 dark:border-white/20 bg-white dark:bg-[#2A2A2E] text-[15px] font-medium text-neutral-900 dark:text-white appearance-none outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all shadow-xs"
                             defaultValue="Light"
                           >
                             <option value="Light">Light</option>
                           </select>
-                          <ChevronDown size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#16151C]" />
+                          <ChevronDown size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-600 pointer-events-none" />
                         </div>
                       </div>
 
@@ -644,40 +645,40 @@ export default function UserProfileOverview() {
                     </button>
                   </div>
 
-                  <div className="flex flex-col gap-8">
+                  <div className="flex flex-col gap-6">
                     {/* Current password */}
-                    <div className="flex flex-col gap-3 w-full max-w-[460px]">
-                      <label className="text-[16px] font-medium text-[#16151C]">Current password</label>
+                    <div className="flex flex-col gap-2 w-full max-w-[460px]">
+                      <label className="text-[14px] font-semibold text-neutral-800 dark:text-neutral-200">Current password</label>
                       <input 
                         type="password"
                         placeholder="Enter current password"
-                        className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37]"
+                        className="w-full h-[50px] px-4 rounded-[10px] border border-neutral-300 dark:border-white/20 bg-white dark:bg-[#2A2A2E] text-[15px] font-medium text-neutral-900 dark:text-white placeholder:text-neutral-400 outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all shadow-xs"
                       />
                     </div>
 
                     {/* New password */}
-                    <div className="flex flex-col gap-3 w-full max-w-[460px]">
-                      <label className="text-[16px] font-medium text-[#16151C]">New password</label>
+                    <div className="flex flex-col gap-2 w-full max-w-[460px]">
+                      <label className="text-[14px] font-semibold text-neutral-800 dark:text-neutral-200">New password</label>
                       <input 
                         type="password"
                         placeholder="Enter new password"
-                        className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37]"
+                        className="w-full h-[50px] px-4 rounded-[10px] border border-neutral-300 dark:border-white/20 bg-white dark:bg-[#2A2A2E] text-[15px] font-medium text-neutral-900 dark:text-white placeholder:text-neutral-400 outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all shadow-xs"
                       />
                     </div>
 
                     {/* Confirm password */}
-                    <div className="flex flex-col gap-3 w-full max-w-[460px]">
-                      <label className="text-[16px] font-medium text-[#16151C]">Confirm password</label>
+                    <div className="flex flex-col gap-2 w-full max-w-[460px]">
+                      <label className="text-[14px] font-semibold text-neutral-800 dark:text-neutral-200">Confirm password</label>
                       <input 
                         type="password"
                         placeholder="Confirm new password"
-                        className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37]"
+                        className="w-full h-[50px] px-4 rounded-[10px] border border-neutral-300 dark:border-white/20 bg-white dark:bg-[#2A2A2E] text-[15px] font-medium text-neutral-900 dark:text-white placeholder:text-neutral-400 outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all shadow-xs"
                       />
                     </div>
 
                     <button 
                       onClick={() => setShowSuccessModal(true)}
-                      className="w-fit h-[40px] px-6 mt-4 bg-[#D4AF37] hover:bg-[#D4AF37]/90 text-black font-medium text-[14px] rounded-[6px] transition-colors"
+                      className="w-fit h-[44px] px-8 mt-2 bg-[#D4AF37] hover:bg-[#c29f31] text-black font-semibold text-[14px] rounded-[8px] transition-colors shadow-sm cursor-pointer"
                     >
                       Reset Password
                     </button>
@@ -757,30 +758,30 @@ export default function UserProfileOverview() {
                   {/* Tab Content */}
                   {supportTab === 'contact' && (
                     <div className="flex flex-wrap gap-y-8 gap-x-32 w-full max-w-[700px]">
-                      <div className="flex flex-col gap-[5px] w-full max-w-[280px]">
-                        <div className="text-[14px] font-light text-[#A2A1A8]">Phone number</div>
-                        <div className="text-[16px] font-light text-[#16151C] pb-2 border-b border-[#A2A1A8]/10">02034567890</div>
+                      <div className="flex flex-col gap-1.5 w-full max-w-[280px]">
+                        <div className="text-[13px] font-medium text-neutral-500">Phone number</div>
+                        <div className="text-[16px] font-medium text-neutral-900 dark:text-white pb-2 border-b border-neutral-200 dark:border-white/10">02034567890</div>
                       </div>
 
-                      <div className="flex flex-col gap-[5px] w-full max-w-[280px]">
-                        <div className="text-[14px] font-light text-[#A2A1A8]">Email</div>
-                        <div className="text-[16px] font-light text-[#16151C] pb-2 border-b border-[#A2A1A8]/10">hello@studioarella.com</div>
+                      <div className="flex flex-col gap-1.5 w-full max-w-[280px]">
+                        <div className="text-[13px] font-medium text-neutral-500">Email</div>
+                        <div className="text-[16px] font-medium text-neutral-900 dark:text-white pb-2 border-b border-neutral-200 dark:border-white/10">hello@studioarella.com</div>
                       </div>
                     </div>
                   )}
 
                   {supportTab === 'report' && (
-                    <div className="flex flex-col gap-[13px] w-full max-w-[575px]">
-                      <div className="text-[16px] font-medium text-[#16151C] leading-[150%]">Message us</div>
+                    <div className="flex flex-col gap-3 w-full max-w-[575px]">
+                      <label className="text-[15px] font-semibold text-neutral-800 dark:text-neutral-200">Message us</label>
                       <textarea 
-                        placeholder="Enter message"
+                        placeholder="Describe your issue or feedback in detail..."
                         value={reportForm.message}
                         onChange={(e) => setReportForm({message: e.target.value})}
-                        className="w-full h-[232px] p-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37] resize-none"
+                        className="w-full h-[180px] p-4 rounded-[10px] border border-neutral-300 dark:border-white/20 bg-white dark:bg-[#2A2A2E] text-[15px] font-medium text-neutral-900 dark:text-white placeholder:text-neutral-400 outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 resize-none transition-all shadow-xs leading-[160%]"
                       ></textarea>
                       <button 
                         onClick={handleReportProblem}
-                        className="mt-2 w-fit h-[40px] px-6 bg-[#D4AF37] hover:bg-[#c29f31] text-[#16151C] font-normal text-[14px] capitalize rounded-[6px] transition-colors"
+                        className="mt-2 w-fit h-[44px] px-8 bg-[#D4AF37] hover:bg-[#c29f31] text-black font-semibold text-[14px] rounded-[8px] transition-colors shadow-sm cursor-pointer"
                       >
                         Send Message
                       </button>
@@ -792,154 +793,256 @@ export default function UserProfileOverview() {
           </div>
           </>
           ) : editingMode === 'business' ? (
-            <div className="flex-1 max-w-[850px]">
-              <div className="flex items-center gap-4 mb-10">
-                <button 
-                  onClick={() => setEditingMode(null)} 
-                  className="flex items-center gap-2 text-[#16151C] font-semibold text-[16px] hover:text-gray-600 transition-colors"
-                >
-                  <ChevronLeft size={20} strokeWidth={2} /> 
-                  Back
-                </button>
-                <h2 className="text-[16px] font-semibold text-[#16151C]">Edit profile (Business information)</h2>
+            <div className="w-full max-w-[1050px] mx-auto">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-8 pb-4 border-b border-neutral-200 dark:border-white/10">
+                <div className="flex items-center gap-3">
+                  <button 
+                    onClick={() => setEditingMode(null)} 
+                    className="flex items-center gap-2 text-neutral-700 hover:text-black dark:text-neutral-300 dark:hover:text-white font-medium text-[15px] px-3 py-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                  >
+                    <ChevronLeft size={18} strokeWidth={2} /> 
+                    Back to Profile
+                  </button>
+                  <div className="w-[1px] h-5 bg-neutral-300 dark:bg-white/20"></div>
+                  <div>
+                    <h2 className="text-[20px] font-bold text-neutral-900 dark:text-white">
+                      Edit Profile (Business Information)
+                    </h2>
+                    <p className="text-[13px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+                      Update your business identity and company contact details
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 mb-10">
-                <input 
-                  type="text" 
-                  placeholder="Business name"
-                  value={businessForm.business_name}
-                  onChange={(e) => setBusinessForm(prev => ({ ...prev, business_name: e.target.value }))}
-                  className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37]"
-                />
-                <input 
-                  type="email" 
-                  placeholder="Business email"
-                  value={businessForm.email}
-                  onChange={(e) => setBusinessForm(prev => ({ ...prev, email: e.target.value }))}
-                  className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37]"
-                />
-                <input 
-                  type="tel" 
-                  placeholder="Business phone"
-                  value={businessForm.phone}
-                  onChange={(e) => setBusinessForm(prev => ({ ...prev, phone: e.target.value }))}
-                  className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37]"
-                />
-                <input 
-                  type="text" 
-                  placeholder="Business location"
-                  value={businessForm.location}
-                  onChange={(e) => setBusinessForm(prev => ({ ...prev, location: e.target.value }))}
-                  className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37]"
-                />
+              {/* Form Card */}
+              <div className="bg-white dark:bg-[#1E1E22] rounded-2xl border border-neutral-200 dark:border-white/10 p-6 md:p-8 shadow-xs mb-8">
+                <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-white mb-6 flex items-center gap-2">
+                  <Briefcase size={18} className="text-[#D4AF37]" />
+                  Business Details
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[14px] font-semibold text-neutral-800 dark:text-neutral-200">
+                      Business Name
+                    </label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. Arella Media Studio"
+                      value={businessForm.business_name}
+                      onChange={(e) => setBusinessForm(prev => ({ ...prev, business_name: e.target.value }))}
+                      className="w-full h-[50px] px-4 rounded-[10px] border border-neutral-300 dark:border-white/20 bg-white dark:bg-[#2A2A2E] text-[15px] font-medium text-neutral-900 dark:text-white placeholder:text-neutral-400 outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all shadow-xs"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[14px] font-semibold text-neutral-800 dark:text-neutral-200">
+                      Business Email
+                    </label>
+                    <input 
+                      type="email" 
+                      placeholder="e.g. contact@business.com"
+                      value={businessForm.email}
+                      onChange={(e) => setBusinessForm(prev => ({ ...prev, email: e.target.value }))}
+                      className="w-full h-[50px] px-4 rounded-[10px] border border-neutral-300 dark:border-white/20 bg-white dark:bg-[#2A2A2E] text-[15px] font-medium text-neutral-900 dark:text-white placeholder:text-neutral-400 outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all shadow-xs"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[14px] font-semibold text-neutral-800 dark:text-neutral-200">
+                      Business Phone
+                    </label>
+                    <input 
+                      type="tel" 
+                      placeholder="e.g. +234 801 234 5678"
+                      value={businessForm.phone}
+                      onChange={(e) => setBusinessForm(prev => ({ ...prev, phone: e.target.value }))}
+                      className="w-full h-[50px] px-4 rounded-[10px] border border-neutral-300 dark:border-white/20 bg-white dark:bg-[#2A2A2E] text-[15px] font-medium text-neutral-900 dark:text-white placeholder:text-neutral-400 outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all shadow-xs"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[14px] font-semibold text-neutral-800 dark:text-neutral-200">
+                      Business Location / Address
+                    </label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. 12 Bank Road, Umuahia"
+                      value={businessForm.location}
+                      onChange={(e) => setBusinessForm(prev => ({ ...prev, location: e.target.value }))}
+                      className="w-full h-[50px] px-4 rounded-[10px] border border-neutral-300 dark:border-white/20 bg-white dark:bg-[#2A2A2E] text-[15px] font-medium text-neutral-900 dark:text-white placeholder:text-neutral-400 outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all shadow-xs"
+                    />
+                  </div>
+                </div>
               </div>
 
-              <div className="flex items-center gap-5">
+              {/* Action Buttons */}
+              <div className="flex items-center gap-4 pt-2 mb-16">
                 <button 
                   onClick={() => setEditingMode(null)}
-                  className="h-[40px] px-5 rounded-[10px] border border-[#A2A1A8]/20 text-[16px] font-light text-[#16151C] hover:bg-gray-50 transition-colors flex items-center justify-center min-w-[91px]"
+                  className="h-[44px] px-6 rounded-[8px] border border-neutral-300 dark:border-white/20 bg-white dark:bg-transparent text-[15px] font-semibold text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-white/5 transition-colors flex items-center justify-center min-w-[100px] cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button 
                   onClick={() => handleSaveProfile('business')}
                   disabled={isSaving}
-                  className="h-[40px] px-8 rounded-[6px] bg-[#D4AF37] text-[14px] text-black hover:bg-[#c29f31] transition-colors flex items-center justify-center min-w-[116px] cursor-pointer disabled:opacity-50"
+                  className="h-[44px] px-8 rounded-[8px] bg-[#D4AF37] hover:bg-[#c29f31] text-[15px] font-semibold text-black transition-colors flex items-center justify-center min-w-[130px] cursor-pointer shadow-sm disabled:opacity-50"
                 >
-                  {isSaving ? 'Saving...' : 'Save'}
+                  {isSaving ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
             </div>
           ) : (
-            <div className="flex-1 max-w-[850px]">
-              <div className="flex items-center gap-4 mb-10">
-                <button 
-                  onClick={() => setEditingMode(null)} 
-                  className="flex items-center gap-2 text-[#16151C] font-semibold text-[16px] hover:text-gray-600 transition-colors"
-                >
-                  <ChevronLeft size={20} strokeWidth={2} /> 
-                  Back
-                </button>
-                <h2 className="text-[16px] font-semibold text-[#16151C]">Edit profile (Personal information)</h2>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 mb-8">
-                <input 
-                  type="text" 
-                  placeholder="First name"
-                  value={personalForm.first_name}
-                  onChange={(e) => setPersonalForm(prev => ({ ...prev, first_name: e.target.value }))}
-                  className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37]"
-                />
-                <input 
-                  type="text" 
-                  placeholder="Last name"
-                  value={personalForm.last_name}
-                  onChange={(e) => setPersonalForm(prev => ({ ...prev, last_name: e.target.value }))}
-                  className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37]"
-                />
-                <input 
-                  type="tel" 
-                  placeholder="Mobile number"
-                  value={personalForm.phone}
-                  onChange={(e) => setPersonalForm(prev => ({ ...prev, phone: e.target.value }))}
-                  className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37]"
-                />
-                <input 
-                  type="email" 
-                  placeholder="Email address"
-                  value={personalForm.email}
-                  disabled
-                  title="Email cannot be changed directly"
-                  className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-[#A2A1A8]/5 text-[17px] font-light text-[#16151C]/70 placeholder:text-[#A2A1A8]/80 outline-none cursor-not-allowed"
-                />
-                <input 
-                  type="text" 
-                  placeholder="Location / Address"
-                  value={personalForm.location}
-                  onChange={(e) => setPersonalForm(prev => ({ ...prev, location: e.target.value }))}
-                  className="w-full h-[56px] px-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[17px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37] md:col-span-2"
-                />
-              </div>
-
-              {/* Dedicated Full-Width Creator Bio Textarea */}
-              <div className="flex flex-col gap-2 mb-10">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <label className="text-[15px] font-medium text-[#16151C]">Creator Bio / About Me</label>
-                    <span className="text-[11px] font-semibold text-[#D4AF37] bg-[#D4AF37]/15 px-2 py-0.5 rounded-full uppercase tracking-wider">Public</span>
+            <div className="w-full max-w-[1050px] mx-auto">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-8 pb-4 border-b border-neutral-200 dark:border-white/10">
+                <div className="flex items-center gap-3">
+                  <button 
+                    onClick={() => setEditingMode(null)} 
+                    className="flex items-center gap-2 text-neutral-700 hover:text-black dark:text-neutral-300 dark:hover:text-white font-medium text-[15px] px-3 py-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                  >
+                    <ChevronLeft size={18} strokeWidth={2} /> 
+                    Back to Profile
+                  </button>
+                  <div className="w-[1px] h-5 bg-neutral-300 dark:bg-white/20"></div>
+                  <div>
+                    <h2 className="text-[20px] font-bold text-neutral-900 dark:text-white">
+                      Edit Profile (Personal Information)
+                    </h2>
+                    <p className="text-[13px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+                      Update your personal details, contact info, and creator bio
+                    </p>
                   </div>
-                  <span className={`text-[12px] ${personalForm.bio.length > 280 ? 'text-[#C9483A] font-semibold' : 'text-[#A2A1A8]'}`}>
+                </div>
+              </div>
+
+              {/* Form Card */}
+              <div className="bg-white dark:bg-[#1E1E22] rounded-2xl border border-neutral-200 dark:border-white/10 p-6 md:p-8 shadow-xs mb-8">
+                <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-white mb-6 flex items-center gap-2">
+                  <User size={18} className="text-[#D4AF37]" />
+                  Personal & Contact Details
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                  {/* First Name */}
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[14px] font-semibold text-neutral-800 dark:text-neutral-200">
+                      First Name <span className="text-[#C9483A]">*</span>
+                    </label>
+                    <input 
+                      type="text" 
+                      placeholder="Enter first name"
+                      value={personalForm.first_name}
+                      onChange={(e) => setPersonalForm(prev => ({ ...prev, first_name: e.target.value }))}
+                      className="w-full h-[50px] px-4 rounded-[10px] border border-neutral-300 dark:border-white/20 bg-white dark:bg-[#2A2A2E] text-[15px] font-medium text-neutral-900 dark:text-white placeholder:text-neutral-400 outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all shadow-xs"
+                    />
+                  </div>
+
+                  {/* Last Name */}
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[14px] font-semibold text-neutral-800 dark:text-neutral-200">
+                      Last Name <span className="text-[#C9483A]">*</span>
+                    </label>
+                    <input 
+                      type="text" 
+                      placeholder="Enter last name"
+                      value={personalForm.last_name}
+                      onChange={(e) => setPersonalForm(prev => ({ ...prev, last_name: e.target.value }))}
+                      className="w-full h-[50px] px-4 rounded-[10px] border border-neutral-300 dark:border-white/20 bg-white dark:bg-[#2A2A2E] text-[15px] font-medium text-neutral-900 dark:text-white placeholder:text-neutral-400 outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all shadow-xs"
+                    />
+                  </div>
+
+                  {/* Mobile Number */}
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[14px] font-semibold text-neutral-800 dark:text-neutral-200">
+                      Mobile Number
+                    </label>
+                    <input 
+                      type="tel" 
+                      placeholder="e.g. +234 801 234 5678"
+                      value={personalForm.phone}
+                      onChange={(e) => setPersonalForm(prev => ({ ...prev, phone: e.target.value }))}
+                      className="w-full h-[50px] px-4 rounded-[10px] border border-neutral-300 dark:border-white/20 bg-white dark:bg-[#2A2A2E] text-[15px] font-medium text-neutral-900 dark:text-white placeholder:text-neutral-400 outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all shadow-xs"
+                    />
+                  </div>
+
+                  {/* Email Address */}
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                      <label className="text-[14px] font-semibold text-neutral-800 dark:text-neutral-200">
+                        Email Address
+                      </label>
+                      <span className="text-[11px] font-medium text-neutral-500 bg-neutral-100 dark:bg-white/10 px-2 py-0.5 rounded">
+                        Read-only
+                      </span>
+                    </div>
+                    <input 
+                      type="email" 
+                      placeholder="Email address"
+                      value={personalForm.email}
+                      disabled
+                      title="Email cannot be changed directly"
+                      className="w-full h-[50px] px-4 rounded-[10px] border border-neutral-200 dark:border-white/10 bg-neutral-100/80 dark:bg-[#1A1A1D] text-[15px] font-medium text-neutral-500 dark:text-neutral-400 outline-none cursor-not-allowed shadow-none"
+                    />
+                  </div>
+
+                  {/* Location / Address */}
+                  <div className="flex flex-col gap-2 md:col-span-2">
+                    <label className="text-[14px] font-semibold text-neutral-800 dark:text-neutral-200">
+                      Location / City / Address
+                    </label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. Umuahia, Abia State, Nigeria"
+                      value={personalForm.location}
+                      onChange={(e) => setPersonalForm(prev => ({ ...prev, location: e.target.value }))}
+                      className="w-full h-[50px] px-4 rounded-[10px] border border-neutral-300 dark:border-white/20 bg-white dark:bg-[#2A2A2E] text-[15px] font-medium text-neutral-900 dark:text-white placeholder:text-neutral-400 outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all shadow-xs"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Creator Bio Card */}
+              <div className="bg-white dark:bg-[#1E1E22] rounded-2xl border border-neutral-200 dark:border-white/10 p-6 md:p-8 shadow-xs mb-8">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2.5">
+                    <h3 className="text-[16px] font-semibold text-neutral-900 dark:text-white">Creator Bio / About Me</h3>
+                    <span className="text-[11px] font-bold text-[#D4AF37] bg-[#D4AF37]/15 px-2.5 py-0.5 rounded-full uppercase tracking-wider">Public</span>
+                  </div>
+                  <span className={`text-[13px] font-medium ${personalForm.bio.length > 280 ? 'text-[#C9483A] font-bold' : 'text-neutral-500 dark:text-neutral-400'}`}>
                     {personalForm.bio.length} / 300
                   </span>
                 </div>
+                <p className="text-[13px] text-neutral-500 dark:text-neutral-400 mb-4">
+                  Tell listeners, fans, and prospective advertisers about yourself, your podcasts, or your media show.
+                </p>
                 <textarea 
                   rows={4}
                   maxLength={300}
-                  placeholder="Write a short bio introducing yourself, your podcast shows, or what you create. This will be visible on your public creator profile..."
+                  placeholder="Write a short, engaging bio introducing who you are, what content you produce, and your creative vision..."
                   value={personalForm.bio}
                   onChange={(e) => setPersonalForm(prev => ({ ...prev, bio: e.target.value }))}
-                  className="w-full p-4 rounded-[10px] border border-[#A2A1A8]/20 bg-transparent text-[16px] font-light text-[#16151C] placeholder:text-[#A2A1A8]/80 outline-none focus:border-[#D4AF37] resize-none leading-[150%]"
+                  className="w-full p-4 rounded-[10px] border border-neutral-300 dark:border-white/20 bg-white dark:bg-[#2A2A2E] text-[15px] font-medium text-neutral-900 dark:text-white placeholder:text-neutral-400 outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all shadow-xs resize-none leading-[160%]"
                 />
-                <p className="text-[12px] text-[#A2A1A8]">
-                  Keep it brief and engaging — listeners and sponsors will see this on your public profile.
-                </p>
               </div>
 
-              <div className="flex items-center gap-5">
+              {/* Action Buttons */}
+              <div className="flex items-center gap-4 pt-2 mb-16">
                 <button 
                   onClick={() => setEditingMode(null)}
-                  className="h-[40px] px-5 rounded-[10px] border border-[#A2A1A8]/20 text-[16px] font-light text-[#16151C] hover:bg-gray-50 transition-colors flex items-center justify-center min-w-[91px]"
+                  className="h-[44px] px-6 rounded-[8px] border border-neutral-300 dark:border-white/20 bg-white dark:bg-transparent text-[15px] font-semibold text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-white/5 transition-colors flex items-center justify-center min-w-[100px] cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button 
                   onClick={() => handleSaveProfile('personal')}
                   disabled={isSaving}
-                  className="h-[40px] px-8 rounded-[6px] bg-[#D4AF37] text-[14px] text-black hover:bg-[#c29f31] transition-colors flex items-center justify-center min-w-[116px] cursor-pointer disabled:opacity-50"
+                  className="h-[44px] px-8 rounded-[8px] bg-[#D4AF37] hover:bg-[#c29f31] text-[15px] font-semibold text-black transition-colors flex items-center justify-center min-w-[130px] cursor-pointer shadow-sm disabled:opacity-50"
                 >
-                  {isSaving ? 'Saving...' : 'Save'}
+                  {isSaving ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
             </div>
