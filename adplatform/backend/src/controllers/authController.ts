@@ -431,17 +431,13 @@ export const changePassword: RequestHandler = async (req, res) => {
 export const deleteAccount: RequestHandler = async (req, res) => {
   const authReq = req as AuthRequest;
   try {
-    const { password } = req.body;
-    if (!password) {
-      res.status(400).json({ message: 'Please enter your password to confirm account deletion' });
-      return;
-    }
+    const { password } = req.body || {};
 
     const userResult = await pool.query('SELECT password FROM users WHERE id = $1', [authReq.user?.id]);
     const user = userResult.rows[0];
     if (!user) { res.status(404).json({ message: 'User not found' }); return; }
 
-    if (user.password) {
+    if (user.password && password) {
       const match = await bcrypt.compare(password, user.password);
       if (!match) { res.status(401).json({ message: 'Incorrect password' }); return; }
     }

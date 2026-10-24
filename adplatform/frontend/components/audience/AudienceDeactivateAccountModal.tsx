@@ -56,16 +56,12 @@ export default function AudienceDeactivateAccountModal({
       if (onConfirm) {
         await onConfirm();
       } else {
-        try {
-          await api.delete('/auth/account');
-        } catch (apiErr) {
-          console.warn('API deactivation note:', apiErr);
-        }
+        await api.delete('/auth/account');
       }
       // Advance to the Figma "Account deactivated" popup
       setStep('deactivated');
     } catch (err: any) {
-      toast(err?.message || 'Could not deactivate account. Please try again.', 'error');
+      toast(err?.response?.data?.message || err?.message || 'Could not deactivate account. Please try again.', 'error');
     } finally {
       setIsDeactivating(false);
     }

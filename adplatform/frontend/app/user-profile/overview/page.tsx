@@ -26,7 +26,10 @@ import {
   X,
   Check,
   SlidersHorizontal,
-  ExternalLink
+  ExternalLink,
+  Laptop,
+  Smartphone,
+  Loader2
 } from 'lucide-react';
 import { theme } from '@/lib/theme';
 
@@ -62,8 +65,13 @@ export default function UserProfileOverview() {
     location: '' 
   });
   const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+  const [passwordError, setPasswordError] = useState('');
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [reportForm, setReportForm] = useState({ message: '' });
   const [sessions, setSessions] = useState<any[]>([]);
+  const [isLoadingSessions, setIsLoadingSessions] = useState(false);
+  const [revokingSessionId, setRevokingSessionId] = useState<string | null>(null);
+  const [isLoggingOutAll, setIsLoggingOutAll] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -135,20 +143,38 @@ export default function UserProfileOverview() {
   };
 
   const handleChangePassword = async () => {
-    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      alert("Passwords don't match");
+    setPasswordError('');
+    if (!passwordForm.currentPassword) {
+      setPasswordError('Please enter your current password');
       return;
     }
+    if (!passwordForm.newPassword) {
+      setPasswordError('Please enter your new password');
+      return;
+    }
+    if (passwordForm.newPassword.length < 6) {
+      setPasswordError('New password must be at least 6 characters long');
+      return;
+    }
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      setPasswordError("New passwords do not match");
+      return;
+    }
+    setIsChangingPassword(true);
     try {
       await api.put('/auth/password', {
-        old_password: passwordForm.currentPassword,
-        new_password: passwordForm.newPassword
+        currentPassword: passwordForm.currentPassword,
+        newPassword: passwordForm.newPassword
       });
       setSuccessModalMessage('Password changed successfully');
       setShowSuccessModal(true);
       setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    } catch (err) {
-      alert('Failed to change password');
+      setPasswordError('');
+    } catch (err: any) {
+      const msg = err.response?.data?.message || 'Failed to change password. Please check your current password.';
+      setPasswordError(msg);
+    } finally {
+      setIsChangingPassword(false);
     }
   };
 
@@ -167,11 +193,14 @@ export default function UserProfileOverview() {
   };
 
   const loadSessions = async () => {
+    setIsLoadingSessions(true);
     try {
       const res = await api.get('/auth/sessions');
       setSessions(res.data.sessions || []);
     } catch (err) {
-      console.error(err);
+      console.error('Failed to load active sessions', err);
+    } finally {
+      setIsLoadingSessions(false);
     }
   };
 
@@ -181,23 +210,30 @@ export default function UserProfileOverview() {
     }
   }, [activeSidebar, securityView]);
 
-  const handleLogoutAllDevices = async () => {
+  const handleRevokeSession = async (sessionId: string) => {
+    setRevokingSessionId(sessionId);
     try {
-      let allSessions = sessions;
-      if (allSessions.length === 0) {
-        const res = await api.get('/auth/sessions');
-        allSessions = res.data.sessions || [];
-      }
-      
-      const otherSessions = allSessions.filter(s => !s.is_current);
-      for (const s of otherSessions) {
-        await api.delete(`/auth/sessions/${s.id}`);
-      }
+      await api.delete(`/auth/sessions/${sessionId}`);
+      setSessions(prev => prev.filter(s => s.id !== sessionId));
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to revoke session');
+    } finally {
+      setRevokingSessionId(null);
+    }
+  };
+
+  const handleLogoutAllDevices = async () => {
+    setIsLoggingOutAll(true);
+    try {
+      await api.delete('/auth/sessions/all');
       setShowLogoutModal(false);
       setShowLogoutSuccessModal(true);
-      loadSessions();
-    } catch (err) {
-      console.error(err);
+      await loadSessions();
+    } catch (err: any) {
+      console.error('Failed to log out all other devices', err);
+      alert(err.response?.data?.message || 'Failed to log out of other devices');
+    } finally {
+      setIsLoggingOutAll(false);
     }
   };
 
@@ -723,7 +759,7 @@ export default function UserProfileOverview() {
                   <div className="flex flex-wrap gap-8 border-b border-[#A2A1A8]/20 mb-10 relative">
                     <button 
                       onClick={() => setSecurityView('main')}
-                      className="flex items-center gap-2.5 pb-3 relative hover:opacity-80 transition-opacity"
+                      className="flex items-center gap-2.5 pb-3 relative hover:opacity-80 transition-opacity cursor-pointer"
                     >
                       <ArrowLeft size={20} className="text-[#D4AF37]" strokeWidth={2} />
                       <span className="text-[#D4AF37] font-semibold text-[17px]">Change password</span>
@@ -732,12 +768,20 @@ export default function UserProfileOverview() {
                   </div>
 
                   <div className="flex flex-col gap-6">
+                    {passwordError && (
+                      <div className="w-full max-w-[460px] p-3.5 rounded-[10px] bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 text-[14px]">
+                        {passwordError}
+                      </div>
+                    )}
+
                     {/* Current password */}
                     <div className="flex flex-col gap-2 w-full max-w-[460px]">
                       <label className="text-[14px] font-semibold text-neutral-800 dark:text-neutral-200">Current password</label>
                       <input 
                         type="password"
                         placeholder="Enter current password"
+                        value={passwordForm.currentPassword}
+                        onChange={(e) => setPasswordForm(p => ({ ...p, currentPassword: e.target.value }))}
                         className="w-full h-[50px] px-4 rounded-[10px] border border-neutral-300 dark:border-white/20 bg-white dark:bg-[#2A2A2E] text-[15px] font-medium text-neutral-900 dark:text-white placeholder:text-neutral-400 outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all shadow-xs"
                       />
                     </div>
@@ -747,7 +791,9 @@ export default function UserProfileOverview() {
                       <label className="text-[14px] font-semibold text-neutral-800 dark:text-neutral-200">New password</label>
                       <input 
                         type="password"
-                        placeholder="Enter new password"
+                        placeholder="Enter new password (min. 6 characters)"
+                        value={passwordForm.newPassword}
+                        onChange={(e) => setPasswordForm(p => ({ ...p, newPassword: e.target.value }))}
                         className="w-full h-[50px] px-4 rounded-[10px] border border-neutral-300 dark:border-white/20 bg-white dark:bg-[#2A2A2E] text-[15px] font-medium text-neutral-900 dark:text-white placeholder:text-neutral-400 outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all shadow-xs"
                       />
                     </div>
@@ -758,15 +804,25 @@ export default function UserProfileOverview() {
                       <input 
                         type="password"
                         placeholder="Confirm new password"
+                        value={passwordForm.confirmPassword}
+                        onChange={(e) => setPasswordForm(p => ({ ...p, confirmPassword: e.target.value }))}
                         className="w-full h-[50px] px-4 rounded-[10px] border border-neutral-300 dark:border-white/20 bg-white dark:bg-[#2A2A2E] text-[15px] font-medium text-neutral-900 dark:text-white placeholder:text-neutral-400 outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all shadow-xs"
                       />
                     </div>
 
                     <button 
-                      onClick={() => setShowSuccessModal(true)}
-                      className="w-fit h-[44px] px-8 mt-2 bg-[#D4AF37] hover:bg-[#c29f31] text-black font-semibold text-[14px] rounded-[8px] transition-colors shadow-sm cursor-pointer"
+                      onClick={handleChangePassword}
+                      disabled={isChangingPassword}
+                      className="w-fit h-[44px] px-8 mt-2 bg-[#D4AF37] hover:bg-[#c29f31] text-black font-semibold text-[14px] rounded-[8px] transition-colors shadow-sm cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
                     >
-                      Reset Password
+                      {isChangingPassword ? (
+                        <>
+                          <Loader2 size={16} className="animate-spin text-black" />
+                          <span>Updating password...</span>
+                        </>
+                      ) : (
+                        'Reset Password'
+                      )}
                     </button>
                   </div>
                 </>
@@ -777,7 +833,7 @@ export default function UserProfileOverview() {
                   <div className="flex flex-wrap gap-8 border-b border-[#A2A1A8]/20 mb-10 relative">
                     <button 
                       onClick={() => setSecurityView('main')}
-                      className="flex items-center gap-2.5 pb-3 relative hover:opacity-80 transition-opacity"
+                      className="flex items-center gap-2.5 pb-3 relative hover:opacity-80 transition-opacity cursor-pointer"
                     >
                       <ArrowLeft size={20} className="text-[#D4AF37]" strokeWidth={2} />
                       <span className="text-[#D4AF37] font-semibold text-[17px]">Login activity</span>
@@ -785,27 +841,67 @@ export default function UserProfileOverview() {
                     </button>
                   </div>
 
-                  <div className="flex flex-col gap-8 w-full max-w-[660px]">
-                    <div className="flex items-center justify-between">
-                      <div className="flex flex-col gap-1">
-                        <div className="text-[16px] font-medium text-[#16151C]">Windows</div>
-                        <div className="text-[14px] font-light text-[#16151C]">Logged in 3days ago</div>
+                  <div className="flex flex-col gap-4 w-full max-w-[660px]">
+                    {isLoadingSessions ? (
+                      <div className="flex items-center gap-3 py-10 text-neutral-500">
+                        <Loader2 size={20} className="animate-spin text-[#D4AF37]" />
+                        <span className="text-[14px]">Loading active sessions...</span>
                       </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="flex flex-col gap-1">
-                        <div className="text-[16px] font-medium text-[#16151C]">MacOs</div>
-                        <div className="text-[14px] font-light text-[#16151C]">Logged in August 15, 2026</div>
+                    ) : sessions.length === 0 ? (
+                      <div className="py-8 text-neutral-500 text-[15px]">
+                        No active sessions recorded.
                       </div>
-                    </div>
+                    ) : (
+                      sessions.map((sess: any) => {
+                        const isCurrent = sess.is_current;
+                        const deviceLower = (sess.device || '').toLowerCase();
+                        const isMobile = deviceLower.includes('ios') || deviceLower.includes('android') || deviceLower.includes('mobile');
+                        const DeviceIcon = isMobile ? Smartphone : Laptop;
 
-                    <div className="flex items-center justify-between">
-                      <div className="flex flex-col gap-1">
-                        <div className="text-[16px] font-medium text-[#16151C]">MacOs</div>
-                        <div className="text-[14px] font-light text-[#16151C]">Logged in August 15, 2026</div>
-                      </div>
-                    </div>
+                        return (
+                          <div 
+                            key={sess.id} 
+                            className="flex items-center justify-between p-4 rounded-xl border border-neutral-200 dark:border-white/10 bg-white dark:bg-[#1E1E22] shadow-xs"
+                          >
+                            <div className="flex items-center gap-3.5">
+                              <div className="w-10 h-10 rounded-full bg-[#D4AF37]/15 flex items-center justify-center text-[#D4AF37] shrink-0">
+                                <DeviceIcon size={20} />
+                              </div>
+                              <div className="flex flex-col gap-0.5">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[15px] font-semibold text-[#16151C] dark:text-white">
+                                    {sess.device || 'Web Browser'}
+                                  </span>
+                                  {isCurrent && (
+                                    <span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">
+                                      Active now
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="text-[13px] text-neutral-500 dark:text-neutral-400 font-light">
+                                  {isCurrent 
+                                    ? 'This device' 
+                                    : sess.last_active_at 
+                                      ? `Last active: ${new Date(sess.last_active_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`
+                                      : 'Recent session'}
+                                  {sess.ip_address ? ` · IP: ${sess.ip_address}` : ''}
+                                </div>
+                              </div>
+                            </div>
+
+                            {!isCurrent && (
+                              <button
+                                onClick={() => handleRevokeSession(sess.id)}
+                                disabled={revokingSessionId === sess.id}
+                                className="px-3 py-1.5 text-[13px] font-medium text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors cursor-pointer disabled:opacity-50"
+                              >
+                                {revokingSessionId === sess.id ? 'Revoking...' : 'Log out'}
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })
+                    )}
                   </div>
                 </>
               )}
@@ -1212,13 +1308,18 @@ export default function UserProfileOverview() {
                 No
               </button>
               <button 
-                onClick={() => {
-                  setShowLogoutModal(false);
-                  setShowLogoutSuccessModal(true);
-                }}
-                className="flex-1 h-[60px] bg-[#D4AF37] hover:bg-[#c29f31] text-[#16151C] font-medium text-[18px] rounded-[12px] transition-colors"
+                onClick={handleLogoutAllDevices}
+                disabled={isLoggingOutAll}
+                className="flex-1 h-[60px] bg-[#D4AF37] hover:bg-[#c29f31] text-[#16151C] font-medium text-[18px] rounded-[12px] transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
               >
-                Yes
+                {isLoggingOutAll ? (
+                  <>
+                    <Loader2 size={20} className="animate-spin text-black" />
+                    <span>Logging out...</span>
+                  </>
+                ) : (
+                  'Yes'
+                )}
               </button>
             </div>
           </div>
