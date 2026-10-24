@@ -106,15 +106,15 @@ function AudienceContent() {
             author: {
               name: (p.author_name as string) || 'Studio Arella Creator',
               role: (p.author_role as string) || 'Creator',
-              avatar: (p.author_avatar as string) || '/audience/adam-udochi.png',
+              avatar: (p.author_avatar as string) || '',
             },
             title: String(p.title || 'Studio Podcast').startsWith('-') ? String(p.title) : `-${p.title || 'Studio Podcast'}`,
-            mediaUrl: (p.cover_url as string) || (p.media_url as string) || '/audience/mockup-sphinx.png',
-            duration: (p.duration_text as string) || (p.media_type === 'audio' ? '02:35:19' : ''),
-            currentTime: '00:04:15',
-            progressPercent: 17,
-            initialLikes: parseInt(String(p.likes_count), 10) || 99,
-            initialComments: parseInt(String(p.comments_count), 10) || 8,
+            mediaUrl: (p.cover_url as string) || (p.media_url as string) || '',
+            duration: (p.duration_text as string) || '',
+            currentTime: '00:00:00',
+            progressPercent: 0,
+            initialLikes: parseInt(String(p.likes_count), 10) || 0,
+            initialComments: parseInt(String(p.comments_count), 10) || 0,
             badgeTheme: p.badge_theme === 'green' ? 'green' : 'gold',
             isBookmarked: activeMenu === 'bookmarks' ? true : Boolean(p.is_bookmarked),
           }));
@@ -176,7 +176,7 @@ function AudienceContent() {
   const handleCreatePost = async (content: string) => {
     const authorName = user?.name || (user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : null) || 'You';
     const authorRole = user?.role === 'screen_owner' ? 'Media Partner' : user?.role === 'admin' ? 'Administrator' : 'Audience Member';
-    const authorAvatar = user?.avatar || '/audience/kyle-fisher.png';
+    const authorAvatar = user?.avatar || '';
 
     const tempPost: PostData = {
       id: `post-${Date.now()}`,

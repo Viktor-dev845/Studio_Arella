@@ -57,7 +57,7 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
   }, [post.isBookmarked]);
 
   const badgeBg = post.badgeTheme === 'green' ? 'bg-[#15411F]' : 'bg-[#D4AF37]';
-  const userAvatar = user?.avatar || '/audience/adam-udochi.png';
+  const userAvatar = user?.avatar || '';
 
   const handleLike = async () => {
     const nextLiked = !hasLiked;
@@ -120,11 +120,18 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
           title={`View ${post.author.name}'s profile`}
         >
           {/* Avatar: 44x44, radius 18px */}
-          <img 
-            src={post.author.avatar} 
-            alt={post.author.name} 
-            className="w-[44px] h-[44px] rounded-[18px] object-cover shrink-0 border border-gray-100 shadow-sm group-hover:scale-105 transition-transform"
-          />
+          {post.author.avatar ? (
+            <img 
+              src={post.author.avatar} 
+              alt={post.author.name} 
+              className="w-[44px] h-[44px] rounded-[18px] object-cover shrink-0 border border-gray-100 shadow-sm group-hover:scale-105 transition-transform"
+              onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
+            />
+          ) : (
+            <div className="w-[44px] h-[44px] rounded-[18px] bg-gradient-to-br from-[#E8C170] to-[#D4AF37] text-black font-extrabold flex items-center justify-center shrink-0 border border-gray-100 shadow-sm text-sm uppercase">
+              {post.author.name ? post.author.name.charAt(0) : 'A'}
+            </div>
+          )}
           <div className="flex flex-col">
             <h4 className="text-[12px] font-normal text-[#000000] leading-[16px] group-hover:text-[#D9BA54] transition-colors">
               {post.author.name}
@@ -264,11 +271,18 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
       {/* ─── 5. Add Comment Bar (Group 48095423: 518px x 42px) ─── */}
       <form onSubmit={handleAddComment} className="flex items-center gap-2.5 pt-1">
         {/* Commenter Avatar: Rectangle 24, 26x26, radius 18px */}
-        <img 
-          src={userAvatar} 
-          alt={user?.name || 'You'} 
-          className="w-[26px] h-[26px] rounded-[18px] object-cover shrink-0 border border-gray-100"
-        />
+        {userAvatar ? (
+          <img 
+            src={userAvatar} 
+            alt={user?.name || 'You'} 
+            className="w-[26px] h-[26px] rounded-[18px] object-cover shrink-0 border border-gray-100"
+            onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
+          />
+        ) : (
+          <div className="w-[26px] h-[26px] rounded-[18px] bg-gradient-to-br from-[#E8C170] to-[#D4AF37] text-black font-extrabold flex items-center justify-center shrink-0 border border-gray-100 text-[10px] uppercase">
+            {user?.name ? user.name.charAt(0) : 'U'}
+          </div>
+        )}
 
         {/* Input Container: Rectangle 23, height 42px, background #F6F6F6, radius 18px */}
         <div className="flex-1 h-[42px] bg-[#F6F6F6] rounded-[18px] px-4 flex items-center justify-between border border-transparent focus-within:border-[#D4AF37]/50 transition-all">

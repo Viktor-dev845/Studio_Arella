@@ -60,26 +60,7 @@ export interface FollowerProfile {
 export const DEFAULT_DESIGNER_FOLLOWERS: FollowerProfile[] = [];
 export const DEFAULT_DESIGNER_FOLLOWING: FollowerProfile[] = [];
 
-const DEFAULT_PODCAST_ITEMS: ShowItem[] = [
-  {
-    id: 'p1',
-    title: 'Zara redesign concept',
-    subtitle: 'UX/UI design, 15.07.2019',
-    cover: '/audience/podcast-zara.png',
-  },
-  {
-    id: 'p2',
-    title: 'SCTHON event brand identity',
-    subtitle: 'Graphic design, 03.31.2019',
-    cover: '/audience/podcast-scthon.png',
-  },
-  {
-    id: 'p3',
-    title: 'Drozd. Brand identity. 2016',
-    subtitle: 'Graphic design, 03.04.2016',
-    cover: '/audience/podcast-drozd.png',
-  },
-];
+const DEFAULT_PODCAST_ITEMS: ShowItem[] = [];
 
 const DEFAULT_FAN_EVENTS: EventClubItem[] = [
   {
@@ -248,15 +229,15 @@ export default function AudienceProfilePageView({
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isRequestingVerification, setIsRequestingVerification] = useState(false);
 
-  // Edit form state with realistic Studio Arella defaults
-  const [name, setName] = useState(user?.name || (user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : null) || 'Mike Uchechi');
-  const [bio, setBio] = useState('Podcast creator & community broadcaster');
-  const [location, setLocation] = useState('Umuahia, Abia State');
+  // Edit form state with dynamic user defaults
+  const [name, setName] = useState(user?.name || (user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : null) || 'Creator');
+  const [bio, setBio] = useState(user?.bio || 'Audio creator & broadcaster');
+  const [location, setLocation] = useState(user?.location || 'Lagos, Nigeria');
   const [about, setAbout] = useState(
-    'Creative podcast builder and audio host sharing community conversations, local culture, and business insights across Eastern Nigeria.'
+    user?.about || 'Welcome to my creator space on Studio Arella. Follow along for podcasts, audio recordings, and screen campaigns.'
   );
-  const [avatarUrl, setAvatarUrl] = useState('/audience/udo-emmanuel.png');
-  const [bannerUrl, setBannerUrl] = useState('/audience/udo-banner.png');
+  const [avatarUrl, setAvatarUrl] = useState(user?.avatar || '');
+  const [bannerUrl, setBannerUrl] = useState(user?.banner || '');
 
   // Live Followers & Following lists
   const [followers, setFollowers] = useState<any[]>([]);
@@ -421,12 +402,19 @@ export default function AudienceProfilePageView({
       {/* ─── 1. Profile Hero Card (Figma: 850px x 360px, radius 4px) ─── */}
       <div className="w-full bg-white rounded-[4px] shadow-[0px_20px_60px_rgba(241,244,248,0.5)] border border-gray-100 overflow-hidden relative">
         {/* Banner (850px x 180px) */}
-        <div className="w-full h-[180px] relative bg-neutral-200 overflow-hidden">
-          <img
-            src={isVisitorMode ? '/audience/udo-banner.png' : bannerUrl}
-            alt="Profile Banner"
-            className="w-full h-full object-cover"
-          />
+        <div className="w-full h-[180px] relative bg-neutral-900 overflow-hidden">
+          {bannerUrl ? (
+            <img
+              src={bannerUrl}
+              alt="Profile Banner"
+              className="w-full h-full object-cover"
+              onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-r from-[#2B2E48] via-[#1E2033] to-[#12131C] flex items-center justify-center">
+              <span className="text-white/20 font-bold tracking-widest text-lg uppercase select-none">Studio Arella</span>
+            </div>
+          )}
 
           {/* Banner Tools Overlay (Upload/Share on left, Tools on right) */}
           <div className="absolute inset-0 p-5 flex items-start justify-between pointer-events-none">
@@ -530,12 +518,19 @@ export default function AudienceProfilePageView({
         <div className="px-7 pb-6 pt-0 relative flex flex-col md:flex-row items-start md:items-end justify-between gap-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-end gap-5">
             {/* Circular Avatar (170px x 170px, 10px white border, overlapping banner) */}
-            <div className="-mt-[85px] w-[170px] h-[170px] rounded-full border-[10px] border-white overflow-hidden bg-neutral-100 shrink-0 shadow-[0_4px_16px_rgba(0,0,0,0.06)] relative z-10">
-              <img
-                src={isVisitorMode ? '/audience/udo-emmanuel.png' : avatarUrl}
-                alt={name}
-                className="w-full h-full object-cover"
-              />
+            <div className="-mt-[85px] w-[170px] h-[170px] rounded-full border-[10px] border-white overflow-hidden bg-neutral-100 shrink-0 shadow-[0_4px_16px_rgba(0,0,0,0.06)] relative z-10 flex items-center justify-center">
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt={name}
+                  className="w-full h-full object-cover"
+                  onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-[#E8C170] to-[#D4AF37] text-black font-extrabold flex items-center justify-center text-4xl uppercase select-none">
+                  {name ? name.charAt(0) : 'C'}
+                </div>
+              )}
             </div>
 
             {/* Name, Tagline & Visitor CTA */}
@@ -684,59 +679,80 @@ export default function AudienceProfilePageView({
                 Podcast you followed
               </h2>
               <span className="text-[18px] font-normal text-[#747474] font-['DM_Sans',sans-serif]">
-                3 of 12
+                {podcasts.length} {podcasts.length === 1 ? 'show' : 'shows'}
               </span>
             </div>
 
-            {/* 3 Columns Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-              {(showAllPodcasts ? podcasts : podcasts.slice(0, 3)).map((pod) => (
-                <div
-                  key={pod.id}
-                  onClick={() => {
-                    const title = pod.title === 'Zara redesign concept' ? 'Zara Design Concept Podcast' : pod.title;
-                    router.push(`/audience?view=podcast-player&title=${encodeURIComponent(title)}`);
-                  }}
-                  className="flex flex-col group cursor-pointer"
+            {/* Podcasts Grid or Empty State */}
+            {podcasts.length === 0 ? (
+              <div className="py-10 text-center flex flex-col items-center justify-center bg-gray-50/50 rounded-[4px] border border-dashed border-gray-200">
+                <p className="text-[14px] font-medium text-gray-700 m-0 mb-1">No podcasts followed yet</p>
+                <p className="text-[12px] text-gray-400 m-0 mb-4 max-w-xs">Explore podcasts and shows produced across the community.</p>
+                <button
+                  type="button"
+                  onClick={() => router.push('/podcast')}
+                  className="px-4 py-2 bg-[#D4AF37] hover:bg-[#c49f2b] text-black text-[12px] font-semibold rounded-[6px] transition-colors cursor-pointer"
                 >
-                  <div className="w-full aspect-[250/160] rounded-[2px] overflow-hidden bg-neutral-100 relative shadow-sm">
-                    <img
-                      src={pod.cover}
-                      alt={pod.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                    />
-                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center text-black shadow-md">
-                        <Play size={18} fill="currentColor" />
+                  Explore Shows
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+                {(showAllPodcasts ? podcasts : podcasts.slice(0, 3)).map((pod) => (
+                  <div
+                    key={pod.id}
+                    onClick={() => {
+                      router.push(`/audience?view=podcast-player&title=${encodeURIComponent(pod.title)}`);
+                    }}
+                    className="flex flex-col group cursor-pointer"
+                  >
+                    <div className="w-full aspect-[250/160] rounded-[2px] overflow-hidden bg-neutral-900 relative shadow-sm">
+                      {pod.cover ? (
+                        <img
+                          src={pod.cover}
+                          alt={pod.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-neutral-800 to-neutral-950 flex items-center justify-center">
+                          <Play size={24} className="text-[#D4AF37]" />
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center text-black shadow-md">
+                          <Play size={18} fill="currentColor" />
+                        </div>
                       </div>
                     </div>
+
+                    <h3 className="text-[14px] font-medium text-[#181818] leading-[150%] mt-2.5 mb-0 truncate group-hover:text-[#D9BA54] transition-colors font-['DM_Sans',sans-serif]">
+                      {pod.title}
+                    </h3>
+                    <p className="text-[10px] font-light text-[#181818]/70 leading-[150%] m-0 truncate font-['DM_Sans',sans-serif]">
+                      {pod.subtitle}
+                    </p>
                   </div>
+                ))}
+              </div>
+            )}
 
-                  <h3 className="text-[14px] font-medium text-[#181818] leading-[150%] mt-2.5 mb-0 truncate group-hover:text-[#D9BA54] transition-colors font-['DM_Sans',sans-serif]">
-                    {pod.title}
-                  </h3>
-                  <p className="text-[10px] font-light text-[#181818]/70 leading-[150%] m-0 truncate font-['DM_Sans',sans-serif]">
-                    {pod.subtitle}
-                  </p>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-6">
-              <button
-                type="button"
-                onClick={() => {
-                  if (podcasts.length > 3) {
-                    setShowAllPodcasts((prev) => !prev);
-                  } else {
-                    router.push('/podcast');
-                  }
-                }}
-                className="text-[12px] font-semibold uppercase tracking-wider text-[#D9BA54] hover:underline cursor-pointer bg-transparent border-none p-0 font-['DM_Sans',sans-serif]"
-              >
-                {showAllPodcasts ? 'SHOW LESS' : 'SHOW ALL (12)'}
-              </button>
-            </div>
+            {podcasts.length > 0 && (
+              <div className="mt-6">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (podcasts.length > 3) {
+                      setShowAllPodcasts((prev) => !prev);
+                    } else {
+                      router.push('/podcast');
+                    }
+                  }}
+                  className="text-[12px] font-semibold uppercase tracking-wider text-[#D9BA54] hover:underline cursor-pointer bg-transparent border-none p-0 font-['DM_Sans',sans-serif]"
+                >
+                  {podcasts.length > 3 ? (showAllPodcasts ? 'SHOW LESS' : `SHOW ALL (${podcasts.length})`) : 'EXPLORE MORE SHOWS'}
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Card C: Fan club events you joined (Figma: 850px x 220px, 3 items, Show all (17)) */}
@@ -829,13 +845,20 @@ export default function AudienceProfilePageView({
                       onClick={() => toast(`Viewing ${f.name}'s profile`, 'info')}
                       className="flex items-center gap-3.5 min-w-0 cursor-pointer group"
                     >
-                      <div className="w-[52px] h-[52px] rounded-full overflow-hidden shrink-0 bg-neutral-200 border border-black/5">
-                        <img
-                          src={f.avatar || '/audience/audrey-alexander.png'}
-                          alt={f.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                        />
-                      </div>
+                      {f.avatar ? (
+                        <div className="w-[52px] h-[52px] rounded-full overflow-hidden shrink-0 bg-neutral-200 border border-black/5">
+                          <img
+                            src={f.avatar}
+                            alt={f.name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                            onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-[52px] h-[52px] rounded-full bg-gradient-to-br from-[#E8C170] to-[#D4AF37] text-black font-extrabold flex items-center justify-center shrink-0 border border-black/5 text-base uppercase">
+                          {f.name ? f.name.charAt(0) : 'U'}
+                        </div>
+                      )}
                       <div className="flex flex-col justify-center min-w-0">
                         <span className="text-[14px] font-semibold text-[#181818] leading-[18px] truncate group-hover:text-[#D9BA54] transition-colors font-['DM_Sans',sans-serif]">
                           {f.name}
@@ -891,13 +914,20 @@ export default function AudienceProfilePageView({
                       onClick={() => toast(`Viewing ${f.name}'s profile`, 'info')}
                       className="flex items-center gap-3.5 min-w-0 cursor-pointer group"
                     >
-                      <div className="w-[52px] h-[52px] rounded-full overflow-hidden shrink-0 bg-neutral-200 border border-black/5">
-                        <img
-                          src={f.avatar || '/audience/audrey-alexander.png'}
-                          alt={f.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                        />
-                      </div>
+                      {f.avatar ? (
+                        <div className="w-[52px] h-[52px] rounded-full overflow-hidden shrink-0 bg-neutral-200 border border-black/5">
+                          <img
+                            src={f.avatar}
+                            alt={f.name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                            onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-[52px] h-[52px] rounded-full bg-gradient-to-br from-[#E8C170] to-[#D4AF37] text-black font-extrabold flex items-center justify-center shrink-0 border border-black/5 text-base uppercase">
+                          {f.name ? f.name.charAt(0) : 'U'}
+                        </div>
+                      )}
                       <div className="flex flex-col justify-center min-w-0">
                         <span className="text-[14px] font-semibold text-[#181818] leading-[18px] truncate group-hover:text-[#D9BA54] transition-colors">
                           {f.name}

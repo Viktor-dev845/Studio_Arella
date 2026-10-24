@@ -153,17 +153,20 @@ export default function AdvertiserDashboard() {
 
   const userActivities = [
     ...notifications.map((n: any) => ({
-      avatar: n.avatar || user?.avatar || '/audience/adam-udochi.png',
+      avatar: n.avatar || user?.avatar || null,
+      name: n.sender_name || user?.name || 'Notification',
       title: n.body || n.title || n.message || 'Notification received',
       time: timeAgo(n.created_at),
     })),
     ...podcastBookings.slice(0, 3).map((b: any) => ({
-      avatar: '/audience/kyle-fisher.png',
+      avatar: user?.avatar || null,
+      name: user?.name || 'Studio Session',
       title: `Booked podcast slot (${b.episode_title || 'Audio session'})`,
       time: timeAgo(b.created_at || b.start_time),
     })),
     ...adBookings.slice(0, 3).map((b: any) => ({
-      avatar: '/audience/adam-udochi.png',
+      avatar: user?.avatar || null,
+      name: user?.name || 'Ad Booking',
       title: `Ad screen reserved (${b.screen_name || 'DOOH Display'})`,
       time: timeAgo(b.created_at || b.start_time),
     })),
@@ -557,21 +560,42 @@ export default function AdvertiserDashboard() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               {userActivities.map((act, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <img
-                    src={act.avatar}
-                    alt="avatar"
-                    style={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: '50%',
-                      objectFit: 'cover',
-                      flexShrink: 0,
-                      boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
-                    }}
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = '/audience/adam-udochi.png';
-                    }}
-                  />
+                  {act.avatar ? (
+                    <img
+                      src={act.avatar}
+                      alt="avatar"
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: '50%',
+                        objectFit: 'cover',
+                        flexShrink: 0,
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
+                      }}
+                      onError={(e) => {
+                        (e.target as HTMLElement).style.display = 'none';
+                      }}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: '50%',
+                        background: 'linear-gradient(135deg, #E8C170, #D4AF37)',
+                        color: '#111111',
+                        fontSize: 12,
+                        fontWeight: 800,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                        textTransform: 'uppercase',
+                      }}
+                    >
+                      {act.name ? act.name.charAt(0) : 'A'}
+                    </div>
+                  )}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ fontSize: 12, color: theme.color.text1, fontWeight: 700, margin: '0 0 1px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {act.title}

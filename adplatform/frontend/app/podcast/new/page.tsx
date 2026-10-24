@@ -393,7 +393,9 @@ export default function AddPodcastPage() {
               {/* Schedule post */}
               <div style={{ flex: 1, position: 'relative' }}>
                 <input
-                  type="text"
+                  type={scheduleDate ? 'date' : 'text'}
+                  onFocus={(e) => (e.target.type = 'date')}
+                  onBlur={(e) => (e.target.type = e.target.value ? 'date' : 'text')}
                   placeholder="Schedule podcast post (optional)"
                   value={scheduleDate}
                   onChange={(e) => setScheduleDate(e.target.value)}
@@ -402,14 +404,16 @@ export default function AddPodcastPage() {
                 <Calendar
                   size={16}
                   color={theme.color.text4}
-                  style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)' }}
+                  style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}
                 />
               </div>
 
               {/* Set timer */}
               <div style={{ flex: 1, position: 'relative' }}>
                 <input
-                  type="text"
+                  type={timerTime ? 'time' : 'text'}
+                  onFocus={(e) => (e.target.type = 'time')}
+                  onBlur={(e) => (e.target.type = e.target.value ? 'time' : 'text')}
                   placeholder="Set timer (optional)"
                   value={timerTime}
                   onChange={(e) => setTimerTime(e.target.value)}
@@ -418,7 +422,7 @@ export default function AddPodcastPage() {
                 <Clock
                   size={16}
                   color={theme.color.text4}
-                  style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)' }}
+                  style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}
                 />
               </div>
             </div>

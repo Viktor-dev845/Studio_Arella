@@ -138,8 +138,6 @@ export default function PodcastDetailPage() {
             {show && (
               <>
             {/* 4 Stat Cards */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', height: 0 }}>
-            </div>
             <div
               style={{
                 display: 'grid',
@@ -163,21 +161,8 @@ export default function PodcastDetailPage() {
                 </p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <span style={{ fontSize: 22, fontWeight: 700, color: theme.color.text1, letterSpacing: '-0.02em' }}>
-                    3,015
+                    0
                   </span>
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 3,
-                      fontSize: 10,
-                      fontWeight: 700,
-                      color: theme.color.text1,
-                    }}
-                  >
-                    <span>+11.01%</span>
-                    <FaArrowTrendUp size={9} />
-                  </div>
                 </div>
               </div>
 
@@ -197,25 +182,12 @@ export default function PodcastDetailPage() {
                 </p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <span style={{ fontSize: 22, fontWeight: 700, color: theme.color.text1, letterSpacing: '-0.02em' }}>
-                    3,671
+                    0
                   </span>
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 3,
-                      fontSize: 10,
-                      fontWeight: 700,
-                      color: theme.color.text1,
-                    }}
-                  >
-                    <span>-0.03%</span>
-                    <FaArrowTrendDown size={9} />
-                  </div>
                 </div>
               </div>
 
-              {/* Stat 3: Followers */}
+              {/* Stat 3: Total Episodes */}
               <div
                 style={{
                   background: '#F7FAF2',
@@ -227,25 +199,12 @@ export default function PodcastDetailPage() {
                 }}
               >
                 <p style={{ fontSize: 12, fontWeight: 700, color: theme.color.text1, margin: 0 }}>
-                  Followers
+                  Total Episodes
                 </p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <span style={{ fontSize: 22, fontWeight: 700, color: theme.color.text1, letterSpacing: '-0.02em' }}>
-                    3,671
+                    {episodes.length}
                   </span>
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 3,
-                      fontSize: 10,
-                      fontWeight: 700,
-                      color: theme.color.text1,
-                    }}
-                  >
-                    <span>+15.03%</span>
-                    <FaArrowTrendUp size={9} />
-                  </div>
                 </div>
               </div>
 
@@ -265,7 +224,7 @@ export default function PodcastDetailPage() {
                 </p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <span style={{ fontSize: 22, fontWeight: 700, color: theme.color.text1, letterSpacing: '-0.02em' }}>
-                    367
+                    0
                   </span>
                 </div>
               </div>
@@ -305,48 +264,32 @@ export default function PodcastDetailPage() {
                 </div>
               </div>
 
-              {/* Recharts Area Chart */}
-              <div style={{ width: '100%', height: 260, position: 'relative' }}>
-                {/* April '50' peak badge matching screenshot */}
+              {episodes.length === 0 ? (
                 <div
                   style={{
-                    position: 'absolute',
-                    left: '26.5%',
-                    top: '41%',
-                    transform: 'translate(-50%, -100%)',
-                    zIndex: 10,
+                    width: '100%',
+                    padding: '36px 20px',
+                    background: '#FAFAFA',
+                    borderRadius: 12,
+                    border: '1px dashed #E2E8F0',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
-                    pointerEvents: 'none',
+                    justifyContent: 'center',
+                    gap: 8,
+                    textAlign: 'center',
                   }}
                 >
-                  <div
-                    style={{
-                      background: '#F4C733',
-                      color: '#FFFFFF',
-                      fontSize: 11,
-                      fontWeight: 800,
-                      padding: '3px 12px',
-                      borderRadius: 4,
-                      boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
-                    }}
-                  >
-                    50
-                  </div>
-                  <div
-                    style={{
-                      width: 8,
-                      height: 8,
-                      borderRadius: '50%',
-                      background: theme.color.surface,
-                      border: '2.5px solid #F4C733',
-                      marginTop: 4,
-                    }}
-                  />
+                  <p style={{ fontSize: 13, fontWeight: 600, color: theme.color.text1, margin: 0 }}>
+                    No listening data recorded yet
+                  </p>
+                  <p style={{ fontSize: 12, color: theme.color.text4, margin: 0, maxWidth: 380 }}>
+                    Plays, active listeners, and engagement will chart here as listeners stream your show episodes.
+                  </p>
                 </div>
-
-                <ResponsiveContainer width="100%" height="100%">
+              ) : (
+                <div style={{ width: '100%', height: 260, position: 'relative' }}>
+                  <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={ANALYTICS_DATA} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <defs>
                       <linearGradient id="colorTotalPlays" x1="0" y1="0" x2="0" y2="1">
@@ -392,7 +335,8 @@ export default function PodcastDetailPage() {
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
-            </div>
+            )}
+          </div>
 
             {/* All episodes (2) Section */}
             <div>
@@ -494,7 +438,7 @@ export default function PodcastDetailPage() {
                           {ep.title}
                         </p>
                         <p style={{ fontSize: 13, color: theme.color.text4, fontWeight: 500, margin: 0 }}>
-                          {ep.status === 'scheduled' ? 'Scheduled' : 'Uploaded'} {uploaded}{duration ? ` • ${duration}` : ''} • 2K Likes
+                          {ep.status === 'scheduled' ? 'Scheduled' : 'Uploaded'} {uploaded}{duration ? ` • ${duration}` : ''}
                         </p>
                       </div>
                     </div>

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import {
   Search, Filter, Plus, ChevronDown, ChevronLeft, ChevronRight,
   Trash2, Eye, Play, Pause, X, Calendar, Check, Globe, Download,
-  ArrowLeft, CreditCard, Wallet, Upload, Copy,
+  ArrowLeft, CreditCard, Wallet, Upload, Copy, Loader2,
 } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { PageTransition } from '@/components/ui/Animations';
@@ -366,6 +366,12 @@ export default function CampaignsPage() {
     }
   };
 
+  const totalCampaigns = campaigns.length;
+  const totalBudget = campaigns.reduce((s, c) => s + (c.budget || 0), 0);
+  const totalSpent = campaigns.reduce((s, c) => s + (c.spent || 0), 0);
+  const totalImpressions = campaigns.reduce((s, c) => s + (c.impressions || 0), 0);
+  const activeCampaigns = campaigns.filter(c => c.status === 'active').length;
+
   return (
     <DashboardLayout>
       <PageTransition>
@@ -386,20 +392,44 @@ export default function CampaignsPage() {
           {/* 4 Metric Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: 'Total campaigns', value: '5', pct: '+10.0%', isDown: false },
-              { label: 'Total budget (NGN)', value: '#4,500,000.00', pct: '+10.0%', isDown: false },
-              { label: 'Total spent', value: '#2,000,000.00', pct: '-7.0%', isDown: true },
-              { label: 'Total impressions', value: '1.8M', pct: '+10.0%', isDown: false },
+              {
+                label: 'Total campaigns',
+                value: totalCampaigns.toString(),
+                badge: `${activeCampaigns} active`,
+                isPositive: activeCampaigns > 0,
+              },
+              {
+                label: 'Total budget',
+                value: formatCurrency(totalBudget, currency, rates),
+                badge: totalBudget > 0 ? 'Allocated' : '0.00',
+                isPositive: true,
+              },
+              {
+                label: 'Total spent',
+                value: formatCurrency(totalSpent, currency, rates),
+                badge: totalBudget > 0 ? `${Math.round((totalSpent / totalBudget) * 100)}% utilized` : '0%',
+                isPositive: totalSpent > 0,
+              },
+              {
+                label: 'Total impressions',
+                value: totalImpressions >= 1000000
+                  ? `${(totalImpressions / 1000000).toFixed(1)}M`
+                  : totalImpressions >= 1000
+                  ? `${(totalImpressions / 1000).toFixed(1)}K`
+                  : totalImpressions.toString(),
+                badge: totalImpressions > 0 ? 'Live reach' : '0 reach',
+                isPositive: totalImpressions > 0,
+              },
             ].map((stat, i) => (
               <div
                 key={i}
-                className="bg-white rounded-[16px] p-[24px] border border-[rgba(162,161,168,0.2)] flex flex-col justify-center gap-[16px]"
+                className="bg-white dark:bg-[#111111] rounded-[16px] p-[24px] border border-[rgba(162,161,168,0.2)] dark:border-white/10 flex flex-col justify-center gap-[16px]"
               >
                 <p className="text-[14px] font-normal text-[rgba(162,161,168,1)] leading-[21px]">{stat.label}</p>
-                <div className="flex items-center gap-[10px]">
-                  <span className="text-[32px] font-semibold text-[#16151C] leading-[48px]">{stat.value}</span>
-                  <div className={`flex items-center justify-center px-2 py-1 rounded-[6px] text-[12px] font-normal leading-[18px] ${stat.isDown ? 'bg-[rgba(255,78,43,0.1)] text-[#FF4E2B]' : 'bg-[rgba(145,198,0,0.1)] text-[#91C600]'}`}>
-                    {stat.pct}
+                <div className="flex items-center gap-[10px] flex-wrap">
+                  <span className="text-[28px] sm:text-[32px] font-semibold text-[#16151C] dark:text-white leading-tight">{stat.value}</span>
+                  <div className={`flex items-center justify-center px-2 py-1 rounded-[6px] text-[12px] font-normal leading-[18px] ${stat.isPositive ? 'bg-[rgba(145,198,0,0.1)] text-[#91C600]' : 'bg-gray-100 dark:bg-white/5 text-gray-500'}`}>
+                    {stat.badge}
                   </div>
                 </div>
               </div>
@@ -411,7 +441,7 @@ export default function CampaignsPage() {
             
             {/* Toolbar */}
             <div className="flex items-center justify-between pt-[24px] pb-[8px]">
-              <h2 className="text-[14px] font-semibold text-[#000000] leading-[32px]">Recently Played</h2>
+              <h2 className="text-[14px] font-semibold text-[#000000] dark:text-white leading-[32px]">All Campaigns</h2>
               <button className="flex items-center justify-center gap-[4px] min-w-[70px] h-[24px] border border-[rgba(214,214,214,0.7)] rounded-[8px] px-[8px]">
                 <span className="text-[12px] font-normal text-[#000000]">Sort</span>
                 <ChevronDown size={16} className="text-[rgba(0,0,0,0.4)]" />
@@ -479,7 +509,25 @@ export default function CampaignsPage() {
                   {filtered.length === 0 ? (
                     <tr>
                       <td colSpan={7} className="text-center py-16 text-slate-400 dark:text-slate-500 text-[13px]">
-                        {loadingCampaigns ? 'Loading campaigns…' : 'No campaigns found matching your query'}
+                        {loadingCampaigns ? (
+                          <div className="flex items-center justify-center gap-2">
+                            <Loader2 size={16} className="animate-spin text-[#D4AF37]" />
+                            <span>Loading campaigns…</span>
+                          </div>
+                        ) : search ? (
+                          'No campaigns found matching your query.'
+                        ) : (
+                          <div className="flex flex-col items-center justify-center gap-3 py-6">
+                            <p className="text-[15px] font-semibold text-slate-700 dark:text-slate-200">No campaigns created yet</p>
+                            <p className="text-[13px] text-slate-400 max-w-sm">Launch your first advertising campaign to start broadcasting your creative across screens.</p>
+                            <button
+                              onClick={() => { setWizardStep('details'); setCreateModalOpen(true); }}
+                              className="mt-2 px-4 py-2 bg-[#D4AF37] hover:bg-[#b58b24] text-black font-semibold text-[13px] rounded-[8px] transition-colors"
+                            >
+                              + Create Your First Campaign
+                            </button>
+                          </div>
+                        )}
                       </td>
                     </tr>
                   ) : (

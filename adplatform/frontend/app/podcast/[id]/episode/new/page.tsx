@@ -96,11 +96,7 @@ export default function AddNewEpisodePage() {
       form.append('audio', audioFile);
       if (coverPhotoFile) form.append('cover', coverPhotoFile);
 
-      try {
-        await api.post(`/shows/${params.id}/episodes`, form, { headers: { 'Content-Type': undefined } });
-      } catch (err) {
-        console.warn('API post failed, showing success anyway for dev preview', err);
-      }
+      await api.post(`/shows/${params.id}/episodes`, form, { headers: { 'Content-Type': undefined } });
       setShowSuccess(true);
     } catch (err: any) {
       toast(err?.response?.data?.message || 'Could not publish this episode. Please try again.', 'error');
@@ -388,7 +384,9 @@ export default function AddNewEpisodePage() {
               {/* Schedule post */}
               <div style={{ flex: 1, position: 'relative' }}>
                 <input
-                  type="text"
+                  type={scheduleDate ? 'date' : 'text'}
+                  onFocus={(e) => (e.target.type = 'date')}
+                  onBlur={(e) => (e.target.type = e.target.value ? 'date' : 'text')}
                   placeholder="Schedule post (optional)"
                   value={scheduleDate}
                   onChange={(e) => setScheduleDate(e.target.value)}
@@ -397,14 +395,16 @@ export default function AddNewEpisodePage() {
                 <Calendar
                   size={16}
                   color={theme.color.text4}
-                  style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)' }}
+                  style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}
                 />
               </div>
 
               {/* Set timer */}
               <div style={{ flex: 1, position: 'relative' }}>
                 <input
-                  type="text"
+                  type={timerTime ? 'time' : 'text'}
+                  onFocus={(e) => (e.target.type = 'time')}
+                  onBlur={(e) => (e.target.type = e.target.value ? 'time' : 'text')}
                   placeholder="Set timer (optional)"
                   value={timerTime}
                   onChange={(e) => setTimerTime(e.target.value)}
@@ -413,7 +413,7 @@ export default function AddNewEpisodePage() {
                 <Clock
                   size={16}
                   color={theme.color.text4}
-                  style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)' }}
+                  style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}
                 />
               </div>
             </div>

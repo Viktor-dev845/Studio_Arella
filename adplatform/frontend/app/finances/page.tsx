@@ -375,12 +375,10 @@ export default function FinancesPage() {
               
               {/* Card 1: Wallet Balance */}
               <div 
-                className="relative rounded-[16px] overflow-hidden p-4 flex flex-col justify-between"
+                className="relative rounded-[16px] overflow-hidden p-4 flex flex-col justify-between shadow-sm"
                 style={{ 
                   height: '134px',
-                  background: 'linear-gradient(rgba(138, 158, 82, 0.9), rgba(138, 158, 82, 0.9)), url(/beautiful-abstract-seamless-pattern-design_174506-1310.jpg)',
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
+                  background: 'linear-gradient(135deg, #7C8F47 0%, #58672D 100%)',
                 }}
               >
                 <div className="flex items-center gap-[10px]">
@@ -409,12 +407,10 @@ export default function FinancesPage() {
 
               {/* Card 2: Total Spent */}
               <div 
-                className="relative rounded-[16px] overflow-hidden p-4 flex flex-col justify-between"
+                className="relative rounded-[16px] overflow-hidden p-4 flex flex-col justify-between shadow-sm"
                 style={{ 
                   height: '134px',
-                  background: 'linear-gradient(rgba(212, 175, 55, 0.9), rgba(212, 175, 55, 0.9)), url(/depositphotos_5836112-stock-illustration-seamless-pattern.png)',
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
+                  background: 'linear-gradient(135deg, #D4AF37 0%, #B89025 100%)',
                 }}
               >
                 <div className="flex items-center gap-[10px]">
