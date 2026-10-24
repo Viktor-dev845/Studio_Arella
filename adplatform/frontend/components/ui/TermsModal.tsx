@@ -3,15 +3,16 @@
 import React, { useState } from 'react';
 import { theme } from '@/lib/theme';
 import { AnimatedButton } from '@/components/ui/Animations';
-import { ShieldCheck, AlertTriangle } from 'lucide-react';
+import { ShieldCheck, AlertTriangle, X } from 'lucide-react';
 import api from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
 
 interface TermsModalProps {
   onAccept: () => void;
+  onClose?: () => void;
 }
 
-export default function TermsModal({ onAccept }: TermsModalProps) {
+export default function TermsModal({ onAccept, onClose }: TermsModalProps) {
   const [loading, setLoading] = useState(false);
   const { user } = useAuthStore();
 
@@ -50,16 +51,35 @@ export default function TermsModal({ onAccept }: TermsModalProps) {
         overflow: 'hidden',
         border: `1px solid ${theme.color.border}`
       }}>
-        <div style={{ padding: '32px 32px 24px', borderBottom: `1px solid ${theme.color.border}`, background: theme.color.surface2 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+        <div style={{ padding: '28px 32px 20px', borderBottom: `1px solid ${theme.color.border}`, background: theme.color.surface2, display: 'flex', alignItems: 'center', justifyContent: 'between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, flex: 1 }}>
             <div style={{ width: 48, height: 48, borderRadius: 16, background: theme.color.goldLight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <ShieldCheck size={28} color={theme.color.gold} />
             </div>
             <div>
-              <h2 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: theme.color.text1, letterSpacing: '-0.5px' }}>Terms & Conditions</h2>
-              <p style={{ margin: '4px 0 0', color: theme.color.text3, fontSize: 14 }}>Please review our content policies before continuing.</p>
+              <h2 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: theme.color.text1, letterSpacing: '-0.5px' }}>Terms & Conditions</h2>
+              <p style={{ margin: '4px 0 0', color: theme.color.text3, fontSize: 13 }}>Please review our content policies before continuing.</p>
             </div>
           </div>
+          {onClose && (
+            <button
+              onClick={onClose}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                color: theme.color.text3,
+                padding: 8,
+                borderRadius: 8,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              title="Close"
+            >
+              <X size={20} />
+            </button>
+          )}
         </div>
 
         <div style={{ padding: '32px', overflowY: 'auto', flex: 1, color: theme.color.text2, fontSize: 15, lineHeight: 1.6 }}>

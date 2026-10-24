@@ -46,10 +46,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, []);
 
   useEffect(() => {
-    if (mounted && user && user.terms_accepted === false) {
+    // Ad creative guidelines only apply when uploading/booking ad creatives, never on profile/settings
+    const isAdUploadRoute = ['/ads', '/creative', '/book-ad'].some(route => pathname?.startsWith(route));
+    if (mounted && user && user.terms_accepted === false && isAdUploadRoute) {
       setShowTerms(true);
+    } else {
+      setShowTerms(false);
     }
-  }, [mounted, user]);
+  }, [mounted, user, pathname]);
 
   if (!mounted) return null;
 
@@ -61,11 +65,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       fontFamily: F,
       overflow: 'hidden'
     }}>
-      {showTerms && <TermsModal onAccept={() => {
-        setShowTerms(false);
-        // refresh user from API or manually update state
-        useAuthStore.getState().checkAuth();
-      }} />}
+      {showTerms && <TermsModal 
+        onClose={() => setShowTerms(false)}
+        onAccept={() => {
+          setShowTerms(false);
+          useAuthStore.getState().checkAuth();
+        }} 
+      />}
       <ThemeProvider />
       <PreferencesProvider />
       <Sidebar mobileOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
