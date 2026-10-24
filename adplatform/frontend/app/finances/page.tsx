@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { PageTransition, FadeCard } from '@/components/ui/Animations';
 import { useToast } from '@/components/ui/ToastProvider';
@@ -25,24 +26,25 @@ import {
   ChevronLeft, 
   ChevronRight, 
   X, 
-  ArrowUpRight,
-  ArrowDownLeft,
-  ArrowRight,
-  ArrowLeft,
-  Clock,
-  ShieldCheck,
-  Receipt,
-  Building2,
-  Globe,
-  Sparkles,
-  Wallet,
-  Monitor,
-  PieChart,
+  ArrowUpRight, 
+  ArrowDownLeft, 
+  ArrowRight, 
+  ArrowLeft, 
+  Clock, 
+  ShieldCheck, 
+  Receipt, 
+  Building2, 
+  Globe, 
+  Sparkles, 
+  Wallet, 
+  Monitor, 
+  PieChart, 
 } from 'lucide-react';
 import Link from 'next/link';
 import { theme } from '@/lib/theme';
 import { useAuthStore } from '@/store/authStore';
 import LinkBankModal from '@/components/wallet/LinkBankModal';
+import CreatorMonetizationView from '@/components/wallet/CreatorMonetizationView';
 
 const F = theme.font.body;
 const BANKS = ['GTBank', 'Wema Bank', 'Access Bank', 'Zenith Bank', 'UBA', 'First Bank', 'Union Bank', 'Sterling Bank'];
@@ -50,7 +52,21 @@ const CARD_VERIFICATION_AMOUNT = 50;
 type FundStep = 'cards' | 'confirm' | 'otp' | 'success' | 'add-card' | 'add-card-otp' | 'add-card-success';
 
 export default function FinancesPage() {
+  return (
+    <Suspense fallback={null}>
+      <FinancesPageContent />
+    </Suspense>
+  );
+}
+
+function FinancesPageContent() {
   const { user } = useAuthStore();
+  const searchParams = useSearchParams();
+  const [activeWalletTab, setActiveWalletTab] = useState<'advertiser' | 'creator'>(() => {
+    const t = searchParams.get('tab');
+    if (t === 'creator') return 'creator';
+    return user?.role === 'creator' ? 'creator' : 'advertiser';
+  });
   const [balance, setBalance] = useState<any>(null);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [adBookings, setAdBookings] = useState<any[]>([]);
@@ -363,15 +379,52 @@ export default function FinancesPage() {
         <PageTransition>
           <div className="flex flex-col gap-[32px] pb-[60px] max-w-[1080px] mx-auto w-full mt-6">
             
-            {/* Header */}
-            <div>
-              <h1 style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 700, fontSize: '24px', lineHeight: '31px', color: '#101828' }}>
-                Wallet
-              </h1>
+            {/* Header & Mode Switch */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h1 style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 700, fontSize: '24px', lineHeight: '31px', color: '#101828' }}>
+                  {activeWalletTab === 'creator' ? 'Creator Earnings & Payouts' : 'Wallet'}
+                </h1>
+                <p className="text-[13px] text-gray-500 mt-1">
+                  {activeWalletTab === 'creator'
+                    ? 'Track your fan tips, subscriber memberships, and withdraw funds directly to your Nigerian bank account'
+                    : 'Manage your billboard advertising budget, view ad credit balances, and fund campaigns'}
+                </p>
+              </div>
+
+              {/* Segmented Switch */}
+              <div className="flex items-center p-1 bg-gray-100 dark:bg-white/10 rounded-[12px] border border-gray-200 dark:border-white/10 w-fit">
+                <button
+                  type="button"
+                  onClick={() => setActiveWalletTab('advertiser')}
+                  className={`px-4 py-2 rounded-[9px] text-[13px] font-bold transition-all cursor-pointer ${
+                    activeWalletTab === 'advertiser'
+                      ? 'bg-white dark:bg-[#111111] text-gray-900 dark:text-white shadow-sm'
+                      : 'text-gray-500 hover:text-gray-900 dark:text-neutral-400'
+                  }`}
+                >
+                  Ad Budget
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveWalletTab('creator')}
+                  className={`px-4 py-2 rounded-[9px] text-[13px] font-bold transition-all cursor-pointer ${
+                    activeWalletTab === 'creator'
+                      ? 'bg-[#D4AF37] text-black shadow-sm'
+                      : 'text-gray-500 hover:text-gray-900 dark:text-neutral-400'
+                  }`}
+                >
+                  Creator Earnings
+                </button>
+              </div>
             </div>
 
-            {/* Top 3 Cards Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {activeWalletTab === 'creator' ? (
+              <CreatorMonetizationView />
+            ) : (
+              <>
+                {/* Top 3 Cards Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               
               {/* Card 1: Wallet Balance */}
               <div 
@@ -760,6 +813,8 @@ export default function FinancesPage() {
               </div>
               
             </div>
+            </>
+          )}
 
           </div>
 

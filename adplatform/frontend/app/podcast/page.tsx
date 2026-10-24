@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { LayoutGrid, List, Mic, Plus, Radio, Headphones, Sparkles, ArrowRight, Calendar } from 'lucide-react';
+import { LayoutGrid, List, Mic, Plus, Radio, Headphones, Sparkles, ArrowRight, Calendar, Wallet } from 'lucide-react';
 import { theme } from '@/lib/theme';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { PageTransition } from '@/components/ui/Animations';
@@ -448,7 +448,7 @@ export default function PodcastsPage() {
                   className="creator-quickstart-grid"
                   style={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))',
                     gap: 16,
                   }}
                 >
@@ -610,6 +610,60 @@ export default function PodcastsPage() {
                       }}
                     >
                       <span>Get Started</span>
+                      <ArrowRight size={13} />
+                    </Link>
+                  </div>
+
+                  {/* Card 4 - Creator Monetization & Wallet */}
+                  <div
+                    className="creator-feature-card"
+                    style={{
+                      background: '#FFFFFF',
+                      border: '1px solid #E2E8F0',
+                      borderRadius: 14,
+                      padding: '20px 22px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 14,
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: 10,
+                        background: '#FEFCE8',
+                        color: '#CA8A04',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <Wallet size={22} />
+                    </div>
+                    <div>
+                      <h3 style={{ fontSize: 14, fontWeight: 700, color: theme.color.text1, margin: '0 0 6px' }}>
+                        4. Monetization & Payouts
+                      </h3>
+                      <p style={{ fontSize: 12.5, color: theme.color.text4, lineHeight: 1.5, margin: 0 }}>
+                        Earn 85% revenue from fan tips, memberships & premium content. Withdraw to your Nigerian bank.
+                      </p>
+                    </div>
+                    <Link
+                      href="/finances?tab=creator"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color: '#CA8A04',
+                        textDecoration: 'none',
+                        marginTop: 'auto',
+                      }}
+                    >
+                      <span>Creator Wallet</span>
                       <ArrowRight size={13} />
                     </Link>
                   </div>

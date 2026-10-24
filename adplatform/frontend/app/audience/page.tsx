@@ -104,6 +104,7 @@ function AudienceContent() {
           const mapped: PostData[] = feedPosts.map((p: Record<string, unknown>) => ({
             id: String(p.id),
             author: {
+              id: (p.author_id as string) || (p.creator_id as string) || '',
               name: (p.author_name as string) || 'Studio Arella Creator',
               role: (p.author_role as string) || 'Creator',
               avatar: (p.author_avatar as string) || '',

@@ -318,3 +318,47 @@ export async function getPayoutHistory(req: Request, res: Response) {
     return res.status(500).json({ error: 'Failed to fetch payout history' });
   }
 }
+
+// ── UPGRADE TO CREATOR PRO ────────────────────────────────────────────────────
+export async function upgradeCreatorPro(req: Request, res: Response) {
+  try {
+    const creatorId = (req as any).user.id;
+    const { auto_renew = true } = req.body;
+
+    const { rows } = await pool.query(
+      `UPDATE users
+       SET is_creator = true,
+           creator_tier = 'pro',
+           pro_subscription_expires_at = NOW() + INTERVAL '30 days',
+           pro_auto_renew = $1,
+           updated_at = NOW()
+       WHERE id = $2
+       RETURNING id, name, email, role, is_creator, creator_tier, creator_verified, creator_niche, pro_subscription_expires_at`,
+      [auto_renew, creatorId]
+    );
+
+    // Ensure wallet exists
+    await pool.query(
+      `INSERT INTO creator_wallets (creator_id, available_balance, pending_balance, total_earned, total_withdrawn, currency)
+       VALUES ($1, 0.00, 0.00, 0.00, 0.00, 'NGN')
+       ON CONFLICT (creator_id) DO NOTHING`,
+      [creatorId]
+    );
+
+    // Notification
+    await pool.query(
+      `INSERT INTO notifications (user_id, title, message, type, is_read, created_at)
+       VALUES ($1, 'Welcome to Creator Pro!', 'You have unlocked advanced monetization, tips, memberships, and detailed analytics.', 'system', false, NOW())`,
+      [creatorId]
+    );
+
+    return res.json({
+      message: 'Successfully upgraded to Creator Pro!',
+      user: rows[0]
+    });
+  } catch (error: any) {
+    console.error('upgradeCreatorPro error:', error);
+    return res.status(500).json({ error: 'Failed to upgrade to Creator Pro' });
+  }
+}
+

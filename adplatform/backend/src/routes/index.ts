@@ -49,7 +49,8 @@ import {
   toggleLikeContent,
   toggleBookmark,
   getContentComments,
-  addContentComment
+  addContentComment,
+  purchasePremiumContent
 } from '../controllers/creatorContentController';
 import {
   getMembershipPlans,
@@ -76,7 +77,8 @@ import {
   updateBankDetails,
   sendTip,
   requestPayout,
-  getPayoutHistory
+  getPayoutHistory,
+  upgradeCreatorPro
 } from '../controllers/creatorWalletController';
 
 import pool from '../db/pool';
@@ -288,6 +290,8 @@ router.post('/content/:id/bookmark', authenticate, toggleBookmark);
 router.get('/content/:id/comments', optionalAuthenticate, getContentComments);
 router.post('/content/:id/comments', authenticate, addContentComment);
 
+router.post('/content/:id/purchase', authenticate, purchasePremiumContent);
+
 // ── Creator Space: Memberships & Subscriptions ──────────────────────────────
 router.get('/memberships/plans', optionalAuthenticate, getMembershipPlans);
 router.get('/memberships/plans/:creatorId', optionalAuthenticate, getMembershipPlans);
@@ -309,11 +313,12 @@ router.get('/chats/conversations', optionalAuthenticate, getConversations);
 router.get('/chats/:contactId/messages', optionalAuthenticate, getConversationMessages);
 router.post('/chats/:contactId/messages', authenticate, sendDirectMessage);
 
-// ── Creator Space: Wallet, Tips & Payouts ───────────────────────────────────
+// ── Creator Space: Wallet, Tips, Pro & Payouts ──────────────────────────────
 router.get('/creator/wallet', authenticate, getCreatorWallet);
 router.put('/creator/wallet/bank', authenticate, updateBankDetails);
 router.post('/creator/tips', authenticate, sendTip);
 router.post('/creator/payout', authenticate, requestPayout);
 router.get('/creator/payouts', authenticate, getPayoutHistory);
+router.post('/creator/pro/upgrade', authenticate, upgradeCreatorPro);
 
 export default router;

@@ -21,7 +21,9 @@ import {
   Share2,
   Copy,
   Flag,
-  ShieldAlert
+  ShieldAlert,
+  Heart,
+  Sparkles
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useToast } from '@/components/ui/ToastProvider';
@@ -33,6 +35,7 @@ import AudienceSetupAccountModal from './AudienceSetupAccountModal';
 import AudienceEventCreatedSuccessModal from './AudienceEventCreatedSuccessModal';
 import AudienceGetVerifiedView from './AudienceGetVerifiedView';
 import AudienceDeactivateAccountModal from './AudienceDeactivateAccountModal';
+import AudienceTipModal from './AudienceTipModal';
 
 interface ShowItem {
   id: string;
@@ -68,38 +71,20 @@ const DEFAULT_FAN_EVENTS: EventClubItem[] = [
     title: 'User experience (UX)',
     count: 6,
     badgeCount: 1,
-    avatars: [
-      '/audience/adam-udochi.png',
-      '/audience/kyle-fisher.png',
-      '/audience/brandon-wilson.png',
-      '/audience/nermmen-saif.png',
-      '/audience/darlene-black.png',
-    ],
+    avatars: [],
   },
   {
     id: 'e2',
     title: 'User interface (UI)',
     count: 7,
     badgeCount: 2,
-    avatars: [
-      '/audience/audrey-alexander.png',
-      '/audience/theresa-steward.png',
-      '/audience/dylan-field.png',
-      '/audience/adam-udochi.png',
-      '/audience/kyle-fisher.png',
-    ],
+    avatars: [],
   },
   {
     id: 'e3',
     title: 'Brand identity',
     count: 5,
-    avatars: [
-      '/audience/ryan-roslansky.png',
-      '/audience/steve-jobs.png',
-      '/audience/nermmen-saif.png',
-      '/audience/brandon-wilson.png',
-      '/audience/darlene-black.png',
-    ],
+    avatars: [],
   },
 ];
 
@@ -179,8 +164,9 @@ export default function AudienceProfilePageView({
   const [showAllPodcasts, setShowAllPodcasts] = useState(false);
   const [showAllEvents, setShowAllEvents] = useState(false);
 
-  // Modals
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showTipModal, setShowTipModal] = useState(false);
+  const [isUpgradingPro, setIsUpgradingPro] = useState(false);
   const [showVerifyModal, setShowVerifyModal] = useState<boolean>(() => {
     const queryModal = searchParams.get('modal');
     return queryModal === 'get-verified' || queryModal === 'verify' || queryModal === 'pricing';
@@ -387,6 +373,19 @@ export default function AudienceProfilePageView({
     }
   };
 
+  const handleUpgradePro = async () => {
+    setIsUpgradingPro(true);
+    try {
+      await api.post('/creator/pro/upgrade', { auto_renew: true });
+      useAuthStore.getState().checkAuth();
+      toast('🎉 Congratulations! You are now a Creator Pro with full monetization & 85% revenue earnings.', 'success');
+    } catch (err: any) {
+      toast(err?.response?.data?.error || 'Could not upgrade to Creator Pro.', 'error');
+    } finally {
+      setIsUpgradingPro(false);
+    }
+  };
+
   const handleLogout = async () => {
     try {
       await logout();
@@ -542,24 +541,59 @@ export default function AudienceProfilePageView({
                 {bio}
               </p>
 
-              {/* Primary CTA Button: MEMBERED FAN (Figma: 131px x 32px, #D9BA54, uppercase) */}
-              {isVisitorMode && (
-                <div className="mt-3">
+              {/* Action Buttons */}
+              {isVisitorMode ? (
+                <div className="mt-3 flex items-center gap-2.5 flex-wrap">
                   <button
                     type="button"
                     onClick={() => {
                       if (isSubscribed) {
-                        toast('You are a Membered Fan of Udo Emmanuel with full access to live events and activities!', 'info');
+                        toast('You are a Membered Fan with full access to live events and activities!', 'info');
                       } else {
                         setShowMembershipModal(true);
                       }
                     }}
-                    className={`h-8 rounded-[6px] text-[12px] font-normal uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center font-['DM_Sans',sans-serif] bg-[#D9BA54] hover:bg-[#c9a73e] text-black shadow-xs ${
+                    className={`h-8 rounded-[6px] text-[12px] font-semibold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center font-['DM_Sans',sans-serif] bg-[#D9BA54] hover:bg-[#c9a73e] text-black shadow-xs ${
                       isSubscribed ? 'w-[131px]' : 'w-[227px]'
                     }`}
                   >
                     {isSubscribed ? 'MEMBERED FAN' : 'SUBSCRIBE TO BE A MEMBERED FAN'}
                   </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowTipModal(true)}
+                    className="h-8 px-4 rounded-[6px] text-[12px] font-semibold uppercase tracking-wider bg-amber-50 hover:bg-amber-100 text-[#8c711a] border border-amber-300 transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+                    title={`Send a tip to ${name}`}
+                  >
+                    <Heart size={14} className="fill-[#D4AF37] text-[#D4AF37]" />
+                    <span>Tip Creator</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="mt-3 flex items-center gap-2.5 flex-wrap">
+                  {(user as any)?.creator_tier !== 'pro' ? (
+                    <button
+                      type="button"
+                      onClick={handleUpgradePro}
+                      disabled={isUpgradingPro}
+                      className="h-8 px-4 rounded-[6px] text-[12px] font-semibold uppercase tracking-wider bg-gradient-to-r from-[#D4AF37] to-[#E5C158] hover:opacity-95 text-black transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+                    >
+                      <Sparkles size={14} />
+                      <span>{isUpgradingPro ? 'Upgrading...' : 'Upgrade to Creator Pro'}</span>
+                    </button>
+                  ) : (
+                    <span className="h-8 px-3 rounded-[6px] text-[11px] font-bold uppercase tracking-wider bg-gradient-to-r from-[#D4AF37] to-[#E5C158] text-black flex items-center gap-1 shadow-xs">
+                      <Sparkles size={12} /> PRO CREATOR ACTIVE
+                    </span>
+                  )}
+
+                  <Link
+                    href="/finances?tab=creator"
+                    className="h-8 px-4 rounded-[6px] text-[12px] font-semibold uppercase tracking-wider bg-gray-100 hover:bg-gray-200 text-gray-800 transition-all flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <span>Creator Earnings & Payouts</span>
+                  </Link>
                 </div>
               )}
             </div>
@@ -1140,6 +1174,16 @@ export default function AudienceProfilePageView({
             ? 'deactivated'
             : 'confirm'
         }
+      />
+
+      {/* ─── MODAL 7: Tip Creator Modal ─── */}
+      <AudienceTipModal
+        isOpen={showTipModal}
+        onClose={() => setShowTipModal(false)}
+        creatorId={user?.id || ''}
+        creatorName={name || 'Creator'}
+        creatorRole={bio || 'Creator'}
+        creatorAvatar={avatarUrl}
       />
     </section>
   );

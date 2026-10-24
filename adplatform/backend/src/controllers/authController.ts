@@ -269,7 +269,9 @@ export const getMe: RequestHandler = async (req, res) => {
       `SELECT id, name, first_name, last_name, email, role, credits, business_name, phone, logo_url,
               avatar, email_verified, suspended, language, terms_accepted, has_seen_tour, created_at,
               handle, location, bio, two_factor_enabled, notification_preferences,
-              display_currency, display_timezone, sound_enabled
+              display_currency, display_timezone, sound_enabled,
+              is_creator, creator_tier, creator_verified, creator_niche, banner_url, social_links,
+              pro_subscription_expires_at, pro_auto_renew
        FROM users WHERE id = $1`,
       [authReq.user?.id]
     );
@@ -306,7 +308,22 @@ export const getMe: RequestHandler = async (req, res) => {
 export const updateProfile: RequestHandler = async (req, res) => {
   const authReq = req as AuthRequest;
   try {
-    const { name, first_name, last_name, business_name, phone, language, logo_url, handle, location, bio } = req.body;
+    const { 
+      name, 
+      first_name, 
+      last_name, 
+      business_name, 
+      phone, 
+      language, 
+      logo_url, 
+      handle, 
+      location, 
+      bio,
+      creator_niche,
+      banner_url,
+      social_links,
+      is_creator
+    } = req.body;
     let fullName = name;
     if (first_name !== undefined || last_name !== undefined) {
       const f = (first_name ?? '').toString().trim();
@@ -327,9 +344,13 @@ export const updateProfile: RequestHandler = async (req, res) => {
            logo_url = COALESCE($7, logo_url),
            handle = COALESCE($8, handle),
            location = COALESCE($9, location),
-           bio = COALESCE($10, bio)
-       WHERE id = $11
-       RETURNING id, name, first_name, last_name, email, role, credits, business_name, phone, logo_url, language, handle, location, bio`,
+           bio = COALESCE($10, bio),
+           creator_niche = COALESCE($11, creator_niche),
+           banner_url = COALESCE($12, banner_url),
+           social_links = COALESCE($13, social_links),
+           is_creator = COALESCE($14, is_creator)
+       WHERE id = $15
+       RETURNING id, name, first_name, last_name, email, role, credits, business_name, phone, logo_url, language, handle, location, bio, is_creator, creator_tier, creator_verified, creator_niche, banner_url, social_links, pro_subscription_expires_at`,
       [
         fullName ?? null,
         first_name ?? null,
@@ -341,6 +362,10 @@ export const updateProfile: RequestHandler = async (req, res) => {
         handle ?? null,
         location ?? null,
         bio ?? null,
+        creator_niche ?? null,
+        banner_url ?? null,
+        social_links ? JSON.stringify(social_links) : null,
+        is_creator ?? null,
         authReq.user?.id
       ]
     );

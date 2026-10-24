@@ -32,11 +32,18 @@ export async function getFeed(req: Request, res: Response) {
         COALESCE(u.creator_niche, 'UI/UX Designer') AS author_role,
         u.creator_tier AS author_tier,
         CASE WHEN ub.id IS NOT NULL THEN true ELSE false END AS is_bookmarked,
-        CASE WHEN cl.id IS NOT NULL THEN true ELSE false END AS has_liked
+        CASE WHEN cl.id IS NOT NULL THEN true ELSE false END AS has_liked,
+        CASE 
+          WHEN c.is_premium IS NOT TRUE THEN true
+          WHEN c.creator_id = $1 THEN true
+          WHEN pcp.id IS NOT NULL THEN true
+          ELSE false 
+        END AS is_unlocked
       FROM creator_content c
       JOIN users u ON c.creator_id = u.id
       LEFT JOIN user_bookmarks ub ON ub.content_id = c.id AND ub.user_id = $1
       LEFT JOIN creator_content_likes cl ON cl.content_id = c.id AND cl.user_id = $1
+      LEFT JOIN premium_content_purchases pcp ON pcp.content_id = c.id AND pcp.user_id = $1
       WHERE c.status = 'published'
     `;
 
@@ -84,6 +91,7 @@ export async function getFeed(req: Request, res: Response) {
       isBookmarked: r.is_bookmarked,
       hasLiked: r.has_liked,
       isPremium: r.is_premium,
+      isUnlocked: r.is_unlocked ?? (!r.is_premium),
       price: parseFloat(r.price) || 0,
       category: r.category,
       tags: r.tags || [],
@@ -348,3 +356,103 @@ export async function addContentComment(req: Request, res: Response) {
     return res.status(500).json({ error: 'Failed to add comment' });
   }
 }
+
+// ── PURCHASE PREMIUM CONTENT (85% CREATOR / 15% PLATFORM) ─────────────────────
+export async function purchasePremiumContent(req: Request, res: Response) {
+  const client = await pool.connect();
+  try {
+    const fanId = (req as any).user.id;
+    const contentId = req.params.id;
+
+    await client.query('BEGIN');
+
+    const contentRes = await client.query('SELECT * FROM creator_content WHERE id = $1', [contentId]);
+    if (contentRes.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Content not found' });
+    }
+
+    const content = contentRes.rows[0];
+    const price = parseFloat(content.price || 0);
+    const creatorId = content.creator_id;
+
+    if (creatorId === fanId) {
+      await client.query('ROLLBACK');
+      return res.json({ message: 'You own this content', unlocked: true });
+    }
+
+    const existing = await client.query(
+      'SELECT id FROM premium_content_purchases WHERE user_id = $1 AND content_id = $2',
+      [fanId, contentId]
+    );
+    if (existing.rows.length > 0) {
+      await client.query('ROLLBACK');
+      return res.json({ message: 'Content already unlocked', unlocked: true });
+    }
+
+    // Split: 85% creator, 15% platform fee
+    const creatorShare = Number((price * 0.85).toFixed(2));
+    const platformFee = Number((price * 0.15).toFixed(2));
+
+    const purchaseRes = await client.query(
+      `INSERT INTO premium_content_purchases (
+         user_id, content_id, amount, creator_share, platform_fee, payment_reference, created_at
+       ) VALUES ($1, $2, $3, $4, $5, $6, NOW())
+       RETURNING *`,
+      [fanId, contentId, price, creatorShare, platformFee, `PREM-${Date.now()}`]
+    );
+
+    // Earnings ledger for creator
+    await client.query(
+      `INSERT INTO creator_earnings_ledger (
+         creator_id, source_type, source_id, gross_amount, platform_fee, net_amount, status, description
+       ) VALUES ($1, 'premium_content', $2, $3, $4, $5, 'available', $6)`,
+      [
+        creatorId,
+        contentId,
+        price,
+        platformFee,
+        creatorShare,
+        `Premium content unlock: "${content.title}" (₦${price.toLocaleString()})`
+      ]
+    );
+
+    // Credit creator wallet
+    await client.query(
+      `INSERT INTO creator_wallets (
+         creator_id, available_balance, total_earned, updated_at
+       ) VALUES ($1, $2, $2, NOW())
+       ON CONFLICT (creator_id)
+       DO UPDATE SET
+         available_balance = creator_wallets.available_balance + $2,
+         total_earned = creator_wallets.total_earned + $2,
+         updated_at = NOW()`,
+      [creatorId, creatorShare]
+    );
+
+    // Notification to creator
+    await client.query(
+      `INSERT INTO notifications (user_id, title, message, type, is_read, created_at)
+       VALUES ($1, 'Premium Content Purchased', $2, 'earnings', false, NOW())`,
+      [
+        creatorId,
+        `A supporter unlocked your premium content "${content.title}" for ₦${price.toLocaleString()}!`
+      ]
+    );
+
+    await client.query('COMMIT');
+
+    return res.status(201).json({
+      message: 'Premium content unlocked successfully',
+      unlocked: true,
+      purchase: purchaseRes.rows[0]
+    });
+  } catch (error: any) {
+    await client.query('ROLLBACK');
+    console.error('purchasePremiumContent error:', error);
+    return res.status(500).json({ error: 'Failed to purchase premium content' });
+  } finally {
+    client.release();
+  }
+}
+

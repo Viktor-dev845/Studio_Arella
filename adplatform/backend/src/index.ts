@@ -303,6 +303,33 @@ app.listen(PORT, async () => {
     await pool.query(`
       ALTER TABLE ads ADD COLUMN IF NOT EXISTS description TEXT;
     `);
+
+    // Creator Space Monetization migrations
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS premium_content_purchases (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        content_id UUID REFERENCES creator_content(id) ON DELETE CASCADE,
+        amount DECIMAL(10,2) NOT NULL,
+        creator_share DECIMAL(10,2) NOT NULL,
+        platform_fee DECIMAL(10,2) NOT NULL,
+        payment_reference VARCHAR(255),
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        UNIQUE(user_id, content_id)
+      );
+      CREATE INDEX IF NOT EXISTS idx_premium_purchases_user ON premium_content_purchases(user_id);
+      CREATE INDEX IF NOT EXISTS idx_premium_purchases_content ON premium_content_purchases(content_id);
+
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS is_creator BOOLEAN DEFAULT false;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS creator_tier VARCHAR(20) DEFAULT 'free';
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS creator_verified BOOLEAN DEFAULT false;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS creator_niche VARCHAR(100);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS banner_url TEXT;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS social_links JSONB DEFAULT '{}';
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS pro_subscription_expires_at TIMESTAMPTZ;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS pro_auto_renew BOOLEAN DEFAULT false;
+    `);
+    console.log('✅ Creator Space monetization tables & columns verified');
   } catch (err) {
     console.error('❌ Failed to run database migrations:', err);
   }
