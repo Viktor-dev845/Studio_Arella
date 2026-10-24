@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { PageTransition } from '@/components/ui/Animations';
 import { useAuthStore } from '@/store/authStore';
+import { usePreferencesStore } from '@/store/preferencesStore';
 import api from '@/lib/api';
 import Link from 'next/link';
 import AudienceDeactivateAccountModal from '@/components/audience/AudienceDeactivateAccountModal';
@@ -201,13 +202,41 @@ export default function UserProfileOverview() {
   };
 
 
-  // Notification toggles state
+  const preferencesStore = usePreferencesStore();
+
+  // Notification toggles state initialized from user's saved preferences
   const [notifState, setNotifState] = useState({
     email: true,
     booking: true,
     campaign: false,
     promo: false
   });
+
+  useEffect(() => {
+    if (user?.notification_preferences) {
+      const np = user.notification_preferences as any;
+      setNotifState({
+        email: np.email ?? np.emailNotifications ?? true,
+        booking: np.booking ?? np.bookingUpdates ?? np.emailBookings ?? true,
+        campaign: np.campaign ?? np.campaignUpdates ?? np.emailBroadcasts ?? false,
+        promo: np.promo ?? np.promotionalEmails ?? np.emailWeekly ?? false
+      });
+    }
+  }, [user?.notification_preferences]);
+
+  const handleToggleNotification = async (key: 'email' | 'booking' | 'campaign' | 'promo') => {
+    const newValue = !notifState[key];
+    setNotifState(prev => ({ ...prev, [key]: newValue }));
+    try {
+      const res = await api.put('/auth/notification-preferences', { [key]: newValue });
+      if (res.data?.notification_preferences) {
+        useAuthStore.getState().updateUser({ notification_preferences: res.data.notification_preferences });
+      }
+    } catch (err) {
+      console.error('Failed to update notification preference', err);
+      setNotifState(prev => ({ ...prev, [key]: !newValue }));
+    }
+  };
 
   // User profile details with real user data or clean empty state
   const firstName = user?.first_name || (user?.name ? user.name.split(' ')[0] : '') || '';
@@ -510,8 +539,8 @@ export default function UserProfileOverview() {
                           <div className="text-[14px] text-[#16151C] font-light">Receive updates about your account and bookings.</div>
                         </div>
                         <button 
-                          onClick={() => setNotifState(s => ({...s, email: !s.email}))}
-                          className={`w-[54px] h-[23px] rounded-[10px] flex items-center px-[1px] transition-colors duration-300 ${notifState.email ? 'bg-[#D4AF37] justify-end' : 'bg-[#D4AF37]/40 justify-start'}`}
+                          onClick={() => handleToggleNotification('email')}
+                          className={`w-[54px] h-[23px] rounded-[10px] flex items-center px-[1px] transition-colors duration-300 cursor-pointer ${notifState.email ? 'bg-[#D4AF37] justify-end' : 'bg-[#D4AF37]/40 justify-start'}`}
                         >
                           <div className={`w-[22px] h-[20px] rounded-[10px] bg-white mx-[5px]`} />
                         </button>
@@ -523,8 +552,8 @@ export default function UserProfileOverview() {
                           <div className="text-[14px] text-[#16151C] font-light">Get notified when a booking is confirmed, changed or cancelled.</div>
                         </div>
                         <button 
-                          onClick={() => setNotifState(s => ({...s, booking: !s.booking}))}
-                          className={`w-[54px] h-[23px] rounded-[10px] flex items-center px-[1px] transition-colors duration-300 ${notifState.booking ? 'bg-[#D4AF37] justify-end' : 'bg-[#D4AF37]/40 justify-start'}`}
+                          onClick={() => handleToggleNotification('booking')}
+                          className={`w-[54px] h-[23px] rounded-[10px] flex items-center px-[1px] transition-colors duration-300 cursor-pointer ${notifState.booking ? 'bg-[#D4AF37] justify-end' : 'bg-[#D4AF37]/40 justify-start'}`}
                         >
                           <div className={`w-[22px] h-[20px] rounded-[10px] bg-white mx-[5px]`} />
                         </button>
@@ -536,8 +565,8 @@ export default function UserProfileOverview() {
                           <div className="text-[14px] text-[#16151C] font-light">Receive updates about your campaigns.</div>
                         </div>
                         <button 
-                          onClick={() => setNotifState(s => ({...s, campaign: !s.campaign}))}
-                          className={`w-[54px] h-[23px] rounded-[10px] flex items-center px-[1px] transition-colors duration-300 ${notifState.campaign ? 'bg-[#D4AF37] justify-end' : 'bg-[#D4AF37]/40 justify-start'}`}
+                          onClick={() => handleToggleNotification('campaign')}
+                          className={`w-[54px] h-[23px] rounded-[10px] flex items-center px-[1px] transition-colors duration-300 cursor-pointer ${notifState.campaign ? 'bg-[#D4AF37] justify-end' : 'bg-[#D4AF37]/40 justify-start'}`}
                         >
                           <div className={`w-[22px] h-[20px] rounded-[10px] bg-white mx-[5px]`} />
                         </button>
@@ -549,8 +578,8 @@ export default function UserProfileOverview() {
                           <div className="text-[14px] text-[#16151C] font-light">Receive offers, news and updates from Studio Arella.</div>
                         </div>
                         <button 
-                          onClick={() => setNotifState(s => ({...s, promo: !s.promo}))}
-                          className={`w-[54px] h-[23px] rounded-[10px] flex items-center px-[1px] transition-colors duration-300 ${notifState.promo ? 'bg-[#D4AF37] justify-end' : 'bg-[#D4AF37]/40 justify-start'}`}
+                          onClick={() => handleToggleNotification('promo')}
+                          className={`w-[54px] h-[23px] rounded-[10px] flex items-center px-[1px] transition-colors duration-300 cursor-pointer ${notifState.promo ? 'bg-[#D4AF37] justify-end' : 'bg-[#D4AF37]/40 justify-start'}`}
                         >
                           <div className={`w-[22px] h-[20px] rounded-[10px] bg-white mx-[5px]`} />
                         </button>
@@ -567,10 +596,19 @@ export default function UserProfileOverview() {
                         <label className="text-[15px] font-semibold text-neutral-800 dark:text-neutral-200">Language</label>
                         <div className="relative">
                           <select 
-                            className="w-full h-[50px] px-4 rounded-[10px] border border-neutral-300 dark:border-white/20 bg-white dark:bg-[#2A2A2E] text-[15px] font-medium text-neutral-900 dark:text-white appearance-none outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all shadow-xs"
-                            defaultValue="English"
+                            className="w-full h-[50px] px-4 rounded-[10px] border border-neutral-300 dark:border-white/20 bg-white dark:bg-[#2A2A2E] text-[15px] font-medium text-neutral-900 dark:text-white appearance-none outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all shadow-xs cursor-pointer"
+                            value={user?.language || 'en'}
+                            onChange={async (e) => {
+                              const l = e.target.value;
+                              try {
+                                await api.put('/auth/profile', { language: l });
+                                useAuthStore.getState().updateUser({ language: l });
+                              } catch (err) {
+                                console.error('Failed to update language', err);
+                              }
+                            }}
                           >
-                            <option value="English">English</option>
+                            <option value="en">English</option>
                           </select>
                           <ChevronDown size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-600 pointer-events-none" />
                         </div>
@@ -581,10 +619,23 @@ export default function UserProfileOverview() {
                         <label className="text-[15px] font-semibold text-neutral-800 dark:text-neutral-200">Currency</label>
                         <div className="relative">
                           <select 
-                            className="w-full h-[50px] px-4 rounded-[10px] border border-neutral-300 dark:border-white/20 bg-white dark:bg-[#2A2A2E] text-[15px] font-medium text-neutral-900 dark:text-white appearance-none outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all shadow-xs"
-                            defaultValue="Naira (NGN)"
+                            className="w-full h-[50px] px-4 rounded-[10px] border border-neutral-300 dark:border-white/20 bg-white dark:bg-[#2A2A2E] text-[15px] font-medium text-neutral-900 dark:text-white appearance-none outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all shadow-xs cursor-pointer"
+                            value={preferencesStore.currency || user?.display_currency || 'NGN'}
+                            onChange={async (e) => {
+                              const c = e.target.value;
+                              preferencesStore.setCurrency(c as any);
+                              try {
+                                await api.put('/auth/display-preferences', { currency: c });
+                                useAuthStore.getState().updateUser({ display_currency: c });
+                              } catch (err) {
+                                console.error('Failed to update currency', err);
+                              }
+                            }}
                           >
-                            <option value="Naira (NGN)">Naira (NGN)</option>
+                            <option value="NGN">Naira (NGN)</option>
+                            <option value="USD">US Dollar (USD)</option>
+                            <option value="GBP">British Pound (GBP)</option>
+                            <option value="EUR">Euro (EUR)</option>
                           </select>
                           <ChevronDown size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-600 pointer-events-none" />
                         </div>
@@ -595,7 +646,7 @@ export default function UserProfileOverview() {
                         <label className="text-[15px] font-semibold text-neutral-800 dark:text-neutral-200">Theme</label>
                         <div className="relative">
                           <select 
-                            className="w-full h-[50px] px-4 rounded-[10px] border border-neutral-300 dark:border-white/20 bg-white dark:bg-[#2A2A2E] text-[15px] font-medium text-neutral-900 dark:text-white appearance-none outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all shadow-xs"
+                            className="w-full h-[50px] px-4 rounded-[10px] border border-neutral-300 dark:border-white/20 bg-white dark:bg-[#2A2A2E] text-[15px] font-medium text-neutral-900 dark:text-white appearance-none outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all shadow-xs cursor-pointer"
                             defaultValue="Light"
                           >
                             <option value="Light">Light</option>
