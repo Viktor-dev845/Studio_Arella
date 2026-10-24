@@ -84,6 +84,37 @@ export default function UserProfileOverview() {
     }
   }, [user, editingMode]);
 
+  // Helper to extract 10-digit number without +234 or leading zero
+  const getPhoneDigits = (fullPhone: string) => {
+    if (!fullPhone) return '';
+    let digits = fullPhone.replace(/^\+234\s*/, '').trim();
+    if (digits.startsWith('0') && digits.length > 1) {
+      digits = digits.slice(1);
+    }
+    return digits;
+  };
+
+  const handlePhoneChange = (val: string, formType: 'personal' | 'business') => {
+    // Strip +234 if pasted
+    let digits = val.replace(/^\+234\s*/, '');
+    // Keep only numeric digits
+    digits = digits.replace(/\D/g, '');
+    // If user typed leading 0, strip it
+    if (digits.startsWith('0') && digits.length > 1) {
+      digits = digits.slice(1);
+    }
+    // Limit to 10 digits
+    if (digits.length > 10) {
+      digits = digits.slice(0, 10);
+    }
+    const formatted = digits ? `+234 ${digits}` : '';
+    if (formType === 'personal') {
+      setPersonalForm(prev => ({ ...prev, phone: formatted }));
+    } else {
+      setBusinessForm(prev => ({ ...prev, phone: formatted }));
+    }
+  };
+
   const handleSaveProfile = async (type: 'personal' | 'business') => {
     setIsSaving(true);
     try {
@@ -858,13 +889,23 @@ export default function UserProfileOverview() {
                     <label className="text-[14px] font-semibold text-neutral-800 dark:text-neutral-200">
                       Business Phone
                     </label>
-                    <input 
-                      type="tel" 
-                      placeholder="e.g. +234 801 234 5678"
-                      value={businessForm.phone}
-                      onChange={(e) => setBusinessForm(prev => ({ ...prev, phone: e.target.value }))}
-                      className="w-full h-[50px] px-4 rounded-[10px] border border-neutral-300 dark:border-white/20 bg-white dark:bg-[#2A2A2E] text-[15px] font-medium text-neutral-900 dark:text-white placeholder:text-neutral-400 outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all shadow-xs"
-                    />
+                    <div className="flex items-center h-[50px] w-full rounded-[10px] border border-neutral-300 dark:border-white/20 bg-white dark:bg-[#2A2A2E] shadow-xs focus-within:border-[#D4AF37] focus-within:ring-2 focus-within:ring-[#D4AF37]/20 transition-all overflow-hidden">
+                      {/* Country Code Prefix */}
+                      <div className="flex items-center gap-1.5 px-3.5 h-full bg-neutral-100 dark:bg-white/5 border-r border-neutral-300 dark:border-white/10 shrink-0 select-none">
+                        <span className="text-[16px]" role="img" aria-label="Nigeria">🇳🇬</span>
+                        <span className="font-semibold text-neutral-900 dark:text-white text-[14px] tracking-tight">+234</span>
+                      </div>
+                      {/* 10-digit number input */}
+                      <input 
+                        type="tel" 
+                        inputMode="numeric"
+                        placeholder="801 234 5678"
+                        value={getPhoneDigits(businessForm.phone)}
+                        onChange={(e) => handlePhoneChange(e.target.value, 'business')}
+                        className="flex-1 h-full px-4 bg-transparent text-[15px] font-medium text-neutral-900 dark:text-white placeholder:text-neutral-400 outline-none"
+                      />
+                    </div>
+                    <span className="text-[11px] text-neutral-400">10 digits without leading 0</span>
                   </div>
 
                   <div className="flex flex-col gap-2">
@@ -964,13 +1005,23 @@ export default function UserProfileOverview() {
                     <label className="text-[14px] font-semibold text-neutral-800 dark:text-neutral-200">
                       Mobile Number
                     </label>
-                    <input 
-                      type="tel" 
-                      placeholder="e.g. +234 801 234 5678"
-                      value={personalForm.phone}
-                      onChange={(e) => setPersonalForm(prev => ({ ...prev, phone: e.target.value }))}
-                      className="w-full h-[50px] px-4 rounded-[10px] border border-neutral-300 dark:border-white/20 bg-white dark:bg-[#2A2A2E] text-[15px] font-medium text-neutral-900 dark:text-white placeholder:text-neutral-400 outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all shadow-xs"
-                    />
+                    <div className="flex items-center h-[50px] w-full rounded-[10px] border border-neutral-300 dark:border-white/20 bg-white dark:bg-[#2A2A2E] shadow-xs focus-within:border-[#D4AF37] focus-within:ring-2 focus-within:ring-[#D4AF37]/20 transition-all overflow-hidden">
+                      {/* Country Code Prefix */}
+                      <div className="flex items-center gap-1.5 px-3.5 h-full bg-neutral-100 dark:bg-white/5 border-r border-neutral-300 dark:border-white/10 shrink-0 select-none">
+                        <span className="text-[16px]" role="img" aria-label="Nigeria">🇳🇬</span>
+                        <span className="font-semibold text-neutral-900 dark:text-white text-[14px] tracking-tight">+234</span>
+                      </div>
+                      {/* 10-digit number input */}
+                      <input 
+                        type="tel" 
+                        inputMode="numeric"
+                        placeholder="801 234 5678"
+                        value={getPhoneDigits(personalForm.phone)}
+                        onChange={(e) => handlePhoneChange(e.target.value, 'personal')}
+                        className="flex-1 h-full px-4 bg-transparent text-[15px] font-medium text-neutral-900 dark:text-white placeholder:text-neutral-400 outline-none"
+                      />
+                    </div>
+                    <span className="text-[11px] text-neutral-400">10 digits without leading 0</span>
                   </div>
 
                   {/* Email Address */}
