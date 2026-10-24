@@ -40,6 +40,7 @@ export default function UserProfileOverview() {
   const [editingMode, setEditingMode] = useState<'personal' | 'business' | null>(null);
   const [securityView, setSecurityView] = useState<'main' | 'change-password' | 'login-activity'>('main');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successModalMessage, setSuccessModalMessage] = useState('Profile updated successfully');
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showLogoutSuccessModal, setShowLogoutSuccessModal] = useState(false);
   const [showReportSuccessModal, setShowReportSuccessModal] = useState(false);
@@ -89,11 +90,13 @@ export default function UserProfileOverview() {
       const payload = type === 'personal' ? personalForm : businessForm;
       await api.put('/auth/profile', payload);
       await useAuthStore.getState().checkAuth();
+      setSuccessModalMessage('Profile updated successfully');
       setShowSuccessModal(true);
       setEditingMode(null);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to update profile', err);
-      alert('Failed to update profile. Please try again.');
+      const msg = err.response?.data?.message || 'Failed to update profile. Please try again.';
+      alert(msg);
     } finally {
       setIsSaving(false);
     }
@@ -109,6 +112,7 @@ export default function UserProfileOverview() {
         old_password: passwordForm.currentPassword,
         new_password: passwordForm.newPassword
       });
+      setSuccessModalMessage('Password changed successfully');
       setShowSuccessModal(true);
       setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (err) {
@@ -1072,18 +1076,20 @@ export default function UserProfileOverview() {
 
             {/* Success message */}
             <h3 className="text-[20px] font-semibold text-[#16151C] mb-8">
-              Password changed successfully
+              {successModalMessage}
             </h3>
 
             {/* Go back button */}
             <button 
               onClick={() => {
                 setShowSuccessModal(false);
-                setSecurityView('main');
+                if (successModalMessage.includes('Password')) {
+                  setSecurityView('main');
+                }
               }}
-              className="w-full max-w-[468px] h-[56px] bg-[#D4AF37] hover:bg-[#c29f31] text-black font-medium text-[16px] rounded-[6px] transition-colors flex items-center justify-center"
+              className="w-full max-w-[468px] h-[52px] bg-[#D4AF37] hover:bg-[#c29f31] text-black font-semibold text-[16px] rounded-[8px] transition-colors flex items-center justify-center cursor-pointer shadow-sm"
             >
-              Go back
+              Continue
             </button>
           </div>
         </div>

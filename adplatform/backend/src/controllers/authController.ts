@@ -307,7 +307,15 @@ export const updateProfile: RequestHandler = async (req, res) => {
   const authReq = req as AuthRequest;
   try {
     const { name, first_name, last_name, business_name, phone, language, logo_url, handle, location, bio } = req.body;
-    const fullName = first_name && last_name ? `${first_name.trim()} ${last_name.trim()}` : name;
+    let fullName = name;
+    if (first_name !== undefined || last_name !== undefined) {
+      const f = (first_name ?? '').toString().trim();
+      const l = (last_name ?? '').toString().trim();
+      if (f || l) {
+        fullName = `${f} ${l}`.trim();
+      }
+    }
+
     const result = await pool.query(
       `UPDATE users
        SET name = COALESCE($1, name),
@@ -322,10 +330,23 @@ export const updateProfile: RequestHandler = async (req, res) => {
            bio = COALESCE($10, bio)
        WHERE id = $11
        RETURNING id, name, first_name, last_name, email, role, credits, business_name, phone, logo_url, language, handle, location, bio`,
-      [fullName, first_name, last_name, business_name, phone, language, logo_url, handle, location, bio, authReq.user?.id]
+      [
+        fullName ?? null,
+        first_name ?? null,
+        last_name ?? null,
+        business_name ?? null,
+        phone ?? null,
+        language ?? null,
+        logo_url ?? null,
+        handle ?? null,
+        location ?? null,
+        bio ?? null,
+        authReq.user?.id
+      ]
     );
     res.json(result.rows[0]);
   } catch (err) {
+    console.error('Update profile error:', err);
     res.status(500).json({ message: 'Update failed' });
   }
 };
