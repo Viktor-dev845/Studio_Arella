@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { LayoutGrid, List, Mic, Plus } from 'lucide-react';
+import { LayoutGrid, List, Mic, Plus, Radio, Headphones, Sparkles, ArrowRight, Calendar } from 'lucide-react';
 import { theme } from '@/lib/theme';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { PageTransition } from '@/components/ui/Animations';
@@ -20,49 +20,6 @@ interface PodcastShow {
   episode_count?: number | string;
   created_at?: string;
 }
-
-const CURATED_SHOWS: PodcastShow[] = [
-  {
-    id: 'creative-blueprint',
-    title: 'The Creative Blueprint',
-    description: 'Conversations with Eastern Nigeria top brand architects, designers, and digital makers.',
-    cover_url: '/audience/podcast-zara.png',
-    creator_name: 'Adam Udochi',
-    episode_count: 8,
-  },
-  {
-    id: 'eastern-pulse',
-    title: 'Eastern Pulse Audio',
-    description: 'Weekly breakdown of commerce, media trends, and consumer culture in Abia State.',
-    cover_url: '/audience/podcast-scthon.png',
-    creator_name: 'Kyle Fisher',
-    episode_count: 14,
-  },
-  {
-    id: 'tech-voices-umuahia',
-    title: 'Tech Voices Umuahia',
-    description: 'Spotlighting founders and creative builders scaling regional startups from the South-East.',
-    cover_url: '/audience/podcast-drozd.png',
-    creator_name: 'Theresa Steward',
-    episode_count: 6,
-  },
-  {
-    id: 'soundscapes-session',
-    title: 'Soundscapes & Frequencies',
-    description: 'Studio Arella live acoustic sessions, audio mixing masterclasses, and artist profiles.',
-    cover_url: '/audience/mockup-sphinx.png',
-    creator_name: 'Studio Arella Sound Team',
-    episode_count: 12,
-  },
-  {
-    id: 'growth-and-grit',
-    title: 'Growth & Grit Marketing',
-    description: 'Practical playbooks for outdoor billboard reach, retail conversions, and audience growth.',
-    cover_url: '/audience/plant-podcast.png',
-    creator_name: 'Brandon Wilson',
-    episode_count: 5,
-  },
-];
 
 export default function PodcastsPage() {
   const [trendingView, setTrendingView] = useState<'board' | 'list'>('board');
@@ -91,7 +48,6 @@ export default function PodcastsPage() {
   }, []);
 
   const renderCard = (pod: PodcastShow) => {
-    const img = pod.cover_url || '/audience/podcast-zara.png';
     const epCount = pod.episode_count ? `${pod.episode_count} episode${Number(pod.episode_count) === 1 ? '' : 's'}` : '0 episodes';
     const subtitle = pod.creator_name ? `By ${pod.creator_name}` : (pod.description || 'Studio Arella');
 
@@ -119,16 +75,60 @@ export default function PodcastsPage() {
             boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
           }}
         >
-          <img
-            src={img}
-            alt={pod.title}
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              display: 'block',
-            }}
-          />
+          {pod.cover_url ? (
+            <img
+              src={pod.cover_url}
+              alt={pod.title}
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                display: 'block',
+              }}
+            />
+          ) : (
+            <div
+              style={{
+                width: '100%',
+                height: '100%',
+                background: 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                padding: 16,
+                textAlign: 'center',
+              }}
+            >
+              <div
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: '50%',
+                  background: 'rgba(234, 88, 12, 0.15)',
+                  border: '1px solid rgba(234, 88, 12, 0.3)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#EA580C',
+                }}
+              >
+                <Mic size={24} />
+              </div>
+              <span
+                style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: '#94A3B8',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.08em',
+                }}
+              >
+                Studio Arella
+              </span>
+            </div>
+          )}
         </div>
 
         <div style={{ marginTop: 10 }}>
@@ -174,7 +174,6 @@ export default function PodcastsPage() {
   };
 
   const renderListItem = (pod: PodcastShow) => {
-    const img = pod.cover_url || '/audience/podcast-zara.png';
     const epCount = pod.episode_count ? `${pod.episode_count} episode${Number(pod.episode_count) === 1 ? '' : 's'}` : '0 episodes';
     const subtitle = pod.creator_name ? `By ${pod.creator_name}` : (pod.description || 'Studio Arella');
 
@@ -201,13 +200,32 @@ export default function PodcastsPage() {
             overflow: 'hidden',
             background: theme.color.surface2,
             flexShrink: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
-          <img
-            src={img}
-            alt={pod.title}
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-          />
+          {pod.cover_url ? (
+            <img
+              src={pod.cover_url}
+              alt={pod.title}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          ) : (
+            <div
+              style={{
+                width: '100%',
+                height: '100%',
+                background: 'linear-gradient(135deg, #1E293B, #0F172A)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#EA580C',
+              }}
+            >
+              <Mic size={22} />
+            </div>
+          )}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <p style={{ fontSize: 15, fontWeight: 700, color: theme.color.text1, margin: '0 0 4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -221,8 +239,9 @@ export default function PodcastsPage() {
     );
   };
 
-  const displayTrending = myShows.length > 0 ? myShows : allShows.length > 0 ? allShows.slice(0, 5) : CURATED_SHOWS;
-  const displayAll = allShows.length > 0 ? allShows : myShows.length > 0 ? myShows : CURATED_SHOWS;
+  const hasMyShows = myShows.length > 0;
+  const hasAllShows = allShows.length > 0;
+  const isFresh = !hasMyShows && !hasAllShows;
 
   return (
     <DashboardLayout>
@@ -231,12 +250,19 @@ export default function PodcastsPage() {
           .podcast-card-hover:hover {
             transform: translateY(-2px);
           }
+          .creator-feature-card:hover {
+            border-color: #EA580C !important;
+            box-shadow: 0 4px 14px rgba(234, 88, 12, 0.08) !important;
+          }
           @media (max-width: 960px) {
             .podcast-page-layout {
               flex-direction: column !important;
             }
             .podcast-page-layout > * {
               width: 100% !important;
+            }
+            .creator-quickstart-grid {
+              grid-template-columns: 1fr !important;
             }
           }
           @media (max-width: 640px) {
@@ -263,7 +289,7 @@ export default function PodcastsPage() {
           }}
         >
           {/* ─── MAIN COLUMN ─── */}
-          <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 36 }}>
+          <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 32 }}>
             {/* Top Action Bar */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
               <div>
@@ -289,8 +315,10 @@ export default function PodcastsPage() {
                     padding: '8px 14px',
                     borderRadius: 8,
                     textDecoration: 'none',
+                    transition: 'background 0.15s ease',
                   }}
                 >
+                  <Calendar size={14} />
                   Book Studio Time
                 </Link>
                 <Link
@@ -306,6 +334,7 @@ export default function PodcastsPage() {
                     padding: '8px 14px',
                     borderRadius: 8,
                     textDecoration: 'none',
+                    boxShadow: '0 2px 6px rgba(234, 88, 12, 0.25)',
                   }}
                 >
                   <Plus size={14} />
@@ -319,240 +348,539 @@ export default function PodcastsPage() {
                 <div style={{ width: 28, height: 28, border: '2.5px solid #FED7AA', borderTopColor: '#F97316', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
                 <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
               </div>
-            ) : displayAll.length === 0 ? (
-              <div
-                style={{
-                  padding: '48px 24px',
-                  textAlign: 'center',
-                  background: '#FAFAFA',
-                  borderRadius: 16,
-                  border: '1px dashed #E2E8F0',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: 12,
-                }}
-              >
+            ) : isFresh ? (
+              /* ─── FRESH PLATFORM CREATOR LAUNCHPAD ─── */
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                {/* Hero Welcome Banner */}
                 <div
                   style={{
-                    width: 52,
-                    height: 52,
-                    borderRadius: 26,
-                    background: '#FFF7ED',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#EA580C',
+                    background: 'linear-gradient(135deg, #FFFDF8 0%, #FFF8ED 50%, #FFF3DC 100%)',
+                    border: '1px solid #FED7AA',
+                    borderRadius: 18,
+                    padding: '28px 32px',
+                    boxShadow: '0 2px 12px rgba(234, 88, 12, 0.04)',
+                    position: 'relative',
+                    overflow: 'hidden',
                   }}
                 >
-                  <Mic size={26} />
+                  <div style={{ position: 'relative', zIndex: 1, maxWidth: 620 }}>
+                    <div
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        background: 'rgba(255, 255, 255, 0.85)',
+                        border: '1px solid #FDBA74',
+                        borderRadius: 20,
+                        padding: '4px 12px',
+                        marginBottom: 14,
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: '50%',
+                          background: '#16A34A',
+                          boxShadow: '0 0 6px #16A34A',
+                        }}
+                      />
+                      <span style={{ fontSize: 11, fontWeight: 700, color: '#9A3412', letterSpacing: '0.02em' }}>
+                        Studio Arella Audio Studio Online
+                      </span>
+                    </div>
+
+                    <h2 style={{ fontSize: 22, fontWeight: 800, color: '#1E293B', margin: '0 0 10px', lineHeight: 1.3 }}>
+                      Welcome to your Creator Audio Workspace
+                    </h2>
+                    <p style={{ fontSize: 13.5, color: '#64748B', lineHeight: 1.55, margin: '0 0 22px' }}>
+                      Publish your podcast series, distribute episodes to listeners across Nigeria, or reserve dedicated acoustic studio time with sound engineer assistance at Studio Arella.
+                    </p>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                      <Link
+                        href="/podcast/new"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 8,
+                          background: '#EA580C',
+                          color: '#FFFFFF',
+                          fontSize: 13,
+                          fontWeight: 700,
+                          padding: '11px 22px',
+                          borderRadius: 10,
+                          textDecoration: 'none',
+                          boxShadow: '0 2px 8px rgba(234, 88, 12, 0.3)',
+                          transition: 'background 0.15s ease',
+                        }}
+                      >
+                        <Plus size={16} />
+                        Create Your First Show
+                      </Link>
+
+                      <Link
+                        href="/bookings?tab=podcast"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 8,
+                          background: '#FFFFFF',
+                          border: '1px solid #CBD5E1',
+                          color: '#0F172A',
+                          fontSize: 13,
+                          fontWeight: 600,
+                          padding: '11px 20px',
+                          borderRadius: 10,
+                          textDecoration: 'none',
+                          transition: 'all 0.15s ease',
+                        }}
+                      >
+                        <Headphones size={16} color="#64748B" />
+                        Book Studio Recording Time
+                      </Link>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <h3 style={{ fontSize: 16, fontWeight: 700, color: theme.color.text1, margin: '0 0 6px' }}>
-                    No podcast shows published yet
-                  </h3>
-                  <p style={{ fontSize: 13, color: theme.color.text4, margin: 0, maxWidth: 400 }}>
-                    Start your creator journey by creating your first show, or reserve recording studio time at Studio Arella.
-                  </p>
-                </div>
-                <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
-                  <Link
-                    href="/podcast/new"
+
+                {/* 3 Quick-Start Action Cards */}
+                <div
+                  className="creator-quickstart-grid"
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+                    gap: 16,
+                  }}
+                >
+                  {/* Card 1 */}
+                  <div
+                    className="creator-feature-card"
                     style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 6,
-                      background: '#EA580C',
-                      color: '#fff',
-                      fontSize: 13,
-                      fontWeight: 700,
-                      padding: '9px 18px',
-                      borderRadius: 8,
-                      textDecoration: 'none',
+                      background: '#FFFFFF',
+                      border: '1px solid #E2E8F0',
+                      borderRadius: 14,
+                      padding: '20px 22px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 14,
+                      transition: 'all 0.2s ease',
                     }}
                   >
-                    <Plus size={15} />
-                    Create Your First Show
-                  </Link>
-                  <Link
-                    href="/bookings?tab=podcast"
+                    <div
+                      style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: 10,
+                        background: '#FFF7ED',
+                        color: '#EA580C',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <Radio size={22} />
+                    </div>
+                    <div>
+                      <h3 style={{ fontSize: 14, fontWeight: 700, color: theme.color.text1, margin: '0 0 6px' }}>
+                        1. Start a New Show
+                      </h3>
+                      <p style={{ fontSize: 12.5, color: theme.color.text4, lineHeight: 1.5, margin: 0 }}>
+                        Set up your podcast title, cover artwork, and genres to establish your public channel.
+                      </p>
+                    </div>
+                    <Link
+                      href="/podcast/new"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color: '#EA580C',
+                        textDecoration: 'none',
+                        marginTop: 'auto',
+                      }}
+                    >
+                      <span>Create Show</span>
+                      <ArrowRight size={13} />
+                    </Link>
+                  </div>
+
+                  {/* Card 2 */}
+                  <div
+                    className="creator-feature-card"
                     style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 6,
-                      background: '#fff',
-                      border: '1px solid #CBD5E1',
-                      color: theme.color.text1,
-                      fontSize: 13,
-                      fontWeight: 600,
-                      padding: '9px 18px',
-                      borderRadius: 8,
-                      textDecoration: 'none',
+                      background: '#FFFFFF',
+                      border: '1px solid #E2E8F0',
+                      borderRadius: 14,
+                      padding: '20px 22px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 14,
+                      transition: 'all 0.2s ease',
                     }}
                   >
-                    Book Studio Time
-                  </Link>
+                    <div
+                      style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: 10,
+                        background: '#EFF6FF',
+                        color: '#2563EB',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <Mic size={22} />
+                    </div>
+                    <div>
+                      <h3 style={{ fontSize: 14, fontWeight: 700, color: theme.color.text1, margin: '0 0 6px' }}>
+                        2. Record at Studio Arella
+                      </h3>
+                      <p style={{ fontSize: 12.5, color: theme.color.text4, lineHeight: 1.5, margin: 0 }}>
+                        Book soundproof acoustic booths with broadcast microphones and sound engineers in Umuahia.
+                      </p>
+                    </div>
+                    <Link
+                      href="/bookings?tab=podcast"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color: '#2563EB',
+                        textDecoration: 'none',
+                        marginTop: 'auto',
+                      }}
+                    >
+                      <span>Reserve Suite</span>
+                      <ArrowRight size={13} />
+                    </Link>
+                  </div>
+
+                  {/* Card 3 */}
+                  <div
+                    className="creator-feature-card"
+                    style={{
+                      background: '#FFFFFF',
+                      border: '1px solid #E2E8F0',
+                      borderRadius: 14,
+                      padding: '20px 22px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 14,
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: 10,
+                        background: '#F0FDF4',
+                        color: '#16A34A',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <Sparkles size={22} />
+                    </div>
+                    <div>
+                      <h3 style={{ fontSize: 14, fontWeight: 700, color: theme.color.text1, margin: '0 0 6px' }}>
+                        3. Distribute & Track
+                      </h3>
+                      <p style={{ fontSize: 12.5, color: theme.color.text4, lineHeight: 1.5, margin: 0 }}>
+                        Publish audio drops, engage listeners across the audience feed, and monitor plays in real time.
+                      </p>
+                    </div>
+                    <Link
+                      href="/podcast/new"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color: '#16A34A',
+                        textDecoration: 'none',
+                        marginTop: 'auto',
+                      }}
+                    >
+                      <span>Get Started</span>
+                      <ArrowRight size={13} />
+                    </Link>
+                  </div>
+                </div>
+
+                {/* Clean Empty Catalog Card */}
+                <div
+                  style={{
+                    padding: '36px 24px',
+                    textAlign: 'center',
+                    background: '#FAFAFA',
+                    borderRadius: 16,
+                    border: '1px dashed #CBD5E1',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 10,
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: 24,
+                      background: '#FFF7ED',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#EA580C',
+                    }}
+                  >
+                    <Mic size={24} />
+                  </div>
+                  <div>
+                    <h3 style={{ fontSize: 15, fontWeight: 700, color: theme.color.text1, margin: '0 0 4px' }}>
+                      No podcast shows published yet
+                    </h3>
+                    <p style={{ fontSize: 12.5, color: theme.color.text4, margin: 0, maxWidth: 420 }}>
+                      When you create your show or release episodes, they will be listed here in board or list view with episode counts and statistics.
+                    </p>
+                  </div>
+                  <div style={{ marginTop: 6 }}>
+                    <Link
+                      href="/podcast/new"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        background: '#EA580C',
+                        color: '#fff',
+                        fontSize: 12.5,
+                        fontWeight: 700,
+                        padding: '8px 16px',
+                        borderRadius: 8,
+                        textDecoration: 'none',
+                      }}
+                    >
+                      <Plus size={14} />
+                      Create Show
+                    </Link>
+                  </div>
                 </div>
               </div>
             ) : (
+              /* ─── REAL SHOWS DISPLAY ─── */
               <>
-                {/* 1. Trending / My Shows */}
-                <div>
+                {/* 1. Your Shows */}
+                {hasMyShows && (
+                  <div>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        marginBottom: 18,
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <h2 style={{ fontSize: 14, fontWeight: 700, color: theme.color.text1, margin: 0 }}>
+                          Your Shows ({myShows.length})
+                        </h2>
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <button
+                          type="button"
+                          onClick={() => setTrendingView('board')}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 6,
+                            fontSize: 12,
+                            fontWeight: trendingView === 'board' ? 700 : 500,
+                            color: trendingView === 'board' ? theme.color.text1 : theme.color.text3,
+                            background: theme.color.surface,
+                            border: trendingView === 'board' ? '1px solid #E2E8F0' : '1px solid transparent',
+                            borderRadius: 8,
+                            padding: '5px 12px',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <LayoutGrid size={13} />
+                          <span>Board View</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setTrendingView('list')}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 6,
+                            fontSize: 12,
+                            fontWeight: trendingView === 'list' ? 700 : 500,
+                            color: trendingView === 'list' ? theme.color.text1 : theme.color.text3,
+                            background: theme.color.surface,
+                            border: trendingView === 'list' ? '1px solid #E2E8F0' : '1px solid transparent',
+                            borderRadius: 8,
+                            padding: '5px 12px',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <List size={13} />
+                          <span>List View</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {trendingView === 'board' ? (
+                      <div
+                        className="podcast-grid-5"
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
+                          gap: 18,
+                        }}
+                      >
+                        {myShows.map(renderCard)}
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                        {myShows.map(renderListItem)}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* If user has no shows yet, but others exist */}
+                {!hasMyShows && hasAllShows && (
                   <div
                     style={{
+                      background: '#FFF7ED',
+                      border: '1px solid #FED7AA',
+                      borderRadius: 12,
+                      padding: '16px 20px',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
-                      marginBottom: 18,
+                      flexWrap: 'wrap',
+                      gap: 12,
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <h2 style={{ fontSize: 14, fontWeight: 700, color: theme.color.text1, margin: 0 }}>
-                        {myShows.length > 0 ? `Your Shows (${myShows.length})` : `Featured Shows (${displayTrending.length})`}
-                      </h2>
+                    <div>
+                      <h4 style={{ fontSize: 13, fontWeight: 700, color: '#9A3412', margin: '0 0 2px' }}>
+                        You haven&apos;t created your own show yet
+                      </h4>
+                      <p style={{ fontSize: 12, color: '#C2410C', margin: 0 }}>
+                        Start your creator presence by publishing your first show or reserving studio time.
+                      </p>
                     </div>
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <button
-                        type="button"
-                        onClick={() => setTrendingView('board')}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 6,
-                          fontSize: 12,
-                          fontWeight: trendingView === 'board' ? 700 : 500,
-                          color: trendingView === 'board' ? theme.color.text1 : theme.color.text3,
-                          background: theme.color.surface,
-                          border: trendingView === 'board' ? '1px solid #E2E8F0' : '1px solid transparent',
-                          borderRadius: 8,
-                          padding: '5px 12px',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        <LayoutGrid size={13} />
-                        <span>Board View</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setTrendingView('list')}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 6,
-                          fontSize: 12,
-                          fontWeight: trendingView === 'list' ? 700 : 500,
-                          color: trendingView === 'list' ? theme.color.text1 : theme.color.text3,
-                          background: theme.color.surface,
-                          border: trendingView === 'list' ? '1px solid #E2E8F0' : '1px solid transparent',
-                          borderRadius: 8,
-                          padding: '5px 12px',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        <List size={13} />
-                        <span>List View</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  {trendingView === 'board' ? (
-                    <div
-                      className="podcast-grid-5"
+                    <Link
+                      href="/podcast/new"
                       style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
-                        gap: 18,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        background: '#EA580C',
+                        color: '#fff',
+                        fontSize: 12,
+                        fontWeight: 700,
+                        padding: '8px 14px',
+                        borderRadius: 8,
+                        textDecoration: 'none',
                       }}
                     >
-                      {displayTrending.map(renderCard)}
-                    </div>
-                  ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                      {displayTrending.map(renderListItem)}
-                    </div>
-                  )}
-                </div>
-
-                {/* 2. All Podcasts */}
-                <div>
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      marginBottom: 18,
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <h2 style={{ fontSize: 14, fontWeight: 700, color: theme.color.text1, margin: 0 }}>
-                        All podcasts ({displayAll.length})
-                      </h2>
-                    </div>
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <button
-                        type="button"
-                        onClick={() => setAllView('board')}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 6,
-                          fontSize: 12,
-                          fontWeight: allView === 'board' ? 700 : 500,
-                          color: allView === 'board' ? theme.color.text1 : theme.color.text3,
-                          background: theme.color.surface,
-                          border: allView === 'board' ? '1px solid #E2E8F0' : '1px solid transparent',
-                          borderRadius: 8,
-                          padding: '5px 12px',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        <LayoutGrid size={13} />
-                        <span>Board View</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setAllView('list')}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 6,
-                          fontSize: 12,
-                          fontWeight: allView === 'list' ? 700 : 500,
-                          color: allView === 'list' ? theme.color.text1 : theme.color.text3,
-                          background: theme.color.surface,
-                          border: allView === 'list' ? '1px solid #E2E8F0' : '1px solid transparent',
-                          borderRadius: 8,
-                          padding: '5px 12px',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        <List size={13} />
-                        <span>List View</span>
-                      </button>
-                    </div>
+                      <Plus size={14} />
+                      Create Show
+                    </Link>
                   </div>
+                )}
 
-                  {allView === 'board' ? (
+                {/* 2. All / Community Podcasts */}
+                {hasAllShows && (
+                  <div>
                     <div
                       style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
-                        gap: 18,
-                        rowGap: 24,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        marginBottom: 18,
                       }}
                     >
-                      {displayAll.map(renderCard)}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <h2 style={{ fontSize: 14, fontWeight: 700, color: theme.color.text1, margin: 0 }}>
+                          All podcasts ({allShows.length})
+                        </h2>
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <button
+                          type="button"
+                          onClick={() => setAllView('board')}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 6,
+                            fontSize: 12,
+                            fontWeight: allView === 'board' ? 700 : 500,
+                            color: allView === 'board' ? theme.color.text1 : theme.color.text3,
+                            background: theme.color.surface,
+                            border: allView === 'board' ? '1px solid #E2E8F0' : '1px solid transparent',
+                            borderRadius: 8,
+                            padding: '5px 12px',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <LayoutGrid size={13} />
+                          <span>Board View</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setAllView('list')}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 6,
+                            fontSize: 12,
+                            fontWeight: allView === 'list' ? 700 : 500,
+                            color: allView === 'list' ? theme.color.text1 : theme.color.text3,
+                            background: theme.color.surface,
+                            border: allView === 'list' ? '1px solid #E2E8F0' : '1px solid transparent',
+                            borderRadius: 8,
+                            padding: '5px 12px',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <List size={13} />
+                          <span>List View</span>
+                        </button>
+                      </div>
                     </div>
-                  ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                      {displayAll.map(renderListItem)}
-                    </div>
-                  )}
-                </div>
+
+                    {allView === 'board' ? (
+                      <div
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
+                          gap: 18,
+                          rowGap: 24,
+                        }}
+                      >
+                        {allShows.map(renderCard)}
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                        {allShows.map(renderListItem)}
+                      </div>
+                    )}
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -564,3 +892,4 @@ export default function PodcastsPage() {
     </DashboardLayout>
   );
 }
+

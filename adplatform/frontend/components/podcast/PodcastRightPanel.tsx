@@ -20,12 +20,6 @@ function formatBookingTime(iso: string) {
   }
 }
 
-const DEFAULT_TOPICS = [
-  { id: 'creative-blueprint', title: 'The Creative Blueprint', creator_name: 'Adam Udochi', cover_url: '/audience/podcast-zara.png' },
-  { id: 'eastern-pulse', title: 'Eastern Pulse Audio', creator_name: 'Kyle Fisher', cover_url: '/audience/podcast-scthon.png' },
-  { id: 'tech-voices', title: 'Tech Voices Abia', creator_name: 'Theresa Steward', cover_url: '/audience/podcast-drozd.png' },
-  { id: 'soundscapes', title: 'Soundscapes & Frequencies', creator_name: 'Studio Arella', cover_url: '/audience/mockup-sphinx.png' },
-];
 
 export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRightPanelProps) {
   const [topics, setTopics] = useState<any[]>([]);
@@ -247,57 +241,93 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
           </h3>
         </div>
 
-        {(() => {
-          const displayTopics = topics.length > 0 ? topics : DEFAULT_TOPICS;
-          return (
-            <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: 14 }}>
-              <div style={{ position: 'absolute', left: 15.5, top: 16, bottom: 16, width: 1, background: '#E2E8F0', zIndex: 0 }} />
-              {displayTopics.map((t, i) => (
-                <Link
-                  key={t.id || i}
-                  href={`/podcast/${t.id}`}
-                  style={{ display: 'flex', alignItems: 'center', gap: 10, position: 'relative', zIndex: 1, textDecoration: 'none' }}
+        {topics.length === 0 ? (
+          <div
+            style={{
+              padding: '16px 14px',
+              background: '#FAFAFA',
+              borderRadius: 12,
+              border: '1px dashed #E2E8F0',
+              textAlign: 'center',
+            }}
+          >
+            <div
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: '50%',
+                background: '#FFF7ED',
+                color: '#EA580C',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: 8,
+              }}
+            >
+              <Mic size={16} />
+            </div>
+            <p style={{ fontSize: 12, fontWeight: 700, color: theme.color.text1, margin: '0 0 3px' }}>
+              No active topics yet
+            </p>
+            <p style={{ fontSize: 11, color: theme.color.text4, margin: 0, lineHeight: 1.4 }}>
+              Topics and trending shows will appear here as episodes are published.
+            </p>
+          </div>
+        ) : (
+          <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div style={{ position: 'absolute', left: 15.5, top: 16, bottom: 16, width: 1, background: '#E2E8F0', zIndex: 0 }} />
+            {topics.map((t, i) => (
+              <Link
+                key={t.id || i}
+                href={`/podcast/${t.id}`}
+                style={{ display: 'flex', alignItems: 'center', gap: 10, position: 'relative', zIndex: 1, textDecoration: 'none' }}
+              >
+                <div
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: '50%',
+                    overflow: 'hidden',
+                    flexShrink: 0,
+                    background: t.cover_url ? theme.color.surface2 : 'linear-gradient(135deg, #1E293B, #0F172A)',
+                    border: `2px solid ${theme.color.surface}`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
                 >
-                  <div
-                    style={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: '50%',
-                      overflow: 'hidden',
-                      flexShrink: 0,
-                      background: theme.color.surface2,
-                      border: `2px solid ${theme.color.surface}`,
-                    }}
-                  >
+                  {t.cover_url ? (
                     <img
-                      src={t.cover_url || '/audience/podcast-zara.png'}
+                      src={t.cover_url}
                       alt={t.title}
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     />
-                  </div>
-                  <div style={{ minWidth: 0 }}>
-                    <p
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 600,
-                        color: theme.color.text1,
-                        margin: '0 0 2px',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                      }}
-                    >
-                      {t.title}
-                    </p>
-                    <p style={{ fontSize: 11, color: theme.color.text4, margin: 0, fontWeight: 400 }}>
-                      {t.creator_name ? `By ${t.creator_name}` : `${t.episode_count || 0} episodes`}
-                    </p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          );
-        })()}
+                  ) : (
+                    <Mic size={14} color="#EA580C" />
+                  )}
+                </div>
+                <div style={{ minWidth: 0 }}>
+                  <p
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: theme.color.text1,
+                      margin: '0 0 2px',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
+                    {t.title}
+                  </p>
+                  <p style={{ fontSize: 11, color: theme.color.text4, margin: 0, fontWeight: 400 }}>
+                    {t.creator_name ? `By ${t.creator_name}` : `${t.episode_count || 0} episodes`}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Recent Podcast Booking Calendar */}
@@ -332,11 +362,11 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 12, fontWeight: 700, color: '#16151C' }}>Acoustic Suite A (Available)</span>
-                <span style={{ fontSize: 9, fontWeight: 700, color: '#16A34A', background: '#DCFCE7', padding: '2px 6px', borderRadius: 10 }}>OPEN</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: '#16151C' }}>No sessions booked today</span>
+                <span style={{ fontSize: 9, fontWeight: 700, color: '#16A34A', background: '#DCFCE7', padding: '2px 6px', borderRadius: 10 }}>AVAILABLE</span>
               </div>
               <p style={{ fontSize: 11, color: '#64748B', margin: 0 }}>
-                Next available slot: 02:00 PM – 04:00 PM today
+                Acoustic recording suites ready for booking.
               </p>
             </div>
           ) : (

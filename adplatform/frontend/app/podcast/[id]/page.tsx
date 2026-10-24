@@ -12,7 +12,7 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from 'recharts';
-import { ChevronLeft, ChevronDown } from 'lucide-react';
+import { ChevronLeft, ChevronDown, Mic } from 'lucide-react';
 import { FaArrowTrendUp, FaArrowTrendDown } from 'react-icons/fa6';
 import { theme } from '@/lib/theme';
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -472,15 +472,22 @@ export default function PodcastDetailPage() {
                           height: 56,
                           borderRadius: 8,
                           overflow: 'hidden',
-                          background: theme.color.surface2,
+                          background: (ep.cover_url || show?.cover_url) ? theme.color.surface2 : 'linear-gradient(135deg, #1E293B, #0F172A)',
                           flexShrink: 0,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
                         }}
                       >
-                        <img
-                          src={ep.cover_url || show?.cover_url || '/audience/podcast-zara.png'}
-                          alt={`${ep.title} cover`}
-                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                        />
+                        {ep.cover_url || show?.cover_url ? (
+                          <img
+                            src={ep.cover_url || show?.cover_url!}
+                            alt={`${ep.title} cover`}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          />
+                        ) : (
+                          <Mic size={20} color="#EA580C" />
+                        )}
                       </div>
                       <div>
                         <p style={{ fontSize: 15, fontWeight: 700, color: theme.color.text1, margin: '0 0 4px' }}>
