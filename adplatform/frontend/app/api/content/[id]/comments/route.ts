@@ -46,7 +46,7 @@ export async function GET(
     rows.forEach((row: any) => {
       const item = {
         id: row.id,
-        author: row.author_name || 'Audience Member',
+        author: row.author_name || 'Studio Insider',
         avatar: row.author_avatar || '/audience/adam-udochi.png',
         text: row.comment_text,
         likes: row.likes_count || 0,
@@ -90,7 +90,7 @@ export async function POST(
     }
 
     let userId = getUserIdFromRequest(request) || body.userId;
-    let authorName = body.authorName || 'Audience Member';
+    let authorName = body.authorName || 'Studio Insider';
     let authorAvatar = body.authorAvatar || '/audience/adam-udochi.png';
 
     // If no userId, pick the fallback public user so FK holds, or check if guest user exists

@@ -286,7 +286,7 @@ export default function UserProfileOverview() {
     ? 'Administrator' 
     : user?.role 
     ? (user.role.charAt(0).toUpperCase() + user.role.slice(1)) 
-    : 'Audience Member';
+    : 'Studio Insider';
   const avatarUrl = user?.avatar;
 
   return (

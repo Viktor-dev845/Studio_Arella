@@ -43,7 +43,13 @@ export default function AudienceLeftSidebar({
   }, [activeMenu]);
 
   const userName = user?.name || (user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : null) || 'Guest Fan';
-  const userTitle = user?.role === 'screen_owner' ? 'Media Partner' : user?.role === 'admin' ? 'Administrator' : user ? 'Audience Member' : 'Studio Arella Fan';
+  const userTitle = user?.role === 'screen_owner' 
+    ? 'Media Partner' 
+    : user?.role === 'admin' 
+    ? 'Administrator' 
+    : user?.role === 'creator'
+    ? (user.creator_niche || 'Creator')
+    : user ? 'Studio Insider' : 'Studio Arella Fan';
   const userAvatar = user?.avatar;
 
   const handleMenuClick = (menuId: string) => {

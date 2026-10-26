@@ -503,7 +503,13 @@ function AudienceContent() {
 
   const handleCreatePost = async (content: string) => {
     const authorName = user?.name || (user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : null) || 'You';
-    const authorRole = user?.role === 'screen_owner' ? 'Media Partner' : user?.role === 'admin' ? 'Administrator' : 'Audience Member';
+    const authorRole = user?.role === 'screen_owner' 
+      ? 'Media Partner' 
+      : user?.role === 'admin' 
+      ? 'Administrator' 
+      : user?.role === 'creator'
+      ? (user.creator_niche || 'Creator')
+      : 'Studio Insider';
     const authorAvatar = user?.avatar || '';
 
     const tempPost: PostData = {
