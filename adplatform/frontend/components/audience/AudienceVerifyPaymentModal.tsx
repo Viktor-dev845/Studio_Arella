@@ -73,7 +73,7 @@ export default function AudienceVerifyPaymentModal({
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs font-['DM_Sans',sans-serif] animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs font-quicksand animate-in fade-in duration-200"
       onClick={onClose}
     >
       {/* ─── Modal Container (Frame 2121459663: 625px x 836px, radius 32px) ─── */}
@@ -92,7 +92,7 @@ export default function AudienceVerifyPaymentModal({
             <ArrowLeft size={24} strokeWidth={2.5} className="text-black" />
           </button>
 
-          <h2 className="text-[20px] font-medium text-[#101828] text-center tracking-[-0.01em] leading-[30px] font-['DM_Sans',sans-serif] m-0">
+          <h2 className="text-[20px] font-medium text-[#101828] text-center tracking-[-0.01em] leading-[30px] font-quicksand m-0">
             {billingPeriod === 'yearly' ? 'Yearly subscription' : 'Monthly subscription'}
           </h2>
 
@@ -108,7 +108,7 @@ export default function AudienceVerifyPaymentModal({
 
         {/* ─── Subtitle: Standard/Pro monthly subscription of $12 ─── */}
         <div className="w-full text-center mt-[75px] sm:mt-[95px] px-4">
-          <h3 className="text-[16px] font-bold text-[#101828] leading-[21px] font-['DM_Sans',sans-serif] m-0 max-w-[260px] mx-auto">
+          <h3 className="text-[16px] font-bold text-[#101828] leading-[21px] font-quicksand m-0 max-w-[260px] mx-auto">
             {planName} {billingPeriod} subscription of {price}
           </h3>
         </div>
@@ -122,7 +122,7 @@ export default function AudienceVerifyPaymentModal({
                 onClick={() => setIsBankDropdownOpen(!isBankDropdownOpen)}
                 className="w-full h-[56px] px-4 bg-white border border-[rgba(162,161,168,0.2)] rounded-[10px] flex items-center justify-between cursor-pointer select-none focus-within:border-[#D4AF37] transition-colors"
               >
-                <span className={`text-[17px] font-light font-['DM_Sans',sans-serif] ${selectedBank ? 'text-[#101828]' : 'text-[rgba(162,161,168,0.8)]'}`}>
+                <span className={`text-[17px] font-light font-quicksand ${selectedBank ? 'text-[#101828]' : 'text-[rgba(162,161,168,0.8)]'}`}>
                   {selectedBank || '--- Select bank ---'}
                 </span>
                 <ChevronDown size={20} strokeWidth={2} className="text-[#101828]" />
@@ -160,7 +160,7 @@ export default function AudienceVerifyPaymentModal({
                 value={cardName}
                 onChange={(e) => setCardName(e.target.value)}
                 placeholder="Enter card name"
-                className="w-full h-[56px] px-4 bg-white border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[17px] font-light text-[#101828] placeholder:text-[rgba(162,161,168,0.8)] placeholder:font-light outline-none focus:border-[#D4AF37] transition-colors font-['DM_Sans',sans-serif]"
+                className="w-full h-[56px] px-4 bg-white border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[17px] font-light text-[#101828] placeholder:text-[rgba(162,161,168,0.8)] placeholder:font-light outline-none focus:border-[#D4AF37] transition-colors font-quicksand"
               />
             </div>
 
@@ -172,7 +172,7 @@ export default function AudienceVerifyPaymentModal({
                 value={cardNumber}
                 onChange={handleCardNumberChange}
                 placeholder="Enter card number"
-                className="w-full h-[56px] pl-4 pr-12 bg-white border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[17px] font-light text-[#101828] placeholder:text-[rgba(162,161,168,0.8)] placeholder:font-light outline-none focus:border-[#D4AF37] transition-colors font-['DM_Sans',sans-serif]"
+                className="w-full h-[56px] pl-4 pr-12 bg-white border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[17px] font-light text-[#101828] placeholder:text-[rgba(162,161,168,0.8)] placeholder:font-light outline-none focus:border-[#D4AF37] transition-colors font-quicksand"
               />
               {/* Mastercard Logo: 20px x 16px */}
               <div className="absolute right-4 top-1/2 -translate-y-1/2 w-[24px] h-[18px] bg-white border border-[#C5CDD0] rounded-[3px] flex items-center justify-center p-0.5 pointer-events-none">
@@ -194,7 +194,7 @@ export default function AudienceVerifyPaymentModal({
                   value={expiryDate}
                   onChange={handleExpiryChange}
                   placeholder="Expiry date (MM/YY)"
-                  className="w-full h-[56px] px-4 bg-white border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[17px] font-light text-[#101828] placeholder:text-[rgba(162,161,168,0.8)] placeholder:font-light outline-none focus:border-[#D4AF37] transition-colors font-['DM_Sans',sans-serif]"
+                  className="w-full h-[56px] px-4 bg-white border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[17px] font-light text-[#101828] placeholder:text-[rgba(162,161,168,0.8)] placeholder:font-light outline-none focus:border-[#D4AF37] transition-colors font-quicksand"
                 />
               </div>
 
@@ -207,7 +207,7 @@ export default function AudienceVerifyPaymentModal({
                   value={cvv}
                   onChange={(e) => setCvv(e.target.value.replace(/\D/g, ''))}
                   placeholder="CVV"
-                  className="w-full h-[56px] px-4 bg-white border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[17px] font-light text-[#101828] placeholder:text-[rgba(162,161,168,0.8)] placeholder:font-light outline-none focus:border-[#D4AF37] transition-colors font-['DM_Sans',sans-serif]"
+                  className="w-full h-[56px] px-4 bg-white border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[17px] font-light text-[#101828] placeholder:text-[rgba(162,161,168,0.8)] placeholder:font-light outline-none focus:border-[#D4AF37] transition-colors font-quicksand"
                 />
               </div>
             </div>
@@ -226,7 +226,7 @@ export default function AudienceVerifyPaymentModal({
               >
                 {addThisCard && <Check size={14} strokeWidth={3} className="text-white" />}
               </div>
-              <span className="text-[16px] text-[#696F79] font-normal font-['DM_Sans',sans-serif]">
+              <span className="text-[16px] text-[#696F79] font-normal font-quicksand">
                 Add this card
               </span>
             </div>
@@ -236,7 +236,7 @@ export default function AudienceVerifyPaymentModal({
           <button
             type="submit"
             disabled={isProcessing}
-            className="w-full h-[56px] mt-8 bg-[#D4AF37] hover:bg-[#c29f31] text-[#000000] font-medium text-[16px] rounded-[6px] flex items-center justify-center transition-all shadow-sm active:scale-[0.99] cursor-pointer disabled:opacity-75 font-['DM_Sans',sans-serif]"
+            className="w-full h-[56px] mt-8 bg-[#D4AF37] hover:bg-[#c29f31] text-[#000000] font-medium text-[16px] rounded-[6px] flex items-center justify-center transition-all shadow-sm active:scale-[0.99] cursor-pointer disabled:opacity-75 font-quicksand"
           >
             {isProcessing ? (
               <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />

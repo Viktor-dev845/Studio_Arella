@@ -26,7 +26,7 @@ export default function AudienceGetVerifiedView({
 
   return (
     <div 
-      className="w-full min-h-screen relative flex flex-col items-center overflow-x-hidden font-['DM_Sans',sans-serif]"
+      className="w-full min-h-screen relative flex flex-col items-center overflow-x-hidden font-quicksand"
       style={{
         backgroundColor: '#050F3A',
         backgroundImage: 'linear-gradient(147.77deg, #3C3706 16.72%, #725E1D 35.68%, #675D1A 53.09%, #7C812C 66.68%)',
@@ -35,12 +35,12 @@ export default function AudienceGetVerifiedView({
       {/* ─── Inner Container (Max 1366px matching Figma: width: 1366px, height: 1616px) ─── */}
       <div className="w-full max-w-[1366px] flex flex-col items-center px-4 sm:px-8 pt-[70px] sm:pt-[90px] pb-[100px]">
         {/* Friendly Pricing Label */}
-        <p className="text-[13px] sm:text-[14px] font-normal tracking-[0.18em] uppercase text-[#FFE9A3] text-center font-['DM_Sans',sans-serif] m-0">
+        <p className="text-[13px] sm:text-[14px] font-normal tracking-[0.18em] uppercase text-[#FFE9A3] text-center font-quicksand m-0">
           FRIENDLY PRICING
         </p>
 
         {/* Main Headline: Get Verified */}
-        <h1 className="mt-4 sm:mt-6 text-center text-white font-black text-[52px] sm:text-[67px] leading-[110%] tracking-[-0.03em] font-['DM_Sans',sans-serif] m-0">
+        <h1 className="mt-4 sm:mt-6 text-center text-white font-black text-[52px] sm:text-[67px] leading-[110%] tracking-[-0.03em] font-quicksand m-0">
           Get<br />Verified
         </h1>
 
@@ -50,7 +50,7 @@ export default function AudienceGetVerifiedView({
           <button
             type="button"
             onClick={() => setBillingCycle('payg')}
-            className={`flex-1 h-full rounded-[100px] text-[16px] sm:text-[18px] font-medium transition-all cursor-pointer flex items-center justify-center font-['DM_Sans',sans-serif] ${
+            className={`flex-1 h-full rounded-[100px] text-[16px] sm:text-[18px] font-medium transition-all cursor-pointer flex items-center justify-center font-quicksand ${
               billingCycle === 'payg'
                 ? 'bg-[#D4AF37] text-black font-semibold shadow-sm'
                 : 'text-[#C8CCDF] hover:text-white'
@@ -63,7 +63,7 @@ export default function AudienceGetVerifiedView({
           <button
             type="button"
             onClick={() => setBillingCycle('monthly')}
-            className={`flex-1 h-full rounded-[100px] text-[16px] sm:text-[18px] font-medium transition-all cursor-pointer flex items-center justify-center font-['DM_Sans',sans-serif] ${
+            className={`flex-1 h-full rounded-[100px] text-[16px] sm:text-[18px] font-medium transition-all cursor-pointer flex items-center justify-center font-quicksand ${
               billingCycle === 'monthly'
                 ? 'bg-[#D4AF37] text-black font-semibold shadow-sm'
                 : 'text-[#C8CCDF] hover:text-white'
@@ -76,7 +76,7 @@ export default function AudienceGetVerifiedView({
           <button
             type="button"
             onClick={() => setBillingCycle('yearly')}
-            className={`flex-1 h-full rounded-[100px] text-[16px] sm:text-[18px] font-medium transition-all cursor-pointer flex items-center justify-center font-['DM_Sans',sans-serif] ${
+            className={`flex-1 h-full rounded-[100px] text-[16px] sm:text-[18px] font-medium transition-all cursor-pointer flex items-center justify-center font-quicksand ${
               billingCycle === 'yearly'
                 ? 'bg-[#D4AF37] text-black font-semibold shadow-sm'
                 : 'text-[#C8CCDF] hover:text-white'
@@ -112,14 +112,14 @@ export default function AudienceGetVerifiedView({
 
                   {/* Standard Title & Price */}
                   <div className="flex flex-col">
-                    <h3 className="text-[20px] font-medium text-[#4E421D] font-['Public_Sans',sans-serif] m-0 leading-[24px]">
+                    <h3 className="text-[20px] font-medium text-[#4E421D] font-quicksand m-0 leading-[24px]">
                       Standard
                     </h3>
                     <div className="flex items-baseline gap-1 mt-1">
-                      <span className="text-[40px] font-bold text-[#4E421D] font-['Montserrat',sans-serif] leading-[49px]">
+                      <span className="text-[40px] font-bold text-[#4E421D] font-quicksand leading-[49px]">
                         $12
                       </span>
-                      <span className="text-[16px] font-normal text-[#A4A5AA] font-['Montserrat',sans-serif]">
+                      <span className="text-[16px] font-normal text-[#A4A5AA] font-quicksand">
                         /month
                       </span>
                     </div>
@@ -133,7 +133,7 @@ export default function AudienceGetVerifiedView({
                 <div className="flex flex-col gap-6">
                   {/* Feature 1 */}
                   <div className="flex items-center justify-between">
-                    <span className="text-[16px] font-medium text-[#4E421D] font-['Montserrat',sans-serif]">
+                    <span className="text-[16px] font-medium text-[#4E421D] font-quicksand">
                       5 events creation
                     </span>
                     <div className="w-6 h-6 rounded-full bg-[#4F3D03] flex items-center justify-center shrink-0">
@@ -143,7 +143,7 @@ export default function AudienceGetVerifiedView({
 
                   {/* Feature 2 */}
                   <div className="flex items-center justify-between">
-                    <span className="text-[16px] font-medium text-[#4E421D] font-['Montserrat',sans-serif]">
+                    <span className="text-[16px] font-medium text-[#4E421D] font-quicksand">
                       Monthly engagement payout
                     </span>
                     <div className="w-6 h-6 rounded-full bg-[#4F3D03] flex items-center justify-center shrink-0">
@@ -153,7 +153,7 @@ export default function AudienceGetVerifiedView({
 
                   {/* Feature 3 */}
                   <div className="flex items-center justify-between">
-                    <span className="text-[16px] font-medium text-[#4E421D] font-['Montserrat',sans-serif]">
+                    <span className="text-[16px] font-medium text-[#4E421D] font-quicksand">
                       3,000 maximum participant/event
                     </span>
                     <div className="w-6 h-6 rounded-full bg-[#4F3D03] flex items-center justify-center shrink-0">
@@ -167,7 +167,7 @@ export default function AudienceGetVerifiedView({
               <button
                 type="button"
                 onClick={() => handleChoosePlan('Standard')}
-                className="w-full h-[46px] bg-[#FAF8F1] hover:bg-[#f3eedd] text-[#D4AF37] font-['Public_Sans',sans-serif] font-medium text-[18px] rounded-[10px] flex items-center justify-center transition-colors cursor-pointer mt-8"
+                className="w-full h-[46px] bg-[#FAF8F1] hover:bg-[#f3eedd] text-[#D4AF37] font-quicksand font-medium text-[18px] rounded-[10px] flex items-center justify-center transition-colors cursor-pointer mt-8"
               >
                 Get Started
               </button>
@@ -200,14 +200,14 @@ export default function AudienceGetVerifiedView({
 
                   {/* Pro Title & Price */}
                   <div className="flex flex-col">
-                    <h3 className="text-[20px] font-medium text-[#4E421D] font-['Public_Sans',sans-serif] m-0 leading-[24px]">
+                    <h3 className="text-[20px] font-medium text-[#4E421D] font-quicksand m-0 leading-[24px]">
                       Pro
                     </h3>
                     <div className="flex items-baseline gap-1 mt-1">
-                      <span className="text-[40px] font-bold text-[#4E421D] font-['Montserrat',sans-serif] leading-[49px]">
+                      <span className="text-[40px] font-bold text-[#4E421D] font-quicksand leading-[49px]">
                         $69
                       </span>
-                      <span className="text-[16px] font-normal text-[#A4A5AA] font-['Montserrat',sans-serif]">
+                      <span className="text-[16px] font-normal text-[#A4A5AA] font-quicksand">
                         /month
                       </span>
                     </div>
@@ -221,7 +221,7 @@ export default function AudienceGetVerifiedView({
                 <div className="flex flex-col gap-6">
                   {/* Feature 1 */}
                   <div className="flex items-center justify-between">
-                    <span className="text-[16px] font-medium text-[#4E421D] font-['Montserrat',sans-serif]">
+                    <span className="text-[16px] font-medium text-[#4E421D] font-quicksand">
                       Unlimited events creation
                     </span>
                     <div className="w-6 h-6 rounded-full bg-[#4F3D03] flex items-center justify-center shrink-0">
@@ -231,7 +231,7 @@ export default function AudienceGetVerifiedView({
 
                   {/* Feature 2 */}
                   <div className="flex items-center justify-between">
-                    <span className="text-[16px] font-medium text-[#4E421D] font-['Montserrat',sans-serif]">
+                    <span className="text-[16px] font-medium text-[#4E421D] font-quicksand">
                       Monthly engagement payout
                     </span>
                     <div className="w-6 h-6 rounded-full bg-[#4F3D03] flex items-center justify-center shrink-0">
@@ -241,7 +241,7 @@ export default function AudienceGetVerifiedView({
 
                   {/* Feature 3 */}
                   <div className="flex items-center justify-between">
-                    <span className="text-[16px] font-medium text-[#4E421D] font-['Montserrat',sans-serif]">
+                    <span className="text-[16px] font-medium text-[#4E421D] font-quicksand">
                       Unlimited number of participant
                     </span>
                     <div className="w-6 h-6 rounded-full bg-[#4F3D03] flex items-center justify-center shrink-0">
@@ -251,7 +251,7 @@ export default function AudienceGetVerifiedView({
 
                   {/* Feature 4 */}
                   <div className="flex items-center justify-between">
-                    <span className="text-[16px] font-medium text-[#4E421D] font-['Montserrat',sans-serif]">
+                    <span className="text-[16px] font-medium text-[#4E421D] font-quicksand">
                       24/7 event run time
                     </span>
                     <div className="w-6 h-6 rounded-full bg-[#4F3D03] flex items-center justify-center shrink-0">
@@ -265,7 +265,7 @@ export default function AudienceGetVerifiedView({
               <button
                 type="button"
                 onClick={() => handleChoosePlan('Pro')}
-                className="w-full h-[46px] bg-[#D4AF37] hover:bg-[#c29f31] text-[#000000] font-['Public_Sans',sans-serif] font-medium text-[18px] rounded-[10px] flex items-center justify-center transition-colors cursor-pointer mt-8"
+                className="w-full h-[46px] bg-[#D4AF37] hover:bg-[#c29f31] text-[#000000] font-quicksand font-medium text-[18px] rounded-[10px] flex items-center justify-center transition-colors cursor-pointer mt-8"
               >
                 Schedule Demo
               </button>
@@ -279,7 +279,7 @@ export default function AudienceGetVerifiedView({
           <button
             type="button"
             onClick={() => handleChoosePlan('Standard')}
-            className="w-[219px] h-[39px] bg-[#D4AF37] hover:bg-[#c29f31] text-black font-['Public_Sans',sans-serif] font-bold text-[18px] rounded-[10px] flex items-center justify-center transition-all shadow-md active:scale-[0.98] cursor-pointer"
+            className="w-[219px] h-[39px] bg-[#D4AF37] hover:bg-[#c29f31] text-black font-quicksand font-bold text-[18px] rounded-[10px] flex items-center justify-center transition-all shadow-md active:scale-[0.98] cursor-pointer"
           >
             Get Started
           </button>
@@ -288,7 +288,7 @@ export default function AudienceGetVerifiedView({
           <button
             type="button"
             onClick={onBackToProfile}
-            className="text-[#D7DBFF] hover:text-white font-['Public_Sans',sans-serif] font-bold text-[18px] leading-[21px] transition-colors cursor-pointer bg-transparent border-none p-0"
+            className="text-[#D7DBFF] hover:text-white font-quicksand font-bold text-[18px] leading-[21px] transition-colors cursor-pointer bg-transparent border-none p-0"
           >
             Back to profile
           </button>

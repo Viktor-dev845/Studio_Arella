@@ -196,9 +196,52 @@ function FinancesPageContent() {
     fetchData();
   };
 
+  const [linkingCard, setLinkingCard] = useState(false);
+
+  // Directly link card via Monnify's official card verification session
+  const handleLinkCardWithMonnify = async () => {
+    setLinkingCard(true);
+    try {
+      const res = await api.post('/payments/cards/init-link');
+      if (res.data?.checkout_url) {
+        toast('Redirecting to Monnify secure card verification...', 'info');
+        window.location.href = res.data.checkout_url;
+      } else {
+        toast('Failed to get verification link from Monnify', 'error');
+      }
+    } catch (err: any) {
+      toast(err?.response?.data?.message || 'Could not initiate card linking with Monnify.', 'error');
+    } finally {
+      setLinkingCard(false);
+    }
+  };
+
+  // Fund wallet directly via Monnify (Transfer, Card, USSD)
+  const handleFundWithMonnify = async () => {
+    const num = parseFloat(amount);
+    if (isNaN(num) || num < 1000) {
+      toast('Minimum top-up is ₦1,000', 'error');
+      return;
+    }
+    setPaying(true);
+    try {
+      const res = await api.post('/payments/initialize-credits', { amount: num });
+      if (res.data?.checkout_url) {
+        toast('Redirecting to Monnify checkout...', 'info');
+        window.location.href = res.data.checkout_url;
+      } else {
+        toast('Failed to start Monnify checkout', 'error');
+      }
+    } catch (err: any) {
+      toast(err?.response?.data?.message || 'Could not initialize Monnify payment.', 'error');
+    } finally {
+      setPaying(false);
+    }
+  };
+
   const handleFundWithSavedCard = async () => {
     if (!selectedCardId) { toast('Please choose a card', 'error'); return; }
-    if (!(parseFloat(amount) >= 1000)) { toast('Minimum top-up is â‚¦1,000', 'error'); return; }
+    if (!(parseFloat(amount) >= 1000)) { toast('Minimum top-up is ₦1,000', 'error'); return; }
     setPaying(true);
     try {
       const res = await api.post('/payments/topup/charge-authorization', { amount: parseFloat(amount), card_id: selectedCardId });
@@ -230,9 +273,7 @@ function FinancesPageContent() {
     }
   };
 
-  // "Add a bank card" â€” Paystack has no tokenize-only endpoint, so this charges
-  // a small â‚¦50 verification amount then immediately credits it back to the
-  // wallet (see backend addCardVerification), so adding a card is free in practice.
+  // "Add a bank card" — Monnify card verification session (amount credited back to wallet)
   const handleAddCard = async () => {
     const [expMonth, expYear] = newCardForm.expiry.split('/').map((s) => s.trim());
     if (!newCardForm.name || !newCardForm.number || !expMonth || !expYear || !newCardForm.cvv) {
@@ -566,8 +607,14 @@ function FinancesPageContent() {
                 </div>
                 
                 <div className="flex justify-between items-center w-full">
-                  <button onClick={() => { setShowFundModal(true); setFundStep('add-card'); }} className="flex items-center justify-center w-full max-w-[287px] bg-[#101828] hover:bg-[#1a2538] shadow-sm rounded-[14px] px-[20px] py-[14px] transition-colors cursor-pointer">
-                    <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '16px', color: '#FFFFFF' }}>Add A Bank Card</span>
+                  <button 
+                    onClick={handleLinkCardWithMonnify} 
+                    disabled={linkingCard}
+                    className="flex items-center justify-center w-full max-w-[287px] bg-[#101828] hover:bg-[#1a2538] shadow-sm rounded-[14px] px-[20px] py-[14px] transition-colors cursor-pointer disabled:opacity-60"
+                  >
+                    <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '16px', color: '#FFFFFF' }}>
+                      {linkingCard ? 'Connecting...' : 'Add A Bank Card'}
+                    </span>
                   </button>
                   
                   {/* Linked Card Indicator or Card Circles */}
@@ -732,7 +779,7 @@ function FinancesPageContent() {
                         'Direct'
                       );
 
-                      const channelBadge = (t.channel || (isCredit ? 'Paystack' : 'Wallet')).toUpperCase().slice(0, 4);
+                      const channelBadge = (t.channel || (isCredit ? 'Monnify' : 'Wallet')).toUpperCase().slice(0, 4);
 
                       return (
                         <tr key={t.id || t.reference} className="border-b border-[#F0F0F0] bg-white hover:bg-gray-50/50 transition-colors">
@@ -876,81 +923,211 @@ function FinancesPageContent() {
                     </div>
 
                     {fundStep === 'cards' && (
-                      <div className="flex flex-col items-center">
-                        {loadingCards ? (
-                          <p style={{ textAlign: 'center', fontSize: 14, color: theme.color.text3, padding: '16px 0' }}>Loading your saved cards...</p>
-                        ) : savedCards.length > 0 ? (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 40, width: '100%', maxWidth: '468px', marginTop: 10 }}>
-                            {savedCards.map((c) => (
-                              <div
-                                key={c.id}
-                                onClick={() => setSelectedCardId(c.id)}
+                      <div className="flex flex-col items-center w-full">
+                        {/* Amount selector */}
+                        <div style={{ width: '100%', maxWidth: '468px', marginBottom: 24 }}>
+                          <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#344054', marginBottom: 8, fontFamily: 'var(--font-dm-sans)' }}>
+                            Top-up Amount (₦)
+                          </label>
+                          <div style={{ position: 'relative', width: '100%' }}>
+                            <span style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', fontSize: 18, fontWeight: 700, color: '#101828' }}>₦</span>
+                            <input
+                              type="number"
+                              min="1000"
+                              value={amount}
+                              onChange={(e) => setAmount(e.target.value)}
+                              placeholder="10,000"
+                              style={{
+                                width: '100%',
+                                height: 52,
+                                padding: '12px 16px 12px 36px',
+                                borderRadius: 12,
+                                border: '1.5px solid #EAECF0',
+                                background: '#FFFFFF',
+                                fontFamily: 'var(--font-dm-sans)',
+                                fontSize: 18,
+                                fontWeight: 600,
+                                color: '#101828',
+                                outline: 'none',
+                                boxSizing: 'border-box'
+                              }}
+                            />
+                          </div>
+                          {/* Quick Chips */}
+                          <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
+                            {['5000', '10000', '25000', '50000', '100000'].map((chip) => (
+                              <button
+                                key={chip}
+                                type="button"
+                                onClick={() => setAmount(chip)}
                                 style={{
-                                  padding: '24px 32px 24px 24px', 
-                                  borderRadius: 16, 
+                                  padding: '6px 12px',
+                                  borderRadius: 8,
+                                  fontSize: 12,
+                                  fontWeight: 600,
+                                  border: amount === chip ? '1.5px solid #D4AF37' : '1px solid #EAECF0',
+                                  background: amount === chip ? '#FFFDF5' : '#F9FAFB',
+                                  color: amount === chip ? '#B89025' : '#475467',
                                   cursor: 'pointer',
-                                  border: selectedCardId === c.id ? '2px solid #D4AF37' : `1px solid #D7D7D7`,
-                                  background: '#FFFFFF',
-                                  height: '100px',
-                                  display: 'flex',
-                                  flexDirection: 'column',
-                                  justifyContent: 'center',
-                                  position: 'relative',
-                                  boxSizing: 'border-box'
+                                  fontFamily: 'var(--font-dm-sans)'
                                 }}
                               >
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                                ₦{Number(chip).toLocaleString()}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Direct Monnify Button (Primary Funding Option) */}
+                        <div style={{ width: '100%', maxWidth: '468px', background: '#F9FAFB', border: '1px solid #EAECF0', borderRadius: 16, padding: '18px 20px', marginBottom: 24 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                            <div className="flex items-center gap-2.5">
+                              <div style={{ width: 32, height: 32, borderRadius: 8, background: '#101828', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <Wallet size={16} color="#D4AF37" />
+                              </div>
+                              <div>
+                                <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#101828', fontFamily: 'var(--font-dm-sans)' }}>
+                                  Instant Pay with Monnify
+                                </p>
+                                <p style={{ margin: 0, fontSize: 11, color: '#667085', fontFamily: 'var(--font-dm-sans)' }}>
+                                  Bank transfer, card, or USSD via live Monnify gateway
+                                </p>
+                              </div>
+                            </div>
+                            <span style={{ fontSize: 11, fontWeight: 700, background: '#ECFDF3', color: '#027A48', padding: '3px 8px', borderRadius: 6 }}>
+                              Live Instant
+                            </span>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={handleFundWithMonnify}
+                            disabled={paying}
+                            style={{
+                              width: '100%',
+                              height: 48,
+                              background: '#D4AF37',
+                              borderRadius: 10,
+                              border: 'none',
+                              cursor: paying ? 'not-allowed' : 'pointer',
+                              fontFamily: 'var(--font-dm-sans)',
+                              fontSize: 15,
+                              fontWeight: 700,
+                              color: '#000000',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: 8,
+                              opacity: paying ? 0.7 : 1
+                            }}
+                          >
+                            {paying ? 'Redirecting to Monnify...' : `Fund ₦${Number(amount || 0).toLocaleString()} via Monnify`}
+                            <ArrowRight size={16} />
+                          </button>
+                        </div>
+
+                        {/* Saved Cards Section */}
+                        <div style={{ width: '100%', maxWidth: '468px', marginBottom: 20 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                            <span style={{ fontSize: 13, fontWeight: 600, color: '#475467', fontFamily: 'var(--font-dm-sans)' }}>
+                              Or pay with linked card
+                            </span>
+                            <button
+                              type="button"
+                              onClick={handleLinkCardWithMonnify}
+                              disabled={linkingCard}
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 600, color: '#D4AF37', fontFamily: 'var(--font-dm-sans)' }}
+                            >
+                              + Link new card
+                            </button>
+                          </div>
+
+                          {loadingCards ? (
+                            <p style={{ textAlign: 'center', fontSize: 13, color: theme.color.text3, padding: '12px 0' }}>Loading saved cards...</p>
+                          ) : savedCards.length > 0 ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                              {savedCards.map((c) => (
+                                <div
+                                  key={c.id}
+                                  onClick={() => setSelectedCardId(c.id)}
+                                  style={{
+                                    padding: '16px 20px',
+                                    borderRadius: 14,
+                                    cursor: 'pointer',
+                                    border: selectedCardId === c.id ? '2px solid #D4AF37' : '1px solid #EAECF0',
+                                    background: selectedCardId === c.id ? '#FFFDF5' : '#FFFFFF',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 14,
+                                    boxSizing: 'border-box'
+                                  }}
+                                >
                                   <span style={{
-                                    width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
+                                    width: 18, height: 18, borderRadius: '50%', flexShrink: 0,
                                     border: selectedCardId === c.id ? '2px solid #D4AF37' : '2px solid #D7D7D7',
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                                     background: '#FFFFFF'
                                   }}>
-                                    {selectedCardId === c.id && <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#DF4308' }} />}
+                                    {selectedCardId === c.id && <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#D4AF37' }} />}
                                   </span>
-                                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                                     <p style={{ margin: 0, fontFamily: 'var(--font-dm-sans)', fontSize: 16, fontWeight: 500, color: '#101828' }}>
-                                        Fund with {c.bank || c.card_type || 'card'}
-                                     </p>
-                                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
-                                       <span style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 13, fontWeight: 500, color: '#101828', letterSpacing: '0.02em', opacity: 0.7 }}>
-                                         ************{c.last4 || '****'}
-                                       </span>
-                                       {c.cardholder_name && (
-                                          <span style={{ fontFamily: 'var(--font-dm-sans)', fontSize: 13, fontWeight: 500, color: '#101828', letterSpacing: '0.02em', opacity: 0.7 }}>
-                                             {c.cardholder_name}
-                                          </span>
-                                       )}
-                                     </div>
+                                  <div style={{ flex: 1 }}>
+                                    <p style={{ margin: 0, fontFamily: 'var(--font-dm-sans)', fontSize: 14, fontWeight: 600, color: '#101828' }}>
+                                      {c.bank || 'Bank Card'} •••• {c.last4 || 'Card'}
+                                    </p>
+                                    <span style={{ fontSize: 12, color: '#667085', fontFamily: 'var(--font-dm-sans)' }}>
+                                      {c.card_type || 'Card'} {c.cardholder_name ? `• ${c.cardholder_name}` : ''}
+                                    </span>
                                   </div>
                                 </div>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <p style={{ textAlign: 'center', fontSize: 14, color: theme.color.text3, marginBottom: 40, marginTop: 10 }}>You have no saved cards yet.</p>
-                        )}
+                              ))}
 
-                        <button
-                          type="button"
-                          onClick={() => setFundStep('add-card')}
-                          style={{ display: 'block', width: '100%', textAlign: 'center', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-dm-sans)', fontSize: 16, fontWeight: 500, color: '#D4AF37', marginBottom: 40 }}
-                        >
-                          Add a bank card
-                        </button>
-
-                        <button 
-                          disabled={!selectedCardId} 
-                          onClick={() => setFundStep('confirm')}
-                          style={{ 
-                             width: '100%', maxWidth: '468px', height: '56px', background: '#D4AF37', borderRadius: 8, 
-                             border: 'none', cursor: selectedCardId ? 'pointer' : 'not-allowed', 
-                             fontFamily: 'var(--font-dm-sans)', fontSize: 16, fontWeight: 500, color: '#000000',
-                             opacity: selectedCardId ? 1 : 0.6
-                          }}
-                        >
-                          Continue
-                        </button>
+                              <button
+                                disabled={!selectedCardId || paying}
+                                onClick={() => setFundStep('confirm')}
+                                style={{
+                                  width: '100%',
+                                  height: 48,
+                                  background: '#101828',
+                                  borderRadius: 10,
+                                  border: 'none',
+                                  cursor: selectedCardId ? 'pointer' : 'not-allowed',
+                                  fontFamily: 'var(--font-dm-sans)',
+                                  fontSize: 14,
+                                  fontWeight: 600,
+                                  color: '#FFFFFF',
+                                  marginTop: 8,
+                                  opacity: selectedCardId ? 1 : 0.5
+                                }}
+                              >
+                                Pay with Selected Card
+                              </button>
+                            </div>
+                          ) : (
+                            <div style={{ padding: '16px', borderRadius: 12, border: '1px dashed #EAECF0', textAlign: 'center', background: '#FAFAFA' }}>
+                              <p style={{ margin: '0 0 8px', fontSize: 12, color: '#667085', fontFamily: 'var(--font-dm-sans)' }}>
+                                No bank card linked yet. Link a card for faster 1-click top-ups.
+                              </p>
+                              <button
+                                type="button"
+                                onClick={handleLinkCardWithMonnify}
+                                disabled={linkingCard}
+                                style={{
+                                  background: 'none',
+                                  border: '1px solid #D4AF37',
+                                  borderRadius: 8,
+                                  padding: '6px 14px',
+                                  color: '#B89025',
+                                  fontSize: 12,
+                                  fontWeight: 600,
+                                  cursor: 'pointer',
+                                  fontFamily: 'var(--font-dm-sans)'
+                                }}
+                              >
+                                {linkingCard ? 'Connecting...' : 'Link Bank Card (Refundable ₦50)'}
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     )}
                     {fundStep === 'confirm' && (
@@ -1132,7 +1309,54 @@ function FinancesPageContent() {
 
                     {fundStep === 'add-card' && (
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 20, width: '100%', maxWidth: '420px', margin: '30px 0 60px' }}>
+                        
+                        {/* Direct Monnify Card Linking Banner */}
+                        <div style={{ width: '100%', maxWidth: '420px', background: '#F9FAFB', border: '1px solid #EAECF0', borderRadius: 16, padding: '20px', marginBottom: 24, textAlign: 'left' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                            <div style={{ width: 28, height: 28, borderRadius: 8, background: '#D4AF37', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <CreditCard size={15} color="#000" />
+                            </div>
+                            <span style={{ fontSize: 14, fontWeight: 700, color: '#101828', fontFamily: 'var(--font-dm-sans)' }}>
+                              Instant Card Linking via Monnify
+                            </span>
+                          </div>
+                          <p style={{ fontSize: 12, color: '#667085', margin: '0 0 16px', lineHeight: 1.5, fontFamily: 'var(--font-dm-sans)' }}>
+                            Link your Mastercard, Visa, or Verve card securely. A small ₦50 verification fee is charged and immediately refunded to your wallet balance.
+                          </p>
+                          <button
+                            type="button"
+                            onClick={handleLinkCardWithMonnify}
+                            disabled={linkingCard}
+                            style={{
+                              width: '100%',
+                              height: 44,
+                              background: '#101828',
+                              borderRadius: 8,
+                              border: 'none',
+                              cursor: linkingCard ? 'not-allowed' : 'pointer',
+                              fontFamily: 'var(--font-dm-sans)',
+                              fontSize: 14,
+                              fontWeight: 600,
+                              color: '#FFFFFF',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: 8,
+                              opacity: linkingCard ? 0.7 : 1
+                            }}
+                          >
+                            {linkingCard ? 'Connecting...' : 'Link via Monnify Secure Portal'}
+                            <ArrowRight size={15} />
+                          </button>
+                        </div>
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', maxWidth: '420px', marginBottom: 20 }}>
+                          <div style={{ flex: 1, height: 1, background: '#EAECF0' }} />
+                          <span style={{ fontSize: 11, color: '#98A2B3', textTransform: 'uppercase', letterSpacing: '0.05em', fontFamily: 'var(--font-dm-sans)' }}>or manual card entry</span>
+                          <div style={{ flex: 1, height: 1, background: '#EAECF0' }} />
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 20, width: '100%', maxWidth: '420px', margin: '0 0 40px' }}>
                           
                           <div style={{ position: 'relative', width: '100%' }}>
                             <select

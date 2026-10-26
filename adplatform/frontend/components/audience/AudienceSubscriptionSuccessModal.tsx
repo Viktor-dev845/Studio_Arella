@@ -32,7 +32,7 @@ export default function AudienceSubscriptionSuccessModal({
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#A2A1A8]/20 backdrop-blur-[20px] font-['DM_Sans',sans-serif] animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#A2A1A8]/20 backdrop-blur-[20px] font-quicksand animate-in fade-in duration-200"
       onClick={onClose}
     >
       {/* ─── Modal Container (Frame 2121459696: 625px x 565px, radius 32px) ─── */}
@@ -51,7 +51,7 @@ export default function AudienceSubscriptionSuccessModal({
             <ArrowLeft size={24} strokeWidth={2.5} className="text-black" />
           </button>
 
-          <h2 className="text-[20px] font-medium text-[#101828] text-center tracking-[-0.01em] leading-[30px] font-['DM_Sans',sans-serif] m-0">
+          <h2 className="text-[20px] font-medium text-[#101828] text-center tracking-[-0.01em] leading-[30px] font-quicksand m-0">
             Pay with card
           </h2>
 
@@ -94,7 +94,7 @@ export default function AudienceSubscriptionSuccessModal({
         </div>
 
         {/* Success Message: 483px max, 20px font-semibold #16151C, line-height 30px (top: 335px -> gap 71px) */}
-        <p className="w-full max-w-[483px] text-[20px] font-semibold text-[#16151C] text-center leading-[30px] mt-6 sm:mt-[71px] font-['DM_Sans',sans-serif] m-0 shrink-0">
+        <p className="w-full max-w-[483px] text-[20px] font-semibold text-[#16151C] text-center leading-[30px] mt-6 sm:mt-[71px] font-quicksand m-0 shrink-0">
           Subscription successful and you are now a membered fan
         </p>
 
@@ -103,7 +103,7 @@ export default function AudienceSubscriptionSuccessModal({
           <button
             type="button"
             onClick={handleAction}
-            className="w-full h-[56px] bg-[#D4AF37] hover:bg-[#c29f31] text-black rounded-[6px] text-[16px] font-medium leading-[21px] font-['DM_Sans',sans-serif] transition-all shadow-xs active:scale-[0.99] flex items-center justify-center cursor-pointer"
+            className="w-full h-[56px] bg-[#D4AF37] hover:bg-[#c29f31] text-black rounded-[6px] text-[16px] font-medium leading-[21px] font-quicksand transition-all shadow-xs active:scale-[0.99] flex items-center justify-center cursor-pointer"
           >
             {buttonText}
           </button>

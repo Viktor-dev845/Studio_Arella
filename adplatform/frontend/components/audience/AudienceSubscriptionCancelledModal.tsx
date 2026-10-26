@@ -21,7 +21,7 @@ export default function AudienceSubscriptionCancelledModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-[2px] font-['DM_Sans',sans-serif] animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-[2px] font-quicksand animate-in fade-in duration-200">
       {/* ─── Modal Dialog (Filter Popup 383px x 433px, radius 20px) ─── */}
       <div 
         className="w-full max-w-[383px] h-[433px] bg-white rounded-[20px] relative flex flex-col items-center shadow-2xl overflow-hidden"

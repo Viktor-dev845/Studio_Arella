@@ -32,7 +32,7 @@ export default function AudienceVerifySuccessModal({
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs font-['DM_Sans',sans-serif] animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs font-quicksand animate-in fade-in duration-200"
       onClick={onClose}
     >
       {/* ─── Modal Container (Frame 2121459666: 625px x 565px, radius 32px) ─── */}
@@ -51,7 +51,7 @@ export default function AudienceVerifySuccessModal({
             <ArrowLeft size={24} strokeWidth={2.5} className="text-black" />
           </button>
 
-          <h2 className="text-[20px] font-medium text-[#101828] text-center tracking-[-0.01em] leading-[30px] font-['DM_Sans',sans-serif] m-0">
+          <h2 className="text-[20px] font-medium text-[#101828] text-center tracking-[-0.01em] leading-[30px] font-quicksand m-0">
             {getTitle()}
           </h2>
 
@@ -102,7 +102,7 @@ export default function AudienceVerifySuccessModal({
 
         {/* ─── Headline: Subscription successful. You are now a verified user (Top: 324px) ─── */}
         <div className="mt-[42px] max-w-[274px] text-center">
-          <h3 className="text-[20px] font-semibold text-[#16151C] leading-[30px] font-['DM_Sans',sans-serif] m-0">
+          <h3 className="text-[20px] font-semibold text-[#16151C] leading-[30px] font-quicksand m-0">
             Subscription successful.<br />
             You are now a verified user
           </h3>
@@ -113,7 +113,7 @@ export default function AudienceVerifySuccessModal({
           <button
             type="button"
             onClick={handleFinish}
-            className="w-full h-[56px] bg-[#D4AF37] hover:bg-[#c29f31] text-[#000000] font-['DM_Sans',sans-serif] font-medium text-[16px] leading-[21px] rounded-[6px] flex items-center justify-center transition-all shadow-xs active:scale-[0.99] cursor-pointer"
+            className="w-full h-[56px] bg-[#D4AF37] hover:bg-[#c29f31] text-[#000000] font-quicksand font-medium text-[16px] leading-[21px] rounded-[6px] flex items-center justify-center transition-all shadow-xs active:scale-[0.99] cursor-pointer"
           >
             Finish
           </button>

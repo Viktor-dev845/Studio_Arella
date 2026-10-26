@@ -24,7 +24,7 @@ export default function AudienceEventCreatedSuccessModal({
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#A2A1A8]/20 backdrop-blur-[10px] font-['DM_Sans',sans-serif] animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#A2A1A8]/20 backdrop-blur-[10px] font-quicksand animate-in fade-in duration-200"
       onClick={onClose}
     >
       {/* ─── Modal Container (Filter Popup: 383px x 433px, radius 20px) ─── */}
@@ -68,7 +68,7 @@ export default function AudienceEventCreatedSuccessModal({
         </div>
 
         {/* Event created: top 224px, 20px font, semi-bold */}
-        <h3 className="absolute top-[224px] left-1/2 -translate-x-1/2 w-full text-center text-[20px] font-semibold text-[#16151C] leading-[30px] font-['DM_Sans',sans-serif] m-0">
+        <h3 className="absolute top-[224px] left-1/2 -translate-x-1/2 w-full text-center text-[20px] font-semibold text-[#16151C] leading-[30px] font-quicksand m-0">
           {title}
         </h3>
 
@@ -76,7 +76,7 @@ export default function AudienceEventCreatedSuccessModal({
         <button
           type="button"
           onClick={handleFinish}
-          className="absolute top-[307px] left-1/2 -translate-x-1/2 w-[166px] h-[50px] bg-[#D4AF37] hover:bg-[#c29f31] text-[#000000] font-['DM_Sans',sans-serif] text-[16px] font-normal leading-[21px] rounded-[6px] flex items-center justify-center transition-all active:scale-[0.98] shadow-xs cursor-pointer"
+          className="absolute top-[307px] left-1/2 -translate-x-1/2 w-[166px] h-[50px] bg-[#D4AF37] hover:bg-[#c29f31] text-[#000000] font-quicksand text-[16px] font-normal leading-[21px] rounded-[6px] flex items-center justify-center transition-all active:scale-[0.98] shadow-xs cursor-pointer"
         >
           Finish
         </button>

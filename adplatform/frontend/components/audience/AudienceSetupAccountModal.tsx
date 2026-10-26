@@ -73,7 +73,7 @@ export default function AudienceSetupAccountModal({
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#A2A1A8]/20 backdrop-blur-[10px] font-['DM_Sans',sans-serif] animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#A2A1A8]/20 backdrop-blur-[10px] font-quicksand animate-in fade-in duration-200"
       onClick={onClose}
     >
       {/* ─── Modal Container (Frame 2121459663: 625px x 733px, radius 32px) ─── */}
@@ -92,7 +92,7 @@ export default function AudienceSetupAccountModal({
             <ArrowLeft size={24} strokeWidth={2.5} className="text-black" />
           </button>
 
-          <h2 className="text-[20px] font-medium text-[#101828] text-center tracking-[-0.01em] leading-[30px] font-['DM_Sans',sans-serif] m-0">
+          <h2 className="text-[20px] font-medium text-[#101828] text-center tracking-[-0.01em] leading-[30px] font-quicksand m-0">
             Set up account
           </h2>
 
@@ -108,7 +108,7 @@ export default function AudienceSetupAccountModal({
 
         {/* ─── Subtitle / Description Text (Centered, Bold) ─── */}
         <div className="w-full max-w-[390px] text-center mt-[36px] px-2">
-          <h3 className="text-[17px] sm:text-[18px] font-bold text-[#101828] leading-[26px] font-['DM_Sans',sans-serif] m-0">
+          <h3 className="text-[17px] sm:text-[18px] font-bold text-[#101828] leading-[26px] font-quicksand m-0">
             To finish setting up your event,<br />
             leave your bank details where<br />
             your money goes into from our<br />
@@ -124,7 +124,7 @@ export default function AudienceSetupAccountModal({
               onClick={() => setIsBankDropdownOpen(!isBankDropdownOpen)}
               className="w-full h-[56px] px-4 bg-white border border-[rgba(162,161,168,0.25)] rounded-[12px] flex items-center justify-between cursor-pointer select-none focus-within:border-[#D4AF37] transition-colors"
             >
-              <span className={`text-[15px] font-light font-['DM_Sans',sans-serif] ${selectedBank ? 'text-[#101828]' : 'text-[rgba(162,161,168,0.8)]'}`}>
+              <span className={`text-[15px] font-light font-quicksand ${selectedBank ? 'text-[#101828]' : 'text-[rgba(162,161,168,0.8)]'}`}>
                 {selectedBank || '--- Select bank ---'}
               </span>
               <ChevronDown size={20} strokeWidth={2} className="text-[#101828]" />
@@ -173,7 +173,7 @@ export default function AudienceSetupAccountModal({
               value={accountName}
               onChange={(e) => setAccountName(e.target.value)}
               placeholder="Enter account name"
-              className="w-full h-[56px] px-4 bg-white border border-[rgba(162,161,168,0.25)] rounded-[12px] text-[15px] font-light text-[#101828] placeholder:text-[rgba(162,161,168,0.8)] placeholder:font-light outline-none focus:border-[#D4AF37] transition-colors font-['DM_Sans',sans-serif]"
+              className="w-full h-[56px] px-4 bg-white border border-[rgba(162,161,168,0.25)] rounded-[12px] text-[15px] font-light text-[#101828] placeholder:text-[rgba(162,161,168,0.8)] placeholder:font-light outline-none focus:border-[#D4AF37] transition-colors font-quicksand"
             />
           </div>
 
@@ -189,7 +189,7 @@ export default function AudienceSetupAccountModal({
                 setAccountNumber(val);
               }}
               placeholder="Enter account number"
-              className="w-full h-[56px] px-4 bg-white border border-[rgba(162,161,168,0.25)] rounded-[12px] text-[15px] font-light text-[#101828] placeholder:text-[rgba(162,161,168,0.8)] placeholder:font-light outline-none focus:border-[#D4AF37] transition-colors font-['DM_Sans',sans-serif]"
+              className="w-full h-[56px] px-4 bg-white border border-[rgba(162,161,168,0.25)] rounded-[12px] text-[15px] font-light text-[#101828] placeholder:text-[rgba(162,161,168,0.8)] placeholder:font-light outline-none focus:border-[#D4AF37] transition-colors font-quicksand"
             />
           </div>
 
@@ -207,7 +207,7 @@ export default function AudienceSetupAccountModal({
             >
               {alwaysUse && <Check size={14} strokeWidth={3} className="text-white" />}
             </div>
-            <span className="text-[14px] text-[#101828] font-normal font-['DM_Sans',sans-serif]">
+            <span className="text-[14px] text-[#101828] font-normal font-quicksand">
               Always use this bank account
             </span>
           </div>
@@ -217,7 +217,7 @@ export default function AudienceSetupAccountModal({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full h-[54px] bg-[#D4AF37] hover:bg-[#c49f2e] text-[#101828] font-medium text-[16px] rounded-[10px] flex items-center justify-center transition-all shadow-sm active:scale-[0.99] cursor-pointer disabled:opacity-75 font-['DM_Sans',sans-serif]"
+              className="w-full h-[54px] bg-[#D4AF37] hover:bg-[#c49f2e] text-[#101828] font-medium text-[16px] rounded-[10px] flex items-center justify-center transition-all shadow-sm active:scale-[0.99] cursor-pointer disabled:opacity-75 font-quicksand"
             >
               {isSubmitting ? (
                 <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />

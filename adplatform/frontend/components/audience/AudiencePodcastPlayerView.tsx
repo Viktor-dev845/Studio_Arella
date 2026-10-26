@@ -131,7 +131,7 @@ export default function AudiencePodcastPlayerView({
   };
 
   return (
-    <section className="w-full flex flex-col gap-5 font-['DM_Sans',sans-serif]">
+    <section className="w-full flex flex-col gap-5 font-quicksand">
       {/* ─── 1. Header: Back to profile (Frame 2121459063) ─── */}
       <div className="flex items-center gap-3.5">
         <button
@@ -146,7 +146,7 @@ export default function AudiencePodcastPlayerView({
         <button
           type="button"
           onClick={handleBack}
-          className="font-['Urbanist',sans-serif] font-semibold text-[16px] leading-[19px] underline text-[#262626] hover:text-[#D9BA54] transition-colors cursor-pointer bg-transparent border-none p-0"
+          className="font-quicksand font-semibold text-[16px] leading-[19px] underline text-[#262626] hover:text-[#D9BA54] transition-colors cursor-pointer bg-transparent border-none p-0"
         >
           Back to profile
         </button>
@@ -154,7 +154,7 @@ export default function AudiencePodcastPlayerView({
 
       {/* ─── 2. Sub-Header: Zara Design Concept Podcast (Frame 2121459064) ─── */}
       <div className="pt-1">
-        <h2 className="font-['Urbanist',sans-serif] font-semibold text-[16px] leading-[19px] underline text-[#262626] m-0">
+        <h2 className="font-quicksand font-semibold text-[16px] leading-[19px] underline text-[#262626] m-0">
           {podcastTitle}
         </h2>
       </div>
@@ -236,7 +236,7 @@ export default function AudiencePodcastPlayerView({
                   <SkipBack size={18} fill="currentColor" />
                 </button>
 
-                <span className="font-['DM_Sans',sans-serif] font-semibold text-[14px] leading-[24px] tracking-[-0.01em] text-white select-none">
+                <span className="font-quicksand font-semibold text-[14px] leading-[24px] tracking-[-0.01em] text-white select-none">
                   00:04:15/02:35:19
                 </span>
               </div>
@@ -264,7 +264,7 @@ export default function AudiencePodcastPlayerView({
             <button
               type="button"
               onClick={() => setActiveTab('overview')}
-              className={`h-[44px] flex items-center justify-center font-['DM_Sans',sans-serif] text-[16px] leading-[24px] tracking-[-0.01em] transition-all cursor-pointer bg-transparent border-0 p-0 ${
+              className={`h-[44px] flex items-center justify-center font-quicksand text-[16px] leading-[24px] tracking-[-0.01em] transition-all cursor-pointer bg-transparent border-0 p-0 ${
                 activeTab === 'overview'
                   ? 'font-semibold text-[#D9BA54] border-b-[1.5px] border-[#D9BA54]'
                   : 'font-normal text-[#757575] hover:text-[#333333]'
@@ -276,7 +276,7 @@ export default function AudiencePodcastPlayerView({
             <button
               type="button"
               onClick={() => setActiveTab('discussion')}
-              className={`h-[44px] flex items-center justify-center font-['DM_Sans',sans-serif] text-[16px] leading-[24px] tracking-[-0.01em] transition-all cursor-pointer bg-transparent border-0 p-0 ${
+              className={`h-[44px] flex items-center justify-center font-quicksand text-[16px] leading-[24px] tracking-[-0.01em] transition-all cursor-pointer bg-transparent border-0 p-0 ${
                 activeTab === 'discussion'
                   ? 'font-semibold text-[#D9BA54] border-b-[1.5px] border-[#D9BA54]'
                   : 'font-normal text-[#757575] hover:text-[#333333]'
@@ -290,11 +290,11 @@ export default function AudiencePodcastPlayerView({
           {activeTab === 'overview' ? (
             /* Frame 1618873073: Course Description */
             <div className="flex flex-col gap-2 pt-2 max-w-[530px]">
-              <h3 className="font-['DM_Sans',sans-serif] text-[18px] font-semibold leading-[24px] tracking-[-0.02em] text-[#333333] m-0">
+              <h3 className="font-quicksand text-[18px] font-semibold leading-[24px] tracking-[-0.02em] text-[#333333] m-0">
                 Course Description
               </h3>
 
-              <p className="font-['DM_Sans',sans-serif] text-[16px] font-normal leading-[24px] tracking-[-0.02em] text-[#757575] m-0">
+              <p className="font-quicksand text-[16px] font-normal leading-[24px] tracking-[-0.02em] text-[#757575] m-0">
                 Explore the foundational principles of modern digital product design and brand storytelling. In this masterclass series, we break down design systems, user journeys, sound design integration, and how high-growth creators build lasting community connections through interactive audio.
               </p>
             </div>
@@ -316,17 +316,17 @@ export default function AudiencePodcastPlayerView({
                       
                       {/* Frame 1618873054: Name + Time */}
                       <div className="flex flex-col gap-1">
-                        <span className="font-['DM_Sans',sans-serif] font-medium text-[18px] leading-[24px] tracking-[-0.02em] text-[#333333]">
+                        <span className="font-quicksand font-medium text-[18px] leading-[24px] tracking-[-0.02em] text-[#333333]">
                           {c.author}
                         </span>
-                        <span className="font-['DM_Sans',sans-serif] font-normal text-[16px] leading-[24px] tracking-[-0.02em] text-[#757575]">
+                        <span className="font-quicksand font-normal text-[16px] leading-[24px] tracking-[-0.02em] text-[#757575]">
                           {c.time}
                         </span>
                       </div>
                     </div>
 
                     {/* Comment text paragraph (width: 530px) */}
-                    <p className="font-['DM_Sans',sans-serif] font-normal text-[16px] leading-[24px] tracking-[-0.02em] text-[#757575] m-0 pt-0.5">
+                    <p className="font-quicksand font-normal text-[16px] leading-[24px] tracking-[-0.02em] text-[#757575] m-0 pt-0.5">
                       {c.text}
                     </p>
                   </div>
@@ -341,13 +341,13 @@ export default function AudiencePodcastPlayerView({
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                   placeholder="Type message . . ."
-                  className="w-full sm:w-[408px] h-[53px] px-4 rounded-[8px] bg-white border-0 outline-none font-['DM_Sans',sans-serif] text-[16px] leading-[24px] text-[#333333] placeholder:text-[#757575] shadow-[0px_2px_8px_rgba(0,0,0,0.03)] focus:ring-1 focus:ring-[#D9BA54]"
+                  className="w-full sm:w-[408px] h-[53px] px-4 rounded-[8px] bg-white border-0 outline-none font-quicksand text-[16px] leading-[24px] text-[#333333] placeholder:text-[#757575] shadow-[0px_2px_8px_rgba(0,0,0,0.03)] focus:ring-1 focus:ring-[#D9BA54]"
                 />
 
                 {/* Frame 1618873058: Send button (106px x 53px) */}
                 <button
                   type="submit"
-                  className="w-[106px] h-[53px] bg-[#D9BA54] hover:bg-[#c9a73e] active:scale-[0.98] rounded-[8px] flex items-center justify-center font-['DM_Sans',sans-serif] font-semibold text-[16px] leading-[21px] tracking-[-0.02em] text-[#000000] transition-all cursor-pointer border-0 shrink-0"
+                  className="w-[106px] h-[53px] bg-[#D9BA54] hover:bg-[#c9a73e] active:scale-[0.98] rounded-[8px] flex items-center justify-center font-quicksand font-semibold text-[16px] leading-[21px] tracking-[-0.02em] text-[#000000] transition-all cursor-pointer border-0 shrink-0"
                 >
                   Send
                 </button>

@@ -113,6 +113,8 @@ export const register: RequestHandler = async (req, res) => {
       [user.id, code]
     );
 
+    console.log(`\n🔑 Verification OTP Code for ${email}: ${code}\n`);
+
     try {
       await sendVerificationEmail(email, user.first_name, code);
     } catch (emailErr) {

@@ -56,7 +56,7 @@ export default function AudienceChatsCard({
   };
 
   return (
-    <div className="w-full min-h-[560px] bg-white rounded-[16px] shadow-[0px_0px_2px_rgba(0,0,0,0.08),0px_0px_1px_rgba(0,0,0,0.06)] border border-gray-100 flex flex-col overflow-hidden font-['DM_Sans',sans-serif]">
+    <div className="w-full min-h-[560px] bg-white rounded-[16px] shadow-[0px_0px_2px_rgba(0,0,0,0.08),0px_0px_1px_rgba(0,0,0,0.06)] border border-gray-100 flex flex-col overflow-hidden font-quicksand">
       {/* ─── Header: CHATS (12px uppercase) ─── */}
       <div className="px-5 py-4">
         <h4 className="text-[12px] font-normal text-[#181818] tracking-wider uppercase">

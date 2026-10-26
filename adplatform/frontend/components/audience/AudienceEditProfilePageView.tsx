@@ -340,7 +340,7 @@ export default function AudienceEditProfilePageView({
   };
 
   return (
-    <div className="flex-1 w-full min-w-0 flex flex-col gap-6 font-['DM_Sans',sans-serif]">
+    <div className="flex-1 w-full min-w-0 flex flex-col gap-6 font-quicksand">
 
       {/* ─── DEDICATED CHANGE PASSWORD VIEW (Matching Figma 'change passwprd' screen: 1440px x 939px layout) ─── */}
       {activeSubView === 'change-password' ? (
@@ -355,7 +355,7 @@ export default function AudienceEditProfilePageView({
               <div className="w-9 h-9 rounded-full bg-[#EFEFEF] flex items-center justify-center text-[#464646] group-hover:bg-[#E5E5E5] transition-colors">
                 <ChevronLeft size={20} strokeWidth={2.2} />
               </div>
-              <span className="font-['Urbanist',sans-serif] font-semibold text-[16px] leading-[19px] text-[#262626] underline group-hover:opacity-80 transition-opacity">
+              <span className="font-quicksand font-semibold text-[16px] leading-[19px] text-[#262626] underline group-hover:opacity-80 transition-opacity">
                 Back
               </span>
             </button>
@@ -363,7 +363,7 @@ export default function AudienceEditProfilePageView({
 
           {/* Change Password Card (Frame 2121459238: 964px x 492px, radius 20px, bg #FFFFFF) */}
           <div className="w-full bg-[#FFFFFF] rounded-[20px] p-6 sm:p-8 sm:px-9 shadow-[0px_2px_12px_rgba(0,0,0,0.02)] border border-gray-100/70 flex flex-col gap-6">
-            <h2 className="font-['Urbanist',sans-serif] font-semibold text-[19.67px] leading-[29px] text-[#141414]">
+            <h2 className="font-quicksand font-semibold text-[19.67px] leading-[29px] text-[#141414]">
               Change Password
             </h2>
 
@@ -375,7 +375,7 @@ export default function AudienceEditProfilePageView({
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   placeholder="Current Password"
-                  className="w-full h-[69px] px-5 pr-14 rounded-[10px] border border-[#98989A] bg-white font-['Urbanist',sans-serif] text-[18px] sm:text-[19.67px] text-[#141414] placeholder-[#141414] focus:outline-none focus:border-[#D9BA54] focus:ring-1 focus:ring-[#D9BA54] transition-all"
+                  className="w-full h-[69px] px-5 pr-14 rounded-[10px] border border-[#98989A] bg-white font-quicksand text-[18px] sm:text-[19.67px] text-[#141414] placeholder-[#141414] focus:outline-none focus:border-[#D9BA54] focus:ring-1 focus:ring-[#D9BA54] transition-all"
                   required
                 />
                 <button
@@ -395,7 +395,7 @@ export default function AudienceEditProfilePageView({
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="New Password"
-                  className="w-full h-[69px] px-5 pr-14 rounded-[10px] border border-[#98989A] bg-white font-['Urbanist',sans-serif] text-[18px] sm:text-[19.67px] text-[#141414] placeholder-[#141414] focus:outline-none focus:border-[#D9BA54] focus:ring-1 focus:ring-[#D9BA54] transition-all"
+                  className="w-full h-[69px] px-5 pr-14 rounded-[10px] border border-[#98989A] bg-white font-quicksand text-[18px] sm:text-[19.67px] text-[#141414] placeholder-[#141414] focus:outline-none focus:border-[#D9BA54] focus:ring-1 focus:ring-[#D9BA54] transition-all"
                   required
                 />
                 <button
@@ -415,7 +415,7 @@ export default function AudienceEditProfilePageView({
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Confirm New Password"
-                  className="w-full h-[69px] px-5 pr-14 rounded-[10px] border border-[#98989A] bg-white font-['Urbanist',sans-serif] text-[18px] sm:text-[19.67px] text-[#141414] placeholder-[#141414] focus:outline-none focus:border-[#D9BA54] focus:ring-1 focus:ring-[#D9BA54] transition-all"
+                  className="w-full h-[69px] px-5 pr-14 rounded-[10px] border border-[#98989A] bg-white font-quicksand text-[18px] sm:text-[19.67px] text-[#141414] placeholder-[#141414] focus:outline-none focus:border-[#D9BA54] focus:ring-1 focus:ring-[#D9BA54] transition-all"
                   required
                 />
                 <button
@@ -433,7 +433,7 @@ export default function AudienceEditProfilePageView({
                 <button
                   type="button"
                   onClick={() => setActiveSubView('profile')}
-                  className="w-[118px] h-[48px] border border-[#D9BA54] rounded-[10px] bg-transparent text-[#D9BA54] font-['Urbanist',sans-serif] font-bold text-[16px] leading-[24px] hover:bg-amber-50/40 transition-colors flex items-center justify-center cursor-pointer"
+                  className="w-[118px] h-[48px] border border-[#D9BA54] rounded-[10px] bg-transparent text-[#D9BA54] font-quicksand font-bold text-[16px] leading-[24px] hover:bg-amber-50/40 transition-colors flex items-center justify-center cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -441,7 +441,7 @@ export default function AudienceEditProfilePageView({
                 <button
                   type="submit"
                   disabled={isChangingPassword}
-                  className="w-[176px] h-[48px] bg-[#D9BA54] hover:bg-[#c9a73e] text-[#000000] font-['Urbanist',sans-serif] font-bold text-[16px] leading-[24px] rounded-[10px] shadow-sm transition-colors flex items-center justify-center cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="w-[176px] h-[48px] bg-[#D9BA54] hover:bg-[#c9a73e] text-[#000000] font-quicksand font-bold text-[16px] leading-[24px] rounded-[10px] shadow-sm transition-colors flex items-center justify-center cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {isChangingPassword ? (
                     <Loader2 size={18} className="animate-spin text-black" />
@@ -466,14 +466,14 @@ export default function AudienceEditProfilePageView({
               <div className="w-9 h-9 rounded-full bg-[#EFEFEF] flex items-center justify-center text-[#464646] group-hover:bg-[#E5E5E5] transition-colors">
                 <ChevronLeft size={20} strokeWidth={2.2} />
               </div>
-              <span className="font-['Urbanist',sans-serif] font-semibold text-[16px] leading-[19px] text-[#262626] underline group-hover:opacity-80 transition-opacity">
+              <span className="font-quicksand font-semibold text-[16px] leading-[19px] text-[#262626] underline group-hover:opacity-80 transition-opacity">
                 Back
               </span>
             </button>
           </div>
 
           {/* Page Heading: Login History */}
-          <h1 className="font-['Urbanist',sans-serif] font-semibold text-[20px] sm:text-[22px] leading-[28px] text-[#141414] m-0">
+          <h1 className="font-quicksand font-semibold text-[20px] sm:text-[22px] leading-[28px] text-[#141414] m-0">
             Login History
           </h1>
 
@@ -481,14 +481,14 @@ export default function AudienceEditProfilePageView({
           <div className="w-full bg-[#FFFFFF] rounded-[20px] p-6 sm:p-8 sm:px-9 shadow-[0px_2px_12px_rgba(0,0,0,0.02)] border border-gray-100/70 flex flex-col gap-5">
             {/* Card Header: Active Sessions + Sign out all devices */}
             <div className="flex items-center justify-between pb-1">
-              <h2 className="font-['Urbanist',sans-serif] font-semibold text-[19.67px] leading-[29px] text-[#141414]">
+              <h2 className="font-quicksand font-semibold text-[19.67px] leading-[29px] text-[#141414]">
                 Active Sessions
               </h2>
 
               <button
                 type="button"
                 onClick={handleSignOutAllDevices}
-                className="font-['Urbanist',sans-serif] font-normal text-[16px] leading-[22px] text-[#98989A] hover:text-[#F04438] transition-colors cursor-pointer"
+                className="font-quicksand font-normal text-[16px] leading-[22px] text-[#98989A] hover:text-[#F04438] transition-colors cursor-pointer"
               >
                 Sign out all devices
               </button>
@@ -501,7 +501,7 @@ export default function AudienceEditProfilePageView({
                 <span className="text-sm">Loading active sessions...</span>
               </div>
             ) : sessions.length === 0 ? (
-              <p className="text-center text-sm text-gray-500 py-8 font-['Urbanist',sans-serif]">
+              <p className="text-center text-sm text-gray-500 py-8 font-quicksand">
                 No active sessions found.
               </p>
             ) : (
@@ -521,13 +521,13 @@ export default function AudienceEditProfilePageView({
                     >
                       {/* Left Details */}
                       <div className="flex flex-col">
-                        <span className="font-['Urbanist',sans-serif] text-[14px] leading-[20px] text-[#141414] font-normal">
+                        <span className="font-quicksand text-[14px] leading-[20px] text-[#141414] font-normal">
                           {parsed.title}
                         </span>
-                        <span className="font-['Urbanist',sans-serif] font-semibold text-[16px] sm:text-[17px] leading-[24px] text-[#141414] mt-0.5">
+                        <span className="font-quicksand font-semibold text-[16px] sm:text-[17px] leading-[24px] text-[#141414] mt-0.5">
                           {parsed.deviceName}
                         </span>
-                        <span className="font-['Urbanist',sans-serif] text-[13px] sm:text-[14px] leading-[18px] text-[#98989A] mt-1">
+                        <span className="font-quicksand text-[13px] sm:text-[14px] leading-[18px] text-[#98989A] mt-1">
                           {parsed.locationAndIp}
                         </span>
                       </div>
@@ -535,20 +535,20 @@ export default function AudienceEditProfilePageView({
                       {/* Right: Badge / Sign out button + Timestamp */}
                       <div className="flex flex-col items-end justify-between self-stretch sm:self-auto gap-3 shrink-0">
                         {isCurrent ? (
-                          <span className="px-3 py-0.5 rounded-full bg-[#E6F9F0] text-[#12B76A] font-['Urbanist',sans-serif] font-medium text-[12px] leading-[18px]">
+                          <span className="px-3 py-0.5 rounded-full bg-[#E6F9F0] text-[#12B76A] font-quicksand font-medium text-[12px] leading-[18px]">
                             Active
                           </span>
                         ) : (
                           <button
                             type="button"
                             onClick={() => handleSignOutDevice(sess.id)}
-                            className="px-3.5 py-0.5 rounded-full bg-[#FEE4E2] text-[#F04438] hover:bg-[#FECDCA] font-['Urbanist',sans-serif] font-medium text-[12px] leading-[18px] transition-colors cursor-pointer"
+                            className="px-3.5 py-0.5 rounded-full bg-[#FEE4E2] text-[#F04438] hover:bg-[#FECDCA] font-quicksand font-medium text-[12px] leading-[18px] transition-colors cursor-pointer"
                           >
                             Sign out
                           </button>
                         )}
 
-                        <span className="font-['Urbanist',sans-serif] font-normal text-[14px] leading-[20px] text-[#141414]">
+                        <span className="font-quicksand font-normal text-[14px] leading-[20px] text-[#141414]">
                           {parsed.timeStr}
                         </span>
                       </div>
@@ -584,7 +584,7 @@ export default function AudienceEditProfilePageView({
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   placeholder="Adela"
-                  className="w-full h-[52.85px] px-4 rounded-[12.3px] border border-[rgba(152,152,154,0.5)] bg-white text-[15px] text-[#141414] placeholder-[#98989A] focus:outline-none focus:border-[#D9BA54] focus:ring-1 focus:ring-[#D9BA54] transition-all font-['DM_Sans',sans-serif]"
+                  className="w-full h-[52.85px] px-4 rounded-[12.3px] border border-[rgba(152,152,154,0.5)] bg-white text-[15px] text-[#141414] placeholder-[#98989A] focus:outline-none focus:border-[#D9BA54] focus:ring-1 focus:ring-[#D9BA54] transition-all font-quicksand"
                 />
               </div>
 
@@ -602,7 +602,7 @@ export default function AudienceEditProfilePageView({
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   placeholder="Parkson"
-                  className="w-full h-[52.85px] px-4 rounded-[12.3px] border border-[rgba(152,152,154,0.5)] bg-white text-[15px] text-[#141414] placeholder-[#98989A] focus:outline-none focus:border-[#D9BA54] focus:ring-1 focus:ring-[#D9BA54] transition-all font-['DM_Sans',sans-serif]"
+                  className="w-full h-[52.85px] px-4 rounded-[12.3px] border border-[rgba(152,152,154,0.5)] bg-white text-[15px] text-[#141414] placeholder-[#98989A] focus:outline-none focus:border-[#D9BA54] focus:ring-1 focus:ring-[#D9BA54] transition-all font-quicksand"
                 />
               </div>
 
@@ -620,7 +620,7 @@ export default function AudienceEditProfilePageView({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="adelapark.@example.com"
-                  className="w-full h-[52.85px] px-4 rounded-[12.3px] border border-[rgba(152,152,154,0.5)] bg-white text-[15px] text-[#141414] placeholder-[#98989A] focus:outline-none focus:border-[#D9BA54] focus:ring-1 focus:ring-[#D9BA54] transition-all font-['DM_Sans',sans-serif]"
+                  className="w-full h-[52.85px] px-4 rounded-[12.3px] border border-[rgba(152,152,154,0.5)] bg-white text-[15px] text-[#141414] placeholder-[#98989A] focus:outline-none focus:border-[#D9BA54] focus:ring-1 focus:ring-[#D9BA54] transition-all font-quicksand"
                 />
               </div>
 
@@ -638,7 +638,7 @@ export default function AudienceEditProfilePageView({
                   value={about}
                   onChange={(e) => setAbout(e.target.value)}
                   placeholder="Tell the community about your work and creative projects"
-                  className="w-full h-[52.85px] px-4 rounded-[12.3px] border border-[rgba(152,152,154,0.5)] bg-white text-[15px] text-[#141414] placeholder-[#98989A] focus:outline-none focus:border-[#D9BA54] focus:ring-1 focus:ring-[#D9BA54] transition-all font-['DM_Sans',sans-serif]"
+                  className="w-full h-[52.85px] px-4 rounded-[12.3px] border border-[rgba(152,152,154,0.5)] bg-white text-[15px] text-[#141414] placeholder-[#98989A] focus:outline-none focus:border-[#D9BA54] focus:ring-1 focus:ring-[#D9BA54] transition-all font-quicksand"
                 />
               </div>
             </div>
@@ -888,7 +888,7 @@ export default function AudienceEditProfilePageView({
             </div>
 
             {/* Title: Password updated / Account settings changed (at top 224px, 20px font-semibold, #16151C) */}
-            <h3 className="absolute top-[224px] left-1/2 -translate-x-1/2 w-[280px] text-center font-['DM_Sans',sans-serif] font-semibold text-[20px] leading-[30px] text-[#16151C] m-0">
+            <h3 className="absolute top-[224px] left-1/2 -translate-x-1/2 w-[280px] text-center font-quicksand font-semibold text-[20px] leading-[30px] text-[#16151C] m-0">
               {successPopupTitle}
             </h3>
 
@@ -896,7 +896,7 @@ export default function AudienceEditProfilePageView({
             <button
               type="button"
               onClick={handleFinishSuccess}
-              className="absolute top-[307px] left-1/2 -translate-x-1/2 w-[166px] h-[50px] bg-[#D4AF37] hover:bg-[#c9a73e] text-[#000000] font-['DM_Sans',sans-serif] font-normal text-[16px] leading-[21px] rounded-[6px] shadow-sm flex items-center justify-center cursor-pointer transition-colors"
+              className="absolute top-[307px] left-1/2 -translate-x-1/2 w-[166px] h-[50px] bg-[#D4AF37] hover:bg-[#c9a73e] text-[#000000] font-quicksand font-normal text-[16px] leading-[21px] rounded-[6px] shadow-sm flex items-center justify-center cursor-pointer transition-colors"
             >
               Finish
             </button>

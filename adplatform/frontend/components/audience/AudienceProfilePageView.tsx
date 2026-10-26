@@ -397,7 +397,7 @@ export default function AudienceProfilePageView({
   };
 
   return (
-    <section className="flex-1 w-full min-w-0 flex flex-col gap-6 font-['DM_Sans',sans-serif]">
+    <section className="flex-1 w-full min-w-0 flex flex-col gap-6 font-quicksand">
       {/* ─── 1. Profile Hero Card (Figma: 850px x 360px, radius 4px) ─── */}
       <div className="w-full bg-white rounded-[4px] shadow-[0px_20px_60px_rgba(241,244,248,0.5)] border border-gray-100 overflow-hidden relative">
         {/* Banner (850px x 180px) */}
@@ -442,7 +442,7 @@ export default function AudienceProfilePageView({
                   className="w-[132px] h-[36px] px-3 rounded-[4px] bg-white/90 backdrop-blur-sm shadow-[0px_10px_30px_rgba(113,123,133,0.05)] flex items-center justify-center gap-2 text-[12px] font-normal uppercase tracking-wider text-[#181818] hover:bg-white transition-colors cursor-pointer"
                 >
                   <Edit3 size={15} className="text-[#181818]" />
-                  <span className="font-['DM_Sans',sans-serif]">EDIT PROFILE</span>
+                  <span className="font-quicksand">EDIT PROFILE</span>
                 </button>
               )}
 
@@ -458,7 +458,7 @@ export default function AudienceProfilePageView({
               {/* More Dropdown Menu (Frame 2121459585: 200px x 101px, radius 10px) */}
               {showMoreMenu && (
                 <div
-                  className="absolute right-0 top-11 w-[200px] h-[101px] bg-white rounded-[10px] shadow-[-4.75px_30px_30px_rgba(184,184,184,0.25)] border border-gray-100/70 pt-[23px] pb-[18px] pl-[14px] pr-[13px] z-50 flex items-start justify-between animate-in fade-in zoom-in-95 duration-100 select-none font-['Karla',sans-serif]"
+                  className="absolute right-0 top-11 w-[200px] h-[101px] bg-white rounded-[10px] shadow-[-4.75px_30px_30px_rgba(184,184,184,0.25)] border border-gray-100/70 pt-[23px] pb-[18px] pl-[14px] pr-[13px] z-50 flex items-start justify-between animate-in fade-in zoom-in-95 duration-100 select-none font-quicksand"
                 >
                   <div className="flex flex-col gap-[11px] w-[134px]">
                     {isVisitorMode ? (
@@ -485,7 +485,7 @@ export default function AudienceProfilePageView({
                         <button
                           type="button"
                           onClick={handleLogout}
-                          className="text-left text-[15px] leading-[18px] font-normal text-[#F64A4A] hover:opacity-80 transition-opacity cursor-pointer bg-transparent border-none p-0 font-['Karla',sans-serif]"
+                          className="text-left text-[15px] leading-[18px] font-normal text-[#F64A4A] hover:opacity-80 transition-opacity cursor-pointer bg-transparent border-none p-0 font-quicksand"
                         >
                           Log out
                         </button>
@@ -495,7 +495,7 @@ export default function AudienceProfilePageView({
                             setShowMoreMenu(false);
                             setShowDeactivateModal(true);
                           }}
-                          className="text-left text-[15px] leading-[18px] font-normal text-[#000000] hover:opacity-80 transition-opacity cursor-pointer bg-transparent border-none p-0 whitespace-nowrap font-['Karla',sans-serif]"
+                          className="text-left text-[15px] leading-[18px] font-normal text-[#000000] hover:opacity-80 transition-opacity cursor-pointer bg-transparent border-none p-0 whitespace-nowrap font-quicksand"
                         >
                           Deactivate account
                         </button>
@@ -534,10 +534,10 @@ export default function AudienceProfilePageView({
 
             {/* Name, Tagline & Visitor CTA */}
             <div className="flex flex-col mb-1">
-              <h1 className="text-[18px] font-semibold text-[#181818] leading-[23px] m-0 font-['DM_Sans',sans-serif]">
+              <h1 className="text-[18px] font-semibold text-[#181818] leading-[23px] m-0 font-quicksand">
                 {name}
               </h1>
-              <p className="text-[14px] font-normal text-[#181818] leading-[21px] mt-1 m-0 font-['DM_Sans',sans-serif]">
+              <p className="text-[14px] font-normal text-[#181818] leading-[21px] mt-1 m-0 font-quicksand">
                 {bio}
               </p>
 
@@ -553,7 +553,7 @@ export default function AudienceProfilePageView({
                         setShowMembershipModal(true);
                       }
                     }}
-                    className={`h-8 rounded-[6px] text-[12px] font-semibold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center font-['DM_Sans',sans-serif] bg-[#D9BA54] hover:bg-[#c9a73e] text-black shadow-xs ${
+                    className={`h-8 rounded-[6px] text-[12px] font-semibold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center font-quicksand bg-[#D9BA54] hover:bg-[#c9a73e] text-black shadow-xs ${
                       isSubscribed ? 'w-[131px]' : 'w-[227px]'
                     }`}
                   >
@@ -602,7 +602,7 @@ export default function AudienceProfilePageView({
           {/* Location on Right (e.g. Umuahia, Abia State) */}
           <div className="flex items-center gap-1.5 text-[12px] font-normal text-[#181818] mb-2 self-start md:self-center shrink-0">
             <Navigation size={14} className="text-[#15411F] fill-[#15411F]" />
-            <span className="font-['DM_Sans',sans-serif]">{location}</span>
+            <span className="font-quicksand">{location}</span>
           </div>
         </div>
 
@@ -612,7 +612,7 @@ export default function AudienceProfilePageView({
             <button
               type="button"
               onClick={() => setShowCreateEventModal(true)}
-              className="w-[170px] h-8 bg-[#D9BA54] hover:bg-[#c9a73e] text-black text-[12px] font-normal uppercase tracking-wider rounded-[6px] transition-colors cursor-pointer flex items-center justify-center font-['DM_Sans',sans-serif]"
+              className="w-[170px] h-8 bg-[#D9BA54] hover:bg-[#c9a73e] text-black text-[12px] font-normal uppercase tracking-wider rounded-[6px] transition-colors cursor-pointer flex items-center justify-center font-quicksand"
             >
               Create an Event
             </button>
@@ -620,7 +620,7 @@ export default function AudienceProfilePageView({
             <button
               type="button"
               onClick={() => setShowVerifyModal(true)}
-              className="w-[170px] h-8 bg-white hover:bg-amber-50/50 border border-[#D9BA54] text-[#D9BA54] text-[12px] font-medium uppercase tracking-wider rounded-[6px] transition-colors cursor-pointer flex items-center justify-center font-['DM_Sans',sans-serif]"
+              className="w-[170px] h-8 bg-white hover:bg-amber-50/50 border border-[#D9BA54] text-[#D9BA54] text-[12px] font-medium uppercase tracking-wider rounded-[6px] transition-colors cursor-pointer flex items-center justify-center font-quicksand"
             >
               Get Verified
             </button>
@@ -629,7 +629,7 @@ export default function AudienceProfilePageView({
       </div>
 
       {/* ─── 2. Tabs Bar (Figma: 720px wide: PROFILE 50px high, FOLLOWERS 40px, FOLLOWING 40px) ─── */}
-      <div className="w-full max-w-[720px] flex items-end border-b border-[#E7E7E7] relative font-['DM_Sans',sans-serif] z-10">
+      <div className="w-full max-w-[720px] flex items-end border-b border-[#E7E7E7] relative font-quicksand z-10">
         <button
           type="button"
           onClick={() => handleTabChange('profile')}
@@ -709,10 +709,10 @@ export default function AudienceProfilePageView({
           {/* Card B: Podcast you followed (Figma: 850px x 355px, 3 items, Show all (12)) */}
           <div className="w-full bg-white rounded-[4px] shadow-[0px_20px_60px_rgba(241,244,248,0.5)] border border-gray-100 p-6 sm:p-7 flex flex-col">
             <div className="flex items-center gap-3 mb-5">
-              <h2 className="text-[18px] font-semibold text-[#181818] leading-[23px] m-0 font-['DM_Sans',sans-serif]">
+              <h2 className="text-[18px] font-semibold text-[#181818] leading-[23px] m-0 font-quicksand">
                 Podcast you followed
               </h2>
-              <span className="text-[18px] font-normal text-[#747474] font-['DM_Sans',sans-serif]">
+              <span className="text-[18px] font-normal text-[#747474] font-quicksand">
                 {podcasts.length} {podcasts.length === 1 ? 'show' : 'shows'}
               </span>
             </div>
@@ -759,10 +759,10 @@ export default function AudienceProfilePageView({
                       </div>
                     </div>
 
-                    <h3 className="text-[14px] font-medium text-[#181818] leading-[150%] mt-2.5 mb-0 truncate group-hover:text-[#D9BA54] transition-colors font-['DM_Sans',sans-serif]">
+                    <h3 className="text-[14px] font-medium text-[#181818] leading-[150%] mt-2.5 mb-0 truncate group-hover:text-[#D9BA54] transition-colors font-quicksand">
                       {pod.title}
                     </h3>
-                    <p className="text-[10px] font-light text-[#181818]/70 leading-[150%] m-0 truncate font-['DM_Sans',sans-serif]">
+                    <p className="text-[10px] font-light text-[#181818]/70 leading-[150%] m-0 truncate font-quicksand">
                       {pod.subtitle}
                     </p>
                   </div>
@@ -781,7 +781,7 @@ export default function AudienceProfilePageView({
                       router.push('/podcast');
                     }
                   }}
-                  className="text-[12px] font-semibold uppercase tracking-wider text-[#D9BA54] hover:underline cursor-pointer bg-transparent border-none p-0 font-['DM_Sans',sans-serif]"
+                  className="text-[12px] font-semibold uppercase tracking-wider text-[#D9BA54] hover:underline cursor-pointer bg-transparent border-none p-0 font-quicksand"
                 >
                   {podcasts.length > 3 ? (showAllPodcasts ? 'SHOW LESS' : `SHOW ALL (${podcasts.length})`) : 'EXPLORE MORE SHOWS'}
                 </button>
@@ -791,7 +791,7 @@ export default function AudienceProfilePageView({
 
           {/* Card C: Fan club events you joined (Figma: 850px x 220px, 3 items, Show all (17)) */}
           <div className="w-full bg-white rounded-[4px] shadow-[0px_20px_60px_rgba(241,244,248,0.5)] border border-gray-100 p-6 sm:p-7 flex flex-col">
-            <h2 className="text-[18px] font-medium text-[#181818] leading-[23px] m-0 mb-5 font-['DM_Sans',sans-serif]">
+            <h2 className="text-[18px] font-medium text-[#181818] leading-[23px] m-0 mb-5 font-quicksand">
               Fan club events you joined
             </h2>
 
@@ -849,11 +849,11 @@ export default function AudienceProfilePageView({
         </div>
       ) : activeTab === 'followers' ? (
         /* ─── Followers Tab Content: Filter line + 2-Column Cards matching Figma specs ─── */
-        <div className="flex flex-col gap-6 w-full lg:w-[850px] font-['DM_Sans',sans-serif]">
+        <div className="flex flex-col gap-6 w-full lg:w-[850px] font-quicksand">
           {/* Filter Divider: Line (310px) --- YOUR FOLLOWERS --- Line (310px) */}
           <div className="w-full flex items-center justify-between gap-4 py-1">
             <div className="flex-1 h-[1px] bg-[#E7E7E7]" />
-            <span className="text-[12px] font-medium text-[#181818] uppercase tracking-wider whitespace-nowrap px-2 font-['DM_Sans',sans-serif]">
+            <span className="text-[12px] font-medium text-[#181818] uppercase tracking-wider whitespace-nowrap px-2 font-quicksand">
               your followers
             </span>
             <div className="flex-1 h-[1px] bg-[#E7E7E7]" />
@@ -894,10 +894,10 @@ export default function AudienceProfilePageView({
                         </div>
                       )}
                       <div className="flex flex-col justify-center min-w-0">
-                        <span className="text-[14px] font-semibold text-[#181818] leading-[18px] truncate group-hover:text-[#D9BA54] transition-colors font-['DM_Sans',sans-serif]">
+                        <span className="text-[14px] font-semibold text-[#181818] leading-[18px] truncate group-hover:text-[#D9BA54] transition-colors font-quicksand">
                           {f.name}
                         </span>
-                        <span className="text-[10px] font-normal text-[#181818] leading-[15px] truncate mt-0.5 font-['DM_Sans',sans-serif]">
+                        <span className="text-[10px] font-normal text-[#181818] leading-[15px] truncate mt-0.5 font-quicksand">
                           {f.role || 'Member'}
                         </span>
                       </div>
@@ -906,7 +906,7 @@ export default function AudienceProfilePageView({
                     <button
                       type="button"
                       onClick={() => handleToggleFollowerItem(f.id, f.name)}
-                      className="w-[91px] h-[32px] bg-[#D4AF37] hover:bg-[#c49f2e] text-black rounded-[4px] text-[12px] font-normal capitalize transition-colors cursor-pointer shrink-0 flex items-center justify-center font-['DM_Sans',sans-serif]"
+                      className="w-[91px] h-[32px] bg-[#D4AF37] hover:bg-[#c49f2e] text-black rounded-[4px] text-[12px] font-normal capitalize transition-colors cursor-pointer shrink-0 flex items-center justify-center font-quicksand"
                     >
                       {isFollowing ? 'Following' : 'Follow'}
                     </button>
@@ -922,7 +922,7 @@ export default function AudienceProfilePageView({
           {/* Filter Divider: Line --- PEOPLE YOU FOLLOW --- Line */}
           <div className="w-full flex items-center justify-between gap-4 py-1">
             <div className="flex-1 h-[1px] bg-[#E7E7E7]" />
-            <span className="text-[12px] font-medium text-[#181818] uppercase tracking-wider whitespace-nowrap px-2 font-['DM_Sans',sans-serif]">
+            <span className="text-[12px] font-medium text-[#181818] uppercase tracking-wider whitespace-nowrap px-2 font-quicksand">
               People you follow
             </span>
             <div className="flex-1 h-[1px] bg-[#E7E7E7]" />

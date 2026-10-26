@@ -168,7 +168,7 @@ export default function AudienceChatPageView() {
   }, [messages]);
 
   return (
-    <div className="w-full max-w-[1780px] mx-auto px-4 sm:px-6 lg:px-10 xl:px-14 py-6 font-['DM_Sans',sans-serif]">
+    <div className="w-full max-w-[1780px] mx-auto px-4 sm:px-6 lg:px-10 xl:px-14 py-6 font-quicksand">
       <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start w-full">
         
         {/* ─── 1. Left Column: Visitors / Chats List ─── */}

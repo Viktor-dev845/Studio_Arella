@@ -152,7 +152,7 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
   };
 
   return (
-    <article className="w-full bg-white rounded-[18px] p-5 shadow-[0px_0px_2px_rgba(0,0,0,0.14),0px_0px_1px_rgba(0,0,0,0.12)] border border-gray-100/60 flex flex-col gap-4 font-['DM_Sans',sans-serif]">
+    <article className="w-full bg-white rounded-[18px] p-5 shadow-[0px_0px_2px_rgba(0,0,0,0.14),0px_0px_1px_rgba(0,0,0,0.12)] border border-gray-100/60 flex flex-col gap-4 font-quicksand">
       {/* ─── 1. Header: Author Info & PRO Badge ─── */}
       <div className="flex items-center justify-between">
         <div 
@@ -307,7 +307,7 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
             </button>
             <div className={`h-[18px] px-2 ${badgeBg} text-white rounded-[8px] border-2 border-white flex items-center gap-1 shadow-sm`}>
               <span className="text-[10px]">❤️</span>
-              <span className="text-[11px] font-['Roboto',sans-serif] font-normal leading-[13px] ml-0.5">
+              <span className="text-[11px] font-quicksand font-normal leading-[13px] ml-0.5">
                 +{likes}
               </span>
             </div>
@@ -325,7 +325,7 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
             >
               <MessageSquare size={20} strokeWidth={1.8} className="text-[#200E32]" />
             </button>
-            <div className={`w-[18px] h-[18px] ${badgeBg} text-white rounded-[8px] border-2 border-white flex items-center justify-center text-[11px] font-['Roboto',sans-serif] font-normal shadow-sm`}>
+            <div className={`w-[18px] h-[18px] ${badgeBg} text-white rounded-[8px] border-2 border-white flex items-center justify-center text-[11px] font-quicksand font-normal shadow-sm`}>
               {commentsCount}
             </div>
           </div>
@@ -376,7 +376,7 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
             value={commentInput}
             onChange={(e) => setCommentInput(e.target.value)}
             placeholder="Write a comment..."
-            className="flex-1 bg-transparent text-[11px] font-['DM_Sans',sans-serif] text-black placeholder:text-black/35 outline-none leading-[14px]"
+            className="flex-1 bg-transparent text-[11px] font-quicksand text-black placeholder:text-black/35 outline-none leading-[14px]"
           />
           <button 
             type="submit" 

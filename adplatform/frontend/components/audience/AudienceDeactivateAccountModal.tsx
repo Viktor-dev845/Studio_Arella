@@ -97,7 +97,7 @@ export default function AudienceDeactivateAccountModal({
           role="dialog"
           aria-modal="true"
           aria-labelledby="deactivate-dialog-title"
-          className="relative z-10 w-[383px] h-[320px] bg-white rounded-[20px] shadow-[0px_20px_60px_rgba(0,0,0,0.18)] border border-gray-100/80 flex flex-col items-center justify-between p-5 pt-[88px] pb-[53px] font-['DM_Sans',sans-serif] animate-in zoom-in-95 duration-150"
+          className="relative z-10 w-[383px] h-[320px] bg-white rounded-[20px] shadow-[0px_20px_60px_rgba(0,0,0,0.18)] border border-gray-100/80 flex flex-col items-center justify-between p-5 pt-[88px] pb-[53px] font-quicksand animate-in zoom-in-95 duration-150"
         >
           {/* Title: 247px x 60px, 20px, 600, color #16151C, line-height 30px */}
           <h2 
@@ -140,7 +140,7 @@ export default function AudienceDeactivateAccountModal({
           role="dialog"
           aria-modal="true"
           aria-labelledby="deactivated-dialog-title"
-          className="relative z-10 w-[383px] h-[433px] bg-white rounded-[20px] shadow-[0px_20px_60px_rgba(0,0,0,0.18)] border border-gray-100/80 font-['DM_Sans',sans-serif] animate-in zoom-in-95 duration-150 overflow-hidden"
+          className="relative z-10 w-[383px] h-[433px] bg-white rounded-[20px] shadow-[0px_20px_60px_rgba(0,0,0,0.18)] border border-gray-100/80 font-quicksand animate-in zoom-in-95 duration-150 overflow-hidden"
         >
           {/* Top Divider: Line 2 (width: 343px, left: 20px, top: 66px, border: 1px solid rgba(162, 161, 168, 0.1)) */}
           <div 

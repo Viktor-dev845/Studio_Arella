@@ -113,7 +113,7 @@ export default function AudienceRightSidebar({
   };
 
   return (
-    <aside className="w-full lg:w-[300px] xl:w-[340px] flex flex-col gap-6 shrink-0 relative font-['DM_Sans',sans-serif]">
+    <aside className="w-full lg:w-[300px] xl:w-[340px] flex flex-col gap-6 shrink-0 relative font-quicksand">
       {/* ─── 1. Try Premium for Free Card ─── */}
       <AudiencePremiumCard />
 
@@ -154,7 +154,7 @@ export default function AudienceRightSidebar({
 
                   {/* Badge: 34px x 20px, white pill, gray/600 text "10" */}
                   <div className="w-[34px] h-[20px] bg-white rounded-[12px] flex items-center justify-center border border-gray-100 shadow-[0px_1px_2px_rgba(0,0,0,0.04)]">
-                    <span className="font-['Inter',sans-serif] text-[13px] text-[#6C757D] font-normal">
+                    <span className="font-quicksand text-[13px] text-[#6C757D] font-normal">
                       {topic.count}
                     </span>
                   </div>
@@ -194,7 +194,7 @@ export default function AudienceRightSidebar({
 
                   {/* Badge: 34px x 20px, white pill, gray/600 text "10" */}
                   <div className="w-[34px] h-[20px] bg-white rounded-[12px] flex items-center justify-center border border-gray-100 shadow-[0px_1px_2px_rgba(0,0,0,0.04)]">
-                    <span className="font-['Inter',sans-serif] text-[13px] text-[#6C757D] font-normal">
+                    <span className="font-quicksand text-[13px] text-[#6C757D] font-normal">
                       {item.count}
                     </span>
                   </div>

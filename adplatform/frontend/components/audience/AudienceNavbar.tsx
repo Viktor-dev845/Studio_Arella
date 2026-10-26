@@ -47,7 +47,7 @@ export default function AudienceNavbar({
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full h-[76px] bg-white border-b border-[#F0F0F0] flex items-center justify-between px-6 lg:px-14 shadow-[0_1px_2px_rgba(0,0,0,0.03)] font-['DM_Sans',sans-serif]">
+    <header className="sticky top-0 z-50 w-full h-[76px] bg-white border-b border-[#F0F0F0] flex items-center justify-between px-6 lg:px-14 shadow-[0_1px_2px_rgba(0,0,0,0.03)] font-quicksand">
       {/* ─── Left: Studio Arella Logo ─── */}
       <div className="flex items-center">
         <Link href="/audience" className="flex items-center hover:opacity-90 transition-opacity">
@@ -110,7 +110,7 @@ export default function AudienceNavbar({
               strokeWidth={currentNav === 'notifications' ? 2.2 : 1.7} 
               fill={currentNav === 'notifications' ? '#D4AF37' : 'none'}
             />
-            <span className="absolute top-0 right-[-4px] w-[18px] h-[18px] bg-[#FF0000] text-white text-[11px] font-['Roboto',sans-serif] font-normal rounded-full flex items-center justify-center border border-white shadow-sm">
+            <span className="absolute top-0 right-[-4px] w-[18px] h-[18px] bg-[#FF0000] text-white text-[11px] font-quicksand font-normal rounded-full flex items-center justify-center border border-white shadow-sm">
               9+
             </span>
           </button>
@@ -134,7 +134,7 @@ export default function AudienceNavbar({
               strokeWidth={currentNav === 'messages' ? 2.2 : 1.7} 
               fill={currentNav === 'messages' ? '#D4AF37' : 'none'}
             />
-            <span className="absolute top-0 right-[-3px] w-[16px] h-[16px] bg-[#FF0000] text-white text-[11px] font-['Roboto',sans-serif] font-normal rounded-full flex items-center justify-center border border-white shadow-sm">
+            <span className="absolute top-0 right-[-3px] w-[16px] h-[16px] bg-[#FF0000] text-white text-[11px] font-quicksand font-normal rounded-full flex items-center justify-center border border-white shadow-sm">
               6
             </span>
           </button>
@@ -180,7 +180,7 @@ export default function AudienceNavbar({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search"
-            className="flex-1 px-4 bg-transparent text-[12px] font-['DM_Sans',sans-serif] text-black placeholder:text-black/55 outline-none"
+            className="flex-1 px-4 bg-transparent text-[12px] font-quicksand text-black placeholder:text-black/55 outline-none"
           />
           <button 
             type="submit"

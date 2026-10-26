@@ -182,7 +182,7 @@ export default function AudienceLiveEventDetail({ onClose, eventId }: AudienceLi
   };
 
   return (
-    <section className="w-full flex flex-col gap-6 font-['DM_Sans',sans-serif]">
+    <section className="w-full flex flex-col gap-6 font-quicksand">
       {/* ─── 1. Header Bar: 958px x 75px, rounded-full (#FFFFFF) ─── */}
       <div className="w-full bg-white rounded-full px-6 py-4 shadow-[0px_0px_2px_rgba(0,0,0,0.1),0px_0px_1px_rgba(0,0,0,0.06)] border border-gray-100 flex items-center justify-between gap-4 flex-wrap sm:flex-nowrap">
         {/* Title & Stats */}
@@ -300,7 +300,7 @@ export default function AudienceLiveEventDetail({ onClose, eventId }: AudienceLi
         <div className="w-full md:w-[250px] bg-white rounded-[4px] p-4 shadow-[0px_0px_2px_rgba(0,0,0,0.08)] border border-gray-100 flex flex-col justify-between">
           <div className="flex flex-col gap-2">
             {/* Header: INTRO */}
-            <h3 className="text-[18px] font-bold text-black leading-[23px] m-0 font-['DM_Sans',sans-serif]">
+            <h3 className="text-[18px] font-bold text-black leading-[23px] m-0 font-quicksand">
               INTRO
             </h3>
 
@@ -308,7 +308,7 @@ export default function AudienceLiveEventDetail({ onClose, eventId }: AudienceLi
             <div className="w-full h-[1px] bg-[#D6D6D6] my-1" />
 
             {/* Description Text */}
-            <p className="text-[16px] font-normal text-black leading-[21px] font-['DM_Sans',sans-serif] m-0">
+            <p className="text-[16px] font-normal text-black leading-[21px] font-quicksand m-0">
               Make your Dream View in monday to manage, update and track everything at one single place.
             </p>
           </div>
@@ -326,7 +326,7 @@ export default function AudienceLiveEventDetail({ onClose, eventId }: AudienceLi
                 size={19}
                 className={hasLikedMain ? 'text-[#D4AF37] fill-[#D4AF37]' : 'text-[#707070]'}
               />
-              <span className="text-[14px] font-bold text-[#707070] font-['Roboto',sans-serif]">
+              <span className="text-[14px] font-bold text-[#707070] font-quicksand">
                 {mainLikes}
               </span>
             </button>
@@ -334,7 +334,7 @@ export default function AudienceLiveEventDetail({ onClose, eventId }: AudienceLi
             {/* Comments Counter */}
             <div className="flex items-center gap-1.5">
               <MessageSquare size={19} className="text-[#707070]" />
-              <span className="text-[14px] font-bold text-[#707070] font-['Roboto',sans-serif]">
+              <span className="text-[14px] font-bold text-[#707070] font-quicksand">
                 6
               </span>
             </div>
@@ -370,7 +370,7 @@ export default function AudienceLiveEventDetail({ onClose, eventId }: AudienceLi
         <button
           type="button"
           onClick={() => setActiveTab('overview')}
-          className={`text-[18px] leading-[23px] font-['DM_Sans',sans-serif] transition-colors cursor-pointer bg-transparent border-none p-0 ${
+          className={`text-[18px] leading-[23px] font-quicksand transition-colors cursor-pointer bg-transparent border-none p-0 ${
             activeTab === 'overview'
               ? 'font-bold text-[#0F051D]'
               : 'font-normal text-[#0F051D] hover:text-black'
@@ -382,7 +382,7 @@ export default function AudienceLiveEventDetail({ onClose, eventId }: AudienceLi
         <button
           type="button"
           onClick={() => setActiveTab('comments')}
-          className={`text-[18px] leading-[23px] font-['DM_Sans',sans-serif] transition-colors cursor-pointer bg-transparent border-none p-0 ${
+          className={`text-[18px] leading-[23px] font-quicksand transition-colors cursor-pointer bg-transparent border-none p-0 ${
             activeTab === 'comments'
               ? 'font-bold text-[#0F051D]'
               : 'font-normal text-[#0F051D] hover:text-black'
@@ -396,7 +396,7 @@ export default function AudienceLiveEventDetail({ onClose, eventId }: AudienceLi
       <div className="w-full flex flex-col gap-3">
         {/* Team Header: width 1200px / 958px, border-bottom 1px solid #CED4DA */}
         <div className="border-b border-[#CED4DA] pb-2">
-          <h4 className="text-[18px] font-bold text-[#878A99] leading-[22px] font-['Inter',sans-serif] m-0">
+          <h4 className="text-[18px] font-bold text-[#878A99] leading-[22px] font-quicksand m-0">
             Team
           </h4>
         </div>
@@ -414,10 +414,10 @@ export default function AudienceLiveEventDetail({ onClose, eventId }: AudienceLi
               }}
             />
             <div className="flex flex-col min-w-0">
-              <span className="text-[14px] font-bold text-black leading-[18px] font-['DM_Sans',sans-serif] truncate">
+              <span className="text-[14px] font-bold text-black leading-[18px] font-quicksand truncate">
                 JOHN DOE
               </span>
-              <span className="text-[12px] font-normal text-[#707070] leading-[16px] font-['DM_Sans',sans-serif]">
+              <span className="text-[12px] font-normal text-[#707070] leading-[16px] font-quicksand">
                 Creator
               </span>
             </div>
@@ -434,10 +434,10 @@ export default function AudienceLiveEventDetail({ onClose, eventId }: AudienceLi
               }}
             />
             <div className="flex flex-col min-w-0">
-              <span className="text-[14px] font-bold text-black uppercase leading-[18px] font-['DM_Sans',sans-serif] truncate">
+              <span className="text-[14px] font-bold text-black uppercase leading-[18px] font-quicksand truncate">
                 Laverne Audet
               </span>
-              <span className="text-[12px] font-normal text-[#707070] leading-[16px] font-['DM_Sans',sans-serif]">
+              <span className="text-[12px] font-normal text-[#707070] leading-[16px] font-quicksand">
                 Co-creator
               </span>
             </div>
@@ -449,7 +449,7 @@ export default function AudienceLiveEventDetail({ onClose, eventId }: AudienceLi
       <div className="w-full flex flex-col gap-6 pt-2">
         {/* Header: Live Chat (border-bottom 1px solid #CED4DA) */}
         <div className="border-b border-[#CED4DA] pb-2">
-          <h4 className="text-[18px] font-bold text-black leading-[23px] font-['DM_Sans',sans-serif] m-0">
+          <h4 className="text-[18px] font-bold text-black leading-[23px] font-quicksand m-0">
             Live Chat
           </h4>
         </div>
@@ -467,10 +467,10 @@ export default function AudienceLiveEventDetail({ onClose, eventId }: AudienceLi
                 />
 
                 <div className="flex-1 flex flex-col gap-1">
-                  <span className="text-[14px] font-bold text-black leading-[17px] font-['DM_Sans',sans-serif]">
+                  <span className="text-[14px] font-bold text-black leading-[17px] font-quicksand">
                     {comment.author}
                   </span>
-                  <p className="text-[12px] font-normal text-[#707070] leading-[16px] font-['DM_Sans',sans-serif] m-0 max-w-[555px]">
+                  <p className="text-[12px] font-normal text-[#707070] leading-[16px] font-quicksand m-0 max-w-[555px]">
                     {comment.text}
                   </p>
 
@@ -485,12 +485,12 @@ export default function AudienceLiveEventDetail({ onClose, eventId }: AudienceLi
                         size={15}
                         className={comment.hasLiked ? 'text-[#D4AF37] fill-[#D4AF37]' : 'text-[#707070]'}
                       />
-                      <span className="text-[14px] font-bold font-['Roboto',sans-serif] text-[#707070]">
+                      <span className="text-[14px] font-bold font-quicksand text-[#707070]">
                         {comment.likes}
                       </span>
                     </button>
 
-                    <span className="text-[16px] font-normal text-[#FF3A15] font-['Inter',sans-serif] cursor-pointer hover:underline">
+                    <span className="text-[16px] font-normal text-[#FF3A15] font-quicksand cursor-pointer hover:underline">
                       Replies ({comment.replies && comment.replies.length > 0 ? comment.replies.length : 1})
                     </span>
                   </div>
@@ -507,10 +507,10 @@ export default function AudienceLiveEventDetail({ onClose, eventId }: AudienceLi
                   />
 
                   <div className="flex-1 flex flex-col gap-1">
-                    <span className="text-[14px] font-bold text-black leading-[18px] font-['DM_Sans',sans-serif]">
+                    <span className="text-[14px] font-bold text-black leading-[18px] font-quicksand">
                       {reply.author}
                     </span>
-                    <p className="text-[10px] font-normal text-[#707070] leading-[12px] font-['Inter',sans-serif] m-0 max-w-[320px]">
+                    <p className="text-[10px] font-normal text-[#707070] leading-[12px] font-quicksand m-0 max-w-[320px]">
                       {reply.text}
                     </p>
 
@@ -524,7 +524,7 @@ export default function AudienceLiveEventDetail({ onClose, eventId }: AudienceLi
                           size={13}
                           className={reply.hasLiked ? 'text-[#D4AF37] fill-[#D4AF37]' : 'text-[#707070]'}
                         />
-                        <span className="text-[12px] font-bold font-['Roboto',sans-serif] text-[#707070]">
+                        <span className="text-[12px] font-bold font-quicksand text-[#707070]">
                           {reply.likes}
                         </span>
                       </button>
@@ -546,7 +546,7 @@ export default function AudienceLiveEventDetail({ onClose, eventId }: AudienceLi
             value={commentInput}
             onChange={(e) => setCommentInput(e.target.value)}
             placeholder="Write your comment"
-            className="flex-1 bg-transparent text-[18px] text-black placeholder:text-[rgba(24,24,24,0.2)] font-['DM_Sans',sans-serif] outline-none leading-[23px] py-1 border-none"
+            className="flex-1 bg-transparent text-[18px] text-black placeholder:text-[rgba(24,24,24,0.2)] font-quicksand outline-none leading-[23px] py-1 border-none"
           />
 
           <div className="flex items-center gap-4 shrink-0">

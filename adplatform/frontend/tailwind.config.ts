@@ -41,6 +41,8 @@ const config: Config = {
       },
       fontFamily: {
         body: ['var(--font-quicksand)', 'Quicksand', 'sans-serif'],
+        quicksand: ['var(--font-quicksand)', 'Quicksand', 'sans-serif'],
+        sans: ['var(--font-quicksand)', 'Quicksand', 'sans-serif'],
         display: ['var(--font-fraunces)', 'Fraunces', 'serif'],
       },
     },

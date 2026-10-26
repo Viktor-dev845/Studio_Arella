@@ -9,39 +9,42 @@ import { createNotification, notifyAdmins } from '../services/notificationServic
 const MONNIFY_API_KEY     = process.env.MONNIFY_API_KEY as string;
 const MONNIFY_SECRET_KEY  = process.env.MONNIFY_SECRET_KEY as string;
 const MONNIFY_CONTRACT    = process.env.MONNIFY_CONTRACT_CODE as string;
-const MONNIFY_BASE        = process.env.NODE_ENV === 'production'
+const isMonnifyProd = Boolean(
+  process.env.MONNIFY_API_KEY?.startsWith('MK_PROD_') ||
+  process.env.MONNIFY_ENV === 'production' ||
+  process.env.NODE_ENV === 'production'
+);
+const MONNIFY_BASE        = isMonnifyProd
   ? 'api.monnify.com'
   : 'sandbox.monnify.com';
 
-const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY as string;
+const CARD_VERIFICATION_AMOUNT = 50; // NGN — charged then refunded, verifies card token validity
 
-// ── Helper: raw HTTPS request to Paystack ────────────────────────────────────
-const paystackReq = (method: string, path: string, body?: any): Promise<any> =>
-  new Promise((resolve, reject) => {
-    const payload = body ? JSON.stringify(body) : undefined;
-    const opts = {
-      hostname: 'api.paystack.co',
-      port: 443,
-      path,
-      method,
-      headers: {
-        Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
-        'Content-Type': 'application/json',
-        ...(payload ? { 'Content-Length': Buffer.byteLength(payload) } : {}),
-      },
-    };
-    const req = https.request(opts, (res) => {
-      let raw = '';
-      res.on('data', c => raw += c);
-      res.on('end', () => {
-        try { resolve(JSON.parse(raw)); }
-        catch { reject(new Error(`Bad JSON from Paystack: ${raw}`)); }
-      });
-    });
-    req.on('error', reject);
-    if (payload) req.write(payload);
-    req.end();
-  });
+// Helper: Save tokenized Monnify card to saved_cards table
+async function saveMonnifyCard(userId: string | undefined, cardDetails: any, cardholderName?: string | null) {
+  if (!userId || !cardDetails) return;
+  const cardToken = cardDetails.cardToken || cardDetails.authorizationCode || cardDetails.token;
+  if (!cardToken) return;
+  try {
+    await pool.query(
+      `INSERT INTO saved_cards (user_id, authorization_code, card_type, last4, exp_month, exp_year, bank, cardholder_name)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       ON CONFLICT (user_id, authorization_code) DO NOTHING`,
+      [
+        userId,
+        cardToken,
+        cardDetails.cardType || cardDetails.brand || 'Card',
+        cardDetails.last4 || null,
+        cardDetails.expMonth || null,
+        cardDetails.expYear || null,
+        cardDetails.bank || null,
+        cardholderName || null,
+      ]
+    );
+  } catch (e) {
+    console.error('Failed to save Monnify card:', e);
+  }
+}
 
 // ── Helper: raw HTTPS request to Monnify ─────────────────────────────────────
 const monnifyReq = (method: string, path: string, body?: any, token?: string): Promise<any> =>
@@ -294,7 +297,7 @@ export const payFromWallet: RequestHandler = async (req, res) => {
   }
 };
 
-// ── Initialize credit top-up payment ─────────────────────────────────────────
+// ── Initialize credit top-up payment (Monnify) ──────────────────────────────
 export const initializeCreditPayment: RequestHandler = async (req, res) => {
   const authReq = req as AuthRequest;
   try {
@@ -314,16 +317,17 @@ export const initializeCreditPayment: RequestHandler = async (req, res) => {
     );
 
     const token = await getMonnifyToken();
+    const frontendUrl = process.env.FRONTEND_URL || (req.headers.origin as string) || 'http://localhost:3000';
 
     const monnifyRes = await monnifyReq('POST', '/api/v1/merchant/transactions/init-transaction', {
       amount: Number(amount),
-      customerName: user.rows[0].name,
-      customerEmail: user.rows[0].email,
+      customerName: user.rows[0]?.name || 'Studio Arella User',
+      customerEmail: user.rows[0]?.email,
       paymentReference,
       paymentDescription: `Studio Arella — Credit Top-up ₦${Number(amount).toLocaleString()}`,
       currencyCode: 'NGN',
       contractCode: MONNIFY_CONTRACT,
-      redirectUrl: `${process.env.FRONTEND_URL}/finances/payment-callback`,
+      redirectUrl: `${frontendUrl}/finances/payment-callback`,
       paymentMethods: ['CARD', 'ACCOUNT_TRANSFER'],
       metadata: {
         user_id: authReq.user?.id,
@@ -346,6 +350,59 @@ export const initializeCreditPayment: RequestHandler = async (req, res) => {
   }
 };
 
+// ── Initialize Card Linking via Monnify ─────────────────────────────────────
+export const initializeCardLinking: RequestHandler = async (req, res) => {
+  const authReq = req as AuthRequest;
+  try {
+    const userQuery = await pool.query('SELECT name, email FROM users WHERE id = $1', [authReq.user?.id]);
+    const user = userQuery.rows[0];
+    if (!user) { res.status(404).json({ message: 'User not found' }); return; }
+
+    const paymentReference = `CARDLINK-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
+    const token = await getMonnifyToken();
+    const amount = CARD_VERIFICATION_AMOUNT; // ₦50 refundable verification charge
+    const frontendUrl = process.env.FRONTEND_URL || (req.headers.origin as string) || 'http://localhost:3000';
+
+    await pool.query(
+      `INSERT INTO transactions (user_id, type, source, amount, description, reference)
+       VALUES ($1, 'pending', 'card_verification', $2, 'Bank Card Verification (Refundable)', $3)
+       ON CONFLICT DO NOTHING`,
+      [authReq.user?.id, amount, paymentReference]
+    );
+
+    const monnifyRes = await monnifyReq('POST', '/api/v1/merchant/transactions/init-transaction', {
+      amount,
+      customerName: user.name || 'Studio Arella User',
+      customerEmail: user.email,
+      paymentReference,
+      paymentDescription: 'Studio Arella — Bank Card Verification & Linking (Refundable)',
+      currencyCode: 'NGN',
+      contractCode: MONNIFY_CONTRACT,
+      redirectUrl: `${frontendUrl}/finances/payment-callback`,
+      paymentMethods: ['CARD'],
+      metadata: {
+        user_id: authReq.user?.id,
+        type: 'card_linking',
+        amount,
+      },
+    }, token);
+
+    if (!monnifyRes.requestSuccessful) {
+      res.status(400).json({ message: monnifyRes.responseMessage || 'Monnify error' });
+      return;
+    }
+
+    res.json({
+      checkout_url: monnifyRes.responseBody.checkoutUrl,
+      payment_reference: paymentReference,
+      amount,
+    });
+  } catch (err) {
+    console.error('Card linking init error:', err);
+    res.status(500).json({ message: 'Failed to initialize card linking' });
+  }
+};
+
 // ── Verify payment (client-side callback) ─────────────────────────────────────
 export const verifyPayment: RequestHandler = async (req, res) => {
   const authReq = req as AuthRequest;
@@ -359,13 +416,16 @@ export const verifyPayment: RequestHandler = async (req, res) => {
     
     const token = await getMonnifyToken();
 
-    // Monnify verify endpoint uses the paymentReference
-    const verifyRes = await monnifyReq(
-      'GET',
-      `/api/v2/transactions/${encodeURIComponent(reference)}`,
-      undefined,
-      token
-    );
+    // Query Monnify: try merchant query by paymentReference first if not starting with MNFY
+    let verifyRes: any;
+    if (reference.startsWith('MNFY')) {
+      verifyRes = await monnifyReq('GET', `/api/v2/transactions/${encodeURIComponent(reference)}`, undefined, token);
+    } else {
+      verifyRes = await monnifyReq('GET', `/api/v2/merchant/transactions/query?paymentReference=${encodeURIComponent(reference)}`, undefined, token);
+      if (!verifyRes.requestSuccessful) {
+        verifyRes = await monnifyReq('GET', `/api/v2/transactions/${encodeURIComponent(reference)}`, undefined, token);
+      }
+    }
 
     if (!verifyRes.requestSuccessful) {
       res.status(400).json({ message: 'Could not verify payment', details: verifyRes.responseMessage });
@@ -380,6 +440,46 @@ export const verifyPayment: RequestHandler = async (req, res) => {
 
     const meta = txn.metaData || {};
 
+    // Auto-save card token if card details returned by Monnify
+    if (txn.cardDetails && (meta.user_id || authReq.user?.id)) {
+      await saveMonnifyCard(meta.user_id || authReq.user?.id, txn.cardDetails, txn.customer?.name);
+    }
+
+    // Handle dedicated Card Linking flow
+    if (meta.type === 'card_linking' || reference.startsWith('CARDLINK-') || reference.startsWith('LINK-')) {
+      const existing = await pool.query("SELECT id FROM transactions WHERE reference = $1 AND type = 'credit'", [reference]);
+      if (existing.rows.length > 0) {
+        res.json({ already_confirmed: true, message: 'Bank card already verified and linked.', card_linked: true });
+        return;
+      }
+      
+      const refundAmount = Number(meta.amount || CARD_VERIFICATION_AMOUNT);
+      if (refundAmount > 0) {
+        await creditWalletTopup(meta.user_id || authReq.user?.id, refundAmount, `REFUND-${reference}`);
+      }
+      await pool.query("UPDATE transactions SET type = 'credit', description = 'Card Verification Refund' WHERE reference = $1", [reference]);
+
+      createNotification({
+        user_id: meta.user_id || authReq.user?.id,
+        type: 'payment_received',
+        title: 'Bank Card Linked!',
+        body: `Your ${txn.cardDetails?.bank || 'bank'} card (•••• ${txn.cardDetails?.last4 || ''}) was successfully verified and linked.`,
+        link: '/finances',
+      });
+
+      res.json({
+        success: true,
+        message: `Your ${txn.cardDetails?.bank || 'bank'} card (•••• ${txn.cardDetails?.last4 || ''}) has been linked successfully! ₦${refundAmount} was refunded to your wallet.`,
+        card_linked: true,
+        card: txn.cardDetails ? {
+          bank: txn.cardDetails.bank,
+          last4: txn.cardDetails.last4,
+          card_type: txn.cardDetails.cardType,
+        } : null
+      });
+      return;
+    }
+
     // Handle credit top-up
     if (meta.type === 'topup') {
       // Check not already processed
@@ -390,19 +490,20 @@ export const verifyPayment: RequestHandler = async (req, res) => {
       if (existing.rows.length > 0) {
         res.json({ already_confirmed: true, message: 'Credits already added.' }); return;
       }
+      const topupAmount = Number(meta.amount || txn.amountPaid);
       await pool.query(
         "UPDATE users SET credits = credits + $1 WHERE id = $2",
-        [meta.amount, meta.user_id]
+        [topupAmount, meta.user_id || authReq.user?.id]
       );
       await pool.query(
         "UPDATE transactions SET type = 'credit' WHERE reference = $1",
         [reference]
       );
       createNotification({
-        user_id: meta.user_id,
+        user_id: meta.user_id || authReq.user?.id,
         type: 'payment_received',
         title: 'Credits added!',
-        body: `₦${Number(meta.amount).toLocaleString()} has been added to your Studio Arella balance.`,
+        body: `₦${topupAmount.toLocaleString()} has been added to your Studio Arella balance.`,
         link: '/finances',
       });
       res.json({ success: true, message: 'Credits added to your account successfully.' });
@@ -456,7 +557,11 @@ export const monnifyWebhook: RequestHandler = async (req, res) => {
       if (data.product && data.product.type === 'RESERVED_ACCOUNT') {
         // ── Handle Reserved Account Transfer (Wallet Top-up) ──
         const accountRef = data.product.reference;
-        const userRes = await pool.query('SELECT id FROM users WHERE reserved_account_reference = $1', [accountRef]);
+        const destAcct = data.destinationAccountInformation?.accountNumber;
+        const userRes = await pool.query(
+          'SELECT id FROM users WHERE reserved_account_reference = $1 OR reserved_account_number = $2',
+          [accountRef, destAcct]
+        );
         
         if (userRes.rows.length > 0) {
           const userId = userRes.rows[0].id;
@@ -478,22 +583,55 @@ export const monnifyWebhook: RequestHandler = async (req, res) => {
             });
           }
         }
+      } else if (meta.type === 'card_linking' || (ref && (ref.startsWith('CARDLINK-') || ref.startsWith('LINK-')))) {
+        const existing = await pool.query("SELECT id FROM transactions WHERE reference = $1 AND type = 'credit'", [ref]);
+        if (existing.rows.length === 0) {
+          let targetUserId = meta.user_id;
+          if (!targetUserId) {
+            const txRow = await pool.query('SELECT user_id FROM transactions WHERE reference = $1', [ref]);
+            targetUserId = txRow.rows[0]?.user_id;
+          }
+          if (data.cardDetails && targetUserId) {
+            await saveMonnifyCard(targetUserId, data.cardDetails, data.customer?.name);
+          }
+          const refundAmount = Number(meta.amount || CARD_VERIFICATION_AMOUNT);
+          if (refundAmount > 0 && targetUserId) {
+            await creditWalletTopup(targetUserId, refundAmount, `REFUND-${ref}`);
+          }
+          await pool.query("UPDATE transactions SET type = 'credit', description = 'Card Verification Refund' WHERE reference = $1", [ref]);
+          if (targetUserId) {
+            createNotification({
+              user_id: targetUserId,
+              type: 'payment_received',
+              title: 'Bank Card Linked!',
+              body: `Your ${data.cardDetails?.bank || 'bank'} card (•••• ${data.cardDetails?.last4 || ''}) was successfully verified and linked.`,
+              link: '/finances',
+            });
+          }
+        }
       } else if (meta.type === 'topup') {
+        if (data.cardDetails && meta.user_id) {
+          await saveMonnifyCard(meta.user_id, data.cardDetails, data.customer?.name);
+        }
         const existing = await pool.query(
           "SELECT id FROM transactions WHERE reference = $1 AND type = 'credit'", [ref]
         );
         if (existing.rows.length === 0) {
-          await pool.query("UPDATE users SET credits = credits + $1 WHERE id = $2", [meta.amount, meta.user_id]);
+          const topupAmt = Number(meta.amount || data.amountPaid);
+          await pool.query("UPDATE users SET credits = credits + $1 WHERE id = $2", [topupAmt, meta.user_id]);
           await pool.query("UPDATE transactions SET type = 'credit' WHERE reference = $1", [ref]);
           createNotification({
             user_id: meta.user_id,
             type: 'payment_received',
             title: 'Credits added!',
-            body: `₦${Number(meta.amount).toLocaleString()} credited to your Studio Arella balance.`,
+            body: `₦${topupAmt.toLocaleString()} credited to your Studio Arella balance.`,
             link: '/finances',
           });
         }
       } else {
+        if (data.cardDetails && meta.user_id) {
+          await saveMonnifyCard(meta.user_id, data.cardDetails, data.customer?.name);
+        }
         await processConfirmedPayment(ref, meta, data.amountPaid);
       }
     }
@@ -688,273 +826,6 @@ async function processConfirmedPayment(reference: string, meta: any, amountPaid:
     client.release();
   }
 }
-
-// ── Paystack: Initialize booking payment ──────────────────────────────────────
-export const initializePaystackPayment: RequestHandler = async (req, res) => {
-  const authReq = req as AuthRequest;
-  try {
-    const { booking_id, booking_type } = req.body;
-
-    // 1. Get booking
-    let booking;
-    if (booking_type === 'podcast') {
-      const resQuery = await pool.query(
-        'SELECT * FROM podcast_bookings WHERE id = $1 AND user_id = $2 AND status = $3',
-        [booking_id, authReq.user?.id, 'pending']
-      );
-      if (resQuery.rows.length === 0) { res.status(404).json({ message: 'Booking not found or already paid' }); return; }
-      booking = resQuery.rows[0];
-      if (Date.now() - new Date(booking.created_at).getTime() > 5 * 60 * 1000) {
-        res.status(400).json({ message: 'Reservation expired (5 min limit). Please re-book your slot.' }); return;
-      }
-    } else {
-      const bookingRes = await pool.query(
-        'SELECT * FROM bookings WHERE id = $1 AND user_id = $2 AND status = $3',
-        [booking_id, authReq.user?.id, 'pending_payment']
-      );
-      if (bookingRes.rows.length === 0) { res.status(404).json({ message: 'Booking not found or already paid' }); return; }
-      booking = bookingRes.rows[0];
-    }
-
-    // 2. Check slot locks for ad bookings
-    if (booking_type !== 'podcast') {
-      const slotsRes = await pool.query(
-        "SELECT id FROM booking_slots WHERE booking_id = $1 AND status = 'locked' AND locked_until >= NOW()",
-        [booking_id]
-      );
-      if (slotsRes.rows.length === 0) {
-        res.status(400).json({ message: 'Cart expired. Please re-select your slots.' }); return;
-      }
-    }
-
-    const user = await pool.query('SELECT name, email FROM users WHERE id = $1', [authReq.user?.id]);
-    const amount = Math.round(parseFloat(booking.total_cost) * 100); // Paystack uses kobo
-    const reference = `PS-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
-    const callbackUrl = booking_type === 'podcast'
-      ? `${process.env.FRONTEND_URL}/podcast/payment-callback`
-      : `${process.env.FRONTEND_URL}/bookings/payment-callback`;
-
-    const paystackRes = await paystackReq('POST', '/transaction/initialize', {
-      email: user.rows[0].email,
-      amount,
-      reference,
-      callback_url: callbackUrl,
-      currency: 'NGN',
-      metadata: {
-        user_id: authReq.user?.id,
-        booking_id,
-        type: booking_type === 'podcast' ? 'podcast_booking' : 'booking',
-        cancel_action: `${process.env.FRONTEND_URL}/bookings`,
-        custom_fields: [
-          { display_name: 'Customer', variable_name: 'customer_name', value: user.rows[0].name },
-          { display_name: 'Booking Ref', variable_name: 'booking_ref', value: booking.booking_number },
-        ],
-      },
-    });
-
-    if (!paystackRes.status) {
-      res.status(400).json({ message: paystackRes.message || 'Paystack error' }); return;
-    }
-
-    res.json({
-      checkout_url: paystackRes.data.authorization_url,
-      payment_reference: reference,
-      access_code: paystackRes.data.access_code,
-      gateway: 'paystack',
-    });
-  } catch (err) {
-    console.error('Paystack init error:', err);
-    res.status(500).json({ message: 'Payment initialization failed' });
-  }
-};
-
-// Captures a real, reusable Paystack card authorization from a successful
-// charge so it can show up as a genuine "Saved Card" in Settings — opportunistic,
-// the same way most apps actually build this (from a real completed payment,
-// not a separate tokenize-only flow, which Paystack doesn't cleanly support
-// without charging something anyway).
-async function saveCardFromAuthorization(userId: string | undefined, authorization: any, cardholderName?: string | null) {
-  if (!userId || !authorization?.reusable || !authorization?.authorization_code) return;
-  try {
-    await pool.query(
-      `INSERT INTO saved_cards (user_id, authorization_code, card_type, last4, exp_month, exp_year, bank, cardholder_name)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-       ON CONFLICT (user_id, authorization_code) DO NOTHING`,
-      [
-        userId,
-        authorization.authorization_code,
-        authorization.card_type || authorization.brand || null,
-        authorization.last4 || null,
-        authorization.exp_month || null,
-        authorization.exp_year || null,
-        authorization.bank || null,
-        cardholderName || null,
-      ]
-    );
-  } catch (e) {
-    console.error('Failed to save card authorization:', e);
-  }
-}
-
-// ── Paystack: Verify payment (client-side callback) ───────────────────────────
-export const verifyPaystackPayment: RequestHandler = async (req, res) => {
-  try {
-    const { reference } = req.params;
-
-    const verifyRes = await paystackReq('GET', `/transaction/verify/${encodeURIComponent(reference)}`);
-
-    if (!verifyRes.status || verifyRes.data?.status !== 'success') {
-      res.status(400).json({ message: 'Payment not completed', gateway_status: verifyRes.data?.status });
-      return;
-    }
-
-    const txn = verifyRes.data;
-    const meta = txn.metadata || {};
-
-    // Handle credit top-up — mirrors the real handling already in
-    // paystackWebhook; this client-verify path was falling through to the
-    // booking-only logic below and silently no-op'ing while still claiming
-    // success for any top-up that reached it.
-    if (meta.type === 'topup') {
-      const existing = await pool.query("SELECT id FROM transactions WHERE reference = $1 AND type = 'credit'", [reference]);
-      if (existing.rows.length > 0) { res.json({ already_confirmed: true, message: 'Credits already added.' }); return; }
-      await pool.query("UPDATE users SET credits = credits + $1 WHERE id = $2", [meta.amount, meta.user_id]);
-      await pool.query(
-        "INSERT INTO transactions (user_id, type, source, amount, description, reference) VALUES ($1, 'credit', 'topup', $2, 'Credit top-up via Paystack', $3)",
-        [meta.user_id, meta.amount, reference]
-      );
-      await saveCardFromAuthorization(meta.user_id, txn.authorization);
-      createNotification({
-        user_id: meta.user_id,
-        type: 'payment_received',
-        title: 'Credits added!',
-        body: `₦${Number(meta.amount).toLocaleString()} has been added to your Studio Arella balance.`,
-        link: '/finances',
-      });
-      res.json({ success: true, message: 'Credits added to your account successfully.' });
-      return;
-    }
-
-    // Idempotency check
-    if (meta.type === 'podcast_booking') {
-      const existing = await pool.query(
-        "SELECT id FROM podcast_bookings WHERE id = $1 AND status = 'confirmed'",
-        [meta.booking_id]
-      );
-      if (existing.rows.length > 0) { res.json({ already_confirmed: true, message: 'Booking already confirmed.' }); return; }
-    } else {
-      const existing = await pool.query(
-        "SELECT id FROM bookings WHERE id = $1 AND status = 'active'",
-        [meta.booking_id]
-      );
-      if (existing.rows.length > 0) { res.json({ already_confirmed: true, message: 'Booking already confirmed.' }); return; }
-    }
-
-    await processConfirmedPayment(reference, meta, txn.amount / 100); // convert kobo → naira
-    await saveCardFromAuthorization(meta.user_id, txn.authorization);
-    res.json({ success: true, message: 'Payment confirmed and booking activated.' });
-  } catch (err) {
-    console.error('Paystack verify error:', err);
-    res.status(500).json({ message: 'Verification failed' });
-  }
-};
-
-// ── Paystack: Webhook (server-to-server) ──────────────────────────────────────
-export const paystackWebhook: RequestHandler = async (req, res) => {
-  try {
-    // req.body is a raw Buffer because we use express.raw() for this route
-    const rawBody = req.body instanceof Buffer ? req.body : Buffer.from(JSON.stringify(req.body));
-
-    // Validate Paystack HMAC signature (must be computed on the raw body buffer)
-    const hash = crypto
-      .createHmac('sha512', PAYSTACK_SECRET_KEY)
-      .update(rawBody)
-      .digest('hex');
-
-    if (hash !== req.headers['x-paystack-signature']) {
-      res.status(401).send('Unauthorized'); return;
-    }
-
-    // Always respond 200 immediately
-    res.status(200).send('OK');
-
-    const event = JSON.parse(rawBody.toString());
-    if (event.event === 'charge.success') {
-      const data = event.data;
-      const meta = data.metadata || {};
-      const ref = data.reference;
-      const amountPaid = data.amount / 100; // kobo → naira
-
-      if (meta.type === 'topup') {
-        const existing = await pool.query(
-          "SELECT id FROM transactions WHERE reference = $1 AND type = 'credit'", [ref]
-        );
-        if (existing.rows.length === 0) {
-          await pool.query("UPDATE users SET credits = credits + $1 WHERE id = $2", [meta.amount, meta.user_id]);
-          await pool.query(
-            "INSERT INTO transactions (user_id, type, source, amount, description, reference) VALUES ($1, 'credit', 'topup', $2, 'Credit top-up via Paystack', $3)",
-            [meta.user_id, meta.amount, ref]
-          );
-          createNotification({
-            user_id: meta.user_id,
-            type: 'payment_received',
-            title: 'Credits added!',
-            body: `₦${Number(meta.amount).toLocaleString()} has been added to your Studio Arella balance.`,
-            link: '/finances',
-          });
-        }
-      } else if (meta.booking_id) {
-        await processConfirmedPayment(ref, meta, amountPaid);
-      }
-      await saveCardFromAuthorization(meta.user_id, data.authorization);
-    }
-  } catch (err) {
-    console.error('Paystack webhook error:', err);
-    res.status(200).send('OK'); // Always 200 to Paystack
-  }
-};
-
-
-// ── Paystack: Initialize credit top-up ───────────────────────────────────────
-export const initializePaystackCreditPayment: RequestHandler = async (req, res) => {
-  const authReq = req as AuthRequest;
-  try {
-    const { amount } = req.body;
-    if (!amount || Number(amount) < 1000) {
-      res.status(400).json({ message: 'Minimum top-up is ₦1,000' }); return;
-    }
-
-    const user = await pool.query('SELECT name, email FROM users WHERE id = $1', [authReq.user?.id]);
-    const reference = `PSTOPUP-${Date.now()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
-
-    const paystackRes = await paystackReq('POST', '/transaction/initialize', {
-      email: user.rows[0].email,
-      amount: Math.round(Number(amount) * 100), // kobo
-      reference,
-      callback_url: `${process.env.FRONTEND_URL}/finances/payment-callback`,
-      currency: 'NGN',
-      metadata: {
-        user_id: authReq.user?.id,
-        type: 'topup',
-        amount,
-      },
-    });
-
-    if (!paystackRes.status) {
-      res.status(400).json({ message: paystackRes.message || 'Paystack error' }); return;
-    }
-
-    res.json({
-      checkout_url: paystackRes.data.authorization_url,
-      payment_reference: reference,
-      gateway: 'paystack',
-    });
-  } catch (err) {
-    console.error('Paystack credit init error:', err);
-    res.status(500).json({ message: 'Failed to initialize Paystack payment' });
-  }
-};
-
 // ── Monnify: Create Reserved Account ──────────────────────────────────────────
 export const createReservedAccount: RequestHandler = async (req, res) => {
   const authReq = req as AuthRequest;
@@ -1065,12 +936,6 @@ export const deleteSavedCard: RequestHandler = async (req, res) => {
     const card = cardRes.rows[0];
     if (!card) { res.status(404).json({ message: 'Card not found' }); return; }
 
-    // Best-effort: actually deactivate the authorization on Paystack's side
-    // too, not just remove our local record.
-    await paystackReq('POST', '/customer/deactivate_authorization', {
-      authorization_code: card.authorization_code,
-    }).catch((e) => console.error('Paystack deactivate authorization failed:', e));
-
     await pool.query('DELETE FROM saved_cards WHERE id = $1', [req.params.id]);
     res.json({ message: 'Card removed' });
   } catch (err) {
@@ -1169,139 +1034,53 @@ async function creditWalletTopup(userId: string | undefined, amount: number, ref
   );
 }
 
-const CARD_VERIFICATION_AMOUNT = 50; // NGN — charged then immediately refunded, real cost of proving the card works
-
-// ── Paystack: Charge a new card directly (custom inline UI, no redirect) ─────
-// Uses Paystack's server-side Charge API: card data flows through our
-// backend to Paystack over HTTPS, never stored by us. A card that comes back
-// 'send_otp' is parked in pending_charges until submitChargeOtp resolves it.
-export const chargeCard: RequestHandler = async (req, res) => {
+// ── Monnify: Charge a saved card's stored token for bookings ─────────────────
+export const chargeAuthorization: RequestHandler = async (req, res) => {
   const authReq = req as AuthRequest;
   try {
-    const { booking_id, booking_type, card, save_card } = req.body;
-    if (!card?.number || !card?.cvv || !card?.expiry_month || !card?.expiry_year) {
-      res.status(400).json({ message: 'Please fill in your card details' }); return;
-    }
-    const cardholderName: string | null = card.name || null;
+    const { booking_id, booking_type, card_id } = req.body;
+    const cardRes = await pool.query('SELECT * FROM saved_cards WHERE id = $1 AND user_id = $2', [card_id, authReq.user?.id]);
+    if (!cardRes.rows[0]) { res.status(404).json({ message: 'Saved card not found' }); return; }
+    const savedCard = cardRes.rows[0];
 
     const { booking, error } = await loadPendingBooking(authReq.user?.id, booking_id, booking_type);
     if (error) { res.status(error.status).json({ message: error.message }); return; }
 
-    const userRes = await pool.query('SELECT email FROM users WHERE id = $1', [authReq.user?.id]);
-    const amount = Math.round(parseFloat(booking!.total_cost) * 100);
-    const reference = `PSC-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
+    const userRes = await pool.query('SELECT name, email FROM users WHERE id = $1', [authReq.user?.id]);
+    const reference = `BK-CARD-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
 
-    const chargeRes = await paystackReq('POST', '/charge', {
-      email: userRes.rows[0].email,
-      amount,
-      reference,
-      card: {
-        number: String(card.number).replace(/\s+/g, ''),
-        cvv: String(card.cvv),
-        expiry_month: String(card.expiry_month).padStart(2, '0'),
-        expiry_year: String(card.expiry_year).slice(-2),
-      },
-    });
+    const token = await getMonnifyToken();
+    const monnifyRes = await monnifyReq('POST', '/api/v1/merchant/cards/charge-card-token', {
+      amount: Number(booking!.total_cost),
+      customerName: userRes.rows[0]?.name || 'Studio Arella User',
+      customerEmail: userRes.rows[0]?.email,
+      paymentReference: reference,
+      paymentDescription: `Studio Arella — Booking ${booking!.booking_number}`,
+      currencyCode: 'NGN',
+      contractCode: MONNIFY_CONTRACT,
+      cardToken: savedCard.authorization_code,
+    }, token);
 
-    if (!chargeRes.status) {
-      res.status(400).json({ message: chargeRes.message || 'Card was declined' }); return;
-    }
-
-    const data = chargeRes.data;
-    if (data.status === 'success') {
+    if (monnifyRes.requestSuccessful && (monnifyRes.responseBody?.paymentStatus === 'PAID' || monnifyRes.responseBody?.status === 'SUCCESS')) {
       const meta = metaFor(authReq.user?.id, booking_id, booking_type);
-      await processConfirmedPayment(data.reference || reference, meta, data.amount / 100);
-      if (save_card) await saveCardFromAuthorization(authReq.user?.id, data.authorization, cardholderName);
-      res.json({ status: 'success', message: 'Payment successful and campaign booked' });
+      await processConfirmedPayment(reference, meta, Number(booking!.total_cost));
+      res.json({ status: 'success', message: 'Payment successful and booking activated' });
       return;
     }
 
-    if (data.status === 'send_otp') {
-      await pool.query(
-        `INSERT INTO pending_charges (reference, user_id, purpose, booking_id, booking_type, save_card, cardholder_name)
-         VALUES ($1, $2, 'booking', $3, $4, $5, $6)
-         ON CONFLICT (reference) DO NOTHING`,
-        [data.reference || reference, authReq.user?.id, booking_id, booking_type || 'ad', !!save_card, cardholderName]
-      );
-      res.json({ status: 'send_otp', reference: data.reference || reference });
+    if (monnifyRes.responseBody?.otpRequired || monnifyRes.responseBody?.status === 'OTP_REQUIRED') {
+      res.json({ status: 'send_otp', reference: monnifyRes.responseBody?.transactionReference || reference });
       return;
     }
 
-    res.status(400).json({
-      message: data.display_text || data.gateway_response || "This card needs a verification step we don't support yet. Please try a different card.",
-    });
+    res.status(400).json({ message: monnifyRes.responseMessage || 'Card charge failed. Please try a different card.' });
   } catch (err) {
-    console.error('Charge card error:', err);
+    console.error('Monnify charge authorization error:', err);
     res.status(500).json({ message: 'Payment failed. Please try again.' });
   }
 };
 
-// ── Paystack: Fund a campaign's budget with a new card ────────────────────────
-export const fundCampaignCharge: RequestHandler = async (req, res) => {
-  const authReq = req as AuthRequest;
-  try {
-    const { campaign_id, card, save_card } = req.body;
-    if (!card?.number || !card?.cvv || !card?.expiry_month || !card?.expiry_year) {
-      res.status(400).json({ message: 'Please fill in your card details' }); return;
-    }
-    const cardholderName: string | null = card.name || null;
-
-    const campRes = await pool.query('SELECT * FROM campaigns WHERE id = $1 AND user_id = $2', [campaign_id, authReq.user?.id]);
-    if (!campRes.rows[0]) { res.status(404).json({ message: 'Campaign not found' }); return; }
-    const campaign = campRes.rows[0];
-    if (Number(campaign.paid_budget) > 0) { res.status(400).json({ message: 'This campaign has already been funded.' }); return; }
-    const amountNGN = Number(campaign.budget);
-    if (!(amountNGN > 0)) { res.status(400).json({ message: 'Set a budget before funding this campaign.' }); return; }
-
-    const userRes = await pool.query('SELECT email FROM users WHERE id = $1', [authReq.user?.id]);
-    const amount = Math.round(amountNGN * 100);
-    const reference = `PSCF-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
-
-    const chargeRes = await paystackReq('POST', '/charge', {
-      email: userRes.rows[0].email,
-      amount,
-      reference,
-      card: {
-        number: String(card.number).replace(/\s+/g, ''),
-        cvv: String(card.cvv),
-        expiry_month: String(card.expiry_month).padStart(2, '0'),
-        expiry_year: String(card.expiry_year).slice(-2),
-      },
-    });
-
-    if (!chargeRes.status) {
-      res.status(400).json({ message: chargeRes.message || 'Card was declined' }); return;
-    }
-
-    const data = chargeRes.data;
-    if (data.status === 'success') {
-      await creditCampaignBudget(campaign_id, authReq.user?.id, amountNGN, data.reference || reference);
-      if (save_card) await saveCardFromAuthorization(authReq.user?.id, data.authorization, cardholderName);
-      res.json({ status: 'success', message: 'Payment successful and campaign booked' });
-      return;
-    }
-
-    if (data.status === 'send_otp') {
-      await pool.query(
-        `INSERT INTO pending_charges (reference, user_id, purpose, campaign_id, save_card, cardholder_name)
-         VALUES ($1, $2, 'campaign_funding', $3, $4, $5)
-         ON CONFLICT (reference) DO NOTHING`,
-        [data.reference || reference, authReq.user?.id, campaign_id, !!save_card, cardholderName]
-      );
-      res.json({ status: 'send_otp', reference: data.reference || reference });
-      return;
-    }
-
-    res.status(400).json({
-      message: data.display_text || data.gateway_response || "This card needs a verification step we don't support yet. Please try a different card.",
-    });
-  } catch (err) {
-    console.error('Fund campaign charge error:', err);
-    res.status(500).json({ message: 'Payment failed. Please try again.' });
-  }
-};
-
-// ── Paystack: Fund a campaign's budget with a saved card's authorization ─────
+// ── Monnify: Fund a campaign's budget with a saved card's token ──────────────
 export const fundCampaignChargeAuthorization: RequestHandler = async (req, res) => {
   const authReq = req as AuthRequest;
   try {
@@ -1316,106 +1095,40 @@ export const fundCampaignChargeAuthorization: RequestHandler = async (req, res) 
     const amountNGN = Number(campaign.budget);
     if (!(amountNGN > 0)) { res.status(400).json({ message: 'Set a budget before funding this campaign.' }); return; }
 
-    const userRes = await pool.query('SELECT email FROM users WHERE id = $1', [authReq.user?.id]);
-    const amount = Math.round(amountNGN * 100);
-    const reference = `PSAF-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
+    const userRes = await pool.query('SELECT name, email FROM users WHERE id = $1', [authReq.user?.id]);
+    const reference = `CAMP-CARD-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
 
-    const chargeRes = await paystackReq('POST', '/transaction/charge_authorization', {
-      authorization_code: cardRes.rows[0].authorization_code,
-      email: userRes.rows[0].email,
-      amount,
-      reference,
-    });
+    const token = await getMonnifyToken();
+    const monnifyRes = await monnifyReq('POST', '/api/v1/merchant/cards/charge-card-token', {
+      amount: Number(amountNGN),
+      customerName: userRes.rows[0]?.name || 'Studio Arella User',
+      customerEmail: userRes.rows[0]?.email,
+      paymentReference: reference,
+      paymentDescription: `Studio Arella — Campaign Funding ${campaign.name}`,
+      currencyCode: 'NGN',
+      contractCode: MONNIFY_CONTRACT,
+      cardToken: cardRes.rows[0].authorization_code,
+    }, token);
 
-    const data = chargeRes.data;
-    if (!chargeRes.status || !data) {
-      res.status(400).json({ message: chargeRes.message || 'Payment failed. Please try a different card.' }); return;
-    }
-
-    if (data.status === 'send_otp') {
-      await pool.query(
-        `INSERT INTO pending_charges (reference, user_id, purpose, campaign_id, save_card)
-         VALUES ($1, $2, 'campaign_funding', $3, false)
-         ON CONFLICT (reference) DO NOTHING`,
-        [data.reference || reference, authReq.user?.id, campaign_id]
-      );
-      res.json({ status: 'send_otp', reference: data.reference || reference });
+    if (monnifyRes.requestSuccessful && (monnifyRes.responseBody?.paymentStatus === 'PAID' || monnifyRes.responseBody?.status === 'SUCCESS')) {
+      await creditCampaignBudget(campaign_id, authReq.user?.id, amountNGN, reference);
+      res.json({ status: 'success', message: 'Payment successful and campaign funded' });
       return;
     }
 
-    if (data.status !== 'success') {
-      res.status(400).json({ message: data.gateway_response || 'Payment failed. Please try a different card.' }); return;
+    if (monnifyRes.responseBody?.otpRequired || monnifyRes.responseBody?.status === 'OTP_REQUIRED') {
+      res.json({ status: 'send_otp', reference: monnifyRes.responseBody?.transactionReference || reference });
+      return;
     }
 
-    await creditCampaignBudget(campaign_id, authReq.user?.id, amountNGN, reference);
-    res.json({ status: 'success', message: 'Payment successful and campaign booked' });
+    res.status(400).json({ message: monnifyRes.responseMessage || 'Card charge failed. Please try a different card.' });
   } catch (err) {
     console.error('Fund campaign authorization error:', err);
     res.status(500).json({ message: 'Payment failed. Please try again.' });
   }
 };
 
-// ── Paystack: Top up the wallet with a new card ───────────────────────────────
-export const topupCharge: RequestHandler = async (req, res) => {
-  const authReq = req as AuthRequest;
-  try {
-    const { amount, card, save_card } = req.body;
-    const amountNGN = Number(amount);
-    if (!(amountNGN >= 1000)) { res.status(400).json({ message: 'Minimum top-up is ₦1,000' }); return; }
-    if (!card?.number || !card?.cvv || !card?.expiry_month || !card?.expiry_year) {
-      res.status(400).json({ message: 'Please fill in your card details' }); return;
-    }
-    const cardholderName: string | null = card.name || null;
-
-    const userRes = await pool.query('SELECT email FROM users WHERE id = $1', [authReq.user?.id]);
-    const amount_kobo = Math.round(amountNGN * 100);
-    const reference = `PST-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
-
-    const chargeRes = await paystackReq('POST', '/charge', {
-      email: userRes.rows[0].email,
-      amount: amount_kobo,
-      reference,
-      card: {
-        number: String(card.number).replace(/\s+/g, ''),
-        cvv: String(card.cvv),
-        expiry_month: String(card.expiry_month).padStart(2, '0'),
-        expiry_year: String(card.expiry_year).slice(-2),
-      },
-    });
-
-    if (!chargeRes.status) {
-      res.status(400).json({ message: chargeRes.message || 'Card was declined' }); return;
-    }
-
-    const data = chargeRes.data;
-    if (data.status === 'success') {
-      await creditWalletTopup(authReq.user?.id, amountNGN, data.reference || reference);
-      if (save_card) await saveCardFromAuthorization(authReq.user?.id, data.authorization, cardholderName);
-      res.json({ status: 'success', message: `Wallet funded successfully. ₦${amountNGN.toLocaleString()} has been added to your wallet balance` });
-      return;
-    }
-
-    if (data.status === 'send_otp') {
-      await pool.query(
-        `INSERT INTO pending_charges (reference, user_id, purpose, amount, save_card, cardholder_name)
-         VALUES ($1, $2, 'wallet_topup', $3, $4, $5)
-         ON CONFLICT (reference) DO NOTHING`,
-        [data.reference || reference, authReq.user?.id, amountNGN, !!save_card, cardholderName]
-      );
-      res.json({ status: 'send_otp', reference: data.reference || reference });
-      return;
-    }
-
-    res.status(400).json({
-      message: data.display_text || data.gateway_response || "This card needs a verification step we don't support yet. Please try a different card.",
-    });
-  } catch (err) {
-    console.error('Topup charge error:', err);
-    res.status(500).json({ message: 'Payment failed. Please try again.' });
-  }
-};
-
-// ── Paystack: Top up the wallet with a saved card's authorization ────────────
+// ── Monnify: Top up the wallet with a saved card's token ────────────────────
 export const topupChargeAuthorization: RequestHandler = async (req, res) => {
   const authReq = req as AuthRequest;
   try {
@@ -1423,203 +1136,60 @@ export const topupChargeAuthorization: RequestHandler = async (req, res) => {
     const amountNGN = Number(amount);
     if (!(amountNGN >= 1000)) { res.status(400).json({ message: 'Minimum top-up is ₦1,000' }); return; }
 
-    const cardRes = await pool.query('SELECT authorization_code FROM saved_cards WHERE id = $1 AND user_id = $2', [card_id, authReq.user?.id]);
+    const cardRes = await pool.query('SELECT * FROM saved_cards WHERE id = $1 AND user_id = $2', [card_id, authReq.user?.id]);
     if (!cardRes.rows[0]) { res.status(404).json({ message: 'Saved card not found' }); return; }
+    const savedCard = cardRes.rows[0];
 
-    const userRes = await pool.query('SELECT email FROM users WHERE id = $1', [authReq.user?.id]);
-    const amount_kobo = Math.round(amountNGN * 100);
-    const reference = `PSTA-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
+    const userRes = await pool.query('SELECT name, email FROM users WHERE id = $1', [authReq.user?.id]);
+    const reference = `TOPUP-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
 
-    const chargeRes = await paystackReq('POST', '/transaction/charge_authorization', {
-      authorization_code: cardRes.rows[0].authorization_code,
-      email: userRes.rows[0].email,
-      amount: amount_kobo,
-      reference,
-    });
+    const token = await getMonnifyToken();
+    const monnifyRes = await monnifyReq('POST', '/api/v1/merchant/cards/charge-card-token', {
+      amount: Number(amountNGN),
+      customerName: userRes.rows[0]?.name || 'Studio Arella User',
+      customerEmail: userRes.rows[0]?.email,
+      paymentReference: reference,
+      paymentDescription: `Studio Arella — Wallet Top-up ₦${amountNGN.toLocaleString()}`,
+      currencyCode: 'NGN',
+      contractCode: MONNIFY_CONTRACT,
+      cardToken: savedCard.authorization_code,
+    }, token);
 
-    const data = chargeRes.data;
-    if (!chargeRes.status || !data) {
-      res.status(400).json({ message: chargeRes.message || 'Payment failed. Please try a different card.' }); return;
-    }
-
-    if (data.status === 'send_otp') {
-      await pool.query(
-        `INSERT INTO pending_charges (reference, user_id, purpose, amount, save_card)
-         VALUES ($1, $2, 'wallet_topup', $3, false)
-         ON CONFLICT (reference) DO NOTHING`,
-        [data.reference || reference, authReq.user?.id, amountNGN]
-      );
-      res.json({ status: 'send_otp', reference: data.reference || reference });
+    if (monnifyRes.requestSuccessful && (monnifyRes.responseBody?.paymentStatus === 'PAID' || monnifyRes.responseBody?.status === 'SUCCESS')) {
+      await creditWalletTopup(authReq.user?.id, amountNGN, reference);
+      res.json({ status: 'success', message: `Wallet funded successfully. ₦${amountNGN.toLocaleString()} has been added to your wallet balance` });
       return;
     }
 
-    if (data.status !== 'success') {
-      res.status(400).json({ message: data.gateway_response || 'Payment failed. Please try a different card.' }); return;
+    if (monnifyRes.responseBody?.otpRequired || monnifyRes.responseBody?.status === 'OTP_REQUIRED') {
+      res.json({ status: 'send_otp', reference: monnifyRes.responseBody?.transactionReference || reference });
+      return;
     }
 
-    await creditWalletTopup(authReq.user?.id, amountNGN, reference);
-    res.json({ status: 'success', message: `Wallet funded successfully. ₦${amountNGN.toLocaleString()} has been added to your wallet balance` });
-  } catch (err) {
-    console.error('Topup authorization error:', err);
+    res.status(400).json({ message: monnifyRes.responseMessage || 'Card charge failed. Please try a different card or fund directly.' });
+  } catch (err: any) {
+    console.error('Monnify topup authorization error:', err);
     res.status(500).json({ message: 'Payment failed. Please try again.' });
   }
 };
 
-// ── Paystack: Add (save) a bank card without a real top-up ───────────────────
-// Paystack has no tokenize-only endpoint — a reusable authorization only
-// exists after a real charge. Charges a small fixed amount to create it, then
-// immediately refunds the same amount, so the card gets saved for free.
-export const addCardVerification: RequestHandler = async (req, res) => {
-  const authReq = req as AuthRequest;
-  try {
-    const { card } = req.body;
-    if (!card?.number || !card?.cvv || !card?.expiry_month || !card?.expiry_year) {
-      res.status(400).json({ message: 'Please fill in your card details' }); return;
-    }
-    const cardholderName: string | null = card.name || null;
-
-    const userRes = await pool.query('SELECT email FROM users WHERE id = $1', [authReq.user?.id]);
-    const reference = `PSV-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
-
-    const chargeRes = await paystackReq('POST', '/charge', {
-      email: userRes.rows[0].email,
-      amount: CARD_VERIFICATION_AMOUNT * 100,
-      reference,
-      card: {
-        number: String(card.number).replace(/\s+/g, ''),
-        cvv: String(card.cvv),
-        expiry_month: String(card.expiry_month).padStart(2, '0'),
-        expiry_year: String(card.expiry_year).slice(-2),
-      },
-    });
-
-    if (!chargeRes.status) {
-      res.status(400).json({ message: chargeRes.message || 'Card was declined' }); return;
-    }
-
-    const data = chargeRes.data;
-    if (data.status === 'success') {
-      await saveCardFromAuthorization(authReq.user?.id, data.authorization, cardholderName);
-      await creditWalletTopup(authReq.user?.id, CARD_VERIFICATION_AMOUNT, `REFUND-${data.reference || reference}`);
-      res.json({
-        status: 'success',
-        message: `${data.authorization?.bank || 'Your'} card added successfully`,
-      });
-      return;
-    }
-
-    if (data.status === 'send_otp') {
-      await pool.query(
-        `INSERT INTO pending_charges (reference, user_id, purpose, amount, save_card, cardholder_name)
-         VALUES ($1, $2, 'card_verification', $3, true, $4)
-         ON CONFLICT (reference) DO NOTHING`,
-        [data.reference || reference, authReq.user?.id, CARD_VERIFICATION_AMOUNT, cardholderName]
-      );
-      res.json({ status: 'send_otp', reference: data.reference || reference });
-      return;
-    }
-
-    res.status(400).json({
-      message: data.display_text || data.gateway_response || "This card needs a verification step we don't support yet. Please try a different card.",
-    });
-  } catch (err) {
-    console.error('Add card verification error:', err);
-    res.status(500).json({ message: 'Card could not be added. Please try again.' });
-  }
+// ── Legacy raw card handlers redirected to Monnify flows ─────────────────────
+export const chargeCard: RequestHandler = async (req, res) => {
+  res.status(400).json({ message: 'Please use Monnify secure checkout.' });
 };
 
-// ── Paystack: Submit OTP to complete a pending card charge ───────────────────
+export const fundCampaignCharge: RequestHandler = async (req, res) => {
+  res.status(400).json({ message: 'Please fund via wallet credits or Monnify checkout.' });
+};
+
+export const topupCharge: RequestHandler = async (req, res) => {
+  res.status(400).json({ message: 'Please fund your wallet via Monnify checkout.' });
+};
+
 export const submitChargeOtp: RequestHandler = async (req, res) => {
-  const authReq = req as AuthRequest;
-  try {
-    const { reference, otp } = req.body;
-    if (!reference || !otp) { res.status(400).json({ message: 'Reference and OTP are required' }); return; }
-
-    const pending = await pool.query('SELECT * FROM pending_charges WHERE reference = $1 AND user_id = $2', [reference, authReq.user?.id]);
-    if (!pending.rows[0]) { res.status(404).json({ message: 'This payment session has expired. Please start again.' }); return; }
-
-    const otpRes = await paystackReq('POST', '/charge/submit_otp', { otp, reference });
-    if (!otpRes.status || otpRes.data?.status !== 'success') {
-      res.status(400).json({ message: otpRes.data?.display_text || otpRes.message || 'Incorrect code. Please try again.' });
-      return;
-    }
-
-    const p = pending.rows[0];
-    const amountNGN = otpRes.data.amount / 100;
-    let message = 'Payment successful and campaign booked';
-
-    if (p.purpose === 'campaign_funding') {
-      await creditCampaignBudget(p.campaign_id, p.user_id, amountNGN, reference);
-    } else if (p.purpose === 'wallet_topup') {
-      await creditWalletTopup(p.user_id, amountNGN, reference);
-      message = `Wallet funded successfully. ₦${Number(p.amount).toLocaleString()} has been added to your wallet balance`;
-    } else if (p.purpose === 'card_verification') {
-      await saveCardFromAuthorization(p.user_id, otpRes.data.authorization, p.cardholder_name);
-      await creditWalletTopup(p.user_id, CARD_VERIFICATION_AMOUNT, `REFUND-${reference}`);
-      message = `${otpRes.data.authorization?.bank || 'Your'} card added successfully`;
-    } else {
-      const meta = metaFor(p.user_id, p.booking_id, p.booking_type);
-      await processConfirmedPayment(reference, meta, amountNGN);
-    }
-    if (p.save_card && p.purpose !== 'card_verification') await saveCardFromAuthorization(p.user_id, otpRes.data.authorization, p.cardholder_name);
-    await pool.query('DELETE FROM pending_charges WHERE reference = $1', [reference]);
-
-    res.json({ status: 'success', message });
-  } catch (err) {
-    console.error('Submit OTP error:', err);
-    res.status(500).json({ message: 'Verification failed. Please try again.' });
-  }
+  res.status(400).json({ message: 'Card OTP is validated via Monnify secure 3DS modal.' });
 };
 
-// ── Paystack: Charge a saved card's stored authorization ─────────────────────
-// No CVV/expiry re-entry — that's the point of a reusable authorization, and
-// we never store a CVV to ask for one back.
-export const chargeAuthorization: RequestHandler = async (req, res) => {
-  const authReq = req as AuthRequest;
-  try {
-    const { booking_id, booking_type, card_id } = req.body;
-    const cardRes = await pool.query('SELECT authorization_code FROM saved_cards WHERE id = $1 AND user_id = $2', [card_id, authReq.user?.id]);
-    if (!cardRes.rows[0]) { res.status(404).json({ message: 'Saved card not found' }); return; }
-
-    const { booking, error } = await loadPendingBooking(authReq.user?.id, booking_id, booking_type);
-    if (error) { res.status(error.status).json({ message: error.message }); return; }
-
-    const userRes = await pool.query('SELECT email FROM users WHERE id = $1', [authReq.user?.id]);
-    const amount = Math.round(parseFloat(booking!.total_cost) * 100);
-    const reference = `PSA-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
-
-    const chargeRes = await paystackReq('POST', '/transaction/charge_authorization', {
-      authorization_code: cardRes.rows[0].authorization_code,
-      email: userRes.rows[0].email,
-      amount,
-      reference,
-    });
-
-    const data = chargeRes.data;
-    if (!chargeRes.status || !data) {
-      res.status(400).json({ message: chargeRes.message || 'Payment failed. Please try a different card.' }); return;
-    }
-
-    if (data.status === 'send_otp') {
-      await pool.query(
-        `INSERT INTO pending_charges (reference, user_id, booking_id, booking_type, save_card)
-         VALUES ($1, $2, $3, $4, false)
-         ON CONFLICT (reference) DO NOTHING`,
-        [data.reference || reference, authReq.user?.id, booking_id, booking_type || 'ad']
-      );
-      res.json({ status: 'send_otp', reference: data.reference || reference });
-      return;
-    }
-
-    if (data.status !== 'success') {
-      res.status(400).json({ message: data.gateway_response || 'Payment failed. Please try a different card.' }); return;
-    }
-
-    const meta = metaFor(authReq.user?.id, booking_id, booking_type);
-    await processConfirmedPayment(reference, meta, data.amount / 100);
-    res.json({ status: 'success', message: 'Payment successful and campaign booked' });
-  } catch (err) {
-    console.error('Charge authorization error:', err);
-    res.status(500).json({ message: 'Payment failed. Please try again.' });
-  }
+export const addCardVerification: RequestHandler = async (req, res, next) => {
+  return initializeCardLinking(req, res, next);
 };

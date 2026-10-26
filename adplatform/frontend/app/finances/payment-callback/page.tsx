@@ -24,6 +24,8 @@ function FinancesPaymentCallbackContent() {
   const [status, setStatus] = useState<'loading' | 'success' | 'failed'>('loading');
   const [message, setMessage] = useState('');
 
+  const [isCardLinked, setIsCardLinked] = useState(false);
+
   useEffect(() => {
     const reference = params.get('paymentReference') || params.get('reference');
     if (!reference) {
@@ -35,7 +37,10 @@ function FinancesPaymentCallbackContent() {
     api.get(`/payments/verify/${reference}`)
       .then(res => {
         setStatus('success');
-        setMessage(res.data.message || 'Credits added successfully.');
+        setMessage(res.data.message || (res.data.card_linked ? 'Bank card verified and linked successfully.' : 'Credits added successfully.'));
+        if (res.data.card_linked) {
+          setIsCardLinked(true);
+        }
       })
       .catch(err => {
         setStatus('failed');
@@ -60,8 +65,8 @@ function FinancesPaymentCallbackContent() {
           <>
             <div style={{ width: 44, height: 44, border: '3px solid rgba(212,175,55,0.2)', borderTopColor: '#D4AF37', borderRadius: '50%', animation: 'spin 0.75s linear infinite', margin: '0 auto 20px' }} />
             <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-            <p style={{ fontSize: 16, fontWeight: 600, color: '#1A1A1A', margin: '0 0 6px' }}>Confirming your payment...</p>
-            <p style={{ fontSize: 13, color: theme.color.text3, margin: 0 }}>Please wait, updating your balance...</p>
+            <p style={{ fontSize: 16, fontWeight: 600, color: '#1A1A1A', margin: '0 0 6px' }}>Confirming with Monnify...</p>
+            <p style={{ fontSize: 13, color: theme.color.text3, margin: 0 }}>Please wait, updating your account...</p>
           </>
         )}
 
@@ -70,8 +75,12 @@ function FinancesPaymentCallbackContent() {
             <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(34,197,94,0.15)', border: '2px solid rgba(34,197,94,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
               <FaCircleCheck size={30} color="#22c55e" />
             </div>
-            <p style={{ fontSize: 11, fontWeight: 700, color: '#22c55e', letterSpacing: '0.1em', textTransform: 'uppercase', margin: '0 0 8px' }}>Credits Added</p>
-            <h2 style={{ fontSize: 22, fontWeight: 800, color: '#1A1A1A', margin: '0 0 10px', letterSpacing: '-0.3px' }}>Top-up Successful!</h2>
+            <p style={{ fontSize: 11, fontWeight: 700, color: '#22c55e', letterSpacing: '0.1em', textTransform: 'uppercase', margin: '0 0 8px' }}>
+              {isCardLinked ? 'Card Linked' : 'Credits Added'}
+            </p>
+            <h2 style={{ fontSize: 22, fontWeight: 800, color: '#1A1A1A', margin: '0 0 10px', letterSpacing: '-0.3px' }}>
+              {isCardLinked ? 'Card Verified & Linked!' : 'Top-up Successful!'}
+            </h2>
             <p style={{ fontSize: 14, color: theme.color.text3, margin: '0 0 24px', lineHeight: 1.6 }}>{message}</p>
 
             <div style={{ display: 'flex', gap: 10 }}>

@@ -76,7 +76,7 @@ export default function AudienceNotificationsPageView() {
   const unreadCount = notifications.filter((n) => n.isUnread).length;
 
   return (
-    <div className="w-full max-w-[1780px] mx-auto px-4 sm:px-6 lg:px-10 xl:px-14 py-8 sm:py-10 font-['DM_Sans',sans-serif]">
+    <div className="w-full max-w-[1780px] mx-auto px-4 sm:px-6 lg:px-10 xl:px-14 py-8 sm:py-10 font-quicksand">
       {/* ─── Top Header: Notification Title + Actions ─── */}
       <div className="flex items-center justify-between mb-8 sm:mb-10">
         <div className="flex items-center gap-3">
@@ -161,7 +161,7 @@ export default function AudienceNotificationsPageView() {
                   </div>
 
                   {/* Message Text: Urbanist 14px 500 #141414 */}
-                  <p className="font-['Urbanist','DM_Sans',sans-serif] font-medium text-[13px] sm:text-[14px] leading-[19px] tracking-[0.02em] text-[#141414] truncate sm:max-w-[500px] md:max-w-[700px]">
+                  <p className="font-quicksand font-medium text-[13px] sm:text-[14px] leading-[19px] tracking-[0.02em] text-[#141414] truncate sm:max-w-[500px] md:max-w-[700px]">
                     {item.message}
                   </p>
                 </div>
@@ -184,7 +184,7 @@ export default function AudienceNotificationsPageView() {
                   )}
 
                   {/* Timestamp: Urbanist 11px 500 #A2A9C7 */}
-                  <span className="font-['Urbanist','DM_Sans',sans-serif] font-medium text-[11px] leading-[25px] text-[#A2A9C7]">
+                  <span className="font-quicksand font-medium text-[11px] leading-[25px] text-[#A2A9C7]">
                     {item.timeAgo}
                   </span>
                 </div>

@@ -206,7 +206,7 @@ function AudienceContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F7F7] flex flex-col font-['DM_Sans',sans-serif]">
+    <div className="min-h-screen bg-[#F7F7F7] flex flex-col font-quicksand">
       {/* ─── Top Audience Navigation Bar (1440px x 76px) ─── */}
       <AudienceNavbar 
         activeNav={

@@ -120,7 +120,7 @@ export default function AudienceLiveExperiencesCard({ onJoinEvent }: AudienceLiv
   };
 
   return (
-    <div className="w-full min-h-[580px] bg-white rounded-[18px] p-7 sm:p-9 md:px-10 md:py-9 shadow-[0px_0px_2px_rgba(0,0,0,0.1),0px_0px_1px_rgba(0,0,0,0.06)] border border-gray-100/80 flex flex-col gap-8 font-['DM_Sans',sans-serif]">
+    <div className="w-full min-h-[580px] bg-white rounded-[18px] p-7 sm:p-9 md:px-10 md:py-9 shadow-[0px_0px_2px_rgba(0,0,0,0.1),0px_0px_1px_rgba(0,0,0,0.06)] border border-gray-100/80 flex flex-col gap-8 font-quicksand">
       {/* ─── Header: 21px font-medium #3A3A3A (Frame 2121459678: Live experiences) ─── */}
       <h2 className="text-[21px] font-medium text-[#3A3A3A] leading-[27px]">
         Live experiences
@@ -188,7 +188,7 @@ export default function AudienceLiveExperiencesCard({ onJoinEvent }: AudienceLiv
               <button
                 type="button"
                 onClick={() => handleToggleJoin(item.id)}
-                className={`w-[110px] h-[40px] rounded-[6px] text-[14px] font-normal font-['Jost',sans-serif] capitalize transition-all shrink-0 shadow-sm active:scale-95 flex items-center justify-center cursor-pointer ${
+                className={`w-[110px] h-[40px] rounded-[6px] text-[14px] font-normal font-quicksand capitalize transition-all shrink-0 shadow-sm active:scale-95 flex items-center justify-center cursor-pointer ${
                   item.isJoined
                     ? 'bg-[rgba(225,200,117,0.56)] text-black/80 hover:bg-[rgba(225,200,117,0.75)]'
                     : 'bg-[#D4AF37] text-black/80 hover:bg-[#c39e2e]'

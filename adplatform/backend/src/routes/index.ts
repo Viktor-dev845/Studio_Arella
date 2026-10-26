@@ -28,7 +28,7 @@ import { getBalance, getTransactions, getTotalRevenue } from '../controllers/fin
 import { getDashboardStats, getHourlyAnalytics, getAdvertiserProofOfPlay } from '../controllers/analyticsController';
 import { getPlatformStats, getAllUsers, getAllBookings, getAllCampaigns, getAllScreens, updateUserRole, getAllTransactions, getAllPodcastBookings } from '../controllers/adminController';
 import { getPlans, getBaseRate } from '../controllers/pricingController';
-import { initializePayment, initializeCreditPayment, verifyPayment, monnifyWebhook, devBypassPayment, payFromWallet, initializePaystackPayment, verifyPaystackPayment, paystackWebhook, initializePaystackCreditPayment, createReservedAccount, getSavedCards, deleteSavedCard, chargeCard, submitChargeOtp, chargeAuthorization, fundCampaignCharge, fundCampaignChargeAuthorization, topupCharge, topupChargeAuthorization, addCardVerification } from '../controllers/paymentController';
+import { initializePayment, initializeCreditPayment, initializeCardLinking, verifyPayment, monnifyWebhook, devBypassPayment, payFromWallet, createReservedAccount, getSavedCards, deleteSavedCard, chargeCard, submitChargeOtp, chargeAuthorization, fundCampaignCharge, fundCampaignChargeAuthorization, topupCharge, topupChargeAuthorization, addCardVerification } from '../controllers/paymentController';
 import { getNotifications, markRead, markAllRead, deleteNotification, getUnreadCount } from '../controllers/notificationController';
 import { submitCreativeRequest, getMyCreativeRequests, getAllCreativeRequests, updateCreativeRequestStatus } from '../controllers/creativeController';
 import { submitTicket, getMyTickets } from '../controllers/supportController';
@@ -239,13 +239,8 @@ router.post('/campaigns/:id/fund/charge', authenticate, fundCampaignCharge);
 router.post('/campaigns/:id/fund/charge-authorization', authenticate, fundCampaignChargeAuthorization);
 router.post('/payments/topup/charge', authenticate, topupCharge);
 router.post('/payments/topup/charge-authorization', authenticate, topupChargeAuthorization);
+router.post('/payments/cards/init-link', authenticate, initializeCardLinking);
 router.post('/payments/cards/add', authenticate, addCardVerification);
-
-// Paystack (alternative gateway)
-router.post('/payments/paystack/initialize', authenticate, initializePaystackPayment);
-router.post('/payments/paystack/initialize-credits', authenticate, initializePaystackCreditPayment);
-router.get('/payments/paystack/verify/:reference', authenticate, verifyPaystackPayment);
-router.post('/payments/webhook/paystack', paystackWebhook); // No auth — Paystack signs with HMAC
 
 // ── Creative requests ─────────────────────────────────────────────────────────
 router.post('/creative-requests', authenticate, submitCreativeRequest);

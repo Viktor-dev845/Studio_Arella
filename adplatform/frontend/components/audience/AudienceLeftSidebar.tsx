@@ -51,7 +51,7 @@ export default function AudienceLeftSidebar({
   };
 
   return (
-    <aside className="w-full lg:w-[290px] xl:w-[320px] flex flex-col gap-6 shrink-0 font-['DM_Sans',sans-serif]">
+    <aside className="w-full lg:w-[290px] xl:w-[320px] flex flex-col gap-6 shrink-0 font-quicksand">
       {/* ─── 1. User Mini Profile Card (dynamic width) ─── */}
       <div 
         onClick={() => handleMenuClick('profile')}
@@ -184,7 +184,7 @@ export default function AudienceLeftSidebar({
       </div>
 
       {/* ─── 3. Followed Hashtags Card ─── */}
-      <div className="w-full bg-[#FCFDFD] rounded-[18px] p-4 shadow-[0px_0px_2px_rgba(0,0,0,0.08),0px_0px_1px_rgba(0,0,0,0.06)] border border-gray-100/70 flex flex-col gap-3 font-['Roboto',sans-serif]">
+      <div className="w-full bg-[#FCFDFD] rounded-[18px] p-4 shadow-[0px_0px_2px_rgba(0,0,0,0.08),0px_0px_1px_rgba(0,0,0,0.06)] border border-gray-100/70 flex flex-col gap-3 font-quicksand">
         {/* Header Row */}
         <div className="flex items-center justify-between">
           <span className="text-[12px] font-normal tracking-wider text-[#181818] uppercase">

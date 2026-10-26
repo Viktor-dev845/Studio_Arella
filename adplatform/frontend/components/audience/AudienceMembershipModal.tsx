@@ -43,7 +43,7 @@ export default function AudienceMembershipModal({
     <>
       {/* ─── Backdrop: Background blur 20px, #A2A1A8 20% overlay (Figma Specs) ─── */}
       <div 
-        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#A2A1A8]/20 backdrop-blur-[20px] font-['DM_Sans',sans-serif] animate-in fade-in duration-200"
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#A2A1A8]/20 backdrop-blur-[20px] font-quicksand animate-in fade-in duration-200"
         onClick={onClose}
       >
         {/* ─── Modal Container (Frame 2121459693: 625px x 836px, radius 32px) ─── */}
@@ -75,17 +75,17 @@ export default function AudienceMembershipModal({
           {/* ─── Center Content Area ─── */}
           <div className="flex flex-col items-center flex-1 justify-center -mt-6">
             {/* Header Title: 248px wide, bold 16px, line-height 21px, text-center */}
-            <h3 className="w-full max-w-[248px] text-[16px] font-bold text-[#101828] text-center leading-[21px] mb-12 sm:mb-16 font-['DM_Sans',sans-serif]">
+            <h3 className="w-full max-w-[248px] text-[16px] font-bold text-[#101828] text-center leading-[21px] mb-12 sm:mb-16 font-quicksand">
               {headline}
             </h3>
 
             {/* Subscription Option Card (Frame 9721: 468px x 127px, border 1px solid #D7D7D7, radius 16px) */}
             <div className="w-full max-w-[468px] h-[127px] bg-white border border-[#D7D7D7] rounded-[16px] px-6 py-6 flex flex-col justify-between shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
-              <h4 className="text-[16px] font-medium text-[#101828] leading-[21px] font-['DM_Sans',sans-serif] m-0">
+              <h4 className="text-[16px] font-medium text-[#101828] leading-[21px] font-quicksand m-0">
                 {displayClubTitle}
               </h4>
 
-              <p className="text-[14px] font-medium text-[#101828] leading-[18px] font-['DM_Sans',sans-serif] m-0">
+              <p className="text-[14px] font-medium text-[#101828] leading-[18px] font-quicksand m-0">
                 {price}
               </p>
             </div>
@@ -95,7 +95,7 @@ export default function AudienceMembershipModal({
               <button
                 type="button"
                 onClick={handleOpenPayment}
-                className="w-full h-[56px] bg-[#D4AF37] hover:bg-[#c29f31] text-black rounded-[6px] text-[16px] font-medium leading-[21px] font-['DM_Sans',sans-serif] transition-all shadow-xs active:scale-[0.99] flex items-center justify-center cursor-pointer"
+                className="w-full h-[56px] bg-[#D4AF37] hover:bg-[#c29f31] text-black rounded-[6px] text-[16px] font-medium leading-[21px] font-quicksand transition-all shadow-xs active:scale-[0.99] flex items-center justify-center cursor-pointer"
               >
                 Subscribe
               </button>

@@ -28,19 +28,14 @@ function PaymentCallbackContent() {
   const { clearCart } = useCartStore();
 
   useEffect(() => {
-    const reference = params.get('paymentReference') || params.get('reference') || params.get('trxref');
+    const reference = params.get('paymentReference') || params.get('reference');
     if (!reference) {
       setStatus('failed');
       setMessage('No payment reference found.');
       return;
     }
 
-    // Auto-detect gateway from reference prefix
-    const verifyUrl = reference.startsWith('PS-')
-      ? `/payments/paystack/verify/${reference}`
-      : `/payments/verify/${reference}`;
-
-    api.get(verifyUrl)
+    api.get(`/payments/verify/${reference}`)
       .then(res => {
         setStatus('success');
         setBooking(res.data.booking);

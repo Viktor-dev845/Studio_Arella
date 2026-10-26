@@ -73,7 +73,7 @@ export default function AudienceCreateEventModal({
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#A2A1A8]/20 backdrop-blur-[10px] font-['DM_Sans',sans-serif] animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#A2A1A8]/20 backdrop-blur-[10px] font-quicksand animate-in fade-in duration-200"
       onClick={onClose}
     >
       {/* ─── Modal Container (Filter Popup: 1026px x 980px, radius 20px) ─── */}
@@ -92,7 +92,7 @@ export default function AudienceCreateEventModal({
             <ArrowLeft size={24} strokeWidth={2.5} className="text-black" />
           </button>
 
-          <h2 className="text-[20px] font-semibold text-[#16151C] text-center tracking-[-0.01em] leading-[30px] font-['DM_Sans',sans-serif] m-0">
+          <h2 className="text-[20px] font-semibold text-[#16151C] text-center tracking-[-0.01em] leading-[30px] font-quicksand m-0">
             Create An Event
           </h2>
 
@@ -116,7 +116,7 @@ export default function AudienceCreateEventModal({
               value={eventTitle}
               onChange={(e) => setEventTitle(e.target.value)}
               placeholder="Event title"
-              className="w-full h-[56px] px-4 bg-white border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[17px] font-light text-[#16151C] placeholder:text-[rgba(162,161,168,0.8)] placeholder:font-light outline-none focus:border-[#D4AF37] transition-colors font-['DM_Sans',sans-serif]"
+              className="w-full h-[56px] px-4 bg-white border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[17px] font-light text-[#16151C] placeholder:text-[rgba(162,161,168,0.8)] placeholder:font-light outline-none focus:border-[#D4AF37] transition-colors font-quicksand"
             />
 
             {/* 2. Describe your event (850px x 131px, border 1px solid rgba(162,161,168,0.2), radius 10px) */}
@@ -126,7 +126,7 @@ export default function AudienceCreateEventModal({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe your event"
-              className="w-full h-[131px] p-4 bg-white border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[17px] font-light text-[#16151C] placeholder:text-[rgba(162,161,168,0.8)] placeholder:font-light outline-none focus:border-[#D4AF37] transition-colors resize-none font-['DM_Sans',sans-serif]"
+              className="w-full h-[131px] p-4 bg-white border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[17px] font-light text-[#16151C] placeholder:text-[rgba(162,161,168,0.8)] placeholder:font-light outline-none focus:border-[#D4AF37] transition-colors resize-none font-quicksand"
             />
 
             {/* 3. Entry mode dropdown (850px x 56px, border 1px solid rgba(162,161,168,0.2), radius 10px) */}
@@ -135,7 +135,7 @@ export default function AudienceCreateEventModal({
                 onClick={() => setIsEntryDropdownOpen(!isEntryDropdownOpen)}
                 className="w-full h-[56px] px-4 bg-white border border-[rgba(162,161,168,0.2)] rounded-[10px] flex items-center justify-between cursor-pointer select-none focus-within:border-[#D4AF37] transition-colors"
               >
-                <span className={`text-[17px] font-light font-['DM_Sans',sans-serif] ${entryMode ? 'text-[#16151C]' : 'text-[rgba(162,161,168,0.8)]'}`}>
+                <span className={`text-[17px] font-light font-quicksand ${entryMode ? 'text-[#16151C]' : 'text-[rgba(162,161,168,0.8)]'}`}>
                   {entryMode || 'Entry mode'}
                 </span>
                 <ChevronDown size={20} strokeWidth={2} className="text-[#16151C]" />
@@ -154,7 +154,7 @@ export default function AudienceCreateEventModal({
                         setEntryMode('Free entry');
                         setIsEntryDropdownOpen(false);
                       }}
-                      className={`text-[15px] font-normal font-['Karla',sans-serif] text-left transition-colors cursor-pointer bg-transparent border-none p-0 ${
+                      className={`text-[15px] font-normal font-quicksand text-left transition-colors cursor-pointer bg-transparent border-none p-0 ${
                         entryMode === 'Free entry' ? 'font-medium text-black' : 'text-gray-800 hover:text-black'
                       }`}
                     >
@@ -166,7 +166,7 @@ export default function AudienceCreateEventModal({
                         setEntryMode('Subscription');
                         setIsEntryDropdownOpen(false);
                       }}
-                      className={`text-[15px] font-normal font-['Karla',sans-serif] text-left transition-colors cursor-pointer bg-transparent border-none p-0 ${
+                      className={`text-[15px] font-normal font-quicksand text-left transition-colors cursor-pointer bg-transparent border-none p-0 ${
                         entryMode === 'Subscription' ? 'font-medium text-black' : 'text-gray-800 hover:text-black'
                       }`}
                     >
@@ -195,7 +195,7 @@ export default function AudienceCreateEventModal({
                   value={subscriptionFee}
                   onChange={(e) => setSubscriptionFee(e.target.value)}
                   placeholder="Subscription fee (NGN) e.g 500,000"
-                  className="w-full h-[56px] px-4 bg-white border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[17px] font-light text-[#16151C] placeholder:text-[rgba(162,161,168,0.8)] placeholder:font-light outline-none focus:border-[#D4AF37] transition-colors font-['DM_Sans',sans-serif]"
+                  className="w-full h-[56px] px-4 bg-white border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[17px] font-light text-[#16151C] placeholder:text-[rgba(162,161,168,0.8)] placeholder:font-light outline-none focus:border-[#D4AF37] transition-colors font-quicksand"
                 />
               </div>
             )}
@@ -210,7 +210,7 @@ export default function AudienceCreateEventModal({
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
                   placeholder="Start date (dd/mm/yyyy)"
-                  className="w-full h-[56px] pl-4 pr-12 bg-white border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[17px] font-light text-[#16151C] placeholder:text-[rgba(162,161,168,0.8)] placeholder:font-light outline-none focus:border-[#D4AF37] transition-colors font-['DM_Sans',sans-serif]"
+                  className="w-full h-[56px] pl-4 pr-12 bg-white border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[17px] font-light text-[#16151C] placeholder:text-[rgba(162,161,168,0.8)] placeholder:font-light outline-none focus:border-[#D4AF37] transition-colors font-quicksand"
                 />
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#16151C]">
                   <Calendar size={20} strokeWidth={1.8} />
@@ -225,7 +225,7 @@ export default function AudienceCreateEventModal({
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
                   placeholder="End date (dd/mm/yyyy)"
-                  className="w-full h-[56px] pl-4 pr-12 bg-white border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[17px] font-light text-[#16151C] placeholder:text-[rgba(162,161,168,0.8)] placeholder:font-light outline-none focus:border-[#D4AF37] transition-colors font-['DM_Sans',sans-serif]"
+                  className="w-full h-[56px] pl-4 pr-12 bg-white border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[17px] font-light text-[#16151C] placeholder:text-[rgba(162,161,168,0.8)] placeholder:font-light outline-none focus:border-[#D4AF37] transition-colors font-quicksand"
                 />
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#16151C]">
                   <Calendar size={20} strokeWidth={1.8} />
@@ -235,7 +235,7 @@ export default function AudienceCreateEventModal({
 
             {/* 6. Upload event cover materials (width: 510px, height: 173px) */}
             <div className="w-full max-w-[510px] flex flex-col gap-3">
-              <label className="text-[16px] font-light text-[#16151C] leading-[24px] font-['DM_Sans',sans-serif] m-0">
+              <label className="text-[16px] font-light text-[#16151C] leading-[24px] font-quicksand m-0">
                 Upload event cover materials (You can upload multiple files at once)
               </label>
 
@@ -261,10 +261,10 @@ export default function AudienceCreateEventModal({
                 </div>
 
                 <div className="flex flex-col items-center text-center">
-                  <p className="text-[14px] font-light text-[#16151C] leading-[22px] font-['DM_Sans',sans-serif] m-0">
+                  <p className="text-[14px] font-light text-[#16151C] leading-[22px] font-quicksand m-0">
                     Drag & Drop or <span className="text-[#15411F] font-normal underline">choose file</span> to upload
                   </p>
-                  <p className="text-[11px] font-light text-[#A2A1A8] leading-[16px] font-['DM_Sans',sans-serif] m-0">
+                  <p className="text-[11px] font-light text-[#A2A1A8] leading-[16px] font-quicksand m-0">
                     Supported formats : jpeg, png, pf
                   </p>
                 </div>
@@ -284,7 +284,7 @@ export default function AudienceCreateEventModal({
             <button
               type="button"
               onClick={onClose}
-              className="w-[91px] h-[40px] border border-[rgba(162,161,168,0.2)] hover:border-black rounded-[10px] text-[16px] font-light text-[#16151C] font-['Lexend',sans-serif] flex items-center justify-center transition-colors cursor-pointer bg-transparent"
+              className="w-[91px] h-[40px] border border-[rgba(162,161,168,0.2)] hover:border-black rounded-[10px] text-[16px] font-light text-[#16151C] font-quicksand flex items-center justify-center transition-colors cursor-pointer bg-transparent"
             >
               Cancel
             </button>
@@ -293,7 +293,7 @@ export default function AudienceCreateEventModal({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-[135px] h-[40px] bg-[#D4AF37] hover:bg-[#c29f31] text-black/80 hover:text-black rounded-[6px] text-[14px] font-normal capitalize leading-[20px] font-['Jost',sans-serif] flex items-center justify-center transition-all shadow-2xs active:scale-[0.99] cursor-pointer disabled:opacity-75"
+              className="w-[135px] h-[40px] bg-[#D4AF37] hover:bg-[#c29f31] text-black/80 hover:text-black rounded-[6px] text-[14px] font-normal capitalize leading-[20px] font-quicksand flex items-center justify-center transition-all shadow-2xs active:scale-[0.99] cursor-pointer disabled:opacity-75"
             >
               {isSubmitting ? (
                 <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
