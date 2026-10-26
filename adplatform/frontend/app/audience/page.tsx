@@ -373,7 +373,7 @@ function AudienceContent() {
   };
 
   return (
-    <div className="min-h-screen lg:h-screen lg:overflow-hidden bg-[#F7F7F7] flex flex-col font-quicksand">
+    <div className="min-h-screen w-full bg-[#F7F7F7] flex flex-col font-quicksand">
       {/* ─── Top Audience Navigation Bar (1440px x 76px) ─── */}
       <AudienceNavbar 
         activeNav={
@@ -405,27 +405,27 @@ function AudienceContent() {
       />
 
       {/* ─── Main Content Container matching Figma ─── */}
-      <PageTransition className="flex-1 min-h-0 w-full flex flex-col lg:overflow-hidden">
+      <PageTransition className="flex-1 w-full flex flex-col">
         {activeMenu === 'notifications' ? (
           /* ─── Dedicated Notifications Screen (1440px x 1024px: Frame 2121459687) ─── */
-          <main className="w-full lg:h-full lg:overflow-y-auto feed-scrollbar">
+          <main className="w-full">
             <AudienceNotificationsPageView />
           </main>
         ) : activeMenu === 'chats' ? (
           /* ─── Dedicated Chats Screen (1440px x 1024px: Visitors 278px + Chat 911px) ─── */
-          <main className="w-full lg:h-full lg:overflow-hidden">
+          <main className="w-full">
             <AudienceChatPageView />
           </main>
         ) : (activeMenu === 'get-verified' || activeMenu === 'verify') ? (
           /* ─── Dedicated Get Verified Pricing Screen (1366px x 1616px) ─── */
-          <main className="w-full lg:h-full lg:overflow-y-auto feed-scrollbar">
+          <main className="w-full">
             <AudienceGetVerifiedView 
               onBackToProfile={() => handleMenuChange('creator-profile')}
             />
           </main>
         ) : (
-          <main className="w-full max-w-[1780px] mx-auto px-4 sm:px-6 lg:px-10 xl:px-14 py-4 lg:py-6 flex-1 min-h-0 lg:h-full lg:overflow-hidden">
-            <div className="flex flex-col lg:flex-row gap-6 xl:gap-8 items-start w-full lg:h-full">
+          <main className="w-full max-w-[1780px] mx-auto px-4 sm:px-6 lg:px-10 xl:px-14 py-4 lg:py-6 flex-1 w-full">
+            <div className="flex flex-col lg:flex-row gap-6 xl:gap-8 items-start w-full">
               
               {/* 1. Left Sidebar Column (278px: Profile Card + Menu + Hashtags) */}
               <AudienceLeftSidebar 
@@ -443,7 +443,7 @@ function AudienceContent() {
             {/* 2. Main Content Area */}
             {activeMenu === 'edit-profile' || activeMenu === 'settings' ? (
               /* ─── Edit Profile / Settings View: Frame 2121459220 etc. (866px wide matching Figma) ─── */
-              <div className="flex-1 w-full min-w-0 lg:h-full lg:overflow-y-auto feed-scrollbar pr-1 lg:pr-2 pb-16">
+              <div className="flex-1 w-full min-w-0 pb-16">
                 <AudienceEditProfilePageView 
                   onBackToProfile={() => handleMenuChange('profile')} 
                   initialSubView={
@@ -457,7 +457,7 @@ function AudienceContent() {
               </div>
             ) : activeMenu === 'podcast-player' ? (
               /* ─── Visitor's View of Creator Podcast Episode Player (530px player + 360px episodes card) ─── */
-              <div className="flex-1 w-full min-w-0 lg:h-full lg:overflow-y-auto feed-scrollbar pr-1 lg:pr-2 pb-16">
+              <div className="flex-1 w-full min-w-0 pb-16">
                 <AudiencePodcastPlayerView 
                   podcastTitle={searchParams.get('title') || 'Zara Design Concept Podcast'}
                   onBackToProfile={() => handleMenuChange('creator-profile')}
@@ -465,7 +465,7 @@ function AudienceContent() {
               </div>
             ) : (activeMenu === 'profile' || activeMenu === 'creator-profile') ? (
               /* ─── Profile View: Frame 2121459585 (850px wide container matching Figma) ─── */
-              <div className="flex-1 w-full min-w-0 lg:h-full lg:overflow-y-auto feed-scrollbar pr-1 lg:pr-2 pb-16">
+              <div className="flex-1 w-full min-w-0 pb-16">
                 <AudienceProfilePageView 
                   isVisitor={activeMenu === 'creator-profile' || queryView === 'creator-profile' || queryView === 'creator' || queryView === 'visitor-profile' || searchParams.get('mode') === 'visitor'}
                   onEditProfileClick={() => handleMenuChange('edit-profile')} 
@@ -473,7 +473,7 @@ function AudienceContent() {
               </div>
             ) : activeMenu === 'memberships' ? (
               /* ─── Memberships View: Row 1 (Post Composer + Premium Card) + Row 2 (Membership Card) ─── */
-              <section className="flex-1 w-full min-w-0 flex flex-col gap-6 lg:h-full lg:overflow-y-auto feed-scrollbar pr-1 lg:pr-2 pb-16">
+              <section className="flex-1 w-full min-w-0 flex flex-col gap-6 pb-16">
                 {/* Row 1: Composer + Try Premium */}
                 <div className="flex flex-col md:flex-row gap-4 items-stretch">
                   <div className="flex-1 min-w-0">
@@ -492,24 +492,24 @@ function AudienceContent() {
               </section>
             ) : activeMenu === 'subscriptions' ? (
               /* ─── Subscriptions View ─── */
-              <section className="flex-1 w-full min-w-0 flex flex-col gap-6 lg:h-full lg:overflow-y-auto feed-scrollbar pr-1 lg:pr-2 pb-16">
+              <section className="flex-1 w-full min-w-0 flex flex-col gap-6 pb-16">
                 <AudienceSubscriptionsCard />
               </section>
             ) : activeMenu === 'live-detail' ? (
               /* ─── Live Experience Detail Stream View ─── */
-              <section className="flex-1 w-full min-w-0 flex flex-col gap-6 lg:h-full lg:overflow-y-auto feed-scrollbar pr-1 lg:pr-2 pb-16">
+              <section className="flex-1 w-full min-w-0 flex flex-col gap-6 pb-16">
                 <AudienceLiveEventDetail onClose={() => handleMenuChange('live')} />
               </section>
             ) : activeMenu === 'live' ? (
               /* ─── Live Experiences View ─── */
-              <section className="flex-1 w-full min-w-0 flex flex-col gap-6 lg:h-full lg:overflow-y-auto feed-scrollbar pr-1 lg:pr-2 pb-16">
+              <section className="flex-1 w-full min-w-0 flex flex-col gap-6 pb-16">
                 <AudienceLiveExperiencesCard onJoinEvent={() => handleMenuChange('live-detail')} />
               </section>
             ) : (
               /* ─── Default Feed / Trending / Bookmarks 3-Column Layout ─── */
               <>
                 {/* Middle Column: Write New Post + Feed Cards; composer omitted in bookmarks view */}
-                <section className="flex-1 w-full min-w-0 flex flex-col gap-6 lg:h-full lg:overflow-y-auto feed-scrollbar pr-1 lg:pr-2 pb-24">
+                <section className="flex-1 w-full min-w-0 flex flex-col gap-6 pb-20">
                   {activeMenu !== 'bookmarks' && (
                     <AudiencePostComposer 
                       onPostSubmit={handleCreatePost}
