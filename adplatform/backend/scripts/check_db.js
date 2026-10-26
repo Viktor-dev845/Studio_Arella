@@ -1,19 +1,23 @@
-const { Pool } = require('pg');
+const { Client } = require('pg');
+const client = new Client({ connectionString: 'postgresql://postgres.hobmhiaouplaoxzzcrgv:Krav20%23pool@aws-0-eu-central-1.pooler.supabase.com:5432/postgres' });
 
-const pool = new Pool({
-  connectionString: 'postgresql://adplatform_db_user:fGj8JTmdOGiKGwFBQfhThXi3WAZqEr1P@dpg-d96na3uq1p3s73d2dqq0-a.oregon-postgres.render.com/adplatform_db',
-  ssl: { rejectUnauthorized: false }
-});
+async function check() {
+  await client.connect();
+  const tables = await client.query("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
+  console.log('Tables:', tables.rows.map(r => r.table_name));
 
-async function run() {
-  try {
-    const res = await pool.query('SELECT id, email, has_seen_tour FROM users ORDER BY created_at DESC LIMIT 5');
-    console.log(res.rows);
-    process.exit(0);
-  } catch (err) {
-    console.error(err);
-    process.exit(1);
+  const contentCols = await client.query("SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'creator_content'");
+  console.log('creator_content cols:', contentCols.rows);
+
+  const posts = await client.query("SELECT id, title, cover_url, media_url, likes_count, comments_count FROM creator_content LIMIT 10");
+  console.log('Sample posts:', posts.rows);
+
+  for (const t of ['creator_content_likes', 'creator_content_comments', 'user_bookmarks']) {
+    const cols = await client.query(`SELECT column_name, data_type, is_nullable FROM information_schema.columns WHERE table_name = '${t}'`);
+    console.log(`Columns of ${t}:`, cols.rows);
   }
+
+  await client.end();
 }
 
-run();
+check().catch(console.error);

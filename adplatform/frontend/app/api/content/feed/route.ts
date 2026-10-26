@@ -1,12 +1,5 @@
 import { NextResponse } from 'next/server';
-import { Pool } from 'pg';
-
-const connectionString = process.env.DATABASE_URL || 'postgresql://postgres.hobmhiaouplaoxzzcrgv:Krav20%23pool@aws-0-eu-central-1.pooler.supabase.com:5432/postgres';
-
-const pool = new Pool({
-  connectionString,
-  ssl: { rejectUnauthorized: false }
-});
+import pool from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
@@ -84,8 +77,8 @@ export async function GET(request: Request) {
       author_tier: r.author_tier || 'pro',
       title: String(r.title || 'Studio Podcast').replace(/^[-–—\s]+/, ''),
       description: r.description,
-      mediaUrl: r.cover_url || r.media_url || '/audience/podcast-scthon.png',
-      cover_url: r.cover_url || r.media_url || '/audience/podcast-scthon.png',
+      mediaUrl: r.cover_url || r.media_url || '/audience/covers/media.jpg',
+      cover_url: r.cover_url || r.media_url || '/audience/covers/media.jpg',
       duration: r.duration_text || '01:15:00',
       currentTime: '00:04:15',
       progressPercent: 30,

@@ -77,10 +77,10 @@ export default function AudienceLiveEventDetail({ onClose, eventId }: AudienceLi
   const [activeThumbnailIndex, setActiveThumbnailIndex] = useState(0);
 
   const THUMBNAILS = [
-    { img: '/audience/podcast-video-thumb.png', label: 'Main Stream' },
-    { img: '/audience/mockup-sphinx.png', label: 'UI Concept' },
-    { img: '/audience/plant-podcast.png', label: 'Soundstage' },
-    { img: '/audience/podcast-scthon.png', label: 'Audience Q&A' },
+    { img: '/audience/covers/media.jpg', label: 'Main Stream' },
+    { img: '/audience/covers/creative.jpg', label: 'UI Concept' },
+    { img: '/audience/covers/wealth.jpg', label: 'Soundstage' },
+    { img: '/audience/covers/culture.jpg', label: 'Audience Q&A' },
   ];
 
   // Optional: load dynamic messages from backend if available

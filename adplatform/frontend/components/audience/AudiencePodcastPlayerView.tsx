@@ -169,7 +169,7 @@ export default function AudiencePodcastPlayerView({
           <div className="w-full h-[261px] rounded-t-[24px] overflow-hidden relative shadow-sm bg-black group select-none">
             {/* Background Thumbnail Image */}
             <img 
-              src="/audience/podcast-video-thumb.png" 
+              src="/audience/covers/creative.jpg" 
               alt="Podcast Episode Video Thumbnail"
               className="w-full h-full object-cover"
             />
