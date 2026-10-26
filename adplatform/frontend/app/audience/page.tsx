@@ -220,7 +220,11 @@ function AudienceContent() {
   const searchParams = useSearchParams();
   const queryView = searchParams.get('view');
 
-  const { user } = useAuthStore();
+  const { user, loadFromStorage } = useAuthStore();
+
+  useEffect(() => {
+    loadFromStorage();
+  }, [loadFromStorage]);
   const [activeMenu, setActiveMenu] = useState<'podcast' | 'trending' | 'memberships' | 'bookmarks' | 'subscriptions' | 'live' | 'live-detail' | 'chats' | 'notifications' | 'profile' | 'creator-profile' | 'podcast-player' | 'edit-profile' | 'settings' | 'get-verified' | string>(() => {
     if (queryView === 'get-verified' || queryView === 'verify' || queryView === 'pricing') return 'get-verified';
     if (queryView === 'podcast-player' || queryView === 'podcast-detail' || queryView === 'episode') return 'podcast-player';

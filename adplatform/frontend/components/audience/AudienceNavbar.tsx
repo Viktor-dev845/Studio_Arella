@@ -37,7 +37,11 @@ export default function AudienceNavbar({
     setCurrentNav(nav);
     if (onNavChange) onNavChange(nav);
     if (nav === 'profile') {
-      router.push('/audience?view=profile');
+      if (user) {
+        router.push('/audience?view=profile');
+      } else {
+        router.push('/auth/login?redirect=/audience');
+      }
     }
   };
 

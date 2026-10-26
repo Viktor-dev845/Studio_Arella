@@ -4,6 +4,7 @@ import './globals.css';
 import { ToastProvider } from '@/components/ui/ToastProvider';
 import PublicThemeGuard from '@/components/ui/PublicThemeGuard';
 import GoogleOneTap from '@/components/ui/GoogleOneTap';
+import AuthInitializer from '@/components/ui/AuthInitializer';
 
 const quicksand = Quicksand({
   subsets: ['latin'],
@@ -40,6 +41,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${quicksand.variable} ${outfit.variable}`}>
       <body>
         <PublicThemeGuard />
+        <AuthInitializer />
         <ToastProvider>
           <GoogleOneTap />
           {children}

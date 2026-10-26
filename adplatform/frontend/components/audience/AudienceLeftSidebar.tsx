@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { 
   Play, 
   BarChart2, 
@@ -28,9 +29,14 @@ export default function AudienceLeftSidebar({
   onMenuSelect,
   onTagSelect,
 }: AudienceLeftSidebarProps) {
-  const { user } = useAuthStore();
+  const router = useRouter();
+  const { user, loadFromStorage } = useAuthStore();
   const [currentMenu, setCurrentMenu] = useState(activeMenu);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadFromStorage();
+  }, [loadFromStorage]);
 
   useEffect(() => {
     setCurrentMenu(activeMenu);
@@ -45,6 +51,15 @@ export default function AudienceLeftSidebar({
     if (onMenuSelect) onMenuSelect(menuId);
   };
 
+  const handleProfileCardClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (user) {
+      handleMenuClick('profile');
+    } else {
+      router.push('/auth/login?redirect=/audience');
+    }
+  };
+
   const handleTagClick = (tag: string) => {
     setSelectedTag(prev => prev === tag ? null : tag);
     if (onTagSelect) onTagSelect(tag);
@@ -54,11 +69,11 @@ export default function AudienceLeftSidebar({
     <aside className="w-full lg:w-[290px] xl:w-[320px] flex flex-col gap-6 shrink-0 lg:sticky lg:top-[92px] lg:self-start lg:max-h-[calc(100vh-104px)] lg:overflow-y-auto no-scrollbar font-quicksand pb-6">
       {/* ─── 1. User Mini Profile Card (dynamic width) ─── */}
       <div 
-        onClick={() => handleMenuClick('profile')}
+        onClick={handleProfileCardClick}
         className={`w-full min-h-[168px] bg-gradient-to-br from-white via-[#FCFDFD] to-[#FBF8EF] rounded-[18px] p-5 shadow-[0px_0px_2px_rgba(0,0,0,0.1),0px_2px_10px_rgba(0,0,0,0.04)] border overflow-hidden relative transition-all cursor-pointer group flex flex-col justify-between ${
           currentMenu === 'profile' ? 'border-[#D9BA54] ring-1 ring-[#D9BA54]/50' : 'border-gray-200/60 hover:border-[#D9BA54]/50'
         }`}
-        title="View profile"
+        title={user ? "View profile" : "Sign in to Studio Arella"}
       >
         <div className="flex items-center gap-3.5">
           <div className="w-[52px] h-[52px] rounded-[16px] overflow-hidden border border-[#D9BA54]/30 bg-[#FAF3DE] shrink-0 shadow-sm flex items-center justify-center">
