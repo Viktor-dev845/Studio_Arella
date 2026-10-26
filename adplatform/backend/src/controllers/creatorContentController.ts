@@ -92,6 +92,8 @@ export async function getFeed(req: Request, res: Response) {
       progressPercent: 30,
       initialLikes: parseInt(r.likes_count, 10) || 0,
       initialComments: parseInt(r.comments_count, 10) || 0,
+      likes_count: parseInt(r.likes_count, 10) || 0,
+      comments_count: parseInt(r.comments_count, 10) || 0,
       badgeTheme: r.badge_theme || 'gold',
       isBookmarked: r.is_bookmarked,
       hasLiked: r.has_liked,

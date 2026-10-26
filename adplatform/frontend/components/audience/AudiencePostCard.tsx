@@ -40,6 +40,7 @@ export interface PostData {
   initialComments?: number;
   badgeTheme?: 'gold' | 'green';
   isBookmarked?: boolean;
+  hasLiked?: boolean;
   isPremium?: boolean;
   price?: number;
   isUnlocked?: boolean;
@@ -72,7 +73,7 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
 
   // Engagement state
   const [likes, setLikes] = useState(post.initialLikes || 0);
-  const [hasLiked, setHasLiked] = useState(false);
+  const [hasLiked, setHasLiked] = useState(post.hasLiked || false);
   const [isLiking, setIsLiking] = useState(false);
 
   const [commentsCount, setCommentsCount] = useState(post.initialComments || 0);
@@ -97,7 +98,8 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
     if (post.isUnlocked !== undefined) setIsUnlocked(post.isUnlocked);
     if (typeof post.initialLikes === 'number') setLikes(post.initialLikes);
     if (typeof post.initialComments === 'number') setCommentsCount(post.initialComments);
-  }, [post.isBookmarked, post.isUnlocked, post.initialLikes, post.initialComments]);
+    if (post.hasLiked !== undefined) setHasLiked(post.hasLiked);
+  }, [post.isBookmarked, post.isUnlocked, post.initialLikes, post.initialComments, post.hasLiked]);
 
   // Handle Simulated Audio Playback
   useEffect(() => {

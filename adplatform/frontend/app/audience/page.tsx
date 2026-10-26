@@ -341,12 +341,17 @@ function AudienceContent() {
               duration: (p.duration_text as string) || '01:15:00',
               currentTime: '00:04:15',
               progressPercent: 30,
-              initialLikes: parseInt(String(p.likes_count), 10) || 0,
-              initialComments: parseInt(String(p.comments_count), 10) || 0,
+              initialLikes: typeof p.initialLikes === 'number'
+                ? p.initialLikes
+                : (parseInt(String(p.likes_count ?? p.initialLikes ?? 0), 10) || 0),
+              initialComments: typeof p.initialComments === 'number'
+                ? p.initialComments
+                : (parseInt(String(p.comments_count ?? p.initialComments ?? 0), 10) || 0),
               badgeTheme: p.badge_theme === 'green' ? 'green' : 'gold',
-              isBookmarked: activeMenu === 'bookmarks' ? true : Boolean(p.is_bookmarked),
-              isPremium: Boolean(p.is_premium),
-              isUnlocked: p.is_unlocked !== undefined ? Boolean(p.is_unlocked) : !p.is_premium,
+              isBookmarked: activeMenu === 'bookmarks' ? true : Boolean(p.is_bookmarked ?? p.isBookmarked),
+              hasLiked: Boolean(p.has_liked ?? p.hasLiked),
+              isPremium: Boolean(p.is_premium ?? p.isPremium),
+              isUnlocked: p.is_unlocked !== undefined ? Boolean(p.is_unlocked) : (p.isUnlocked !== undefined ? Boolean(p.isUnlocked) : !p.is_premium),
               price: parseFloat(String(p.price)) || 0,
               category: (p.category as string) || 'General',
               tags: Array.isArray(p.tags) ? p.tags : [],
