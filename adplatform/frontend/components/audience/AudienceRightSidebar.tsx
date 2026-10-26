@@ -113,7 +113,7 @@ export default function AudienceRightSidebar({
   };
 
   return (
-    <aside className="w-full lg:w-[300px] xl:w-[340px] flex flex-col gap-6 shrink-0 relative font-quicksand">
+    <aside className="w-full lg:w-[300px] xl:w-[340px] flex flex-col gap-6 shrink-0 relative lg:h-full lg:overflow-y-auto no-scrollbar font-quicksand pb-10">
       {/* ─── 1. Try Premium for Free Card ─── */}
       <AudiencePremiumCard />
 

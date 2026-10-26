@@ -10,6 +10,29 @@
   font-family: var(--font-quicksand), 'Quicksand', sans-serif;
 }
 
+/* Custom sleek scrollbars for sidebars and feeds */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.feed-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.feed-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.feed-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 9999px;
+}
+.feed-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(212, 175, 55, 0.6);
+}
+
 /* Tailwind v4 ignores the classic tailwind.config.ts `darkMode` option —
    dark: variants must be defined in CSS. This makes `dark:` match the
    existing manual `.dark` class the theme toggle already puts on <html>

@@ -51,7 +51,7 @@ export default function AudienceLeftSidebar({
   };
 
   return (
-    <aside className="w-full lg:w-[290px] xl:w-[320px] flex flex-col gap-6 shrink-0 font-quicksand">
+    <aside className="w-full lg:w-[290px] xl:w-[320px] flex flex-col gap-6 shrink-0 lg:h-full lg:overflow-y-auto no-scrollbar font-quicksand pb-10">
       {/* ─── 1. User Mini Profile Card (dynamic width) ─── */}
       <div 
         onClick={() => handleMenuClick('profile')}
