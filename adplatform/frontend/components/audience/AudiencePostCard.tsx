@@ -5,7 +5,9 @@ import { useRouter } from 'next/navigation';
 import { 
   Play, 
   Pause, 
+  ThumbsUp,
   MessageSquare, 
+  Send,
   Share2, 
   Bookmark, 
   Heart,
@@ -80,6 +82,7 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
   const [commentsList, setCommentsList] = useState<CommentItem[]>([]);
   const [isLoadingComments, setIsLoadingComments] = useState(false);
   const [isPostingComment, setIsPostingComment] = useState(false);
+  const commentInputRef = useRef<HTMLInputElement>(null);
 
   // Tip modal & unlock state
   const [isTipModalOpen, setIsTipModalOpen] = useState(false);
@@ -193,10 +196,19 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
     }
   };
 
-  // ── TOGGLE & LOAD COMMENTS ───────────────────────────────────────────────────
+  // ── TOGGLE & LOAD COMMENTS (Enlarged interactive response) ──────────────────
   const handleToggleComments = async () => {
     const nextShow = !showComments;
     setShowComments(nextShow);
+
+    // Immediately focus into the comment input so the user sees something happened
+    if (nextShow) {
+      setTimeout(() => {
+        commentInputRef.current?.focus();
+        commentInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 100);
+    }
+
     if (nextShow && commentsList.length === 0) {
       setIsLoadingComments(true);
       try {
@@ -496,62 +508,68 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
         </div>
       )}
 
-      {/* ─── 4. Modern Clean Engagement Bar ─── */}
-      <div className="flex items-center justify-between pt-1 border-t border-gray-100/80">
-        <div className="flex items-center gap-2 sm:gap-3">
-          {/* Like Button: Sleek Pill */}
-          <button
-            type="button"
-            onClick={handleLike}
-            disabled={isLiking}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-200 cursor-pointer active:scale-95 ${
-              hasLiked
-                ? 'bg-rose-50 text-rose-600 border border-rose-200/80 shadow-2xs'
-                : 'bg-gray-100/80 text-gray-700 hover:bg-gray-200/80 border border-transparent'
-            }`}
+      {/* ─── 4. Modern Engagement Bar (Enlarged Buttons) ─── */}
+      <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+        <div className="flex items-center gap-5 sm:gap-6">
+          {/* Like Button & Golden Badge */}
+          <div 
+            onClick={handleLike} 
+            className="flex items-center gap-2 cursor-pointer select-none group"
             title="Like this episode"
           >
-            <Heart 
-              size={16} 
-              className={`transition-transform duration-200 ${
-                hasLiked ? 'fill-rose-500 text-rose-500 scale-110' : 'text-gray-600'
-              }`} 
-            />
-            <span className="font-quicksand font-bold text-[13px]">{likes}</span>
-          </button>
+            <button
+              type="button"
+              disabled={isLiking}
+              className="p-1 text-gray-800 hover:text-[#D4AF37] group-hover:scale-110 active:scale-90 transition-all cursor-pointer"
+            >
+              <ThumbsUp 
+                size={26} 
+                strokeWidth={1.9} 
+                className={hasLiked ? 'text-[#D4AF37] fill-[#D4AF37]' : 'text-gray-800'} 
+              />
+            </button>
+            <div className="h-8 px-3.5 bg-gradient-to-r from-[#D4AF37] to-[#E5C158] text-white rounded-full flex items-center gap-1.5 shadow-sm border-2 border-white group-hover:scale-105 active:scale-95 transition-all">
+              <span className="text-[14px] leading-none">💖</span>
+              <span className="text-[13px] font-bold font-quicksand leading-none">
+                +{likes}
+              </span>
+            </div>
+          </div>
 
-          {/* Comment Button: Sleek Pill */}
-          <button
-            type="button"
-            onClick={handleToggleComments}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-200 cursor-pointer active:scale-95 ${
-              showComments
-                ? 'bg-amber-50 text-[#8c711a] border border-amber-200/80 shadow-2xs'
-                : 'bg-gray-100/80 text-gray-700 hover:bg-gray-200/80 border border-transparent'
-            }`}
+          {/* Comment Button & Golden Badge */}
+          <div 
+            onClick={handleToggleComments} 
+            className="flex items-center gap-2 cursor-pointer select-none group"
             title="View or add comments"
           >
-            <MessageSquare size={16} className={showComments ? 'text-[#8c711a]' : 'text-gray-600'} />
-            <span className="font-quicksand font-bold text-[13px]">{commentsCount}</span>
-          </button>
+            <button
+              type="button"
+              className="p-1 text-gray-800 hover:text-[#D4AF37] group-hover:scale-110 active:scale-90 transition-all cursor-pointer"
+            >
+              <MessageSquare 
+                size={26} 
+                strokeWidth={1.9} 
+                className={showComments ? 'text-[#D4AF37]' : 'text-gray-800'} 
+              />
+            </button>
+            <div className="h-8 min-w-[32px] px-2.5 bg-gradient-to-r from-[#D4AF37] to-[#E5C158] text-white rounded-full flex items-center justify-center shadow-sm border-2 border-white group-hover:scale-105 active:scale-95 transition-all">
+              <span className="text-[13px] font-bold font-quicksand leading-none">
+                {commentsCount}
+              </span>
+            </div>
+          </div>
 
-          {/* Share Button: Sleek Pill */}
+          {/* Share Button */}
           <button
             type="button"
             onClick={handleShare}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-gray-100/80 text-gray-700 hover:bg-gray-200/80 transition-all cursor-pointer active:scale-95 border border-transparent"
+            className="p-1 text-gray-800 hover:text-[#D4AF37] hover:scale-110 active:scale-90 transition-all cursor-pointer"
             title="Share episode link"
           >
             {copiedLink ? (
-              <>
-                <Check size={14} className="text-emerald-600" />
-                <span className="text-emerald-700 text-[12px] font-bold">Copied!</span>
-              </>
+              <Check size={26} strokeWidth={2.2} className="text-emerald-600 animate-bounce" />
             ) : (
-              <>
-                <Share2 size={15} className="text-gray-600" />
-                <span className="hidden sm:inline text-[12px]">Share</span>
-              </>
+              <Send size={25} strokeWidth={1.9} className="text-gray-800 -rotate-12 translate-y-[-1px]" />
             )}
           </button>
         </div>
@@ -560,16 +578,13 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
         <button
           type="button"
           onClick={handleToggleBookmark}
-          className={`p-2 rounded-full transition-all cursor-pointer active:scale-90 ${
-            isBookmarked
-              ? 'bg-amber-50 text-[#D4AF37] border border-amber-200/80'
-              : 'hover:bg-gray-100 text-gray-500'
-          }`}
+          className="p-1 text-gray-800 hover:text-[#D4AF37] hover:scale-110 active:scale-90 transition-all cursor-pointer"
           title={isBookmarked ? 'Remove bookmark' : 'Bookmark episode'}
         >
           <Bookmark 
-            size={18} 
-            className={isBookmarked ? 'fill-[#D4AF37] text-[#D4AF37]' : ''} 
+            size={26} 
+            strokeWidth={1.9} 
+            className={isBookmarked ? 'fill-[#D4AF37] text-[#D4AF37]' : 'text-gray-800'} 
           />
         </button>
       </div>
@@ -583,18 +598,21 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
               <img 
                 src={user.avatar} 
                 alt={user?.name || 'You'} 
-                className="w-8 h-8 rounded-full object-cover ring-1 ring-gray-200"
+                className="w-9 h-9 rounded-full object-cover ring-1 ring-gray-200"
                 onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
               />
             ) : (
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#E8C170] to-[#D4AF37] text-black font-bold flex items-center justify-center text-xs uppercase ring-1 ring-amber-200">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#E8C170] to-[#D4AF37] text-black font-bold flex items-center justify-center text-xs uppercase ring-1 ring-amber-200 shadow-xs">
                 {user?.name ? user.name.charAt(0) : 'U'}
               </div>
             )}
           </div>
 
-          <div className="flex-1 h-10 bg-gray-50 hover:bg-gray-100/80 focus-within:bg-white rounded-full px-4 flex items-center justify-between border border-gray-200/80 focus-within:border-[#D4AF37] focus-within:ring-2 focus-within:ring-[#D4AF37]/20 transition-all">
+          <div className={`flex-1 h-11 bg-gray-50 hover:bg-gray-100/80 focus-within:bg-white rounded-full px-4 flex items-center justify-between border transition-all ${
+            showComments ? 'border-[#D4AF37] ring-2 ring-[#D4AF37]/20 bg-white' : 'border-gray-200/80'
+          }`}>
             <input 
+              ref={commentInputRef}
               type="text"
               value={commentInput}
               onChange={(e) => setCommentInput(e.target.value)}
@@ -604,7 +622,7 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
             <button 
               type="submit" 
               disabled={!commentInput.trim() || isPostingComment}
-              className="text-[#8c711a] hover:text-[#5a4810] disabled:text-gray-300 font-bold text-xs ml-2 cursor-pointer transition-colors"
+              className="px-4 py-1.5 rounded-full bg-[#D4AF37] hover:bg-[#c9a32c] text-white disabled:bg-gray-200 disabled:text-gray-400 font-bold text-xs ml-2 cursor-pointer transition-all shadow-xs"
             >
               {isPostingComment ? 'Posting...' : 'Post'}
             </button>
@@ -613,12 +631,18 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
 
         {/* Comments Drawer */}
         {showComments && (
-          <div className="mt-2 pt-3 border-t border-gray-100 flex flex-col gap-2.5">
+          <div className="mt-1 pt-3 border-t border-gray-100 flex flex-col gap-2.5">
             {isLoadingComments ? (
               <div className="py-4 text-center text-xs text-gray-400">Loading conversation...</div>
             ) : commentsList.length === 0 ? (
-              <div className="py-3 text-center text-xs text-gray-400">
-                No comments yet. Be the first to share your thoughts!
+              <div className="py-3 px-4 bg-amber-50/70 border border-amber-200/60 rounded-xl text-xs text-[#8c711a] flex items-center justify-between shadow-2xs">
+                <span className="font-medium">💬 Be the first to share your thoughts on this episode!</span>
+                <span 
+                  className="text-[11px] underline font-bold cursor-pointer hover:text-black" 
+                  onClick={() => commentInputRef.current?.focus()}
+                >
+                  Type below ↓
+                </span>
               </div>
             ) : (
               commentsList.map((c) => (
