@@ -26,6 +26,7 @@ const DEFAULT_FEED_POSTS: PostData[] = [
   {
     id: 'post-1',
     author: {
+      id: 'd167c089-35e2-4f25-a627-c7d55f7c713f',
       name: 'Adam Udochi',
       role: 'UI/UX Designer & Producer',
       avatar: '/audience/adam-udochi.png',
@@ -49,6 +50,7 @@ const DEFAULT_FEED_POSTS: PostData[] = [
   {
     id: 'post-2',
     author: {
+      id: '3a9555f6-fa47-47ef-aa88-f19d80a90e6e',
       name: 'Darlene Black',
       role: 'Podcast Host & Storyteller',
       avatar: '/audience/darlene-black.png',
@@ -72,6 +74,7 @@ const DEFAULT_FEED_POSTS: PostData[] = [
   {
     id: 'post-3',
     author: {
+      id: 'e3101424-a3ac-4a9d-9ea9-3f0d957edf78',
       name: 'Nermmen Saif',
       role: 'Design & Media Creator',
       avatar: '/audience/nermmen-saif.png',
@@ -96,6 +99,7 @@ const DEFAULT_FEED_POSTS: PostData[] = [
   {
     id: 'post-4',
     author: {
+      id: '0e0d0c45-7c57-40eb-8910-f3d8cc573b99',
       name: 'Audrey Alexander',
       role: 'Diplomacy & Political Analyst',
       avatar: '/audience/audrey-alexander.png',
@@ -119,6 +123,7 @@ const DEFAULT_FEED_POSTS: PostData[] = [
   {
     id: 'post-5',
     author: {
+      id: '3a9555f6-fa47-47ef-aa88-f19d80a90e6e',
       name: 'Brandon Wilson',
       role: 'Cultural Historian',
       avatar: '/audience/brandon-wilson.png',
@@ -142,6 +147,7 @@ const DEFAULT_FEED_POSTS: PostData[] = [
   {
     id: 'post-6',
     author: {
+      id: '34debe18-75a3-49d3-9404-d82df7b5cd62',
       name: 'Theresa Steward',
       role: 'Executive Producer & Talent Recruiter',
       avatar: '/audience/theresa-steward.png',
@@ -165,6 +171,7 @@ const DEFAULT_FEED_POSTS: PostData[] = [
   {
     id: 'post-7',
     author: {
+      id: 'f4f4d1be-9134-48e4-9789-fc92fc4cb8f4',
       name: 'Kyle Fisher',
       role: 'Family Counselor & Educator',
       avatar: '/audience/kyle-fisher.png',
@@ -188,6 +195,7 @@ const DEFAULT_FEED_POSTS: PostData[] = [
   {
     id: 'post-8',
     author: {
+      id: '3a9555f6-fa47-47ef-aa88-f19d80a90e6e',
       name: 'Darlene Black',
       role: 'Relationship & Marriage Coach',
       avatar: '/audience/darlene-black.png',

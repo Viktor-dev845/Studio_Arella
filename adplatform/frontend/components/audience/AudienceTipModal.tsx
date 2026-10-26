@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { X, Heart, Sparkles, CheckCircle2 } from 'lucide-react';
 import api from '@/lib/api';
+import { useAuthStore } from '@/store/authStore';
 import { useToast } from '@/components/ui/ToastProvider';
 
 interface AudienceTipModalProps {
@@ -28,6 +30,8 @@ export default function AudienceTipModal({
   contentId,
   onTipSuccess,
 }: AudienceTipModalProps) {
+  const router = useRouter();
+  const { user } = useAuthStore();
   const { toast } = useToast();
   const [selectedAmount, setSelectedAmount] = useState<number>(1000);
   const [customAmount, setCustomAmount] = useState<string>('');
@@ -53,6 +57,15 @@ export default function AudienceTipModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      toast('Please sign in to send a tip to this creator.', 'info');
+      router.push('/auth/login?redirect=/audience');
+      return;
+    }
+    if (user.id === creatorId) {
+      toast('You cannot tip your own post.', 'info');
+      return;
+    }
     if (!creatorId) {
       toast('Creator not found', 'error');
       return;
