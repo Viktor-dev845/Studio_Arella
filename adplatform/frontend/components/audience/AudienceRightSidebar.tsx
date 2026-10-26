@@ -49,17 +49,30 @@ const INITIAL_LIVE_EXPERIENCES: TopicItem[] = [
 interface AudienceRightSidebarProps {
   view?: 'feed' | 'trending' | 'bookmarks';
   onFilterChange?: (topics: string[], liveExp: string[]) => void;
+  selectedTopics?: string[];
+  selectedLiveExp?: string[];
+  topicCounts?: Record<string, number>;
+  onClearFilters?: () => void;
 }
 
 export default function AudienceRightSidebar({
   view = 'trending',
   onFilterChange,
+  selectedTopics,
+  selectedLiveExp,
+  topicCounts,
+  onClearFilters,
 }: AudienceRightSidebarProps) {
   const router = useRouter();
   const [creators, setCreators] = useState<CreatorItem[]>(INITIAL_CREATORS);
-  const [trendingTopics, setTrendingTopics] = useState<TopicItem[]>(INITIAL_TRENDING_TOPICS);
-  const [liveExperiences, setLiveExperiences] = useState<TopicItem[]>(INITIAL_LIVE_EXPERIENCES);
+  const [internalTopics, setInternalTopics] = useState<string[]>([]);
+  const [internalLiveExp, setInternalLiveExp] = useState<string[]>([]);
   const [messagesOpen, setMessagesOpen] = useState(false);
+
+  const activeTopics = selectedTopics !== undefined ? selectedTopics : internalTopics;
+  const activeLiveExp = selectedLiveExp !== undefined ? selectedLiveExp : internalLiveExp;
+
+  const hasActiveFilters = activeTopics.length > 0 || (activeLiveExp.length > 0 && !activeLiveExp.includes('all'));
 
   useEffect(() => {
     api.get('/follows/following')
@@ -87,30 +100,50 @@ export default function AudienceRightSidebar({
   };
 
   const toggleTrending = (id: string) => {
-    const updated = trendingTopics.map((t) =>
-      t.id === id ? { ...t, checked: !t.checked } : t
-    );
-    setTrendingTopics(updated);
-    if (onFilterChange) {
-      onFilterChange(
-        updated.filter((t) => t.checked).map((t) => t.id),
-        liveExperiences.filter((l) => l.checked).map((l) => l.id)
-      );
-    }
+    const updated = activeTopics.includes(id)
+      ? activeTopics.filter((t) => t !== id)
+      : [...activeTopics, id];
+    
+    setInternalTopics(updated);
+    onFilterChange?.(updated, activeLiveExp);
   };
 
   const toggleLive = (id: string) => {
-    const updated = liveExperiences.map((l) =>
-      l.id === id ? { ...l, checked: !l.checked } : l
-    );
-    setLiveExperiences(updated);
-    if (onFilterChange) {
-      onFilterChange(
-        trendingTopics.filter((t) => t.checked).map((t) => t.id),
-        updated.filter((l) => l.checked).map((l) => l.id)
-      );
+    let updated: string[];
+    if (id === 'all') {
+      updated = activeLiveExp.includes('all') ? [] : ['all'];
+    } else {
+      const withoutAll = activeLiveExp.filter(x => x !== 'all');
+      updated = withoutAll.includes(id)
+        ? withoutAll.filter((l) => l !== id)
+        : [...withoutAll, id];
     }
+    
+    setInternalLiveExp(updated);
+    onFilterChange?.(activeTopics, updated);
   };
+
+  const handleReset = () => {
+    setInternalTopics([]);
+    setInternalLiveExp([]);
+    onClearFilters?.();
+    onFilterChange?.([], []);
+  };
+
+  const trendingTopicsList = [
+    { id: 'health', label: 'Health' },
+    { id: 'wealth', label: 'Wealth' },
+    { id: 'politics', label: 'Politics' },
+    { id: 'entertainment', label: 'Entertainment' },
+  ];
+
+  const liveExperiencesList = [
+    { id: 'all', label: 'All' },
+    { id: 'family', label: 'Family' },
+    { id: 'business', label: 'Business' },
+    { id: 'relationship', label: 'Relationship' },
+    { id: 'marriage', label: 'Marriage' },
+  ];
 
   return (
     <aside className="w-full lg:w-[300px] xl:w-[340px] flex flex-col gap-6 shrink-0 relative lg:sticky lg:top-[92px] lg:self-start lg:max-h-[calc(100vh-104px)] lg:overflow-y-auto no-scrollbar font-quicksand pb-6">
@@ -122,84 +155,113 @@ export default function AudienceRightSidebar({
         <AudienceChatsCard />
       ) : view === 'trending' ? (
         /* ─── Trending Topics & Live Experience ─── */
-        <div className="w-full min-h-[505px] bg-[#FCFDFD] rounded-[16px] p-5 shadow-[0px_0px_2px_rgba(0,0,0,0.08),0px_0px_1px_rgba(0,0,0,0.06)] border border-gray-100/70 flex flex-col gap-8">
+        <div className="w-full min-h-[505px] bg-[#FCFDFD] rounded-[16px] p-5 shadow-[0px_0px_2px_rgba(0,0,0,0.08),0px_0px_1px_rgba(0,0,0,0.06)] border border-gray-100/70 flex flex-col gap-7">
           {/* Section A: Trending Topics */}
-          <div className="flex flex-col gap-4">
-            <h4 className="text-[20px] font-semibold text-[#666666] leading-[26px]">
-              Trending topics
-            </h4>
+          <div className="flex flex-col gap-3.5">
+            <div className="flex items-center justify-between">
+              <h4 className="text-[20px] font-semibold text-[#666666] leading-[26px]">
+                Trending topics
+              </h4>
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  onClick={handleReset}
+                  className="text-[12px] font-semibold text-[#D4AF37] hover:underline cursor-pointer"
+                >
+                  Reset
+                </button>
+              )}
+            </div>
 
             <div className="flex flex-col gap-3">
-              {trendingTopics.map((topic) => (
-                <div 
-                  key={topic.id}
-                  onClick={() => toggleTrending(topic.id)}
-                  className="flex items-center justify-between cursor-pointer select-none group"
-                >
-                  <div className="flex items-center gap-2.5">
-                    {/* Custom Checkbox */}
-                    {topic.checked ? (
-                      <div className="w-[18px] h-[18px] bg-[#D4AF37] rounded-[4px] flex items-center justify-center text-white shadow-sm">
-                        <Check size={13} strokeWidth={3} />
-                      </div>
-                    ) : (
-                      <div className="w-[16px] h-[16px] border border-[#6C757D] rounded-[4px] group-hover:border-black transition-colors" />
-                    )}
-                    <span className={`text-[16px] leading-[21px] transition-colors ${
-                      topic.checked ? 'text-black font-medium' : 'text-[#666666] group-hover:text-black'
-                    }`}>
-                      {topic.label}
-                    </span>
-                  </div>
+              {trendingTopicsList.map((topic) => {
+                const isChecked = activeTopics.includes(topic.id);
+                const count = topicCounts ? (topicCounts[topic.id] ?? 0) : 10;
 
-                  {/* Badge: 34px x 20px, white pill, gray/600 text "10" */}
-                  <div className="w-[34px] h-[20px] bg-white rounded-[12px] flex items-center justify-center border border-gray-100 shadow-[0px_1px_2px_rgba(0,0,0,0.04)]">
-                    <span className="font-quicksand text-[13px] text-[#6C757D] font-normal">
-                      {topic.count}
-                    </span>
+                return (
+                  <div 
+                    key={topic.id}
+                    onClick={() => toggleTrending(topic.id)}
+                    className="flex items-center justify-between cursor-pointer select-none group"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      {/* Custom Checkbox */}
+                      {isChecked ? (
+                        <div className="w-[18px] h-[18px] bg-[#D4AF37] rounded-[4px] flex items-center justify-center text-white shadow-sm">
+                          <Check size={13} strokeWidth={3} />
+                        </div>
+                      ) : (
+                        <div className="w-[16px] h-[16px] border border-[#6C757D] rounded-[4px] group-hover:border-black transition-colors" />
+                      )}
+                      <span className={`text-[16px] leading-[21px] transition-colors ${
+                        isChecked ? 'text-black font-semibold' : 'text-[#666666] group-hover:text-black'
+                      }`}>
+                        {topic.label}
+                      </span>
+                    </div>
+
+                    {/* Badge: 34px x 20px, white pill, gray/600 text count */}
+                    <div className={`w-[34px] h-[20px] rounded-[12px] flex items-center justify-center border transition-colors ${
+                      isChecked 
+                        ? 'bg-amber-50 border-[#D4AF37]/40 text-[#B39025] font-semibold' 
+                        : 'bg-white border-gray-100 text-[#6C757D] shadow-[0px_1px_2px_rgba(0,0,0,0.04)]'
+                    }`}>
+                      <span className="font-quicksand text-[13px]">
+                        {count}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
           {/* Section B: Live Experience */}
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3.5 pt-2 border-t border-gray-100/80">
             <h4 className="text-[20px] font-semibold text-[#666666] leading-[26px]">
               Live experience
             </h4>
 
             <div className="flex flex-col gap-3">
-              {liveExperiences.map((item) => (
-                <div 
-                  key={item.id}
-                  onClick={() => toggleLive(item.id)}
-                  className="flex items-center justify-between cursor-pointer select-none group"
-                >
-                  <div className="flex items-center gap-2.5">
-                    {/* Custom Checkbox */}
-                    {item.checked ? (
-                      <div className="w-[18px] h-[18px] bg-[#D4AF37] rounded-[4px] flex items-center justify-center text-white shadow-sm">
-                        <Check size={13} strokeWidth={3} />
-                      </div>
-                    ) : (
-                      <div className="w-[16px] h-[16px] border border-[#6C757D] rounded-[4px] group-hover:border-black transition-colors" />
-                    )}
-                    <span className={`text-[16px] leading-[21px] transition-colors ${
-                      item.checked ? 'text-black font-medium' : 'text-[#666666] group-hover:text-black'
-                    }`}>
-                      {item.label}
-                    </span>
-                  </div>
+              {liveExperiencesList.map((item) => {
+                const isChecked = activeLiveExp.includes(item.id);
+                const count = topicCounts ? (topicCounts[item.id] ?? 0) : 10;
 
-                  {/* Badge: 34px x 20px, white pill, gray/600 text "10" */}
-                  <div className="w-[34px] h-[20px] bg-white rounded-[12px] flex items-center justify-center border border-gray-100 shadow-[0px_1px_2px_rgba(0,0,0,0.04)]">
-                    <span className="font-quicksand text-[13px] text-[#6C757D] font-normal">
-                      {item.count}
-                    </span>
+                return (
+                  <div 
+                    key={item.id}
+                    onClick={() => toggleLive(item.id)}
+                    className="flex items-center justify-between cursor-pointer select-none group"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      {/* Custom Checkbox */}
+                      {isChecked ? (
+                        <div className="w-[18px] h-[18px] bg-[#D4AF37] rounded-[4px] flex items-center justify-center text-white shadow-sm">
+                          <Check size={13} strokeWidth={3} />
+                        </div>
+                      ) : (
+                        <div className="w-[16px] h-[16px] border border-[#6C757D] rounded-[4px] group-hover:border-black transition-colors" />
+                      )}
+                      <span className={`text-[16px] leading-[21px] transition-colors ${
+                        isChecked ? 'text-black font-semibold' : 'text-[#666666] group-hover:text-black'
+                      }`}>
+                        {item.label}
+                      </span>
+                    </div>
+
+                    {/* Badge: 34px x 20px */}
+                    <div className={`w-[34px] h-[20px] rounded-[12px] flex items-center justify-center border transition-colors ${
+                      isChecked 
+                        ? 'bg-amber-50 border-[#D4AF37]/40 text-[#B39025] font-semibold' 
+                        : 'bg-white border-gray-100 text-[#6C757D] shadow-[0px_1px_2px_rgba(0,0,0,0.04)]'
+                    }`}>
+                      <span className="font-quicksand text-[13px]">
+                        {count}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
