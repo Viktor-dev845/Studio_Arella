@@ -653,9 +653,7 @@ function AudienceContent() {
                       onLiveExperienceClick={() => handleMenuChange('live')}
                     />
                   </div>
-                  <div className="w-full md:w-[280px] lg:w-[320px] shrink-0">
-                    <AudiencePremiumCard />
-                  </div>
+                  <AudiencePremiumCard className="w-full md:w-[280px] lg:w-[320px]" />
                 </div>
 
                 {/* Row 2: Membership Card */}
