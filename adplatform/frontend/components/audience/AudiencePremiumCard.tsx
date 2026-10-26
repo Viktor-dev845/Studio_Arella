@@ -8,7 +8,7 @@ import { useToast } from '@/components/ui/ToastProvider';
 
 export default function AudiencePremiumCard({ className = '' }: { className?: string }) {
   const router = useRouter();
-  const { user, setUser } = useAuthStore();
+  const { user, updateUser } = useAuthStore();
   const { toast } = useToast();
   const [isDismissed, setIsDismissed] = useState(false);
   const [showTrialModal, setShowTrialModal] = useState(false);
@@ -56,13 +56,10 @@ export default function AudiencePremiumCard({ className = '' }: { className?: st
     try {
       // 30 days trial activation
       const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
-      if (user) {
-        setUser({
-          ...user,
-          creator_tier: 'pro',
-          pro_subscription_expires_at: expiresAt,
-        });
-      }
+      updateUser({
+        creator_tier: 'pro',
+        pro_subscription_expires_at: expiresAt,
+      });
       setShowTrialModal(false);
       toast('🎉 VIP Pass activated! Enjoy 1 month of ad-free streaming & exclusive creator live experiences.', 'success');
     } catch {
