@@ -95,7 +95,9 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
   useEffect(() => {
     if (post.isBookmarked !== undefined) setIsBookmarked(post.isBookmarked);
     if (post.isUnlocked !== undefined) setIsUnlocked(post.isUnlocked);
-  }, [post.isBookmarked, post.isUnlocked]);
+    if (typeof post.initialLikes === 'number') setLikes(post.initialLikes);
+    if (typeof post.initialComments === 'number') setCommentsCount(post.initialComments);
+  }, [post.isBookmarked, post.isUnlocked, post.initialLikes, post.initialComments]);
 
   // Handle Simulated Audio Playback
   useEffect(() => {
@@ -531,7 +533,7 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
             <div className="h-8 px-3.5 bg-gradient-to-r from-[#D4AF37] to-[#E5C158] text-white rounded-full flex items-center gap-1.5 shadow-sm border-2 border-white group-hover:scale-105 active:scale-95 transition-all">
               <span className="text-[14px] leading-none">💖</span>
               <span className="text-[13px] font-bold font-quicksand leading-none">
-                +{likes}
+                {likes.toLocaleString()}
               </span>
             </div>
           </div>
