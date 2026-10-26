@@ -176,13 +176,15 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
           <Star className="h-4 w-4 transition-colors" strokeWidth={1.75} fill={isFavorited ? theme.color.gold : 'none'} color={isFavorited ? theme.color.gold : '#9ca3af'} />
         </button>
 
-        {/* Creator / Audience Toggle */}
+        {/* Advertiser / Audience Toggle */}
         <div className="hide-on-mobile flex items-center gap-3 text-neutral-500 dark:text-neutral-400">
-          <span className={!isAudience ? "text-neutral-900 dark:text-white font-medium" : ""}>Creator</span>
+          <span className={!isAudience ? "text-neutral-900 dark:text-white font-medium" : ""}>
+            {user?.role === 'creator' ? 'Creator' : 'Advertiser'}
+          </span>
           <button
             onClick={() => router.push(isAudience ? '/dashboard' : '/audience')}
             className="relative inline-flex h-4 w-7 items-center rounded-full bg-neutral-900 dark:bg-neutral-100 transition-colors"
-            title={isAudience ? 'Switch back to Creator dashboard' : 'Preview as a listener would see it'}
+            title={isAudience ? 'Switch back to Advertiser dashboard' : 'Preview as a listener would see it'}
           >
             <span className={`h-3 w-3 rounded-full bg-white dark:bg-black transition-all ${isAudience ? 'ml-[14px]' : 'ml-0.5'}`} />
           </button>

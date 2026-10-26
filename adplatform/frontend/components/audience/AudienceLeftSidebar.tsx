@@ -9,7 +9,8 @@ import {
   Bookmark, 
   Gamepad2, 
   Settings, 
-  Plus 
+  Plus,
+  LayoutDashboard 
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 
@@ -202,6 +203,24 @@ export default function AudienceLeftSidebar({
           <Settings size={20} strokeWidth={1.8} className={`shrink-0 ${currentMenu === 'settings' || currentMenu === 'edit-profile' ? 'text-black' : 'text-[#666666]'}`} />
           <span className="text-[16px] leading-[21px]">Settings</span>
         </button>
+
+        {/* Return to Advertiser Portal / Dashboard */}
+        <div className="pt-2 mt-1 border-t border-gray-100">
+          <button
+            type="button"
+            onClick={() => router.push('/dashboard')}
+            className="w-full flex items-center justify-between py-2.5 px-3.5 rounded-xl bg-amber-50/80 hover:bg-amber-100/90 border border-amber-200/70 text-[#8c711a] text-left transition-all cursor-pointer group shadow-2xs"
+            title="Return to Advertiser Dashboard"
+          >
+            <div className="flex items-center gap-2.5">
+              <LayoutDashboard size={18} className="text-[#D4AF37] group-hover:scale-110 transition-transform" />
+              <span className="text-[13px] font-bold">
+                {user?.role === 'creator' ? 'Creator Dashboard' : 'Advertiser Portal'}
+              </span>
+            </div>
+            <span className="text-[13px] font-bold text-[#D4AF37] group-hover:translate-x-0.5 transition-transform">&rarr;</span>
+          </button>
+        </div>
       </div>
 
       {/* ─── 3. Followed Hashtags Card ─── */}

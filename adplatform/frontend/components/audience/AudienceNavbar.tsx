@@ -170,14 +170,31 @@ export default function AudienceNavbar({
         </div>
       </nav>
 
-      {/* ─── Right: Search Box (Group 48095436) ─── */}
-      <div className="hidden md:flex items-center gap-4">
+      {/* ─── Right: Mode Toggle (Advertiser <-> Audience) + Search Box ─── */}
+      <div className="flex items-center gap-3 sm:gap-4">
+        {/* Mode Switch: Advertiser <-> Audience */}
+        <div 
+          onClick={() => router.push('/dashboard')}
+          className="flex items-center gap-2 text-xs font-quicksand bg-gray-50 hover:bg-gray-100 border border-gray-200/80 px-3 py-1.5 rounded-full cursor-pointer transition-all shadow-2xs group select-none shrink-0"
+          title="Switch back to Advertiser Dashboard"
+        >
+          <span className="text-gray-500 group-hover:text-black font-semibold transition-colors">
+            {user?.role === 'creator' ? 'Creator' : 'Advertiser'}
+          </span>
+          <div className="relative inline-flex h-4 w-7 items-center rounded-full bg-neutral-900 p-0.5 transition-colors">
+            <span className="h-3 w-3 rounded-full bg-[#D4AF37] transition-all ml-[12px] shadow-xs" />
+          </div>
+          <span className="text-[#8c711a] font-bold">
+            Audience
+          </span>
+        </div>
+
         {/* Subtle vertical separator from Figma */}
-        <div className="h-[28px] w-[1px] bg-black/15" />
+        <div className="hidden md:block h-[28px] w-[1px] bg-black/15" />
 
         <form 
           onSubmit={handleSearchSubmit}
-          className="flex items-center w-[267px] h-[44px] bg-[#F6F6F6] rounded-[18px] overflow-hidden border border-transparent focus-within:border-[#D4AF37]/60 transition-all"
+          className="hidden md:flex items-center w-[230px] lg:w-[267px] h-[44px] bg-[#F6F6F6] rounded-[18px] overflow-hidden border border-transparent focus-within:border-[#D4AF37]/60 transition-all"
         >
           <input 
             type="text"
@@ -188,7 +205,7 @@ export default function AudienceNavbar({
           />
           <button 
             type="submit"
-            className="w-[61px] h-full bg-[rgba(212,175,55,0.85)] hover:bg-[#D4AF37] transition-colors flex items-center justify-center text-black"
+            className="w-[55px] lg:w-[61px] h-full bg-[rgba(212,175,55,0.85)] hover:bg-[#D4AF37] transition-colors flex items-center justify-center text-black cursor-pointer"
             title="Search"
           >
             <Search size={19} strokeWidth={2.2} className="text-black" />
