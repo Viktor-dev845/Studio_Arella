@@ -2,11 +2,15 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'advertiser' | 'screen_owner' | 'admin';
+  role: 'advertiser' | 'screen_owner' | 'admin' | 'creator' | string;
   credits: number;
   avatar?: string;
   language?: string;
   created_at?: string;
+  is_creator?: boolean;
+  creator_tier?: string;
+  creator_verified?: boolean;
+  creator_niche?: string;
 }
 
 export interface Campaign {

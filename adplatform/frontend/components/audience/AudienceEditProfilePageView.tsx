@@ -5,7 +5,11 @@ import {
   Loader2, 
   ChevronLeft,
   Eye,
-  EyeOff
+  EyeOff,
+  ShieldCheck,
+  ShieldAlert,
+  KeyRound,
+  X
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useToast } from '@/components/ui/ToastProvider';
@@ -95,13 +99,24 @@ export default function AudienceEditProfilePageView({
     }
   }
 
-  // ─── 2. Toggles State matching Figma ───
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(() => Boolean(user?.two_factor_enabled));
   const [prev2FA, setPrev2FA] = useState(user?.two_factor_enabled);
   if (user?.two_factor_enabled !== prev2FA) {
     setPrev2FA(user?.two_factor_enabled);
     setTwoFactorEnabled(Boolean(user?.two_factor_enabled));
   }
+
+  // ─── 2FA Modal & Action State ───
+  const [show2FAPasswordPrompt, setShow2FAPasswordPrompt] = useState(false);
+  const [start2FAPassword, setStart2FAPassword] = useState('');
+  const [show2FASetup, setShow2FASetup] = useState(false);
+  const [qrCode, setQrCode] = useState('');
+  const [manualKey, setManualKey] = useState('');
+  const [twoFactorCode, setTwoFactorCode] = useState('');
+  const [setting2FA, setSetting2FA] = useState(false);
+  const [show2FADisable, setShow2FADisable] = useState(false);
+  const [disable2FAPassword, setDisable2FAPassword] = useState('');
+  const [disabling2FA, setDisabling2FA] = useState(false);
 
   const [communityActivity, setCommunityActivity] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(true);
@@ -322,13 +337,76 @@ export default function AudienceEditProfilePageView({
   };
 
   const handleToggle2FA = (val: boolean) => {
-    setTwoFactorEnabled(val);
-    toast(
-      val 
-        ? 'Two-factor authentication enabled for extra account security.' 
-        : 'Two-factor authentication turned off.',
-      'info'
-    );
+    if (val) {
+      setStart2FAPassword('');
+      setShow2FAPasswordPrompt(true);
+    } else {
+      setDisable2FAPassword('');
+      setShow2FADisable(true);
+    }
+  };
+
+  const handleStart2FASetup = async () => {
+    if (!start2FAPassword) {
+      toast('Enter your password to confirm', 'error');
+      return;
+    }
+    setSetting2FA(true);
+    try {
+      const res = await api.post('/auth/2fa/setup', { password: start2FAPassword });
+      setQrCode(res.data.qr_code);
+      setManualKey(res.data.manual_key);
+      setShow2FAPasswordPrompt(false);
+      setStart2FAPassword('');
+      setShow2FASetup(true);
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      toast(msg || 'Could not start 2FA setup.', 'error');
+    } finally {
+      setSetting2FA(false);
+    }
+  };
+
+  const handleConfirm2FASetup = async () => {
+    if (twoFactorCode.length !== 6) {
+      toast('Enter the 6-digit code from your authenticator app', 'error');
+      return;
+    }
+    setSetting2FA(true);
+    try {
+      await api.post('/auth/2fa/verify-setup', { code: twoFactorCode });
+      setTwoFactorEnabled(true);
+      setShow2FASetup(false);
+      setTwoFactorCode('');
+      await checkAuth();
+      toast('Two-factor authentication enabled successfully!', 'success');
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      toast(msg || 'Incorrect code. Please try again.', 'error');
+    } finally {
+      setSetting2FA(false);
+    }
+  };
+
+  const handleDisable2FA = async () => {
+    if (!disable2FAPassword) {
+      toast('Enter your password to confirm', 'error');
+      return;
+    }
+    setDisabling2FA(true);
+    try {
+      await api.post('/auth/2fa/disable', { password: disable2FAPassword });
+      setTwoFactorEnabled(false);
+      setShow2FADisable(false);
+      setDisable2FAPassword('');
+      await checkAuth();
+      toast('Two-factor authentication disabled.', 'success');
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      toast(msg || 'Incorrect password.', 'error');
+    } finally {
+      setDisabling2FA(false);
+    }
   };
 
   const handleFinishSuccess = () => {
@@ -900,6 +978,210 @@ export default function AudienceEditProfilePageView({
             >
               Finish
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ─── 2FA PASSWORD PROMPT MODAL ─── */}
+      {show2FAPasswordPrompt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="w-full max-w-[420px] bg-white rounded-[24px] p-7 shadow-2xl border border-gray-100 flex flex-col items-center text-center font-quicksand relative">
+            <button
+              type="button"
+              onClick={() => {
+                setShow2FAPasswordPrompt(false);
+                setStart2FAPassword('');
+              }}
+              className="absolute top-5 right-5 text-gray-400 hover:text-black transition-colors"
+            >
+              <X size={20} />
+            </button>
+
+            <div className="w-14 h-14 rounded-full bg-amber-50 border border-[#D9BA54]/30 flex items-center justify-center text-[#D9BA54] mb-4 shadow-xs">
+              <ShieldCheck size={28} />
+            </div>
+
+            <h3 className="text-[20px] font-bold text-[#141414] leading-tight mb-2">
+              Enable Two-Factor Authentication
+            </h3>
+            <p className="text-[14px] text-gray-500 mb-6 leading-relaxed">
+              To verify your identity, enter your account password to generate your authenticator key.
+            </p>
+
+            <input
+              type="password"
+              placeholder="Your current password"
+              value={start2FAPassword}
+              onChange={(e) => setStart2FAPassword(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleStart2FASetup(); }}
+              autoFocus
+              className="w-full h-[52px] px-4 rounded-[12px] border border-[rgba(152,152,154,0.5)] bg-white text-[15px] text-[#141414] placeholder-gray-400 focus:outline-none focus:border-[#D9BA54] focus:ring-1 focus:ring-[#D9BA54] transition-all mb-6"
+            />
+
+            <div className="flex items-center gap-3 w-full">
+              <button
+                type="button"
+                onClick={() => {
+                  setShow2FAPasswordPrompt(false);
+                  setStart2FAPassword('');
+                }}
+                className="flex-1 h-[48px] rounded-[10px] border border-gray-200 text-gray-700 font-semibold text-[15px] hover:bg-gray-50 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleStart2FASetup}
+                disabled={setting2FA}
+                className="flex-1 h-[48px] rounded-[10px] bg-[#D9BA54] hover:bg-[#c9a73e] text-black font-bold text-[15px] shadow-sm transition-colors flex items-center justify-center disabled:opacity-60 cursor-pointer"
+              >
+                {setting2FA ? <Loader2 size={18} className="animate-spin text-black" /> : 'Continue'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── 2FA QR CODE & SETUP VERIFY MODAL ─── */}
+      {show2FASetup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="w-full max-w-[440px] bg-white rounded-[24px] p-7 shadow-2xl border border-gray-100 flex flex-col items-center text-center font-quicksand relative max-h-[90vh] overflow-y-auto no-scrollbar">
+            <button
+              type="button"
+              onClick={() => {
+                setShow2FASetup(false);
+                setTwoFactorCode('');
+              }}
+              className="absolute top-5 right-5 text-gray-400 hover:text-black transition-colors"
+            >
+              <X size={20} />
+            </button>
+
+            <div className="w-14 h-14 rounded-full bg-amber-50 border border-[#D9BA54]/30 flex items-center justify-center text-[#D9BA54] mb-3 shadow-xs">
+              <KeyRound size={26} />
+            </div>
+
+            <h3 className="text-[20px] font-bold text-[#141414] leading-tight mb-2">
+              Scan Authenticator Code
+            </h3>
+            <p className="text-[13px] text-gray-500 mb-5 leading-relaxed">
+              Open Google Authenticator, Authy, or your password manager to scan this QR code.
+            </p>
+
+            {qrCode && (
+              <div className="p-3 bg-white rounded-[16px] border border-gray-200 shadow-xs mb-3">
+                <img src={qrCode} alt="2FA QR code" className="w-[180px] h-[180px] object-contain rounded-[8px]" />
+              </div>
+            )}
+
+            {manualKey && (
+              <div className="w-full bg-gray-50 rounded-[10px] p-2.5 px-3 mb-5 border border-gray-100 text-left">
+                <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider block mb-0.5">
+                  Manual Entry Key
+                </span>
+                <span className="font-mono text-[12px] text-gray-800 select-all break-all">
+                  {manualKey}
+                </span>
+              </div>
+            )}
+
+            <div className="w-full mb-6">
+              <label className="block text-[13px] font-medium text-gray-700 mb-1.5 text-left">
+                Enter 6-digit verification code:
+              </label>
+              <input
+                type="text"
+                inputMode="numeric"
+                maxLength={6}
+                placeholder="000000"
+                value={twoFactorCode}
+                onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, ''))}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleConfirm2FASetup(); }}
+                autoFocus
+                className="w-full h-[54px] px-4 rounded-[12px] border border-[rgba(152,152,154,0.5)] bg-white font-mono text-[22px] tracking-[8px] text-center text-[#141414] placeholder-gray-300 focus:outline-none focus:border-[#D9BA54] focus:ring-1 focus:ring-[#D9BA54] transition-all"
+              />
+            </div>
+
+            <div className="flex items-center gap-3 w-full">
+              <button
+                type="button"
+                onClick={() => {
+                  setShow2FASetup(false);
+                  setTwoFactorCode('');
+                }}
+                className="flex-1 h-[48px] rounded-[10px] border border-gray-200 text-gray-700 font-semibold text-[15px] hover:bg-gray-50 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirm2FASetup}
+                disabled={setting2FA || twoFactorCode.length !== 6}
+                className="flex-1 h-[48px] rounded-[10px] bg-[#D9BA54] hover:bg-[#c9a73e] text-black font-bold text-[15px] shadow-sm transition-colors flex items-center justify-center disabled:opacity-50 cursor-pointer"
+              >
+                {setting2FA ? <Loader2 size={18} className="animate-spin text-black" /> : 'Verify & Enable'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── 2FA DISABLE CONFIRMATION MODAL ─── */}
+      {show2FADisable && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="w-full max-w-[400px] bg-white rounded-[24px] p-7 shadow-2xl border border-gray-100 flex flex-col items-center text-center font-quicksand relative">
+            <button
+              type="button"
+              onClick={() => {
+                setShow2FADisable(false);
+                setDisable2FAPassword('');
+              }}
+              className="absolute top-5 right-5 text-gray-400 hover:text-black transition-colors"
+            >
+              <X size={20} />
+            </button>
+
+            <div className="w-14 h-14 rounded-full bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 mb-4 shadow-xs">
+              <ShieldAlert size={28} />
+            </div>
+
+            <h3 className="text-[20px] font-bold text-[#141414] leading-tight mb-2">
+              Disable Two-Factor Authentication?
+            </h3>
+            <p className="text-[13px] text-gray-500 mb-6 leading-relaxed">
+              Your account will be less secure without 2FA protection. Enter your password to confirm.
+            </p>
+
+            <input
+              type="password"
+              placeholder="Enter your password"
+              value={disable2FAPassword}
+              onChange={(e) => setDisable2FAPassword(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleDisable2FA(); }}
+              autoFocus
+              className="w-full h-[52px] px-4 rounded-[12px] border border-gray-300 bg-white text-[15px] text-[#141414] placeholder-gray-400 focus:outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all mb-6"
+            />
+
+            <div className="flex items-center gap-3 w-full">
+              <button
+                type="button"
+                onClick={() => {
+                  setShow2FADisable(false);
+                  setDisable2FAPassword('');
+                }}
+                className="flex-1 h-[48px] rounded-[10px] border border-gray-200 text-gray-700 font-semibold text-[15px] hover:bg-gray-50 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDisable2FA}
+                disabled={disabling2FA}
+                className="flex-1 h-[48px] rounded-[10px] bg-rose-600 hover:bg-rose-700 text-white font-bold text-[15px] shadow-sm transition-colors flex items-center justify-center disabled:opacity-60 cursor-pointer"
+              >
+                {disabling2FA ? <Loader2 size={18} className="animate-spin text-white" /> : 'Disable 2FA'}
+              </button>
+            </div>
           </div>
         </div>
       )}

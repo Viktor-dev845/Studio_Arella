@@ -29,6 +29,14 @@ export interface User {
   display_timezone?: string;
   sound_enabled?: boolean;
   created_at?: string;
+  is_creator?: boolean;
+  creator_tier?: string;
+  creator_verified?: boolean;
+  creator_niche?: string;
+  banner_url?: string;
+  social_links?: Record<string, string>;
+  pro_subscription_expires_at?: string;
+  pro_auto_renew?: boolean;
 }
 
 interface TwoFactorChallenge {
