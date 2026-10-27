@@ -337,6 +337,13 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
   };
 
   const cleanTitle = post.title.replace(/^[-–—\s]+/, '');
+  const isVideoMedia = Boolean(
+    post.mediaUrl && (
+      post.mediaUrl.startsWith('data:video/') ||
+      post.mediaUrl.match(/\.(mp4|mov|webm|ogg|m4v)($|\?)/i) ||
+      post.category?.toLowerCase() === 'video'
+    )
+  );
 
   return (
     <article 
@@ -421,102 +428,114 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
         )}
       </div>
 
-      {/* ─── 3. Media Card & Sleek Audio Player ─── */}
+      {/* ─── 3. Media Card & Sleek Video / Audio Player ─── */}
       {Boolean(post.mediaUrl && post.mediaUrl.trim()) && (
-        <div className="relative w-full aspect-[16/9] rounded-2xl overflow-hidden bg-gray-900 group shadow-md border border-gray-100">
-          <img 
-            src={post.mediaUrl} 
-            alt={cleanTitle} 
-            className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02] ${
-              post.isPremium && !isUnlocked ? 'filter blur-md scale-105' : ''
-            }`}
-          />
-
-          {/* Paywall Overlay for Locked Content */}
-          {post.isPremium && !isUnlocked ? (
-            <div className="absolute inset-0 bg-black/75 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center text-white z-20">
-              <div className="w-12 h-12 rounded-full bg-white/10 border border-white/20 flex items-center justify-center mb-3 shadow-lg">
-                <Lock size={22} className="text-[#D4AF37]" />
-              </div>
-              <h4 className="text-base font-bold text-white">Exclusive Creator Episode</h4>
-              <p className="text-xs text-gray-300 max-w-xs mt-1.5 mb-5 leading-relaxed">
-                Unlock full audio streaming & download access. 85% goes directly to {post.author.name}'s creator wallet.
-              </p>
-              <button
-                type="button"
-                onClick={handleUnlock}
-                disabled={isUnlocking}
-                className="px-6 py-2.5 bg-[#D4AF37] hover:bg-[#c49f2b] text-black text-xs font-bold rounded-xl transition-all shadow-md flex items-center gap-2 cursor-pointer disabled:opacity-50"
-              >
-                {isUnlocking ? (
-                  <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <>
-                    <Unlock size={14} />
-                    <span>Unlock for ₦{(post.price || 1500).toLocaleString()}</span>
-                  </>
-                )}
-              </button>
-            </div>
+        <div className="relative w-full aspect-[16/9] rounded-2xl overflow-hidden bg-black group shadow-md border border-gray-100">
+          {isVideoMedia ? (
+            <video 
+              src={post.mediaUrl} 
+              controls 
+              playsInline 
+              preload="metadata"
+              className="w-full h-full object-contain bg-black"
+            />
           ) : (
-            /* Sleek Floating Audio Player */
-            <div className="absolute inset-x-0 bottom-0 pt-16 pb-3 px-3 sm:px-4 bg-gradient-to-t from-black/85 via-black/45 to-transparent flex flex-col gap-2 z-10">
-              {/* Progress Bar & Scrubber */}
-              <div 
-                onClick={handleSeek}
-                className="w-full h-2 bg-white/20 hover:h-2.5 rounded-full overflow-hidden cursor-pointer relative transition-all group/scrub"
-                title="Seek audio position"
-              >
-                <div 
-                  className="h-full bg-gradient-to-r from-[#D4AF37] to-[#F3D77A] rounded-full transition-all relative" 
-                  style={{ width: `${progressPercent}%` }}
-                />
-              </div>
+            <>
+              <img 
+                src={post.mediaUrl} 
+                alt={cleanTitle} 
+                className={`w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02] ${
+                  post.isPremium && !isUnlocked ? 'filter blur-md scale-105' : ''
+                }`}
+              />
 
-              {/* Player Controls Bar */}
-              <div className="flex items-center justify-between text-white text-xs mt-0.5">
-                <div className="flex items-center gap-3">
-                  {/* Play / Pause Circular Button */}
+              {/* Paywall Overlay for Locked Content */}
+              {post.isPremium && !isUnlocked ? (
+                <div className="absolute inset-0 bg-black/75 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center text-white z-20">
+                  <div className="w-12 h-12 rounded-full bg-white/10 border border-white/20 flex items-center justify-center mb-3 shadow-lg">
+                    <Lock size={22} className="text-[#D4AF37]" />
+                  </div>
+                  <h4 className="text-base font-bold text-white">Exclusive Creator Episode</h4>
+                  <p className="text-xs text-gray-300 max-w-xs mt-1.5 mb-5 leading-relaxed">
+                    Unlock full streaming & download access. 85% goes directly to {post.author.name}&apos;s creator wallet.
+                  </p>
                   <button
                     type="button"
-                    onClick={() => setIsPlaying(!isPlaying)}
-                    className="w-8 h-8 rounded-full bg-[#D4AF37] hover:bg-[#e2c151] text-black flex items-center justify-center shadow-lg transition-transform active:scale-90 cursor-pointer shrink-0"
-                    title={isPlaying ? 'Pause' : 'Play Episode'}
+                    onClick={handleUnlock}
+                    disabled={isUnlocking}
+                    className="px-6 py-2.5 bg-[#D4AF37] hover:bg-[#c49f2b] text-black text-xs font-bold rounded-xl transition-all shadow-md flex items-center gap-2 cursor-pointer disabled:opacity-50"
                   >
-                    {isPlaying ? (
-                      <Pause size={14} className="fill-black text-black" />
+                    {isUnlocking ? (
+                      <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
                     ) : (
-                      <Play size={14} className="fill-black text-black translate-x-0.5" />
+                      <>
+                        <Unlock size={14} />
+                        <span>Unlock for ₦{(post.price || 1500).toLocaleString()}</span>
+                      </>
                     )}
                   </button>
-
-                  {/* Dynamic Soundwave Bars */}
-                  <div className="flex items-center gap-0.5 h-4">
-                    {[40, 80, 50, 95, 60, 30].map((height, idx) => (
-                      <span
-                        key={idx}
-                        className={`w-1 rounded-full bg-[#D4AF37] transition-all duration-300 ${
-                          isPlaying ? 'animate-pulse' : 'opacity-60'
-                        }`}
-                        style={{
-                          height: isPlaying ? `${Math.max(20, (height + (idx % 2) * 20))}%` : '30%',
-                          animationDelay: `${idx * 120}ms`
-                        }}
-                      />
-                    ))}
+                </div>
+              ) : (
+                /* Sleek Floating Audio Player */
+                <div className="absolute inset-x-0 bottom-0 pt-16 pb-3 px-3 sm:px-4 bg-gradient-to-t from-black/85 via-black/45 to-transparent flex flex-col gap-2 z-10">
+                  {/* Progress Bar & Scrubber */}
+                  <div 
+                    onClick={handleSeek}
+                    className="w-full h-2 bg-white/20 hover:h-2.5 rounded-full overflow-hidden cursor-pointer relative transition-all group/scrub"
+                    title="Seek audio position"
+                  >
+                    <div 
+                      className="h-full bg-gradient-to-r from-[#D4AF37] to-[#F3D77A] rounded-full transition-all relative" 
+                      style={{ width: `${progressPercent}%` }}
+                    />
                   </div>
 
-                  <span className="font-semibold text-white/95 text-[12px] tracking-tight">
-                    {formatTime(currentSeconds)} / {post.duration || '01:15:00'}
-                  </span>
-                </div>
+                  {/* Player Controls Bar */}
+                  <div className="flex items-center justify-between text-white text-xs mt-0.5">
+                    <div className="flex items-center gap-3">
+                      {/* Play / Pause Circular Button */}
+                      <button
+                        type="button"
+                        onClick={() => setIsPlaying(!isPlaying)}
+                        className="w-8 h-8 rounded-full bg-[#D4AF37] hover:bg-[#e2c151] text-black flex items-center justify-center shadow-lg transition-transform active:scale-90 cursor-pointer shrink-0"
+                        title={isPlaying ? 'Pause' : 'Play Episode'}
+                      >
+                        {isPlaying ? (
+                          <Pause size={14} className="fill-black text-black" />
+                        ) : (
+                          <Play size={14} className="fill-black text-black translate-x-0.5" />
+                        )}
+                      </button>
 
-                <div className="flex items-center gap-2 text-white/80">
-                  <span className="text-[11px] font-medium hidden sm:inline text-white/70">Studio Audio HD</span>
-                  <Volume2 size={15} className="text-white/80" />
+                      {/* Dynamic Soundwave Bars */}
+                      <div className="flex items-center gap-0.5 h-4">
+                        {[40, 80, 50, 95, 60, 30].map((height, idx) => (
+                          <span
+                            key={idx}
+                            className={`w-1 rounded-full bg-[#D4AF37] transition-all duration-300 ${
+                              isPlaying ? 'animate-pulse' : 'opacity-60'
+                            }`}
+                            style={{
+                              height: isPlaying ? `${Math.max(20, (height + (idx % 2) * 20))}%` : '30%',
+                              animationDelay: `${idx * 120}ms`
+                            }}
+                          />
+                        ))}
+                      </div>
+
+                      <span className="font-semibold text-white/95 text-[12px] tracking-tight">
+                        {formatTime(currentSeconds)} / {post.duration || '01:15:00'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-white/80">
+                      <span className="text-[11px] font-medium hidden sm:inline text-white/70">Studio Audio HD</span>
+                      <Volume2 size={15} className="text-white/80" />
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+              )}
+            </>
           )}
         </div>
       )}

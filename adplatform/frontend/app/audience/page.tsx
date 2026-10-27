@@ -515,7 +515,7 @@ function AudienceContent() {
     }
   };
 
-  const handleCreatePost = async (content: string) => {
+  const handleCreatePost = async (content: string, mediaUrl?: string, contentType: string = 'post') => {
     const authorName = user?.name || (user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : null) || 'You';
     const authorRole = user?.role === 'screen_owner' 
       ? 'Media Partner' 
@@ -529,12 +529,15 @@ function AudienceContent() {
     const tempPost: PostData = {
       id: `post-${Date.now()}`,
       author: {
+        id: user?.id || '',
         name: authorName,
         role: authorRole,
         avatar: authorAvatar,
       },
       title: content,
-      mediaUrl: '',
+      description: '',
+      mediaUrl: mediaUrl || '',
+      category: contentType === 'video' ? 'Video' : 'General',
       initialLikes: 0,
       initialComments: 0,
       badgeTheme: 'gold',
@@ -555,8 +558,10 @@ function AudienceContent() {
           headers,
           body: JSON.stringify({
             title: content,
-            content_type: 'post',
+            content_type: contentType,
             description: '',
+            media_url: mediaUrl || '',
+            category: contentType === 'video' ? 'Video' : 'General',
             userId: user?.id,
           }),
         });
@@ -574,8 +579,10 @@ function AudienceContent() {
       if (!createdPostId) {
         const res = await api.post('/content', {
           title: content,
-          contentType: 'post',
+          contentType: contentType,
           description: '',
+          media_url: mediaUrl || '',
+          category: contentType === 'video' ? 'Video' : 'General',
           userId: user?.id,
         });
         if (res.data?.post?.id) {
