@@ -573,7 +573,7 @@ function FinancesPageContent() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               
               {/* Total Transaction */}
-              <div className="bg-white rounded-[24px] p-[24px] flex flex-col justify-between relative shadow-sm border border-[#F0F0F0]" style={{ height: '176px' }}>
+              <div className="bg-white rounded-[24px] p-[24px] flex flex-col justify-between relative shadow-sm border border-[#F0F0F0] min-h-[188px]">
                 <div>
                    <h3 style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '18px', color: '#101828' }}>Total Transaction</h3>
                    <div className="w-[36px] h-[25px] px-1.5 flex items-center justify-center rounded-[8px] mt-[10px]" style={{ background: 'rgba(3, 197, 210, 0.2)' }}>
@@ -596,7 +596,7 @@ function FinancesPageContent() {
               </div>
 
               {/* Linked Bank Card */}
-              <div className="bg-white rounded-[24px] p-[24px] flex flex-col justify-between relative shadow-sm border border-[#F0F0F0]" style={{ height: '176px' }}>
+              <div className="bg-white rounded-[24px] p-[24px] flex flex-col justify-between relative shadow-sm border border-[#F0F0F0] min-h-[188px]">
                 <div>
                    <h3 style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '18px', color: '#101828' }}>Linked Bank Card</h3>
                    <div className="w-[36px] h-[25px] px-1.5 flex items-center justify-center rounded-[8px] mt-[10px]" style={{ background: savedCards.length > 0 ? 'rgba(34, 197, 94, 0.15)' : 'rgba(227, 24, 24, 0.15)' }}>
@@ -636,7 +636,7 @@ function FinancesPageContent() {
               </div>
 
               {/* Dedicated Account Card */}
-              <div className="bg-white rounded-[24px] p-[24px] flex flex-col justify-between relative shadow-sm border border-[#F0F0F0]" style={{ height: '176px' }}>
+              <div className="bg-white rounded-[24px] p-[20px] sm:p-[22px] flex flex-col justify-between relative shadow-sm border border-[#F0F0F0] min-h-[188px]">
                 <div>
                    <h3 style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '18px', color: '#101828' }}>Dedicated Account</h3>
                 </div>
@@ -651,21 +651,21 @@ function FinancesPageContent() {
                     </button>
                   </>
                 ) : (
-                  <div className="mt-[12px] flex flex-col gap-[8px] flex-1 justify-center">
-                    <div className="flex justify-between items-center bg-[#F9FAFB] p-[10px] rounded-[10px] border border-[#F0F0F0]">
+                  <div className="mt-[10px] flex flex-col gap-[7px] flex-1 justify-center">
+                    <div className="flex justify-between items-center bg-[#F9FAFB] px-[12px] py-[7px] rounded-[10px] border border-[#F0F0F0]">
                       <span style={{ fontFamily: 'var(--font-dm-sans)', fontSize: '12px', color: '#667085' }}>Bank</span>
-                      <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 600, fontSize: '13px', color: '#101828' }}>{dedicatedBank || 'Wema Bank'}</span>
+                      <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 600, fontSize: '13px', color: '#101828' }}>{dedicatedBank || 'Moniepoint Microfinance Bank'}</span>
                     </div>
-                    <div className="flex justify-between items-center bg-[#F9FAFB] p-[10px] rounded-[10px] border border-[#F0F0F0]">
+                    <div className="flex justify-between items-center bg-[#F9FAFB] px-[12px] py-[7px] rounded-[10px] border border-[#F0F0F0]">
                       <span style={{ fontFamily: 'var(--font-dm-sans)', fontSize: '12px', color: '#667085' }}>Account</span>
                       <div className="flex items-center gap-2">
                         <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 600, fontSize: '13px', color: '#101828' }}>{dedicatedAcct}</span>
-                        <button onClick={() => navigator.clipboard.writeText(dedicatedAcct)} className="text-[#D4AF37] hover:text-[#b99830]" title="Copy">
+                        <button onClick={() => { navigator.clipboard.writeText(dedicatedAcct); toast('Account number copied!', 'success'); }} className="text-[#D4AF37] hover:text-[#b99830] transition-colors" title="Copy">
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                         </button>
                       </div>
                     </div>
-                    <div className="flex justify-between items-center px-1 mt-1">
+                    <div className="flex justify-between items-center px-1 pt-0.5">
                       <span style={{ fontFamily: 'var(--font-dm-sans)', fontSize: '11px', color: '#667085' }}>{balance?.reserved_account_name || `Studio Arella / ${user?.name || 'Creator'}`}</span>
                     </div>
                   </div>
