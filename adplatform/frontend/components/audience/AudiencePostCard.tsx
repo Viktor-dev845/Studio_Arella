@@ -1268,24 +1268,32 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
               </div>
 
               {/* Engagement Rate Bar */}
-              <div className="bg-gray-50 p-3.5 rounded-2xl border border-gray-100 flex flex-col gap-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-gray-700">Engagement Rate</span>
-                  <span className="font-bold text-[#8c711a]">
-                    {viewsCountState > 0
-                      ? `${(((likes + repostCount + commentsCount) / viewsCountState) * 100).toFixed(1)}%`
-                      : '0%'}
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
-                  <div 
-                    className="bg-gradient-to-r from-amber-400 to-[#D4AF37] h-full rounded-full transition-all duration-500"
-                    style={{
-                      width: `${Math.min(100, Math.max(5, viewsCountState > 0 ? ((likes + repostCount + commentsCount) / viewsCountState) * 100 : 0))}%`
-                    }}
-                  />
-                </div>
-              </div>
+              {(() => {
+                const totalEngagements = likes + repostCount + commentsCount;
+                // In creator analytics, rate represents % of viewers who engaged (capped at 100.0%)
+                const ratePercent = viewsCountState > 0
+                  ? Math.min(100, (totalEngagements / viewsCountState) * 100)
+                  : (totalEngagements > 0 ? 100 : 0);
+
+                return (
+                  <div className="bg-gray-50 p-3.5 rounded-2xl border border-gray-100 flex flex-col gap-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-semibold text-gray-700">Engagement Rate</span>
+                      <span className="font-bold text-[#8c711a]">
+                        {ratePercent.toFixed(1)}%
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+                      <div 
+                        className="bg-gradient-to-r from-amber-400 to-[#D4AF37] h-full rounded-full transition-all duration-500"
+                        style={{
+                          width: `${Math.min(100, Math.max(totalEngagements > 0 ? 5 : 0, ratePercent))}%`
+                        }}
+                      />
+                    </div>
+                  </div>
+                );
+              })()}
 
               <div className="flex flex-col items-center gap-1 text-[11px] text-gray-400 justify-center text-center">
                 <div className="flex items-center gap-1.5">
