@@ -63,7 +63,7 @@ export async function getFeed(req: Request, res: Response) {
     }
 
     if (view === 'trending') {
-      query += ` ORDER BY (c.likes_count + c.comments_count + c.views_count) DESC, c.created_at DESC`;
+      query += ` ORDER BY CASE WHEN c.created_at >= NOW() - INTERVAL '24 hours' THEN 1 ELSE 0 END DESC, (c.likes_count + c.comments_count + c.views_count) DESC, c.created_at DESC`;
     } else {
       query += ` ORDER BY c.created_at DESC`;
     }

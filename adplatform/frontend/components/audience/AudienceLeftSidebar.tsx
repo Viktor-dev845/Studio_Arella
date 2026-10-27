@@ -27,7 +27,7 @@ const HASHTAGS_ROW_3 = ['#music', '#events'];
 const HASHTAGS_ROW_4 = ['#business', '#entertainment'];
 
 export default function AudienceLeftSidebar({
-  activeMenu = 'trending',
+  activeMenu = 'podcast',
   onMenuSelect,
   onTagSelect,
 }: AudienceLeftSidebarProps) {

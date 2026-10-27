@@ -247,7 +247,8 @@ function AudienceContent() {
     if (queryView === 'bookmarks') return 'bookmarks';
     if (queryView === 'memberships') return 'memberships';
     if (queryView === 'podcast' || queryView === 'feed') return 'podcast';
-    return 'trending';
+    if (queryView === 'trending') return 'trending';
+    return 'podcast';
   });
 
   const [posts, setPosts] = useState<PostData[]>([]);
