@@ -315,7 +315,7 @@ function BookingsPageContent() {
   return (
     <DashboardLayout>
       <PageTransition>
-        <div className="font-body max-w-7xl mx-auto">
+        <div className="font-body max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-28">
           {/* Page Title */}
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-[16px] font-bold text-gray-900 dark:text-slate-50">My bookings</h1>
@@ -472,7 +472,7 @@ function BookingsPageContent() {
               </div>
 
               {/* Table */}
-              <div className="bg-white dark:bg-[#111111] rounded-b-[8px] overflow-hidden">
+              <div className="bg-white dark:bg-[#111111] rounded-[10px] border border-[rgba(162,161,168,0.2)] dark:border-white/10 overflow-hidden shadow-sm">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm font-body">
                     <thead>

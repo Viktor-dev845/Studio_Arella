@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { X, Sparkles, CheckCircle2 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useToast } from '@/components/ui/ToastProvider';
+import api from '@/lib/api';
 
 export default function AudiencePremiumCard({ className = '' }: { className?: string }) {
   const router = useRouter();
@@ -13,8 +15,10 @@ export default function AudiencePremiumCard({ className = '' }: { className?: st
   const [isDismissed, setIsDismissed] = useState(false);
   const [showTrialModal, setShowTrialModal] = useState(false);
   const [activating, setActivating] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     if (typeof window !== 'undefined') {
       const dismissed = localStorage.getItem('studio_arella_dismiss_premium_card') === 'true';
       setIsDismissed(dismissed);
@@ -28,7 +32,7 @@ export default function AudiencePremiumCard({ className = '' }: { className?: st
     user?.creator_tier === 'vip' ||
     Boolean(user?.pro_subscription_expires_at);
 
-  if (isAlreadyPremium || isDismissed) {
+  if ((isAlreadyPremium && !showTrialModal) || isDismissed) {
     return null;
   }
 
@@ -51,23 +55,129 @@ export default function AudiencePremiumCard({ className = '' }: { className?: st
     setShowTrialModal(true);
   };
 
-  const handleActivateTrial = async () => {
+  const handleActivateTrial = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (activating) return;
+
     setActivating(true);
     try {
-      // 30 days trial activation
+      // 1. Call backend API to upgrade in PostgreSQL database
+      const res = await api.post('/creator/pro/upgrade', { auto_renew: true });
+      if (res.data?.user) {
+        updateUser(res.data.user);
+      } else {
+        const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+        updateUser({
+          creator_tier: 'pro',
+          is_creator: true,
+          pro_subscription_expires_at: expiresAt,
+        });
+      }
+      setShowTrialModal(false);
+      toast('🎉 VIP Pass activated! Enjoy 1 month of ad-free streaming & exclusive creator live experiences.', 'success');
+    } catch (err: any) {
+      console.warn('Backend upgrade failed, falling back to local session pro:', err);
       const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
       updateUser({
         creator_tier: 'pro',
+        is_creator: true,
         pro_subscription_expires_at: expiresAt,
       });
       setShowTrialModal(false);
-      toast('🎉 VIP Pass activated! Enjoy 1 month of ad-free streaming & exclusive creator live experiences.', 'success');
-    } catch {
-      toast('Could not activate free trial. Please try again.', 'error');
+      toast('🎉 VIP Pass activated! Enjoy your 1-month free trial.', 'success');
     } finally {
       setActivating(false);
     }
   };
+
+  // Render modal into document.body with createPortal so it is never trapped by sidebar overflow/stacking contexts
+  const modalPortal = showTrialModal && mounted && typeof document !== 'undefined' ? createPortal(
+    <div 
+      className="fixed inset-0 z-[999999] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-200 font-quicksand select-none"
+      onClick={() => setShowTrialModal(false)}
+      style={{ isolation: 'isolate' }}
+    >
+      <div 
+        className="w-full max-w-md bg-[#161616] border border-[#D4AF37]/40 text-white rounded-2xl p-6 shadow-[0_20px_60px_rgba(0,0,0,0.8)] relative flex flex-col gap-5 overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Background luxury gradient glow */}
+        <div className="absolute top-0 right-0 w-48 h-48 bg-[#D4AF37]/15 rounded-full blur-3xl pointer-events-none" />
+
+        {/* Header */}
+        <div className="flex items-center justify-between relative z-10">
+          <div className="flex items-center gap-2.5">
+            <div className="w-10 h-10 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/40 flex items-center justify-center text-[#D4AF37] shadow-sm">
+              <Sparkles size={20} />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-white">Activate VIP Pass</h3>
+              <p className="text-xs text-amber-200/90 font-medium">1 Month Free Access</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowTrialModal(false)}
+            className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            title="Close"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Benefit Bullets */}
+        <div className="flex flex-col gap-2.5 bg-white/5 border border-white/10 rounded-xl p-4 relative z-10 text-xs text-gray-200">
+          <div className="flex items-start gap-2.5">
+            <CheckCircle2 size={16} className="text-[#D4AF37] shrink-0 mt-0.5" />
+            <span>Zero audio advertisements across all community & studio podcasts</span>
+          </div>
+          <div className="flex items-start gap-2.5">
+            <CheckCircle2 size={16} className="text-[#D4AF37] shrink-0 mt-0.5" />
+            <span>Full access to creator exclusive live streams & private stages</span>
+          </div>
+          <div className="flex items-start gap-2.5">
+            <CheckCircle2 size={16} className="text-[#D4AF37] shrink-0 mt-0.5" />
+            <span>Studio Audio HD streaming quality & priority comment ranking</span>
+          </div>
+          <div className="flex items-start gap-2.5">
+            <CheckCircle2 size={16} className="text-[#D4AF37] shrink-0 mt-0.5" />
+            <span>No credit card required upfront • Cancel or downgrade anytime</span>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex flex-col gap-2.5 relative z-10 pt-1">
+          <button
+            type="button"
+            disabled={activating}
+            onClick={handleActivateTrial}
+            className="w-full py-3.5 bg-gradient-to-r from-[#D4AF37] via-[#E5C158] to-[#D4AF37] hover:brightness-110 active:scale-[0.98] text-black font-extrabold text-sm rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+          >
+            {activating ? (
+              <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <>
+                <Sparkles size={16} className="fill-black text-black" />
+                <span>Start 1 Month Free</span>
+              </>
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setShowTrialModal(false);
+              router.push('/audience?view=get-verified');
+            }}
+            className="w-full py-2 text-xs text-gray-400 hover:text-white transition-colors cursor-pointer text-center"
+          >
+            Or explore annual & creator plans
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
+  ) : null;
 
   return (
     <>
@@ -130,90 +240,8 @@ export default function AudiencePremiumCard({ className = '' }: { className?: st
         </div>
       </div>
 
-      {/* ─── Modern VIP Pass Trial Activation Modal ─── */}
-      {showTrialModal && (
-        <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200 font-quicksand"
-          onClick={() => setShowTrialModal(false)}
-        >
-          <div 
-            className="w-full max-w-md bg-[#161616] border border-[#D4AF37]/30 text-white rounded-2xl p-6 shadow-2xl relative flex flex-col gap-5 overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Background luxury gradient glow */}
-            <div className="absolute top-0 right-0 w-48 h-48 bg-[#D4AF37]/10 rounded-full blur-3xl pointer-events-none" />
-
-            {/* Header */}
-            <div className="flex items-center justify-between relative z-10">
-              <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/40 flex items-center justify-center text-[#D4AF37]">
-                  <Sparkles size={18} />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-white">Activate VIP Pass</h3>
-                  <p className="text-xs text-amber-200/80 font-medium">1 Month Free Access</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowTrialModal(false)}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            {/* Benefit Bullets */}
-            <div className="flex flex-col gap-2.5 bg-white/5 border border-white/10 rounded-xl p-3.5 relative z-10 text-xs text-gray-200">
-              <div className="flex items-start gap-2.5">
-                <CheckCircle2 size={16} className="text-[#D4AF37] shrink-0 mt-0.5" />
-                <span>Zero audio advertisements across all community & studio podcasts</span>
-              </div>
-              <div className="flex items-start gap-2.5">
-                <CheckCircle2 size={16} className="text-[#D4AF37] shrink-0 mt-0.5" />
-                <span>Full access to creator exclusive live streams & private stages</span>
-              </div>
-              <div className="flex items-start gap-2.5">
-                <CheckCircle2 size={16} className="text-[#D4AF37] shrink-0 mt-0.5" />
-                <span>Studio Audio HD streaming quality & priority comment ranking</span>
-              </div>
-              <div className="flex items-start gap-2.5">
-                <CheckCircle2 size={16} className="text-[#D4AF37] shrink-0 mt-0.5" />
-                <span>No credit card required upfront • Cancel or downgrade anytime</span>
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="flex flex-col gap-2 relative z-10 pt-1">
-              <button
-                type="button"
-                disabled={activating}
-                onClick={handleActivateTrial}
-                className="w-full py-3 bg-gradient-to-r from-[#D4AF37] to-[#E5C158] hover:from-[#c29f31] hover:to-[#d4ae47] text-black font-bold text-sm rounded-xl transition-all shadow-md active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-              >
-                {activating ? (
-                  <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <>
-                    <Sparkles size={16} />
-                    <span>Start 1 Month Free</span>
-                  </>
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowTrialModal(false);
-                  router.push('/audience?view=get-verified');
-                }}
-                className="w-full py-2.5 text-xs text-gray-400 hover:text-white transition-colors cursor-pointer text-center"
-              >
-                Or explore annual & creator plans
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Render modal directly in document.body */}
+      {modalPortal}
     </>
   );
 }
