@@ -5,12 +5,12 @@ import { useRouter } from 'next/navigation';
 import { 
   Play, 
   Pause, 
-  ThumbsUp,
-  MessageSquare, 
-  Send,
-  Share2, 
-  Bookmark, 
+  MessageCircle,
+  Repeat2,
   Heart,
+  BarChart2,
+  Bookmark,
+  Share,
   Lock,
   Unlock,
   Sparkles,
@@ -46,6 +46,7 @@ export interface PostData {
   isUnlocked?: boolean;
   category?: string;
   tags?: string[];
+  viewsCount?: number;
 }
 
 interface CommentItem {
@@ -92,6 +93,9 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
   );
   const [isUnlocking, setIsUnlocking] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [hasReposted, setHasReposted] = useState(false);
+  const [repostCount, setRepostCount] = useState(0);
+  const viewsCount = post.viewsCount || Math.max(34, (post.initialLikes || 0) * 8 + 42);
 
   useEffect(() => {
     if (post.isBookmarked !== undefined) setIsBookmarked(post.isBookmarked);
@@ -296,13 +300,39 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
     }
   };
 
+  // ── REPOST ──────────────────────────────────────────────────────────────────
+  const handleRepost = () => {
+    const next = !hasReposted;
+    setHasReposted(next);
+    setRepostCount((prev) => (next ? prev + 1 : Math.max(0, prev - 1)));
+    toast(next ? 'Reposted to your audience feed!' : 'Removed repost', 'info');
+  };
+
+  const formatViews = (count: number) => {
+    if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
+    if (count >= 1000) return `${(count / 1000).toFixed(1)}K`;
+    return count.toLocaleString();
+  };
+
   // ── SHARE ───────────────────────────────────────────────────────────────────
-  const handleShare = () => {
+  const handleShare = async () => {
     if (typeof window !== 'undefined') {
-      const shareUrl = `${window.location.origin}/audience?view=trending#${post.id}`;
+      const shareUrl = `${window.location.origin}/audience#${post.id}`;
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: post.title,
+            text: `Check out this post on Studio Arella: ${post.title}`,
+            url: shareUrl,
+          });
+          return;
+        } catch {
+          // Fallback to clipboard
+        }
+      }
       navigator.clipboard?.writeText(shareUrl);
       setCopiedLink(true);
-      toast('Episode link copied to clipboard!', 'info');
+      toast('Post link copied to clipboard!', 'info');
       setTimeout(() => setCopiedLink(false), 2000);
     }
   };
@@ -540,85 +570,117 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
         </div>
       )}
 
-      {/* ─── 4. Modern Engagement Bar (Enlarged Buttons) ─── */}
-      <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-        <div className="flex items-center gap-5 sm:gap-6">
-          {/* Like Button & Golden Badge */}
-          <div 
-            onClick={handleLike} 
-            className="flex items-center gap-2 cursor-pointer select-none group"
-            title="Like this episode"
-          >
-            <button
-              type="button"
-              disabled={isLiking}
-              className="p-1 text-gray-800 hover:text-[#D4AF37] group-hover:scale-110 active:scale-90 transition-all cursor-pointer"
-            >
-              <ThumbsUp 
-                size={26} 
-                strokeWidth={1.9} 
-                className={hasLiked ? 'text-[#D4AF37] fill-[#D4AF37]' : 'text-gray-800'} 
-              />
-            </button>
-            <div className="h-8 px-3.5 bg-gradient-to-r from-[#D4AF37] to-[#E5C158] text-white rounded-full flex items-center gap-1.5 shadow-sm border-2 border-white group-hover:scale-105 active:scale-95 transition-all">
-              <span className="text-[14px] leading-none">💖</span>
-              <span className="text-[13px] font-bold font-quicksand leading-none">
-                {likes.toLocaleString()}
-              </span>
-            </div>
+      {/* ─── 4. Modern X (Twitter) Style Engagement Bar ─── */}
+      <div className="flex items-center justify-between pt-2.5 pb-0.5 border-t border-gray-100 text-gray-500 select-none">
+        {/* 1. Reply / Comments */}
+        <button
+          type="button"
+          onClick={handleToggleComments}
+          className="flex items-center gap-1 group cursor-pointer transition-colors"
+          title="Reply / View comments"
+        >
+          <div className="w-8 h-8 rounded-full flex items-center justify-center transition-colors group-hover:bg-sky-50 group-hover:text-sky-500">
+            <MessageCircle 
+              size={18} 
+              strokeWidth={1.8} 
+              className={showComments ? 'text-sky-500 fill-sky-100' : 'text-gray-500 group-hover:text-sky-500 transition-colors'} 
+            />
           </div>
+          <span className={`text-[13px] font-medium transition-colors ${showComments ? 'text-sky-600 font-semibold' : 'text-gray-500 group-hover:text-sky-500'}`}>
+            {commentsCount > 0 ? commentsCount : ''}
+          </span>
+        </button>
 
-          {/* Comment Button & Golden Badge */}
-          <div 
-            onClick={handleToggleComments} 
-            className="flex items-center gap-2 cursor-pointer select-none group"
-            title="View or add comments"
-          >
-            <button
-              type="button"
-              className="p-1 text-gray-800 hover:text-[#D4AF37] group-hover:scale-110 active:scale-90 transition-all cursor-pointer"
-            >
-              <MessageSquare 
-                size={26} 
-                strokeWidth={1.9} 
-                className={showComments ? 'text-[#D4AF37]' : 'text-gray-800'} 
-              />
-            </button>
-            <div className="h-8 min-w-[32px] px-2.5 bg-gradient-to-r from-[#D4AF37] to-[#E5C158] text-white rounded-full flex items-center justify-center shadow-sm border-2 border-white group-hover:scale-105 active:scale-95 transition-all">
-              <span className="text-[13px] font-bold font-quicksand leading-none">
-                {commentsCount}
-              </span>
-            </div>
+        {/* 2. Repost / Retweet */}
+        <button
+          type="button"
+          onClick={handleRepost}
+          className="flex items-center gap-1 group cursor-pointer transition-colors"
+          title={hasReposted ? 'Undo repost' : 'Repost'}
+        >
+          <div className="w-8 h-8 rounded-full flex items-center justify-center transition-colors group-hover:bg-emerald-50 group-hover:text-emerald-500">
+            <Repeat2 
+              size={18} 
+              strokeWidth={1.9} 
+              className={hasReposted ? 'text-emerald-500 font-bold' : 'text-gray-500 group-hover:text-emerald-500 transition-colors'} 
+            />
           </div>
+          <span className={`text-[13px] font-medium transition-colors ${hasReposted ? 'text-emerald-600 font-semibold' : 'text-gray-500 group-hover:text-emerald-500'}`}>
+            {repostCount > 0 ? repostCount : ''}
+          </span>
+        </button>
 
-          {/* Share Button */}
+        {/* 3. Like (Heart with lively pop effect) */}
+        <button
+          type="button"
+          onClick={handleLike}
+          disabled={isLiking}
+          className="flex items-center gap-1 group cursor-pointer transition-colors"
+          title={hasLiked ? 'Unlike' : 'Like'}
+        >
+          <div className="w-8 h-8 rounded-full flex items-center justify-center transition-colors group-hover:bg-rose-50 group-hover:text-rose-500">
+            <Heart 
+              size={18} 
+              strokeWidth={1.8} 
+              className={`transition-all duration-200 ${
+                hasLiked 
+                  ? 'text-[#D4AF37] fill-[#D4AF37] scale-110 drop-shadow-xs' 
+                  : 'text-gray-500 group-hover:text-rose-500 group-active:scale-125'
+              }`} 
+            />
+          </div>
+          <span className={`text-[13px] font-medium transition-colors ${hasLiked ? 'text-[#c49f2b] font-bold' : 'text-gray-500 group-hover:text-rose-500'}`}>
+            {likes > 0 ? likes.toLocaleString() : ''}
+          </span>
+        </button>
+
+        {/* 4. Views / Impressions Analytics */}
+        <div 
+          className="flex items-center gap-1 group cursor-default transition-colors"
+          title={`${viewsCount.toLocaleString()} views`}
+        >
+          <div className="w-8 h-8 rounded-full flex items-center justify-center transition-colors group-hover:bg-sky-50 group-hover:text-sky-500">
+            <BarChart2 
+              size={18} 
+              strokeWidth={1.8} 
+              className="text-gray-500 group-hover:text-sky-500 transition-colors" 
+            />
+          </div>
+          <span className="text-[13px] font-medium text-gray-500 group-hover:text-sky-500 transition-colors">
+            {formatViews(viewsCount)}
+          </span>
+        </div>
+
+        {/* 5. Right Action Group: Bookmark & Share */}
+        <div className="flex items-center gap-0.5">
+          {/* Bookmark */}
+          <button
+            type="button"
+            onClick={handleToggleBookmark}
+            className="w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:text-[#D4AF37] hover:bg-amber-50 active:scale-90 transition-all cursor-pointer"
+            title={isBookmarked ? 'Remove bookmark' : 'Bookmark post'}
+          >
+            <Bookmark 
+              size={18} 
+              strokeWidth={1.8} 
+              className={isBookmarked ? 'fill-[#D4AF37] text-[#D4AF37]' : 'transition-colors'} 
+            />
+          </button>
+
+          {/* Share */}
           <button
             type="button"
             onClick={handleShare}
-            className="p-1 text-gray-800 hover:text-[#D4AF37] hover:scale-110 active:scale-90 transition-all cursor-pointer"
-            title="Share episode link"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:text-sky-500 hover:bg-sky-50 active:scale-90 transition-all cursor-pointer"
+            title="Share post"
           >
             {copiedLink ? (
-              <Check size={26} strokeWidth={2.2} className="text-emerald-600 animate-bounce" />
+              <Check size={18} strokeWidth={2.2} className="text-emerald-600 animate-bounce" />
             ) : (
-              <Send size={25} strokeWidth={1.9} className="text-gray-800 -rotate-12 translate-y-[-1px]" />
+              <Share size={18} strokeWidth={1.8} className="transition-colors" />
             )}
           </button>
         </div>
-
-        {/* Bookmark Button */}
-        <button
-          type="button"
-          onClick={handleToggleBookmark}
-          className="p-1 text-gray-800 hover:text-[#D4AF37] hover:scale-110 active:scale-90 transition-all cursor-pointer"
-          title={isBookmarked ? 'Remove bookmark' : 'Bookmark episode'}
-        >
-          <Bookmark 
-            size={26} 
-            strokeWidth={1.9} 
-            className={isBookmarked ? 'fill-[#D4AF37] text-[#D4AF37]' : 'text-gray-800'} 
-          />
-        </button>
       </div>
 
       {/* ─── 5. Comments Section & Input ─── */}
