@@ -15,7 +15,10 @@ import {
   Unlock,
   Sparkles,
   Volume2,
-  Check
+  Check,
+  PenLine,
+  X,
+  Eye
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useToast } from '@/components/ui/ToastProvider';
@@ -47,6 +50,20 @@ export interface PostData {
   category?: string;
   tags?: string[];
   viewsCount?: number;
+  repostsCount?: number;
+  hasReposted?: boolean;
+  quoteParentId?: string | null;
+  quotePost?: {
+    id?: string;
+    author: {
+      id?: string;
+      name: string;
+      role?: string;
+      avatar?: string;
+    };
+    title: string;
+    mediaUrl?: string;
+  } | null;
 }
 
 interface CommentItem {
@@ -93,9 +110,19 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
   );
   const [isUnlocking, setIsUnlocking] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
-  const [hasReposted, setHasReposted] = useState(false);
-  const [repostCount, setRepostCount] = useState(0);
-  const viewsCount = post.viewsCount || Math.max(34, (post.initialLikes || 0) * 8 + 42);
+  const [hasReposted, setHasReposted] = useState(post.hasReposted || false);
+  const [repostCount, setRepostCount] = useState(post.repostsCount || 0);
+  const [viewsCountState, setViewsCountState] = useState(
+    post.viewsCount || Math.max(34, (post.initialLikes || 0) * 8 + 42)
+  );
+
+  // X-Style Repost Menu, Quote Modal, and Analytics Modal states
+  const [showRepostMenu, setShowRepostMenu] = useState(false);
+  const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
+  const [quoteText, setQuoteText] = useState('');
+  const [isQuoting, setIsQuoting] = useState(false);
+  const [isAnalyticsModalOpen, setIsAnalyticsModalOpen] = useState(false);
+  const repostMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (post.isBookmarked !== undefined) setIsBookmarked(post.isBookmarked);
@@ -103,7 +130,40 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
     if (typeof post.initialLikes === 'number') setLikes(post.initialLikes);
     if (typeof post.initialComments === 'number') setCommentsCount(post.initialComments);
     if (post.hasLiked !== undefined) setHasLiked(post.hasLiked);
-  }, [post.isBookmarked, post.isUnlocked, post.initialLikes, post.initialComments, post.hasLiked]);
+    if (typeof post.repostsCount === 'number') setRepostCount(post.repostsCount);
+    if (post.hasReposted !== undefined) setHasReposted(post.hasReposted);
+    if (typeof post.viewsCount === 'number' && post.viewsCount > 0) setViewsCountState(post.viewsCount);
+  }, [post.isBookmarked, post.isUnlocked, post.initialLikes, post.initialComments, post.hasLiked, post.repostsCount, post.hasReposted, post.viewsCount]);
+
+  // Track post view in real time
+  useEffect(() => {
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(post.id);
+    if (isUuid) {
+      fetch(`/api/content/${post.id}/view`, { method: 'POST' })
+        .then((r) => r.json())
+        .then((data) => {
+          if (typeof data?.viewsCount === 'number') {
+            setViewsCountState(data.viewsCount);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [post.id]);
+
+  // Close repost dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (repostMenuRef.current && !repostMenuRef.current.contains(e.target as Node)) {
+        setShowRepostMenu(false);
+      }
+    };
+    if (showRepostMenu) {
+      document.addEventListener('click', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [showRepostMenu]);
 
   // Handle Simulated Audio Playback
   useEffect(() => {
@@ -300,12 +360,116 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
     }
   };
 
-  // ── REPOST ──────────────────────────────────────────────────────────────────
-  const handleRepost = () => {
-    const next = !hasReposted;
-    setHasReposted(next);
-    setRepostCount((prev) => (next ? prev + 1 : Math.max(0, prev - 1)));
-    toast(next ? 'Reposted to your audience feed!' : 'Removed repost', 'info');
+  // ── REPOST (Connected to Next.js API -> PostgreSQL) ────────────────────────
+  const handleInstantRepost = async () => {
+    setShowRepostMenu(false);
+    if (!user) {
+      toast('Please sign in to repost.', 'error');
+      return;
+    }
+    const nextReposted = !hasReposted;
+    setHasReposted(nextReposted);
+    setRepostCount((prev) => (nextReposted ? prev + 1 : Math.max(0, prev - 1)));
+
+    try {
+      const res = await fetch(`/api/content/${post.id}/repost`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ userId: user?.id })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setHasReposted(data.reposted);
+        setRepostCount(data.repostsCount);
+        toast(data.reposted ? 'Reposted to your audience feed!' : 'Removed repost', 'info');
+      }
+    } catch (err) {
+      console.warn('Repost error:', err);
+    }
+  };
+
+  // ── QUOTE POST (Connected to Next.js API -> PostgreSQL) ─────────────────────
+  const handleQuoteSubmit = async () => {
+    if (!quoteText.trim()) return;
+    if (!user) {
+      toast('Please sign in to quote posts.', 'error');
+      return;
+    }
+    setIsQuoting(true);
+
+    try {
+      const payload = {
+        title: quoteText.trim(),
+        content_type: 'quote',
+        quote_parent_id: post.id,
+        quote_post: {
+          id: post.id,
+          author: {
+            id: post.author.id,
+            name: post.author.name,
+            role: post.author.role,
+            avatar: post.author.avatar
+          },
+          title: post.title,
+          mediaUrl: post.mediaUrl || ''
+        },
+        userId: user?.id
+      };
+
+      const res = await fetch('/api/content', {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const createdPost = data.post;
+        if (createdPost) {
+          const authorName = user?.name || (user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : null) || 'You';
+          const authorRole = user?.role === 'screen_owner' 
+            ? 'Media Partner' 
+            : user?.role === 'admin' 
+            ? 'Administrator' 
+            : (user?.creator_niche || 'Creator');
+
+          const newFormattedPost: PostData = {
+            id: String(createdPost.id),
+            author: {
+              id: user?.id || '',
+              name: authorName,
+              role: authorRole,
+              avatar: user?.avatar || '/audience/adam-udochi.png',
+              tier: user?.creator_tier || 'free',
+            },
+            title: quoteText.trim(),
+            description: '',
+            mediaUrl: '',
+            initialLikes: 0,
+            initialComments: 0,
+            repostsCount: 0,
+            viewsCount: 1,
+            quoteParentId: post.id,
+            quotePost: payload.quote_post,
+            badgeTheme: 'gold'
+          };
+
+          window.dispatchEvent(new CustomEvent('post-created', { detail: newFormattedPost }));
+        }
+
+        setIsQuoteModalOpen(false);
+        setQuoteText('');
+        setRepostCount((prev) => prev + 1);
+        toast('Quoted post published to your feed!', 'success');
+      } else {
+        toast('Failed to publish quote post.', 'error');
+      }
+    } catch (err) {
+      console.error('Quote error:', err);
+      toast('Failed to publish quote post.', 'error');
+    } finally {
+      setIsQuoting(false);
+    }
   };
 
   const formatViews = (count: number) => {
@@ -442,6 +606,54 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
           <p className="text-[13px] text-gray-600 line-clamp-2 leading-relaxed font-normal">
             {post.description}
           </p>
+        )}
+
+        {/* Embedded Quoted Post Card */}
+        {post.quotePost && (
+          <div 
+            onClick={(e) => {
+              e.stopPropagation();
+              if (post.quotePost?.id) {
+                const el = document.getElementById(post.quotePost.id);
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }
+            }}
+            className="mt-1 w-full rounded-2xl border border-gray-200/90 bg-gray-50/70 hover:bg-gray-100/70 transition-all p-3.5 flex flex-col gap-2 cursor-pointer shadow-2xs group/quote"
+          >
+            <div className="flex items-center gap-2">
+              {post.quotePost.author?.avatar ? (
+                <img 
+                  src={post.quotePost.author.avatar} 
+                  alt={post.quotePost.author.name} 
+                  className="w-5 h-5 rounded-full object-cover shrink-0" 
+                />
+              ) : (
+                <div className="w-5 h-5 rounded-full bg-amber-200 text-amber-900 text-[10px] font-bold flex items-center justify-center shrink-0">
+                  {post.quotePost.author?.name ? post.quotePost.author.name.charAt(0) : 'A'}
+                </div>
+              )}
+              <span className="text-xs font-bold text-gray-900 group-hover/quote:text-[#D4AF37] transition-colors truncate">
+                {post.quotePost.author?.name}
+              </span>
+              <span className="text-[11px] text-gray-500 truncate">
+                · {post.quotePost.author?.role || 'Creator'}
+              </span>
+            </div>
+
+            <p className="text-xs text-gray-800 line-clamp-3 leading-relaxed font-normal">
+              {post.quotePost.title}
+            </p>
+
+            {Boolean(post.quotePost.mediaUrl && post.quotePost.mediaUrl.trim()) && (
+              <div className="w-full aspect-[21/9] max-h-36 rounded-xl overflow-hidden bg-black mt-1">
+                <img 
+                  src={post.quotePost.mediaUrl} 
+                  alt="Quoted media" 
+                  className="w-full h-full object-cover" 
+                />
+              </div>
+            )}
+          </div>
         )}
 
         {post.isPremium && (
@@ -591,24 +803,58 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
           </span>
         </button>
 
-        {/* 2. Repost / Retweet */}
-        <button
-          type="button"
-          onClick={handleRepost}
-          className="flex items-center gap-1 group cursor-pointer transition-colors"
-          title={hasReposted ? 'Undo repost' : 'Repost'}
-        >
-          <div className="w-8 h-8 rounded-full flex items-center justify-center transition-colors group-hover:bg-emerald-50 group-hover:text-emerald-500">
-            <Repeat2 
-              size={18} 
-              strokeWidth={1.9} 
-              className={hasReposted ? 'text-emerald-500 font-bold' : 'text-gray-500 group-hover:text-emerald-500 transition-colors'} 
-            />
-          </div>
-          <span className={`text-[13px] font-medium transition-colors ${hasReposted ? 'text-emerald-600 font-semibold' : 'text-gray-500 group-hover:text-emerald-500'}`}>
-            {repostCount > 0 ? repostCount : ''}
-          </span>
-        </button>
+        {/* 2. Repost / Retweet Dropdown */}
+        <div className="relative">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowRepostMenu((prev) => !prev);
+            }}
+            className="flex items-center gap-1 group cursor-pointer transition-colors"
+            title="Repost or Quote"
+          >
+            <div className="w-8 h-8 rounded-full flex items-center justify-center transition-colors group-hover:bg-emerald-50 group-hover:text-emerald-500">
+              <Repeat2 
+                size={18} 
+                strokeWidth={1.9} 
+                className={hasReposted ? 'text-emerald-500 font-bold' : 'text-gray-500 group-hover:text-emerald-500 transition-colors'} 
+              />
+            </div>
+            <span className={`text-[13px] font-medium transition-colors ${hasReposted ? 'text-emerald-600 font-semibold' : 'text-gray-500 group-hover:text-emerald-500'}`}>
+              {repostCount > 0 ? repostCount : ''}
+            </span>
+          </button>
+
+          {/* X-Style Floating Repost / Quote Menu */}
+          {showRepostMenu && (
+            <div 
+              ref={repostMenuRef}
+              onClick={(e) => e.stopPropagation()}
+              className="absolute bottom-full left-0 mb-2 w-44 bg-white rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.14)] border border-gray-100 py-1.5 z-40 flex flex-col animate-in fade-in zoom-in-95 duration-150"
+            >
+              <button
+                type="button"
+                onClick={handleInstantRepost}
+                className="flex items-center gap-3 px-4 py-2.5 text-left text-[14px] font-bold text-gray-800 hover:bg-gray-50 transition-colors cursor-pointer"
+              >
+                <Repeat2 size={18} className={hasReposted ? 'text-emerald-500' : 'text-gray-600'} />
+                <span>{hasReposted ? 'Undo Repost' : 'Repost'}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowRepostMenu(false);
+                  setIsQuoteModalOpen(true);
+                }}
+                className="flex items-center gap-3 px-4 py-2.5 text-left text-[14px] font-bold text-gray-800 hover:bg-gray-50 transition-colors cursor-pointer"
+              >
+                <PenLine size={18} className="text-gray-600" />
+                <span>Quote Post</span>
+              </button>
+            </div>
+          )}
+        </div>
 
         {/* 3. Like (Heart with lively pop effect) */}
         <button
@@ -634,10 +880,12 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
           </span>
         </button>
 
-        {/* 4. Views / Impressions Analytics */}
-        <div 
-          className="flex items-center gap-1 group cursor-default transition-colors"
-          title={`${viewsCount.toLocaleString()} views`}
+        {/* 4. Views / Impressions Analytics Button */}
+        <button
+          type="button"
+          onClick={() => setIsAnalyticsModalOpen(true)}
+          className="flex items-center gap-1 group cursor-pointer transition-colors"
+          title={`${viewsCountState.toLocaleString()} views • Click for analytics`}
         >
           <div className="w-8 h-8 rounded-full flex items-center justify-center transition-colors group-hover:bg-sky-50 group-hover:text-sky-500">
             <BarChart2 
@@ -647,9 +895,9 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
             />
           </div>
           <span className="text-[13px] font-medium text-gray-500 group-hover:text-sky-500 transition-colors">
-            {formatViews(viewsCount)}
+            {formatViews(viewsCountState)}
           </span>
-        </div>
+        </button>
 
         {/* 5. Right Action Group: Bookmark & Share */}
         <div className="flex items-center gap-0.5">
@@ -783,6 +1031,232 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
         creatorAvatar={post.author.avatar}
         contentId={post.id}
       />
+
+      {/* ─── Quote Post Modal (X/Twitter Style) ─── */}
+      {isQuoteModalOpen && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200"
+          onClick={() => setIsQuoteModalOpen(false)}
+        >
+          <div 
+            className="bg-white rounded-3xl max-w-lg w-full shadow-2xl border border-gray-100 overflow-hidden flex flex-col animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[#D4AF37]" />
+                <h3 className="font-bold text-gray-900 text-sm tracking-tight">Quote Post</h3>
+              </div>
+              <button 
+                type="button"
+                onClick={() => setIsQuoteModalOpen(false)}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-5 flex flex-col gap-4">
+              {/* Creator commentary textarea */}
+              <div className="flex items-start gap-3">
+                {user?.avatar ? (
+                  <img 
+                    src={user.avatar} 
+                    alt={user.name || 'User'} 
+                    className="w-10 h-10 rounded-full object-cover ring-2 ring-gray-100 shrink-0"
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#D4AF37] to-amber-200 text-black font-bold flex items-center justify-center text-sm shrink-0">
+                    {user?.name ? user.name.charAt(0) : 'U'}
+                  </div>
+                )}
+                <div className="flex-1">
+                  <textarea 
+                    value={quoteText}
+                    onChange={(e) => setQuoteText(e.target.value)}
+                    placeholder="Add your thoughts or commentary..."
+                    rows={3}
+                    autoFocus
+                    className="w-full text-[15px] text-gray-900 placeholder:text-gray-400 border-none focus:outline-hidden focus:ring-0 resize-none bg-transparent"
+                  />
+                </div>
+              </div>
+
+              {/* Preview of Quoted Post */}
+              <div className="rounded-2xl border border-gray-200 bg-gray-50/80 p-3.5 flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  {post.author.avatar ? (
+                    <img 
+                      src={post.author.avatar} 
+                      alt={post.author.name} 
+                      className="w-6 h-6 rounded-full object-cover ring-1 ring-gray-200 shrink-0" 
+                    />
+                  ) : (
+                    <div className="w-6 h-6 rounded-full bg-amber-100 text-[#8c711a] text-[10px] font-bold flex items-center justify-center shrink-0">
+                      {post.author.name.charAt(0)}
+                    </div>
+                  )}
+                  <span className="text-xs font-bold text-gray-900 truncate">{post.author.name}</span>
+                  <span className="text-[11px] text-gray-500 truncate">· {post.author.role}</span>
+                </div>
+                <p className="text-xs text-gray-800 line-clamp-3 leading-relaxed font-normal">
+                  {cleanTitle}
+                </p>
+                {post.mediaUrl && !post.mediaUrl.includes('mockup-sphinx') && (
+                  <div className="w-full h-24 rounded-xl overflow-hidden bg-black/5 mt-0.5">
+                    <img 
+                      src={post.mediaUrl} 
+                      alt="Media preview" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex items-center justify-between px-5 py-3.5 bg-gray-50/70 border-t border-gray-100">
+              <span className="text-[11px] text-gray-400 font-medium">
+                Will be published to your audience feed
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsQuoteModalOpen(false)}
+                  className="px-4 py-2 text-xs font-bold text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={!quoteText.trim() || isQuoting}
+                  onClick={handleQuoteSubmit}
+                  className="px-5 py-2 text-xs font-bold text-white bg-gradient-to-r from-amber-500 to-amber-600 hover:brightness-105 active:scale-95 disabled:opacity-50 disabled:pointer-events-none rounded-full transition-all shadow-sm shadow-amber-500/20 cursor-pointer flex items-center gap-1.5"
+                >
+                  {isQuoting ? (
+                    <>
+                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Posting...</span>
+                    </>
+                  ) : (
+                    <span>Quote Post</span>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── Analytics Modal (X/Twitter Post Activity Style) ─── */}
+      {isAnalyticsModalOpen && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200"
+          onClick={() => setIsAnalyticsModalOpen(false)}
+        >
+          <div 
+            className="bg-white rounded-3xl max-w-md w-full shadow-2xl border border-gray-100 overflow-hidden flex flex-col animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-sky-50 text-sky-500 flex items-center justify-center">
+                  <BarChart2 size={16} />
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-900 text-sm tracking-tight">Post Analytics</h3>
+                  <p className="text-[11px] text-gray-400">Live audience metrics</p>
+                </div>
+              </div>
+              <button 
+                type="button"
+                onClick={() => setIsAnalyticsModalOpen(false)}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-5 flex flex-col gap-5">
+              {/* Hero Impression Stat */}
+              <div className="bg-gradient-to-br from-amber-50/70 via-white to-gray-50 p-4 rounded-2xl border border-amber-100/80 flex items-center justify-between">
+                <div>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-amber-700/80">Total Impressions</span>
+                  <div className="text-3xl font-extrabold text-gray-950 mt-0.5 tracking-tight">
+                    {viewsCountState.toLocaleString()}
+                  </div>
+                  <p className="text-[11px] text-gray-500 mt-1">Times this post was viewed by listeners and fans</p>
+                </div>
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#D4AF37] to-amber-500 text-white flex items-center justify-center shadow-lg shadow-amber-500/20 shrink-0">
+                  <Eye size={24} />
+                </div>
+              </div>
+
+              {/* Engagement Breakdown */}
+              <div className="flex flex-col gap-2.5">
+                <span className="text-xs font-bold text-gray-900">Engagements Breakdown</span>
+                <div className="grid grid-cols-3 gap-2.5">
+                  <div className="bg-gray-50 p-3 rounded-2xl border border-gray-100 flex flex-col items-center text-center">
+                    <Heart size={16} className="text-rose-500 mb-1" />
+                    <span className="text-lg font-bold text-gray-900">{likes}</span>
+                    <span className="text-[11px] text-gray-500 font-medium">Likes</span>
+                  </div>
+                  <div className="bg-gray-50 p-3 rounded-2xl border border-gray-100 flex flex-col items-center text-center">
+                    <Repeat2 size={16} className="text-emerald-500 mb-1" />
+                    <span className="text-lg font-bold text-gray-900">{repostCount}</span>
+                    <span className="text-[11px] text-gray-500 font-medium">Reposts</span>
+                  </div>
+                  <div className="bg-gray-50 p-3 rounded-2xl border border-gray-100 flex flex-col items-center text-center">
+                    <MessageCircle size={16} className="text-sky-500 mb-1" />
+                    <span className="text-lg font-bold text-gray-900">{commentsCount}</span>
+                    <span className="text-[11px] text-gray-500 font-medium">Replies</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Engagement Rate Bar */}
+              <div className="bg-gray-50 p-3.5 rounded-2xl border border-gray-100 flex flex-col gap-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-semibold text-gray-700">Engagement Rate</span>
+                  <span className="font-bold text-[#8c711a]">
+                    {viewsCountState > 0
+                      ? `${(((likes + repostCount + commentsCount) / viewsCountState) * 100).toFixed(1)}%`
+                      : '0%'}
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+                  <div 
+                    className="bg-gradient-to-r from-amber-400 to-[#D4AF37] h-full rounded-full transition-all duration-500"
+                    style={{
+                      width: `${Math.min(100, Math.max(5, viewsCountState > 0 ? ((likes + repostCount + commentsCount) / viewsCountState) * 100 : 0))}%`
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1.5 text-[11px] text-gray-400 justify-center">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span>Connected live to Supabase PostgreSQL database</span>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-5 py-3 bg-gray-50/70 border-t border-gray-100 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setIsAnalyticsModalOpen(false)}
+                className="px-5 py-2 text-xs font-bold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-full transition-colors cursor-pointer shadow-2xs"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </article>
   );
 }

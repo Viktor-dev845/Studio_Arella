@@ -380,6 +380,11 @@ function AudienceContent() {
               price: parseFloat(String(p.price)) || 0,
               category: (p.category as string) || 'General',
               tags: Array.isArray(p.tags) ? p.tags : [],
+              viewsCount: typeof p.viewsCount === 'number' ? p.viewsCount : (parseInt(String(p.views_count ?? 0), 10) || 0),
+              repostsCount: typeof p.repostsCount === 'number' ? p.repostsCount : (parseInt(String(p.reposts_count ?? 0), 10) || 0),
+              hasReposted: Boolean(p.hasReposted ?? p.has_reposted),
+              quoteParentId: (p.quoteParentId as string) || (p.quote_parent_id as string) || null,
+              quotePost: (p.quotePost as any) || (typeof p.quote_post === 'string' ? JSON.parse(p.quote_post) : (p.quote_post || null)),
             };
           });
           setPosts(mapped);
@@ -404,8 +409,17 @@ function AudienceContent() {
 
     fetchPosts();
 
+    const handlePostCreatedEvent = (e: Event) => {
+      const customEvent = e as CustomEvent<PostData>;
+      if (customEvent.detail) {
+        setPosts((prev) => [customEvent.detail, ...prev]);
+      }
+    };
+    window.addEventListener('post-created', handlePostCreatedEvent);
+
     return () => {
       isMounted = false;
+      window.removeEventListener('post-created', handlePostCreatedEvent);
     };
   }, [activeMenu]);
 

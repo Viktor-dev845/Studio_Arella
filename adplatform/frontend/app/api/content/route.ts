@@ -38,18 +38,23 @@ export async function POST(request: Request) {
       tags = [],
       is_premium = false,
       price = 0,
-      badge_theme = 'gold'
+      badge_theme = 'gold',
+      quote_parent_id = null,
+      quote_post = null
     } = body;
 
     if (!title || typeof title !== 'string' || !title.trim()) {
       return NextResponse.json({ error: 'Title is required' }, { status: 400 });
     }
 
+    const isQuoteUuid = quote_parent_id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(quote_parent_id);
+
     const { rows } = await pool.query(
       `INSERT INTO creator_content (
         creator_id, title, description, content_type, media_url, cover_url, 
-        duration_text, category, tags, is_premium, price, badge_theme, status
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'published')
+        duration_text, category, tags, is_premium, price, badge_theme, status,
+        quote_parent_id, quote_post
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'published', $13, $14)
       RETURNING *`,
       [
         userId,
@@ -63,7 +68,9 @@ export async function POST(request: Request) {
         Array.isArray(tags) ? tags : [],
         Boolean(is_premium),
         parseFloat(String(price)) || 0,
-        badge_theme
+        badge_theme,
+        isQuoteUuid ? quote_parent_id : null,
+        quote_post ? JSON.stringify(quote_post) : null
       ]
     );
 
