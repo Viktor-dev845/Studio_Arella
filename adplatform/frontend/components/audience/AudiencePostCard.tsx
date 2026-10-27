@@ -123,6 +123,7 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
   const [isQuoting, setIsQuoting] = useState(false);
   const [isAnalyticsModalOpen, setIsAnalyticsModalOpen] = useState(false);
   const repostMenuRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     if (post.isBookmarked !== undefined) setIsBookmarked(post.isBookmarked);
@@ -135,19 +136,66 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
     if (typeof post.viewsCount === 'number' && post.viewsCount > 0) setViewsCountState(post.viewsCount);
   }, [post.isBookmarked, post.isUnlocked, post.initialLikes, post.initialComments, post.hasLiked, post.repostsCount, post.hasReposted, post.viewsCount]);
 
-  // Track post view in real time
+  // ── X / IAB-Standard Viewability Tracking (50% Visible for 1s + Session Deduplication) ──
   useEffect(() => {
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(post.id);
-    if (isUuid) {
-      fetch(`/api/content/${post.id}/view`, { method: 'POST' })
-        .then((r) => r.json())
-        .then((data) => {
-          if (typeof data?.viewsCount === 'number') {
-            setViewsCountState(data.viewsCount);
-          }
-        })
-        .catch(() => {});
+    if (!isUuid || !cardRef.current) return;
+
+    // Check if this post was already counted in the current browser session
+    const sessionKey = `viewed_post_${post.id}`;
+    if (typeof window !== 'undefined' && sessionStorage.getItem(sessionKey)) {
+      return;
     }
+
+    let visibilityTimer: NodeJS.Timeout | null = null;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        // Standard viewability: at least 50% in view (or 35% if card is taller than viewport on mobile)
+        const isSufficientlyVisible = 
+          entry.isIntersecting && 
+          (entry.intersectionRatio >= 0.5 || (entry.boundingClientRect.height > (window.innerHeight * 0.7) && entry.intersectionRatio >= 0.35));
+
+        if (isSufficientlyVisible) {
+          if (!visibilityTimer) {
+            // User is actively focused on this post; track after 1.0 second dwell time
+            visibilityTimer = setTimeout(() => {
+              try {
+                sessionStorage.setItem(sessionKey, '1');
+              } catch (_) {}
+
+              fetch(`/api/content/${post.id}/view`, { method: 'POST' })
+                .then((r) => r.json())
+                .then((data) => {
+                  if (typeof data?.viewsCount === 'number') {
+                    setViewsCountState(data.viewsCount);
+                  }
+                })
+                .catch(() => {});
+
+              observer.disconnect();
+            }, 1000);
+          }
+        } else {
+          // User scrolled away before 1 second elapsed; cancel tracking
+          if (visibilityTimer) {
+            clearTimeout(visibilityTimer);
+            visibilityTimer = null;
+          }
+        }
+      },
+      {
+        threshold: [0.35, 0.5]
+      }
+    );
+
+    observer.observe(cardRef.current);
+
+    return () => {
+      if (visibilityTimer) clearTimeout(visibilityTimer);
+      observer.disconnect();
+    };
   }, [post.id]);
 
   // Close repost dropdown on click outside
@@ -541,6 +589,7 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
 
   return (
     <article 
+      ref={cardRef}
       id={post.id}
       className="w-full bg-white rounded-2xl p-4 sm:p-5 shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-gray-100 flex flex-col gap-3.5 font-quicksand transition-all hover:shadow-[0_4px_20px_rgba(0,0,0,0.08)]"
     >
@@ -1238,9 +1287,14 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
                 </div>
               </div>
 
-              <div className="flex items-center gap-1.5 text-[11px] text-gray-400 justify-center">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span>Connected live to Supabase PostgreSQL database</span>
+              <div className="flex flex-col items-center gap-1 text-[11px] text-gray-400 justify-center text-center">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-gray-500 font-medium">Connected live to Supabase PostgreSQL</span>
+                </div>
+                <span className="text-[10px] text-gray-400">
+                  Measures IAB & X standard viewability (≥50% visible for 1s+)
+                </span>
               </div>
             </div>
 
