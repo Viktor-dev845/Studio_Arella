@@ -541,11 +541,17 @@ function AudienceContent() {
     setPosts((prev) => [tempPost, ...prev]);
 
     try {
-      await api.post('/content', {
+      const res = await api.post('/content', {
         title: content,
         contentType: 'post',
         description: content,
       });
+      if (res.data?.post?.id) {
+        const realId = String(res.data.post.id);
+        setPosts((prev) =>
+          prev.map((p) => (p.id === tempPost.id ? { ...p, id: realId } : p))
+        );
+      }
     } catch (err) {
       console.warn('API post creation failed, kept local post:', err);
     }

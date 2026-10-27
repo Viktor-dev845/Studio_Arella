@@ -13,6 +13,7 @@ import {
   LayoutDashboard 
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
+import api from '@/lib/api';
 
 interface AudienceLeftSidebarProps {
   activeMenu?: string;
@@ -42,6 +43,46 @@ export default function AudienceLeftSidebar({
   useEffect(() => {
     setCurrentMenu(activeMenu);
   }, [activeMenu]);
+
+  const [bookmarkCount, setBookmarkCount] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('arella_bookmark_count');
+      return saved ? parseInt(saved, 10) : 0;
+    }
+    return 0;
+  });
+
+  useEffect(() => {
+    const fetchBookmarkCount = async () => {
+      try {
+        const res = await api.get('/content/bookmarks');
+        const count = res.data?.posts?.length || 0;
+        setBookmarkCount(count);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('arella_bookmark_count', String(count));
+        }
+      } catch {
+        // keep current
+      }
+    };
+    if (user?.id) {
+      fetchBookmarkCount();
+    }
+
+    const onBookmarksChanged = (e: any) => {
+      const isBookmarked = e.detail?.bookmarked;
+      setBookmarkCount((prev) => {
+        const next = isBookmarked ? prev + 1 : Math.max(0, prev - 1);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('arella_bookmark_count', String(next));
+        }
+        return next;
+      });
+    };
+
+    window.addEventListener('bookmarks-changed', onBookmarksChanged);
+    return () => window.removeEventListener('bookmarks-changed', onBookmarksChanged);
+  }, [user?.id]);
 
   const userName = user?.name || (user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : null) || 'Guest Fan';
   const userTitle = user?.role === 'screen_owner' 
@@ -159,18 +200,25 @@ export default function AudienceLeftSidebar({
         </button>
 
         {/* Item 4: Bookmarks */}
-        <button
-          type="button"
+        <div
           onClick={() => handleMenuClick('bookmarks')}
-          className={`flex items-center gap-3.5 py-2 px-3.5 rounded-full transition-all text-left cursor-pointer ${
+          className={`flex items-center justify-between py-2 px-3.5 rounded-full cursor-pointer transition-all ${
             currentMenu === 'bookmarks'
-              ? 'bg-[#F6F6F6] text-[#666666] font-medium w-fit pr-6'
+              ? 'bg-[#F6F6F6] text-[#666666] font-medium'
               : 'text-[#666666] hover:text-black'
           }`}
         >
-          <Bookmark size={20} strokeWidth={1.8} className="shrink-0 text-[#666666]" />
-          <span className="text-[16px] leading-[21px]">Bookmarks</span>
-        </button>
+          <div className="flex items-center gap-3.5">
+            <Bookmark size={20} strokeWidth={1.8} className="shrink-0 text-[#666666]" />
+            <span className="text-[16px] leading-[21px]">Bookmarks</span>
+          </div>
+
+          {bookmarkCount > 0 && (
+            <div className="w-[32px] h-[16px] bg-[#D4AF37] border-2 border-white rounded-[8px] flex items-center justify-center text-white text-[11px] font-normal leading-[14px] shadow-sm shrink-0">
+              {bookmarkCount}
+            </div>
+          )}
+        </div>
 
         {/* Item 5: Subscriptions (Frame 8: active pill with Gold Pill Counter Badge "2") */}
         <div

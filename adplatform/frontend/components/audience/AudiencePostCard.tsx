@@ -182,6 +182,15 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
   const handleToggleBookmark = async () => {
     const nextBookmarked = !isBookmarked;
     setIsBookmarked(nextBookmarked);
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('bookmarks-changed', {
+          detail: { contentId: post.id, bookmarked: nextBookmarked },
+        })
+      );
+    }
+
     try {
       const res = await fetch(`/api/content/${post.id}/bookmark`, {
         method: 'POST',

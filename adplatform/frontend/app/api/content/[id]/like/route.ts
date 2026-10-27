@@ -24,7 +24,7 @@ export async function POST(
     const { id: contentId } = await params;
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(contentId);
     if (!isUuid) {
-      return NextResponse.json({ liked: true, likesCount: 92 });
+      return NextResponse.json({ liked: true, likesCount: 1 });
     }
 
     let userId = getUserIdFromRequest(request);

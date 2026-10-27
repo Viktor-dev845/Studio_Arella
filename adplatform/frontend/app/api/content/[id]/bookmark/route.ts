@@ -38,6 +38,11 @@ export async function POST(
       return NextResponse.json({ bookmarked: true, isGuest: true });
     }
 
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(contentId);
+    if (!isUuid) {
+      return NextResponse.json({ bookmarked: true });
+    }
+
     const existing = await pool.query(
       'SELECT id FROM user_bookmarks WHERE content_id = $1 AND user_id = $2',
       [contentId, userId]
