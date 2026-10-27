@@ -401,7 +401,7 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
           {cleanTitle}
         </h3>
 
-        {post.description && (
+        {post.description && post.description.trim() !== cleanTitle.trim() && (
           <p className="text-[13px] text-gray-600 line-clamp-2 leading-relaxed font-normal">
             {post.description}
           </p>
@@ -422,7 +422,7 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
       </div>
 
       {/* ─── 3. Media Card & Sleek Audio Player ─── */}
-      {post.mediaUrl && (
+      {Boolean(post.mediaUrl && post.mediaUrl.trim()) && (
         <div className="relative w-full aspect-[16/9] rounded-2xl overflow-hidden bg-gray-900 group shadow-md border border-gray-100">
           <img 
             src={post.mediaUrl} 

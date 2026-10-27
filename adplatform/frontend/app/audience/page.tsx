@@ -346,7 +346,7 @@ function AudienceContent() {
               },
               title: cleanTitle,
               description: (p.description as string) || '',
-              mediaUrl: (p.mediaUrl as string) || (p.cover_url as string) || (p.media_url as string) || '/audience/covers/media.jpg',
+              mediaUrl: (p.mediaUrl as string) || (p.cover_url as string) || (p.media_url as string) || '',
               duration: (p.duration_text as string) || '01:15:00',
               currentTime: '00:04:15',
               progressPercent: 30,
@@ -556,7 +556,7 @@ function AudienceContent() {
           body: JSON.stringify({
             title: content,
             content_type: 'post',
-            description: content,
+            description: '',
             userId: user?.id,
           }),
         });
@@ -575,7 +575,7 @@ function AudienceContent() {
         const res = await api.post('/content', {
           title: content,
           contentType: 'post',
-          description: content,
+          description: '',
           userId: user?.id,
         });
         if (res.data?.post?.id) {
