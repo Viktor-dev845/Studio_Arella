@@ -541,15 +541,50 @@ function AudienceContent() {
     setPosts((prev) => [tempPost, ...prev]);
 
     try {
-      const res = await api.post('/content', {
-        title: content,
-        contentType: 'post',
-        description: content,
-      });
-      if (res.data?.post?.id) {
-        const realId = String(res.data.post.id);
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      let createdPostId: string | null = null;
+
+      // 1. Direct Next.js serverless route -> Supabase PostgreSQL
+      try {
+        const directRes = await fetch('/api/content', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            title: content,
+            content_type: 'post',
+            description: content,
+            userId: user?.id,
+          }),
+        });
+        if (directRes.ok) {
+          const directData = await directRes.json();
+          if (directData?.post?.id) {
+            createdPostId = String(directData.post.id);
+          }
+        }
+      } catch {
+        // Fallback to external API
+      }
+
+      // 2. Fallback to external backend API if needed
+      if (!createdPostId) {
+        const res = await api.post('/content', {
+          title: content,
+          contentType: 'post',
+          description: content,
+          userId: user?.id,
+        });
+        if (res.data?.post?.id) {
+          createdPostId = String(res.data.post.id);
+        }
+      }
+
+      if (createdPostId) {
         setPosts((prev) =>
-          prev.map((p) => (p.id === tempPost.id ? { ...p, id: realId } : p))
+          prev.map((p) => (p.id === tempPost.id ? { ...p, id: createdPostId! } : p))
         );
       }
     } catch (err) {
