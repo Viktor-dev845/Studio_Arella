@@ -306,19 +306,23 @@ function AudienceContent() {
       try {
         let feedPosts: Record<string, unknown>[] = [];
         
-        // 1. Try external backend API
+        // 1. Prioritize internal Next.js direct database route (fast, live Supabase connection)
         try {
-          const res = await api.get(url);
-          feedPosts = res.data?.posts || [];
+          const directUrl = `/api/content/feed${activeMenu === 'trending' ? '?view=trending' : ''}`;
+          const directRes = await fetch(directUrl);
+          if (directRes.ok) {
+            const data = await directRes.json();
+            feedPosts = data?.posts || [];
+          }
         } catch {
-          // 2. If Render backend returns 404 / error, try internal Next.js direct DB route
+          // Direct route error
+        }
+
+        // 2. Fall back to external API if direct route returned no posts
+        if (feedPosts.length === 0) {
           try {
-            const fallbackUrl = `/api/content/feed${activeMenu === 'trending' ? '?view=trending' : ''}`;
-            const directRes = await fetch(fallbackUrl);
-            if (directRes.ok) {
-              const data = await directRes.json();
-              feedPosts = data?.posts || [];
-            }
+            const res = await api.get(url);
+            feedPosts = res.data?.posts || [];
           } catch {
             feedPosts = [];
           }
@@ -329,11 +333,23 @@ function AudienceContent() {
         if (feedPosts.length > 0) {
           const mapped: PostData[] = feedPosts.map((p: Record<string, unknown>) => {
             const authorObj = (typeof p.author === 'object' && p.author !== null ? p.author : {}) as Record<string, unknown>;
-            const authorName = (authorObj.name as string) || (p.author_name as string) || 'Adam Udochi';
-            const authorRole = (authorObj.role as string) || (p.author_role as string) || 'Creator';
+            const authorName = (authorObj.name as string) || (p.author_name as string) || 'Studio Creator';
+            
+            // Clean author role: Never show "UI/UX Designer" unless explicitly given in creator_niche
+            let authorRole = (authorObj.role as string) || (p.author_role as string) || '';
+            if (authorRole === 'UI/UX Designer' && !authorObj.creator_niche && !p.creator_niche) {
+              authorRole = 'Creator';
+            }
+            if (!authorRole) authorRole = 'Creator';
+
             const authorAvatar = (authorObj.avatar as string) || (p.author_avatar as string) || '/audience/adam-udochi.png';
             const authorTier = (authorObj.tier as string) || (p.author_tier as string) || 'pro';
-            const cleanTitle = String(p.title || 'Studio Podcast').replace(/^[-–—\s]+/, '');
+            const cleanTitle = String(p.title || 'Studio Post').replace(/^[-–—\s]+/, '');
+
+            // Clean mediaUrl: strip any legacy mock sphinx placeholders
+            const rawMedia = (p.mediaUrl as string) || (p.cover_url as string) || (p.media_url as string) || '';
+            const isMockPlaceholder = rawMedia.includes('mockup-sphinx') || (rawMedia === '/audience/covers/media.jpg' && (p.content_type === 'post' || !p.category || p.category === 'General'));
+            const cleanMedia = isMockPlaceholder ? '' : rawMedia;
 
             return {
               id: String(p.id),
@@ -346,7 +362,7 @@ function AudienceContent() {
               },
               title: cleanTitle,
               description: (p.description as string) || '',
-              mediaUrl: (p.mediaUrl as string) || (p.cover_url as string) || (p.media_url as string) || '',
+              mediaUrl: cleanMedia,
               duration: (p.duration_text as string) || '01:15:00',
               currentTime: '00:04:15',
               progressPercent: 30,

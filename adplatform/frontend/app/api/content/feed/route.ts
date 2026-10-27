@@ -32,7 +32,7 @@ export async function GET(request: Request) {
         u.id AS author_id,
         u.name AS author_name,
         COALESCE(u.avatar, '/audience/adam-udochi.png') AS author_avatar,
-        COALESCE(u.creator_niche, 'UI/UX Designer') AS author_role,
+        COALESCE(NULLIF(u.creator_niche, ''), CASE WHEN u.role = 'creator' THEN 'Creator' WHEN u.role = 'screen_owner' THEN 'Media Partner' WHEN u.role = 'admin' THEN 'Administrator' ELSE 'Creator' END) AS author_role,
         u.creator_tier AS author_tier
       FROM creator_content c
       JOIN users u ON c.creator_id = u.id

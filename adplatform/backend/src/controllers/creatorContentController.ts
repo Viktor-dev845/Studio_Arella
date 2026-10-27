@@ -29,7 +29,7 @@ export async function getFeed(req: Request, res: Response) {
         u.id AS author_id,
         u.name AS author_name,
         COALESCE(u.avatar, '/audience/adam-udochi.png') AS author_avatar,
-        COALESCE(u.creator_niche, 'UI/UX Designer') AS author_role,
+        COALESCE(NULLIF(u.creator_niche, ''), CASE WHEN u.role = 'creator' THEN 'Creator' WHEN u.role = 'screen_owner' THEN 'Media Partner' WHEN u.role = 'admin' THEN 'Administrator' ELSE 'Creator' END) AS author_role,
         u.creator_tier AS author_tier,
         CASE WHEN ub.id IS NOT NULL THEN true ELSE false END AS is_bookmarked,
         CASE WHEN cl.id IS NOT NULL THEN true ELSE false END AS has_liked,
@@ -138,7 +138,7 @@ export async function getBookmarkedContent(req: Request, res: Response) {
         u.id AS author_id,
         u.name AS author_name,
         COALESCE(u.avatar, '/audience/adam-udochi.png') AS author_avatar,
-        COALESCE(u.creator_niche, 'UI/UX Designer') AS author_role,
+        COALESCE(NULLIF(u.creator_niche, ''), CASE WHEN u.role = 'creator' THEN 'Creator' WHEN u.role = 'screen_owner' THEN 'Media Partner' WHEN u.role = 'admin' THEN 'Administrator' ELSE 'Creator' END) AS author_role,
         u.creator_tier AS author_tier,
         true AS is_bookmarked,
         CASE WHEN cl.id IS NOT NULL THEN true ELSE false END AS has_liked

@@ -79,7 +79,7 @@ export default function AudienceEditProfilePageView({
   const [firstName, setFirstName] = useState(() => user?.first_name || (user?.name ? user.name.trim().split(' ')[0] : 'Adela'));
   const [lastName, setLastName] = useState(() => user?.last_name || (user?.name ? user.name.trim().split(' ').slice(1).join(' ') : 'Parkson'));
   const [email, setEmail] = useState(() => user?.email || 'adelapark.@example.com');
-  const [about, setAbout] = useState(() => user?.about || user?.bio || 'Passionate UI/UX designer and audio creator building interactive community experiences.');
+  const [about, setAbout] = useState(() => user?.about || user?.bio || '');
   const [isSaving, setIsSaving] = useState(false);
 
   const [prevUser, setPrevUser] = useState(user);
@@ -95,7 +95,7 @@ export default function AudienceEditProfilePageView({
         setLastName(parts.slice(1).join(' ') || 'Parkson');
       }
       setEmail(user.email || 'adelapark.@example.com');
-      setAbout(user.about || user.bio || 'Passionate UI/UX designer and audio creator building interactive community experiences.');
+      setAbout(user.about || user.bio || '');
     }
   }
 
