@@ -597,6 +597,29 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
     )
   );
 
+  const getCreatorId = () => {
+    if (post.author?.id && post.author.id !== 'undefined') return post.author.id;
+    if (post.author?.name === 'Darlene Black') return '3a9555f6-fa47-47ef-aa88-f19d80a90e6e';
+    if (post.author?.name === 'Audrey Alexander') return '0e0d0c45-7c57-40eb-8910-f3d8cc573b99';
+    if (post.author?.name === 'Adam Udochi') return 'd167c089-35e2-4f25-a627-c7d55f7c713f';
+    if (post.author?.name === 'Nermmen Saif') return 'e3101424-a3ac-4a9d-9ea9-3f0d957edf78';
+    if (post.author?.name === 'Theresa Steward') return '34debe18-75a3-49d3-9404-d82df7b5cd62';
+    if (post.author?.name === 'Kyle Fisher') return 'f4f4d1be-9134-48e4-9789-fc92fc4cb8f4';
+    if (post.author?.name === 'Brandon Wilson') return 'e5452acf-fc99-410d-9670-9621730110f4';
+    return post.author?.name ? encodeURIComponent(post.author.name) : '';
+  };
+
+  const handleAuthorClick = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    const id = getCreatorId();
+    if (id) {
+      router.push(`/audience?view=creator-profile&creatorId=${id}`);
+    }
+  };
+
   return (
     <article 
       ref={cardRef}
@@ -606,29 +629,40 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
       {/* ─── 1. Header: Author Info & Tip Action ─── */}
       <div className="flex items-center justify-between">
         <div 
-          onClick={() => router.push(`/audience?view=creator-profile&creatorId=${post.author.id || ''}`)}
+          onClick={handleAuthorClick}
           className="flex items-center gap-3 cursor-pointer group"
           title={`View ${post.author.name}'s profile`}
         >
-          <div className="relative">
+          <div 
+            onClick={handleAuthorClick}
+            className="relative cursor-pointer shrink-0"
+            title={`View ${post.author.name}'s profile`}
+          >
             {post.author.avatar ? (
               <img 
                 src={post.author.avatar} 
                 alt={post.author.name} 
-                className="w-11 h-11 rounded-full object-cover shrink-0 ring-2 ring-amber-100 group-hover:ring-[#D4AF37] transition-all shadow-xs"
+                onClick={handleAuthorClick}
+                className="w-11 h-11 rounded-full object-cover shrink-0 ring-2 ring-amber-100 group-hover:ring-[#D4AF37] transition-all shadow-xs cursor-pointer"
                 onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
               />
             ) : (
-              <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#E8C170] to-[#D4AF37] text-black font-bold flex items-center justify-center shrink-0 ring-2 ring-amber-100 text-sm uppercase">
+              <div 
+                onClick={handleAuthorClick}
+                className="w-11 h-11 rounded-full bg-gradient-to-br from-[#E8C170] to-[#D4AF37] text-black font-bold flex items-center justify-center shrink-0 ring-2 ring-amber-100 text-sm uppercase cursor-pointer"
+              >
                 {post.author.name ? post.author.name.charAt(0) : 'A'}
               </div>
             )}
-            <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white shadow-xs" />
+            <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white shadow-xs pointer-events-none" />
           </div>
 
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
-              <h4 className="text-[14px] font-bold text-gray-900 group-hover:text-[#D4AF37] transition-colors leading-tight">
+              <h4 
+                onClick={handleAuthorClick}
+                className="text-[14px] font-bold text-gray-900 group-hover:text-[#D4AF37] transition-colors leading-tight cursor-pointer"
+              >
                 {post.author.name}
               </h4>
               {post.author.tier === 'pro' && (
@@ -637,7 +671,10 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
                 </span>
               )}
             </div>
-            <p className="text-[11px] text-gray-500 font-medium leading-normal mt-0.5">
+            <p 
+              onClick={handleAuthorClick}
+              className="text-[11px] text-gray-500 font-medium leading-normal mt-0.5 cursor-pointer"
+            >
               {post.author.role}
             </p>
           </div>
@@ -681,34 +718,73 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
             }}
             className="mt-1 w-full rounded-2xl border border-gray-200/90 bg-gray-50/70 hover:bg-gray-100/70 transition-all p-3.5 flex flex-col gap-2 cursor-pointer shadow-2xs group/quote"
           >
-            <div 
-              onClick={(e) => {
-                e.stopPropagation();
-                if (post.quotePost?.author?.id) {
-                  router.push(`/audience?view=creator-profile&creatorId=${post.quotePost.author.id}`);
+            {/* Quoted Author Header */}
+            {(() => {
+              const getQuoteAuthorId = () => {
+                if (post.quotePost?.author?.id && post.quotePost.author.id !== 'undefined') return post.quotePost.author.id;
+                if (post.quotePost?.author?.name === 'Darlene Black') return '3a9555f6-fa47-47ef-aa88-f19d80a90e6e';
+                if (post.quotePost?.author?.name === 'Audrey Alexander') return '0e0d0c45-7c57-40eb-8910-f3d8cc573b99';
+                if (post.quotePost?.author?.name === 'Adam Udochi') return 'd167c089-35e2-4f25-a627-c7d55f7c713f';
+                if (post.quotePost?.author?.name === 'Nermmen Saif') return 'e3101424-a3ac-4a9d-9ea9-3f0d957edf78';
+                if (post.quotePost?.author?.name === 'Theresa Steward') return '34debe18-75a3-49d3-9404-d82df7b5cd62';
+                if (post.quotePost?.author?.name === 'Kyle Fisher') return 'f4f4d1be-9134-48e4-9789-fc92fc4cb8f4';
+                if (post.quotePost?.author?.name === 'Brandon Wilson') return 'e5452acf-fc99-410d-9670-9621730110f4';
+                return post.quotePost?.author?.name ? encodeURIComponent(post.quotePost.author.name) : '';
+              };
+
+              const handleQuoteAuthorClick = (e?: React.MouseEvent) => {
+                if (e) {
+                  e.preventDefault();
+                  e.stopPropagation();
                 }
-              }}
-              className="flex items-center gap-2 cursor-pointer group/author hover:opacity-80 transition-opacity"
-              title={`View ${post.quotePost.author?.name}'s profile`}
-            >
-              {post.quotePost.author?.avatar ? (
-                <img 
-                  src={post.quotePost.author.avatar} 
-                  alt={post.quotePost.author.name} 
-                  className="w-5 h-5 rounded-full object-cover shrink-0" 
-                />
-              ) : (
-                <div className="w-5 h-5 rounded-full bg-amber-200 text-amber-900 text-[10px] font-bold flex items-center justify-center shrink-0">
-                  {post.quotePost.author?.name ? post.quotePost.author.name.charAt(0) : 'A'}
+                const id = getQuoteAuthorId();
+                if (id) {
+                  router.push(`/audience?view=creator-profile&creatorId=${id}`);
+                }
+              };
+
+              return (
+                <div 
+                  onClick={handleQuoteAuthorClick}
+                  className="flex items-center gap-2 cursor-pointer group/author hover:opacity-80 transition-opacity"
+                  title={`View ${post.quotePost.author?.name}'s profile`}
+                >
+                  <div 
+                    onClick={handleQuoteAuthorClick}
+                    className="cursor-pointer shrink-0"
+                    title={`View ${post.quotePost.author?.name}'s profile`}
+                  >
+                    {post.quotePost.author?.avatar ? (
+                      <img 
+                        src={post.quotePost.author.avatar} 
+                        alt={post.quotePost.author.name} 
+                        onClick={handleQuoteAuthorClick}
+                        className="w-5 h-5 rounded-full object-cover shrink-0 cursor-pointer ring-1 ring-gray-200" 
+                      />
+                    ) : (
+                      <div 
+                        onClick={handleQuoteAuthorClick}
+                        className="w-5 h-5 rounded-full bg-amber-200 text-amber-900 text-[10px] font-bold flex items-center justify-center shrink-0 cursor-pointer"
+                      >
+                        {post.quotePost.author?.name ? post.quotePost.author.name.charAt(0) : 'A'}
+                      </div>
+                    )}
+                  </div>
+                  <span 
+                    onClick={handleQuoteAuthorClick}
+                    className="text-xs font-bold text-gray-900 group-hover/quote:text-[#D4AF37] group-hover/author:underline transition-colors truncate cursor-pointer"
+                  >
+                    {post.quotePost.author?.name}
+                  </span>
+                  <span 
+                    onClick={handleQuoteAuthorClick}
+                    className="text-[11px] text-gray-500 truncate cursor-pointer"
+                  >
+                    · {post.quotePost.author?.role || 'Creator'}
+                  </span>
                 </div>
-              )}
-              <span className="text-xs font-bold text-gray-900 group-hover/quote:text-[#D4AF37] group-hover/author:underline transition-colors truncate">
-                {post.quotePost.author?.name}
-              </span>
-              <span className="text-[11px] text-gray-500 truncate">
-                · {post.quotePost.author?.role || 'Creator'}
-              </span>
-            </div>
+              );
+            })()}
 
             <p className="text-xs text-gray-800 line-clamp-3 leading-relaxed font-normal">
               {post.quotePost.title}

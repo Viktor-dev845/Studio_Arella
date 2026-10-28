@@ -229,8 +229,11 @@ export default function AudienceProfilePageView({
 
   // Edit form state with dynamic user defaults
   const [name, setName] = useState(user?.name || (user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : null) || 'Creator');
-  const [bio, setBio] = useState(user?.bio || 'Audio creator & broadcaster');
+  const [handle, setHandle] = useState(user?.handle || (user?.name ? user.name.toLowerCase().replace(/[^a-z0-9]/g, '') : 'creator'));
+  const [role, setRole] = useState(user?.creator_niche || (user?.role === 'creator' ? 'Creator' : 'Studio Insider'));
+  const [bio, setBio] = useState(user?.bio || 'Audio creator & storyteller on Studio Arella.');
   const [location, setLocation] = useState(user?.location || 'Lagos, Nigeria');
+  const [joinedDate, setJoinedDate] = useState('October 2026');
   const [about, setAbout] = useState(
     user?.about || 'Welcome to my creator space on Studio Arella. Follow along for podcasts, audio recordings, and screen campaigns.'
   );
@@ -268,15 +271,34 @@ export default function AudienceProfilePageView({
           if (!isMounted) return;
           const c = data.creator || {};
           setName(c.name || 'Creator');
-          setBio(c.creator_niche || c.bio || 'Audio creator & broadcaster');
+          setHandle(c.handle || (c.name ? c.name.toLowerCase().replace(/[^a-z0-9]/g, '') : 'creator'));
+          setRole(c.creator_niche || (c.role === 'creator' ? 'Podcasts' : 'Creator'));
+
+          const creatorFallbackBios: Record<string, string> = {
+            'Darlene Black': 'Podcast Host & Storyteller. Passionate about modern marriage, relationship wisdom, emotional intimacy, and family vitality. Host of Modern Marriage & Relationship Wisdom.',
+            'Audrey Alexander': 'Diplomacy & Political Analyst. Exploring African economic diplomacy, foreign policy shifts, and strategic multilateral trade alliances.',
+            'Adam Udochi': 'UI/UX Designer & Producer. High-conviction angel investing and venture syndicates creating African financial breakthroughs.',
+            'Nermmen Saif': 'Design & Media Creator. Proven investment frameworks, digital cashflow models, and modern wealth-building playbooks.',
+            'Theresa Steward': 'Executive Producer & Talent Recruiter. Scaling programmatic DOOH billboard networks and emerging studio brands.',
+            'Kyle Fisher': 'Family Counselor & Educator. Navigating generational conversations, household resilience, and parenting legacies.',
+            'Brandon Wilson': 'Cultural Historian & Music Curator. Exploring highlife traditions, folklore, and the authentic rhythms of Umuahia.'
+          };
+
+          const rawBio = c.bio && c.bio.trim() !== 'Audio creator & broadcaster' && c.bio.trim() !== 'Creator' ? c.bio : '';
+          const resolvedBio = rawBio || creatorFallbackBios[c.name] || 'Creator & broadcaster on Studio Arella. Follow along for podcasts, audio recordings, and screen campaigns.';
+          setBio(resolvedBio);
+          setAbout(resolvedBio);
+
           setLocation(c.location || 'Lagos, Nigeria');
-          setAbout(c.bio || c.about || 'Welcome to my creator space on Studio Arella. Follow along for podcasts, audio recordings, and screen campaigns.');
           setAvatarUrl(c.avatar || '');
           setBannerUrl(c.banner_url || c.banner || '');
           setFollowersCount(data.stats?.followersCount ?? 0);
           setFollowingCount(data.stats?.followingCount ?? 0);
           setIsFollowingCreator(Boolean(data.isFollowing));
           setCreatorPosts(data.posts || []);
+          if (c.created_at) {
+            setJoinedDate(new Date(c.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }));
+          }
         })
         .catch((err) => {
           console.warn('Could not fetch creator profile:', err);
@@ -288,11 +310,16 @@ export default function AudienceProfilePageView({
       // 2. Own Profile: populate from current user state
       if (user) {
         if (user.name) setName(user.name);
+        setHandle(user.handle || (user.name ? user.name.toLowerCase().replace(/[^a-z0-9]/g, '') : 'creator'));
+        setRole(user.creator_niche || (user.role === 'creator' ? 'Creator' : 'Studio Insider'));
         if (user.bio) setBio(user.bio);
         if (user.location) setLocation(user.location);
         if (user.about) setAbout(user.about);
         if (user.avatar) setAvatarUrl(user.avatar);
         if (user.banner) setBannerUrl(user.banner);
+        if (user.created_at) {
+          setJoinedDate(new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }));
+        }
       }
       setIsLoadingProfile(false);
 
@@ -614,11 +641,13 @@ export default function AudienceProfilePageView({
           </div>
         </div>
 
-        {/* Profile Info Row: Avatar + Details + Location + CTAs */}
-        <div className="px-7 pb-6 pt-0 relative flex flex-col md:flex-row items-start md:items-end justify-between gap-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-end gap-5">
-            {/* Circular Avatar (170px x 170px, 10px white border, overlapping banner) */}
-            <div className="-mt-[85px] w-[170px] h-[170px] rounded-full border-[10px] border-white overflow-hidden bg-neutral-100 shrink-0 shadow-[0_4px_16px_rgba(0,0,0,0.06)] relative z-10 flex items-center justify-center">
+        {/* Profile Info Header Container (X / Twitter style) */}
+        <div className="px-6 sm:px-8 pb-6 pt-0 relative flex flex-col gap-3 font-quicksand">
+          
+          {/* Top Row: Avatar on left overlapping banner, Action Buttons on right */}
+          <div className="flex items-end justify-between gap-4 -mt-[70px] sm:-mt-[85px] relative z-10 flex-wrap sm:flex-nowrap">
+            {/* Circular Avatar (130px on mobile, 155px on desktop) */}
+            <div className="w-[130px] h-[130px] sm:w-[155px] sm:h-[155px] rounded-full border-[6px] sm:border-[8px] border-white overflow-hidden bg-neutral-100 shrink-0 shadow-[0_4px_16px_rgba(0,0,0,0.08)] flex items-center justify-center">
               {avatarUrl ? (
                 <img
                   src={avatarUrl}
@@ -633,25 +662,17 @@ export default function AudienceProfilePageView({
               )}
             </div>
 
-            {/* Name, Tagline & Visitor CTA */}
-            <div className="flex flex-col mb-1">
-              <h1 className="text-[18px] font-semibold text-[#181818] leading-[23px] m-0 font-quicksand">
-                {name}
-              </h1>
-              <p className="text-[14px] font-normal text-[#181818] leading-[21px] mt-1 m-0 font-quicksand">
-                {bio}
-              </p>
-
-              {/* Action Buttons */}
+            {/* Action Buttons Aligned on Top-Right */}
+            <div className="flex items-center gap-2.5 flex-wrap pb-1 self-end">
               {isVisitorMode ? (
-                <div className="mt-3 flex items-center gap-2.5 flex-wrap">
+                <>
                   {/* X / Twitter Style Follow Button */}
                   {isViewingOtherCreator && (
                     <button
                       type="button"
                       onClick={handleToggleFollowTargetCreator}
                       disabled={isTogglingFollow}
-                      className={`h-8 px-5 rounded-[20px] text-[13px] font-bold tracking-wide transition-all cursor-pointer flex items-center justify-center font-quicksand shadow-xs ${
+                      className={`h-9 px-6 rounded-full text-[13px] font-bold tracking-wide transition-all cursor-pointer flex items-center justify-center font-quicksand shadow-xs ${
                         isFollowingCreator
                           ? 'border border-gray-300 bg-white text-[#0F1419] group hover:border-red-500 hover:bg-red-50 hover:text-red-600'
                           : 'bg-[#0F1419] hover:bg-[#272C30] text-white'
@@ -677,59 +698,122 @@ export default function AudienceProfilePageView({
                         setShowMembershipModal(true);
                       }
                     }}
-                    className={`h-8 rounded-[6px] text-[12px] font-semibold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center font-quicksand bg-[#D9BA54] hover:bg-[#c9a73e] text-black shadow-xs ${
-                      isSubscribed ? 'w-[131px]' : 'w-[227px]'
-                    }`}
+                    className="h-9 px-4 rounded-full text-[12px] font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center font-quicksand bg-[#D9BA54] hover:bg-[#c9a73e] text-black shadow-xs"
                   >
                     {isSubscribed ? 'MEMBERED FAN' : 'SUBSCRIBE TO BE A MEMBERED FAN'}
                   </button>
 
-                  {/* Tip Creator (Only when viewing another creator) */}
                   {isViewingOtherCreator && (
                     <button
                       type="button"
                       onClick={() => setShowTipModal(true)}
-                      className="h-8 px-4 rounded-[6px] text-[12px] font-semibold uppercase tracking-wider bg-amber-50 hover:bg-amber-100 text-[#8c711a] border border-amber-300 transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+                      className="h-9 px-4 rounded-full text-[12px] font-bold uppercase tracking-wider bg-amber-50 hover:bg-amber-100 text-[#8c711a] border border-amber-300 transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
                       title={`Send a tip to ${name}`}
                     >
                       <Heart size={14} className="fill-[#D4AF37] text-[#D4AF37]" />
                       <span>Tip Creator</span>
                     </button>
                   )}
-                </div>
+                </>
               ) : (
-                <div className="mt-3 flex items-center gap-2.5 flex-wrap">
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (onEditProfileClick) onEditProfileClick();
+                      else setShowEditModal(true);
+                    }}
+                    className="h-9 px-5 rounded-full border border-gray-300 bg-white hover:bg-gray-50 text-gray-900 text-[13px] font-bold tracking-wide transition-all cursor-pointer flex items-center gap-2 shadow-xs"
+                  >
+                    <Edit3 size={15} />
+                    <span>Edit Profile</span>
+                  </button>
+
                   {(user as any)?.creator_tier !== 'pro' ? (
                     <button
                       type="button"
                       onClick={handleUpgradePro}
                       disabled={isUpgradingPro}
-                      className="h-8 px-4 rounded-[6px] text-[12px] font-semibold uppercase tracking-wider bg-gradient-to-r from-[#D4AF37] to-[#E5C158] hover:opacity-95 text-black transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+                      className="h-9 px-4 rounded-full text-[12px] font-bold uppercase tracking-wider bg-gradient-to-r from-[#D4AF37] to-[#E5C158] hover:opacity-95 text-black transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
                     >
                       <Sparkles size={14} />
                       <span>{isUpgradingPro ? 'Upgrading...' : 'Upgrade to Creator Pro'}</span>
                     </button>
                   ) : (
-                    <span className="h-8 px-3 rounded-[6px] text-[11px] font-bold uppercase tracking-wider bg-gradient-to-r from-[#D4AF37] to-[#E5C158] text-black flex items-center gap-1 shadow-xs">
-                      <Sparkles size={12} /> PRO CREATOR ACTIVE
+                    <span className="h-9 px-3.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-gradient-to-r from-[#D4AF37] to-[#E5C158] text-black flex items-center gap-1 shadow-xs">
+                      <Sparkles size={13} /> PRO CREATOR
                     </span>
                   )}
 
                   <Link
                     href="/finances?tab=creator"
-                    className="h-8 px-4 rounded-[6px] text-[12px] font-semibold uppercase tracking-wider bg-gray-100 hover:bg-gray-200 text-gray-800 transition-all flex items-center gap-1.5 cursor-pointer"
+                    className="h-9 px-4 rounded-full text-[12px] font-semibold uppercase tracking-wider bg-gray-100 hover:bg-gray-200 text-gray-800 transition-all flex items-center gap-1.5 cursor-pointer"
                   >
-                    <span>Creator Earnings & Payouts</span>
+                    <span>Earnings & Payouts</span>
                   </Link>
-                </div>
+                </>
               )}
             </div>
           </div>
 
-          {/* Location on Right (e.g. Umuahia, Abia State) */}
-          <div className="flex items-center gap-1.5 text-[12px] font-normal text-[#181818] mb-2 self-start md:self-center shrink-0">
-            <Navigation size={14} className="text-[#15411F] fill-[#15411F]" />
-            <span className="font-quicksand">{location}</span>
+          {/* Name, Handle, Bio, Metadata, and Follower Counts (X / Twitter Structure) */}
+          <div className="flex flex-col mt-1">
+            {/* Name + Verified Shield Check */}
+            <div className="flex items-center gap-2">
+              <h1 className="text-[20px] sm:text-[22px] font-bold text-gray-950 leading-tight m-0 font-quicksand flex items-center gap-1.5">
+                <span>{name}</span>
+                <span title="Verified Creator" className="text-[#D4AF37] inline-flex items-center">
+                  <ShieldCheck size={18} className="fill-[#D4AF37] text-white" />
+                </span>
+              </h1>
+            </div>
+
+            {/* Handle & Niche Tag */}
+            <div className="flex items-center gap-2 text-[13px] text-gray-500 font-normal mt-0.5 font-quicksand">
+              <span>@{handle}</span>
+              <span>·</span>
+              <span className="text-[#8B7322] font-semibold">{role}</span>
+            </div>
+
+            {/* ─── X (TWITTER) STYLE BIO PARAGRAPH ─── */}
+            <p className="text-[14px] text-gray-800 leading-relaxed font-normal mt-2.5 mb-1 max-w-2xl whitespace-pre-line font-quicksand">
+              {bio}
+            </p>
+
+            {/* Metadata Row: Location + Joined Date */}
+            <div className="flex items-center gap-4 text-[13px] text-gray-500 font-normal mt-2 flex-wrap font-quicksand">
+              {location && (
+                <div className="flex items-center gap-1">
+                  <Navigation size={13} className="text-gray-400 rotate-45" />
+                  <span>{location}</span>
+                </div>
+              )}
+              <div className="flex items-center gap-1">
+                <Calendar size={13} className="text-gray-400" />
+                <span>Joined {joinedDate}</span>
+              </div>
+            </div>
+
+            {/* Followers / Following Stats Row (Clickable) */}
+            <div className="flex items-center gap-5 text-[14px] mt-3 pt-1 font-quicksand">
+              <button
+                type="button"
+                onClick={() => handleTabChange('following')}
+                className="hover:underline cursor-pointer flex items-center gap-1.5 bg-transparent border-none p-0"
+              >
+                <span className="font-bold text-gray-950">{followingCount}</span>
+                <span className="text-gray-500">Following</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleTabChange('followers')}
+                className="hover:underline cursor-pointer flex items-center gap-1.5 bg-transparent border-none p-0"
+              >
+                <span className="font-bold text-gray-950">{followersCount}</span>
+                <span className="text-gray-500">Followers</span>
+              </button>
+            </div>
           </div>
         </div>
 
