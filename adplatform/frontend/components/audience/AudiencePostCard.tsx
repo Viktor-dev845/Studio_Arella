@@ -587,6 +587,11 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
       post.category?.toLowerCase() === 'video'
     )
   );
+  const isOwnPost = Boolean(
+    (user?.id && post.author.id && String(user.id) === String(post.author.id)) ||
+    (user?.email && post.author.id === user.email) ||
+    (user?.name && post.author.name && user.name.toLowerCase().trim() === post.author.name.toLowerCase().trim())
+  );
 
   return (
     <article 
@@ -634,16 +639,18 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
           </div>
         </div>
 
-        {/* Tip Button */}
-        <button
-          type="button"
-          onClick={() => setIsTipModalOpen(true)}
-          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-amber-50 hover:bg-amber-100/90 text-[#8c711a] border border-amber-200/80 text-xs font-bold transition-all shadow-2xs hover:scale-[1.02] cursor-pointer"
-          title={`Tip ${post.author.name}`}
-        >
-          <Heart size={13} className="fill-[#D4AF37] text-[#D4AF37]" />
-          <span>Tip</span>
-        </button>
+        {/* Tip Button - Only shown when viewing another creator's content */}
+        {!isOwnPost && (
+          <button
+            type="button"
+            onClick={() => setIsTipModalOpen(true)}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-amber-50 hover:bg-amber-100/90 text-[#8c711a] border border-amber-200/80 text-xs font-bold transition-all shadow-2xs hover:scale-[1.02] cursor-pointer"
+            title={`Tip ${post.author.name}`}
+          >
+            <Heart size={13} className="fill-[#D4AF37] text-[#D4AF37]" />
+            <span>Tip</span>
+          </button>
+        )}
       </div>
 
       {/* ─── 2. Post Title & Description ─── */}
