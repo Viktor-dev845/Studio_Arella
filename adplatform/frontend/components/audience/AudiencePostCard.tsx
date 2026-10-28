@@ -113,7 +113,13 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
   const [hasReposted, setHasReposted] = useState(post.hasReposted || false);
   const [repostCount, setRepostCount] = useState(post.repostsCount || 0);
   const [viewsCountState, setViewsCountState] = useState(
-    post.viewsCount || Math.max(34, (post.initialLikes || 0) * 8 + 42)
+    typeof post.viewsCount === 'number' ? post.viewsCount : 0
+  );
+
+  const isOwnPost = Boolean(
+    (user?.id && post.author.id && String(user.id) === String(post.author.id)) ||
+    (user?.email && post.author.id === user.email) ||
+    (user?.name && post.author.name && user.name.toLowerCase().trim() === post.author.name.toLowerCase().trim())
   );
 
   // X-Style Repost Menu, Quote Modal, and Analytics Modal states
@@ -133,11 +139,14 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
     if (post.hasLiked !== undefined) setHasLiked(post.hasLiked);
     if (typeof post.repostsCount === 'number') setRepostCount(post.repostsCount);
     if (post.hasReposted !== undefined) setHasReposted(post.hasReposted);
-    if (typeof post.viewsCount === 'number' && post.viewsCount > 0) setViewsCountState(post.viewsCount);
+    if (typeof post.viewsCount === 'number') setViewsCountState(post.viewsCount);
   }, [post.isBookmarked, post.isUnlocked, post.initialLikes, post.initialComments, post.hasLiked, post.repostsCount, post.hasReposted, post.viewsCount]);
 
   // ── X / IAB-Standard Viewability Tracking (50% Visible for 1s + Session Deduplication) ──
   useEffect(() => {
+    // Exclude author's own views so creator does not self-inflate impressions
+    if (isOwnPost) return;
+
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(post.id);
     if (!isUuid || !cardRef.current) return;
 
@@ -496,7 +505,7 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
             initialLikes: 0,
             initialComments: 0,
             repostsCount: 0,
-            viewsCount: 1,
+            viewsCount: 0,
             quoteParentId: post.id,
             quotePost: payload.quote_post,
             badgeTheme: 'gold'
@@ -586,11 +595,6 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
       post.mediaUrl.match(/\.(mp4|mov|webm|ogg|m4v)($|\?)/i) ||
       post.category?.toLowerCase() === 'video'
     )
-  );
-  const isOwnPost = Boolean(
-    (user?.id && post.author.id && String(user.id) === String(post.author.id)) ||
-    (user?.email && post.author.id === user.email) ||
-    (user?.name && post.author.name && user.name.toLowerCase().trim() === post.author.name.toLowerCase().trim())
   );
 
   return (
