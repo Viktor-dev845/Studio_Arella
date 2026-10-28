@@ -84,6 +84,47 @@ export default function AudienceLeftSidebar({
     return () => window.removeEventListener('bookmarks-changed', onBookmarksChanged);
   }, [user?.id]);
 
+  const [subscriptionCount, setSubscriptionCount] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('arella_subscription_count');
+      return saved ? parseInt(saved, 10) : 0;
+    }
+    return 0;
+  });
+
+  useEffect(() => {
+    const fetchSubscriptionCount = async () => {
+      try {
+        const res = await api.get('/memberships/my-subscriptions');
+        const activeSubs = (res.data?.subscriptions || []).filter((s: any) => s.status === 'active');
+        const count = activeSubs.length;
+        setSubscriptionCount(count);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('arella_subscription_count', String(count));
+        }
+      } catch {
+        // keep current
+      }
+    };
+    if (user?.id) {
+      fetchSubscriptionCount();
+    }
+
+    const onSubscriptionsChanged = (e: any) => {
+      if (typeof e.detail?.count === 'number') {
+        setSubscriptionCount(e.detail.count);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('arella_subscription_count', String(e.detail.count));
+        }
+      } else {
+        fetchSubscriptionCount();
+      }
+    };
+
+    window.addEventListener('subscriptions-changed', onSubscriptionsChanged);
+    return () => window.removeEventListener('subscriptions-changed', onSubscriptionsChanged);
+  }, [user?.id]);
+
   const userName = user?.name || (user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : null) || 'Guest Fan';
   const userTitle = user?.role === 'screen_owner' 
     ? 'Media Partner' 
@@ -234,10 +275,11 @@ export default function AudienceLeftSidebar({
             <span className="text-[16px] leading-[21px]">Subscriptions</span>
           </div>
           
-          {/* Badge: 32px x 16px, background #D4AF37, border 2px solid white, radius 8px, text "2" */}
-          <div className="w-[32px] h-[16px] bg-[#D4AF37] border-2 border-white rounded-[8px] flex items-center justify-center text-white text-[11px] font-normal leading-[14px] shadow-sm shrink-0">
-            2
-          </div>
+          {subscriptionCount > 0 && (
+            <div className="w-[32px] h-[16px] bg-[#D4AF37] border-2 border-white rounded-[8px] flex items-center justify-center text-white text-[11px] font-normal leading-[14px] shadow-sm shrink-0">
+              {subscriptionCount}
+            </div>
+          )}
         </div>
 
         {/* Item 6: Settings */}

@@ -75,9 +75,15 @@ export default function AudienceSubscriptionsCard() {
 
   // Fetch real subscriptions from backend
   useEffect(() => {
+    setIsLoading(true);
     api.get('/memberships/my-subscriptions')
       .then((res) => {
         const subs = res.data?.subscriptions || [];
+        const activeCount = subs.filter((s: any) => s.status === 'active').length;
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('arella_subscription_count', String(activeCount));
+          window.dispatchEvent(new CustomEvent('subscriptions-changed', { detail: { count: activeCount } }));
+        }
         if (subs.length > 0) {
           const mapped: SubscriptionItem[] = subs.map((s: any) => ({
             id: s.id,
@@ -87,10 +93,15 @@ export default function AudienceSubscriptionsCard() {
             isSubscribed: s.status === 'active',
           }));
           setSubscriptions(mapped);
+        } else {
+          setSubscriptions([]);
         }
       })
       .catch((err) => {
         console.warn('Could not load user subscriptions from API, using default items:', err);
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
   }, []);
 
@@ -101,25 +112,37 @@ export default function AudienceSubscriptionsCard() {
       setIsCancelModalOpen(true);
     } else {
       // Re-subscribe directly
-      setSubscriptions((prev) =>
-        prev.map((sub) =>
+      setSubscriptions((prev) => {
+        const next = prev.map((sub) =>
           sub.id === item.id
             ? { ...sub, isSubscribed: true, membersCount: sub.membersCount + 1 }
             : sub
-        )
-      );
+        );
+        const count = next.filter((s) => s.isSubscribed).length;
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('arella_subscription_count', String(count));
+          window.dispatchEvent(new CustomEvent('subscriptions-changed', { detail: { count } }));
+        }
+        return next;
+      });
     }
   };
 
   const handleConfirmCancel = async () => {
     if (targetItem) {
-      setSubscriptions((prev) =>
-        prev.map((sub) =>
+      setSubscriptions((prev) => {
+        const next = prev.map((sub) =>
           sub.id === targetItem.id
             ? { ...sub, isSubscribed: false, membersCount: Math.max(0, sub.membersCount - 1) }
             : sub
-        )
-      );
+        );
+        const count = next.filter((s) => s.isSubscribed).length;
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('arella_subscription_count', String(count));
+          window.dispatchEvent(new CustomEvent('subscriptions-changed', { detail: { count } }));
+        }
+        return next;
+      });
 
       try {
         await api.post(`/memberships/${targetItem.id}/cancel`);
