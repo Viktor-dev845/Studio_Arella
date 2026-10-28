@@ -725,7 +725,15 @@ function AudienceContent() {
               /* ─── Profile View: Frame 2121459585 (850px wide container matching Figma) ─── */
               <div className="flex-1 w-full min-w-0 pb-16">
                 <AudienceProfilePageView 
-                  isVisitor={activeMenu === 'creator-profile' || queryView === 'creator-profile' || queryView === 'creator' || queryView === 'visitor-profile' || searchParams.get('mode') === 'visitor'}
+                  creatorId={searchParams.get('creatorId') || undefined}
+                  isVisitor={
+                    activeMenu === 'creator-profile' || 
+                    queryView === 'creator-profile' || 
+                    queryView === 'creator' || 
+                    queryView === 'visitor-profile' || 
+                    searchParams.get('mode') === 'visitor' ||
+                    Boolean(searchParams.get('creatorId') && searchParams.get('creatorId') !== user?.id)
+                  }
                   onEditProfileClick={() => handleMenuChange('edit-profile')} 
                 />
               </div>

@@ -290,20 +290,24 @@ export default function AudienceRightSidebar({
                 <div className="flex flex-col gap-4 mt-2">
                   {creators.map((creator) => (
                     <div key={creator.id} className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-3 min-w-0">
+                      <div 
+                        onClick={() => router.push(`/audience?view=creator-profile&creatorId=${creator.id}`)}
+                        className="flex items-center gap-3 min-w-0 cursor-pointer group flex-1"
+                        title={`View ${creator.name}'s profile`}
+                      >
                         {creator.avatar ? (
                           <img 
                             src={creator.avatar} 
                             alt={creator.name} 
-                            className="w-[38px] h-[38px] rounded-full object-cover shrink-0 border border-gray-100"
+                            className="w-[38px] h-[38px] rounded-full object-cover shrink-0 border border-gray-100 group-hover:ring-2 group-hover:ring-[#D4AF37]/50 transition-all"
                           />
                         ) : (
-                          <div className="w-[38px] h-[38px] rounded-full bg-[#FAF5E6] border border-[#D4AF37]/30 flex items-center justify-center font-bold text-[#D4AF37] text-xs shrink-0">
+                          <div className="w-[38px] h-[38px] rounded-full bg-[#FAF5E6] border border-[#D4AF37]/30 flex items-center justify-center font-bold text-[#D4AF37] text-xs shrink-0 group-hover:ring-2 group-hover:ring-[#D4AF37]/50 transition-all">
                             {creator.name.charAt(0).toUpperCase()}
                           </div>
                         )}
                         <div className="min-w-0">
-                          <h5 className="text-[13px] font-semibold text-[#212121] truncate">
+                          <h5 className="text-[13px] font-semibold text-[#212121] truncate group-hover:text-[#D4AF37] transition-colors">
                             {creator.name}
                           </h5>
                           <p className="text-[11px] text-gray-500 truncate font-light">

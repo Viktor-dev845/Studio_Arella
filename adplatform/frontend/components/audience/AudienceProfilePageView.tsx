@@ -36,6 +36,7 @@ import AudienceEventCreatedSuccessModal from './AudienceEventCreatedSuccessModal
 import AudienceGetVerifiedView from './AudienceGetVerifiedView';
 import AudienceDeactivateAccountModal from './AudienceDeactivateAccountModal';
 import AudienceTipModal from './AudienceTipModal';
+import AudiencePostCard, { PostData } from './AudiencePostCard';
 
 interface ShowItem {
   id: string;
@@ -89,12 +90,14 @@ const DEFAULT_FAN_EVENTS: EventClubItem[] = [
 ];
 
 interface AudienceProfilePageViewProps {
+  creatorId?: string;
   onEditProfileClick?: () => void;
   isVisitor?: boolean;
-  initialTab?: 'profile' | 'followers' | 'following';
+  initialTab?: 'posts' | 'profile' | 'followers' | 'following';
 }
 
 export default function AudienceProfilePageView({
+  creatorId,
   onEditProfileClick,
   isVisitor,
   initialTab,
@@ -104,12 +107,16 @@ export default function AudienceProfilePageView({
   const queryTab = searchParams.get('tab');
   const queryMode = searchParams.get('mode');
   const queryView = searchParams.get('view');
+  const queryCreatorId = searchParams.get('creatorId');
   const { toast } = useToast();
   const { user, logout } = useAuthStore();
 
+  const targetCreatorId = creatorId || queryCreatorId || '';
+  const isViewingOtherCreator = Boolean(targetCreatorId && targetCreatorId !== user?.id);
+
   const isVisitorInitial = isVisitor !== undefined 
     ? isVisitor 
-    : (queryMode === 'visitor' || queryView === 'creator-profile' || queryView === 'creator' || queryView === 'visitor-profile');
+    : (isViewingOtherCreator || queryMode === 'visitor' || queryView === 'creator-profile' || queryView === 'creator' || queryView === 'visitor-profile');
 
   const [isVisitorMode, setIsVisitorMode] = useState<boolean>(isVisitorInitial);
   const [prevVisitorProp, setPrevVisitorProp] = useState(isVisitor);
@@ -147,18 +154,23 @@ export default function AudienceProfilePageView({
     toast('Creator has been blocked.', 'info');
   };
 
-  const [activeTab, setActiveTab] = useState<'profile' | 'followers' | 'following'>(() => {
+  const [activeTab, setActiveTab] = useState<'posts' | 'profile' | 'followers' | 'following'>(() => {
+    if (queryTab === 'posts') return 'posts';
     if (queryTab === 'followers') return 'followers';
     if (queryTab === 'following') return 'following';
     if (queryTab === 'profile') return 'profile';
-    return initialTab || 'profile';
+    if (initialTab) return initialTab;
+    if (isViewingOtherCreator) return 'posts';
+    return 'profile';
   });
 
   useEffect(() => {
-    if (queryTab === 'followers') setActiveTab('followers');
+    if (queryTab === 'posts') setActiveTab('posts');
+    else if (queryTab === 'followers') setActiveTab('followers');
     else if (queryTab === 'following') setActiveTab('following');
     else if (queryTab === 'profile') setActiveTab('profile');
-  }, [queryTab]);
+    else if (isViewingOtherCreator && !queryTab) setActiveTab('posts');
+  }, [queryTab, isViewingOtherCreator]);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [isAboutExpanded, setIsAboutExpanded] = useState(false);
   const [showAllPodcasts, setShowAllPodcasts] = useState(false);
@@ -225,6 +237,12 @@ export default function AudienceProfilePageView({
   const [avatarUrl, setAvatarUrl] = useState(user?.avatar || '');
   const [bannerUrl, setBannerUrl] = useState(user?.banner || '');
 
+  // Creator posts feed & follow state
+  const [creatorPosts, setCreatorPosts] = useState<PostData[]>([]);
+  const [isLoadingProfile, setIsLoadingProfile] = useState<boolean>(true);
+  const [isFollowingCreator, setIsFollowingCreator] = useState<boolean>(false);
+  const [isTogglingFollow, setIsTogglingFollow] = useState<boolean>(false);
+
   // Live Followers & Following lists
   const [followers, setFollowers] = useState<any[]>([]);
   const [following, setFollowing] = useState<any[]>([]);
@@ -234,53 +252,99 @@ export default function AudienceProfilePageView({
 
   const menuRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (user) {
-      if (user.name) setName(user.name);
-      if (user.bio) setBio(user.bio);
-      if (user.location) setLocation(user.location);
-      if (user.about) setAbout(user.about);
-      if (user.avatar) setAvatarUrl(user.avatar);
-      if (user.banner) setBannerUrl(user.banner);
-    }
-  }, [user]);
-
-  // Fetch live followers, following, and creator shows from database
+  // Fetch creator profile or own profile data
   useEffect(() => {
     let isMounted = true;
-    Promise.allSettled([
-      api.get('/follows/followers'),
-      api.get('/follows/following'),
-      api.get('/shows/mine'),
-    ]).then(([fRes, ingRes, showsRes]) => {
-      if (!isMounted) return;
-      if (fRes.status === 'fulfilled' && fRes.value.data?.followers) {
-        setFollowers(fRes.value.data.followers);
-        if (fRes.value.data.followers.length > 0) {
-          setFollowersCount(fRes.value.data.followers.length);
+    setIsLoadingProfile(true);
+
+    if (isViewingOtherCreator && targetCreatorId) {
+      // 1. Fetch Creator Profile via dedicated direct Next.js API route
+      fetch(`/api/creators/${targetCreatorId}?currentUserId=${user?.id || ''}`)
+        .then(async (res) => {
+          if (!res.ok) throw new Error('Failed to load creator');
+          return res.json();
+        })
+        .then((data) => {
+          if (!isMounted) return;
+          const c = data.creator || {};
+          setName(c.name || 'Creator');
+          setBio(c.creator_niche || c.bio || 'Audio creator & broadcaster');
+          setLocation(c.location || 'Lagos, Nigeria');
+          setAbout(c.bio || c.about || 'Welcome to my creator space on Studio Arella. Follow along for podcasts, audio recordings, and screen campaigns.');
+          setAvatarUrl(c.avatar || '');
+          setBannerUrl(c.banner_url || c.banner || '');
+          setFollowersCount(data.stats?.followersCount ?? 0);
+          setFollowingCount(data.stats?.followingCount ?? 0);
+          setIsFollowingCreator(Boolean(data.isFollowing));
+          setCreatorPosts(data.posts || []);
+        })
+        .catch((err) => {
+          console.warn('Could not fetch creator profile:', err);
+        })
+        .finally(() => {
+          if (isMounted) setIsLoadingProfile(false);
+        });
+    } else {
+      // 2. Own Profile: populate from current user state
+      if (user) {
+        if (user.name) setName(user.name);
+        if (user.bio) setBio(user.bio);
+        if (user.location) setLocation(user.location);
+        if (user.about) setAbout(user.about);
+        if (user.avatar) setAvatarUrl(user.avatar);
+        if (user.banner) setBannerUrl(user.banner);
+      }
+      setIsLoadingProfile(false);
+
+      // Fetch own posts
+      fetch(`/api/content/feed`)
+        .then(async (res) => {
+          if (!res.ok) return;
+          const data = await res.json();
+          if (isMounted && data.posts) {
+            const myPosts = data.posts.filter((p: any) => 
+              p.author?.id === user?.id || p.creator_id === user?.id || p.author_id === user?.id
+            );
+            setCreatorPosts(myPosts);
+          }
+        })
+        .catch(() => {});
+
+      // Fetch live followers, following, and shows
+      Promise.allSettled([
+        api.get('/follows/followers'),
+        api.get('/follows/following'),
+        api.get('/shows/mine'),
+      ]).then(([fRes, ingRes, showsRes]) => {
+        if (!isMounted) return;
+        if (fRes.status === 'fulfilled' && fRes.value.data?.followers) {
+          setFollowers(fRes.value.data.followers);
+          if (fRes.value.data.followers.length > 0) {
+            setFollowersCount(fRes.value.data.followers.length);
+          }
         }
-      }
-      if (ingRes.status === 'fulfilled' && ingRes.value.data?.following) {
-        setFollowing(ingRes.value.data.following);
-        if (ingRes.value.data.following.length > 0) {
-          setFollowingCount(ingRes.value.data.following.length);
+        if (ingRes.status === 'fulfilled' && ingRes.value.data?.following) {
+          setFollowing(ingRes.value.data.following);
+          if (ingRes.value.data.following.length > 0) {
+            setFollowingCount(ingRes.value.data.following.length);
+          }
         }
-      }
-      if (showsRes.status === 'fulfilled' && showsRes.value.data?.shows?.length > 0) {
-        const mappedShows: ShowItem[] = showsRes.value.data.shows.map((s: any) => ({
-          id: s.id,
-          title: s.title,
-          subtitle: `${s.episode_count || 0} episodes · ${new Date(s.created_at || Date.now()).toLocaleDateString('en-GB')}`,
-          cover: s.cover_url || DEFAULT_PODCAST_ITEMS[0].cover,
-        }));
-        setPodcasts(mappedShows);
-      }
-    });
+        if (showsRes.status === 'fulfilled' && showsRes.value.data?.shows?.length > 0) {
+          const mappedShows: ShowItem[] = showsRes.value.data.shows.map((s: any) => ({
+            id: s.id,
+            title: s.title,
+            subtitle: `${s.episode_count || 0} episodes · ${new Date(s.created_at || Date.now()).toLocaleDateString('en-GB')}`,
+            cover: s.cover_url || DEFAULT_PODCAST_ITEMS[0]?.cover || '',
+          }));
+          setPodcasts(mappedShows);
+        }
+      });
+    }
 
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [targetCreatorId, isViewingOtherCreator, user]);
 
   // Close more menu on click outside
   useEffect(() => {
@@ -293,9 +357,46 @@ export default function AudienceProfilePageView({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleTabChange = (tab: 'profile' | 'followers' | 'following') => {
+  const handleTabChange = (tab: 'posts' | 'profile' | 'followers' | 'following') => {
     setActiveTab(tab);
-    router.replace(`/audience?view=profile&tab=${tab}`, { scroll: false });
+    const viewParam = isViewingOtherCreator ? 'creator-profile' : 'profile';
+    const creatorParam = isViewingOtherCreator ? `&creatorId=${targetCreatorId}` : '';
+    router.replace(`/audience?view=${viewParam}${creatorParam}&tab=${tab}`, { scroll: false });
+  };
+
+  const handleToggleFollowTargetCreator = async () => {
+    if (!user) {
+      toast('Please sign in to follow creators', 'error');
+      router.push('/auth/login');
+      return;
+    }
+    if (isTogglingFollow) return;
+    setIsTogglingFollow(true);
+
+    const nextFollowState = !isFollowingCreator;
+    setIsFollowingCreator(nextFollowState);
+    setFollowersCount((prev) => (nextFollowState ? prev + 1 : Math.max(0, prev - 1)));
+    toast(
+      nextFollowState ? `You are now following ${name}` : `Unfollowed ${name}`,
+      nextFollowState ? 'success' : 'info'
+    );
+
+    try {
+      const res = await fetch(`/api/creators/${targetCreatorId}/follow`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ followerId: user.id }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setIsFollowingCreator(data.isFollowing);
+        setFollowersCount(data.followersCount);
+      }
+    } catch (err) {
+      console.warn('Follow request error:', err);
+    } finally {
+      setIsTogglingFollow(false);
+    }
   };
 
   const [unfollowedMap, setUnfollowedMap] = useState<Record<string, boolean>>({});
@@ -544,6 +645,29 @@ export default function AudienceProfilePageView({
               {/* Action Buttons */}
               {isVisitorMode ? (
                 <div className="mt-3 flex items-center gap-2.5 flex-wrap">
+                  {/* X / Twitter Style Follow Button */}
+                  {isViewingOtherCreator && (
+                    <button
+                      type="button"
+                      onClick={handleToggleFollowTargetCreator}
+                      disabled={isTogglingFollow}
+                      className={`h-8 px-5 rounded-[20px] text-[13px] font-bold tracking-wide transition-all cursor-pointer flex items-center justify-center font-quicksand shadow-xs ${
+                        isFollowingCreator
+                          ? 'border border-gray-300 bg-white text-[#0F1419] group hover:border-red-500 hover:bg-red-50 hover:text-red-600'
+                          : 'bg-[#0F1419] hover:bg-[#272C30] text-white'
+                      }`}
+                    >
+                      {isFollowingCreator ? (
+                        <>
+                          <span className="group-hover:hidden">Following</span>
+                          <span className="hidden group-hover:inline">Unfollow</span>
+                        </>
+                      ) : (
+                        <span>Follow</span>
+                      )}
+                    </button>
+                  )}
+
                   <button
                     type="button"
                     onClick={() => {
@@ -560,15 +684,18 @@ export default function AudienceProfilePageView({
                     {isSubscribed ? 'MEMBERED FAN' : 'SUBSCRIBE TO BE A MEMBERED FAN'}
                   </button>
 
-                  <button
-                    type="button"
-                    onClick={() => setShowTipModal(true)}
-                    className="h-8 px-4 rounded-[6px] text-[12px] font-semibold uppercase tracking-wider bg-amber-50 hover:bg-amber-100 text-[#8c711a] border border-amber-300 transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
-                    title={`Send a tip to ${name}`}
-                  >
-                    <Heart size={14} className="fill-[#D4AF37] text-[#D4AF37]" />
-                    <span>Tip Creator</span>
-                  </button>
+                  {/* Tip Creator (Only when viewing another creator) */}
+                  {isViewingOtherCreator && (
+                    <button
+                      type="button"
+                      onClick={() => setShowTipModal(true)}
+                      className="h-8 px-4 rounded-[6px] text-[12px] font-semibold uppercase tracking-wider bg-amber-50 hover:bg-amber-100 text-[#8c711a] border border-amber-300 transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+                      title={`Send a tip to ${name}`}
+                    >
+                      <Heart size={14} className="fill-[#D4AF37] text-[#D4AF37]" />
+                      <span>Tip Creator</span>
+                    </button>
+                  )}
                 </div>
               ) : (
                 <div className="mt-3 flex items-center gap-2.5 flex-wrap">
@@ -628,24 +755,36 @@ export default function AudienceProfilePageView({
         )}
       </div>
 
-      {/* ─── 2. Tabs Bar (Figma: 720px wide: PROFILE 50px high, FOLLOWERS 40px, FOLLOWING 40px) ─── */}
-      <div className="w-full max-w-[720px] flex items-end border-b border-[#E7E7E7] relative font-quicksand z-10">
+      {/* ─── 2. Tabs Bar (Figma: 720px wide) ─── */}
+      <div className="w-full max-w-[720px] flex items-end border-b border-[#E7E7E7] relative font-quicksand z-10 overflow-x-auto">
+        <button
+          type="button"
+          onClick={() => handleTabChange('posts')}
+          className={`min-w-[130px] px-5 text-[12px] font-semibold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center ${
+            activeTab === 'posts'
+              ? 'h-[50px] bg-[#D9BA54] text-black rounded-t-[6px] shadow-sm'
+              : 'h-[40px] bg-white text-[#181818] border border-[#E7E7E7] border-b-0 hover:bg-gray-50'
+          }`}
+        >
+          Posts ({creatorPosts.length})
+        </button>
+
         <button
           type="button"
           onClick={() => handleTabChange('profile')}
-          className={`w-[240px] text-[12px] font-semibold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center ${
+          className={`min-w-[130px] px-5 text-[12px] font-semibold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center ${
             activeTab === 'profile'
               ? 'h-[50px] bg-[#D9BA54] text-black rounded-t-[6px] shadow-sm'
               : 'h-[40px] bg-white text-[#181818] border border-[#E7E7E7] border-b-0 hover:bg-gray-50'
           }`}
         >
-          Profile
+          About & Shows
         </button>
 
         <button
           type="button"
           onClick={() => handleTabChange('followers')}
-          className={`w-[240px] text-[12px] font-semibold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center ${
+          className={`min-w-[130px] px-5 text-[12px] font-semibold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center ${
             activeTab === 'followers'
               ? 'h-[50px] bg-[#D9BA54] text-black rounded-t-[6px] shadow-sm'
               : 'h-[40px] bg-white text-[#181818] border border-[#E7E7E7] border-b-0 hover:bg-gray-50'
@@ -657,7 +796,7 @@ export default function AudienceProfilePageView({
         <button
           type="button"
           onClick={() => handleTabChange('following')}
-          className={`w-[240px] text-[12px] font-semibold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center ${
+          className={`min-w-[130px] px-5 text-[12px] font-semibold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center ${
             activeTab === 'following'
               ? 'h-[50px] bg-[#D9BA54] text-black rounded-t-[6px] shadow-sm'
               : 'h-[40px] bg-white text-[#181818] border border-[#E7E7E7] border-b-0 hover:bg-gray-50'
@@ -676,7 +815,30 @@ export default function AudienceProfilePageView({
       />
 
       {/* ─── 3. Tab Contents ─── */}
-      {activeTab === 'profile' ? (
+      {activeTab === 'posts' ? (
+        <div className="flex flex-col gap-4 w-full">
+          {isLoadingProfile ? (
+            <div className="w-full bg-white rounded-[4px] p-12 text-center flex flex-col items-center justify-center gap-3 border border-gray-100 shadow-2xs">
+              <Loader2 className="animate-spin text-[#D9BA54]" size={28} />
+              <p className="text-[13px] text-gray-500 font-medium">Loading {name}'s posts...</p>
+            </div>
+          ) : creatorPosts.length === 0 ? (
+            <div className="w-full bg-white rounded-[4px] p-12 text-center flex flex-col items-center justify-center gap-2 border border-gray-100 shadow-2xs">
+              <Sparkles size={26} className="text-[#D9BA54] mb-1" />
+              <h4 className="text-[16px] font-semibold text-[#181818]">No posts published yet</h4>
+              <p className="text-[13px] text-gray-500 max-w-sm">
+                {isViewingOtherCreator
+                  ? `${name} hasn't published any podcasts, videos, or posts yet.`
+                  : 'You have not published any posts yet. Start sharing podcasts and updates with your audience!'}
+              </p>
+            </div>
+          ) : (
+            creatorPosts.map((post) => (
+              <AudiencePostCard key={post.id} post={post} />
+            ))
+          )}
+        </div>
+      ) : activeTab === 'profile' ? (
         <div className="flex flex-col gap-6 w-full">
           {/* Card A: About (Figma: 850px x 170px, box-shadow) */}
           <div className="w-full bg-white rounded-[4px] shadow-[0px_20px_60px_rgba(241,244,248,0.5)] border border-gray-100 p-6 sm:p-7 flex flex-col justify-between">
@@ -1138,12 +1300,12 @@ export default function AudienceProfilePageView({
       <AudienceMembershipModal
         isOpen={showMembershipModal}
         onClose={() => setShowMembershipModal(false)}
-        creatorName="Udo Emmanuel"
-        clubName="Subscribe to follow Udo Emmanuel"
+        creatorName={name || 'Creator'}
+        clubName={`Subscribe to follow ${name || 'Creator'}`}
         price="NGN 1,000"
         onSubscribeSuccess={() => {
           setIsSubscribed(true);
-          toast('Congratulations! You are now a membered fan of Udo Emmanuel.', 'success');
+          toast(`Congratulations! You are now a membered fan of ${name || 'Creator'}.`, 'success');
         }}
       />
 
@@ -1180,7 +1342,7 @@ export default function AudienceProfilePageView({
       <AudienceTipModal
         isOpen={showTipModal}
         onClose={() => setShowTipModal(false)}
-        creatorId={user?.id || ''}
+        creatorId={targetCreatorId || user?.id || ''}
         creatorName={name || 'Creator'}
         creatorRole={bio || 'Creator'}
         creatorAvatar={avatarUrl}

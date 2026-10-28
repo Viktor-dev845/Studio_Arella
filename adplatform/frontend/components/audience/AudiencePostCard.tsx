@@ -681,7 +681,16 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
             }}
             className="mt-1 w-full rounded-2xl border border-gray-200/90 bg-gray-50/70 hover:bg-gray-100/70 transition-all p-3.5 flex flex-col gap-2 cursor-pointer shadow-2xs group/quote"
           >
-            <div className="flex items-center gap-2">
+            <div 
+              onClick={(e) => {
+                e.stopPropagation();
+                if (post.quotePost?.author?.id) {
+                  router.push(`/audience?view=creator-profile&creatorId=${post.quotePost.author.id}`);
+                }
+              }}
+              className="flex items-center gap-2 cursor-pointer group/author hover:opacity-80 transition-opacity"
+              title={`View ${post.quotePost.author?.name}'s profile`}
+            >
               {post.quotePost.author?.avatar ? (
                 <img 
                   src={post.quotePost.author.avatar} 
@@ -693,7 +702,7 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
                   {post.quotePost.author?.name ? post.quotePost.author.name.charAt(0) : 'A'}
                 </div>
               )}
-              <span className="text-xs font-bold text-gray-900 group-hover/quote:text-[#D4AF37] transition-colors truncate">
+              <span className="text-xs font-bold text-gray-900 group-hover/quote:text-[#D4AF37] group-hover/author:underline transition-colors truncate">
                 {post.quotePost.author?.name}
               </span>
               <span className="text-[11px] text-gray-500 truncate">
