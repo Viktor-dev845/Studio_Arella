@@ -77,12 +77,34 @@ export default function AudienceTipModal({
 
     try {
       setIsSubmitting(true);
-      await api.post('/creator/tips', {
-        creator_id: creatorId,
-        content_id: contentId || null,
-        amount: tipAmount,
-        message: message.trim() || undefined,
-      });
+      let success = false;
+      try {
+        const directRes = await fetch('/api/creator/tips', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            creator_id: creatorId,
+            content_id: contentId || null,
+            amount: tipAmount,
+            message: message.trim() || undefined,
+            userId: user.id
+          })
+        });
+        if (directRes.ok) {
+          success = true;
+        }
+      } catch {
+        // Fallback to Express backend API
+      }
+
+      if (!success) {
+        await api.post('/creator/tips', {
+          creator_id: creatorId,
+          content_id: contentId || null,
+          amount: tipAmount,
+          message: message.trim() || undefined,
+        });
+      }
 
       setIsSuccess(true);
       if (onTipSuccess) onTipSuccess(tipAmount);

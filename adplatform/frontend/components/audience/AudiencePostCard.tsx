@@ -561,7 +561,8 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
       setIsUnlocking(true);
       const res = await fetch(`/api/content/${post.id}/purchase`, {
         method: 'POST',
-        headers: getAuthHeaders()
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ userId: user?.id })
       });
       if (res.ok) {
         setIsUnlocked(true);
