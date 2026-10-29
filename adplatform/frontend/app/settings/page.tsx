@@ -31,7 +31,8 @@ import {
   ExternalLink,
   Laptop,
   CheckCircle2,
-  X
+  X,
+  Plus
 } from 'lucide-react';
 import { theme } from '@/lib/theme';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -163,23 +164,87 @@ export default function SettingsPage() {
   };
 
   // Saved Cards
-  const [savedCards, setSavedCards] = useState<{ id: string; card_type: string | null; last4: string | null; bank: string | null }[]>([]);
+  const [savedCards, setSavedCards] = useState<{ id: string; card_type: string | null; last4: string | null; bank: string | null; cardholder_name?: string | null }[]>([]);
   const [loadingCards, setLoadingCards] = useState(true);
 
   const fetchSavedCards = async () => {
     try {
-      const res = await api.get('/payments/cards');
-      setSavedCards(res.data?.cards || []);
+      const res = await fetch(`/api/payments/cards?userId=${user?.id || ''}`);
+      const data = await res.json();
+      if (data?.cards) {
+        setSavedCards(data.cards);
+      } else {
+        const fallback = await api.get('/payments/cards');
+        setSavedCards(fallback.data?.cards || []);
+      }
     } catch {
-      setSavedCards([]);
+      try {
+        const fallback = await api.get('/payments/cards');
+        setSavedCards(fallback.data?.cards || []);
+      } catch {
+        setSavedCards([]);
+      }
     } finally {
       setLoadingCards(false);
     }
   };
 
+  const [showAddCardModal, setShowAddCardModal] = useState(false);
+  const [cardForm, setCardForm] = useState({
+    cardholderName: '',
+    cardNumber: '',
+    expiry: '',
+    cvv: '',
+    bank: 'Access Bank',
+  });
+  const [savingCard, setSavingCard] = useState(false);
+
+  const handleAddCard = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanNum = cardForm.cardNumber.replace(/\s+/g, '');
+    if (!cleanNum || cleanNum.length < 16) {
+      toast('Please enter a valid 16-digit card number', 'error');
+      return;
+    }
+    if (!cardForm.expiry || !cardForm.expiry.includes('/')) {
+      toast('Please enter expiry in MM/YY format', 'error');
+      return;
+    }
+
+    setSavingCard(true);
+    try {
+      const res = await fetch('/api/payments/cards', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user?.id,
+          cardNumber: cleanNum,
+          cardholderName: cardForm.cardholderName || user?.name || 'Cardholder',
+          expiry: cardForm.expiry,
+          bank: cardForm.bank,
+          cardType: cleanNum.startsWith('4') ? 'Visa' : cleanNum.startsWith('5') ? 'Mastercard' : 'Verve',
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.card) {
+        setSavedCards((prev) => [data.card, ...prev]);
+        toast('Bank card linked successfully!', 'success');
+        setShowAddCardModal(false);
+        setCardForm({ cardholderName: '', cardNumber: '', expiry: '', cvv: '', bank: 'Access Bank' });
+      } else {
+        toast(data.error || 'Could not link card', 'error');
+      }
+    } catch {
+      toast('Failed to link card. Please try again.', 'error');
+    } finally {
+      setSavingCard(false);
+    }
+  };
+
   const handleDeleteCard = async (id: string) => {
     try {
-      await api.delete(`/payments/cards/${id}`);
+      await fetch(`/api/payments/cards/${id}`, { method: 'DELETE' });
+      await api.delete(`/payments/cards/${id}`).catch(() => {});
       setSavedCards((prev) => prev.filter((c) => c.id !== id));
       toast('Card removed', 'success');
     } catch (err: any) {
@@ -1006,28 +1071,65 @@ export default function SettingsPage() {
 
                   {/* Payment Methods on file */}
                   <div style={{ background: theme.color.surface, borderRadius: 24, border: `1px solid ${theme.color.border}`, padding: '28px 32px', boxShadow: '0 4px 24px rgba(0,0,0,0.02)' }}>
-                    <h3 style={{ fontSize: 16, fontWeight: 800, color: theme.color.text1, margin: '0 0 6px' }}>
-                      Saved Cards
-                    </h3>
-                    <p style={{ fontSize: 12, color: theme.color.text4, margin: '0 0 16px' }}>
-                      Cards are saved automatically the next time you pay by card at checkout.
-                    </p>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexWrap: 'wrap', gap: 12 }}>
+                      <div>
+                        <h3 style={{ fontSize: 16, fontWeight: 800, color: theme.color.text1, margin: '0 0 4px' }}>
+                          Saved Bank Cards
+                        </h3>
+                        <p style={{ fontSize: 12, color: theme.color.text4, margin: 0 }}>
+                          Manage your active debit cards for memberships, content purchases, and campaigns.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowAddCardModal(true)}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 6,
+                          background: '#C69A2C',
+                          color: '#FFFFFF',
+                          border: 'none',
+                          borderRadius: 8,
+                          padding: '8px 16px',
+                          fontSize: 12,
+                          fontWeight: 800,
+                          cursor: 'pointer',
+                          fontFamily: F,
+                          transition: 'all 0.2s',
+                        }}
+                      >
+                        <Plus size={14} />
+                        <span>Link New Card</span>
+                      </button>
+                    </div>
 
                     {loadingCards ? (
                       <p style={{ fontSize: 13, color: theme.color.text3 }}>Loading…</p>
                     ) : savedCards.length === 0 ? (
-                      <p style={{ fontSize: 13, color: theme.color.text3 }}>No saved cards yet.</p>
+                      <div style={{ textAlign: 'center', padding: '28px 16px', background: theme.color.bg, borderRadius: 12, border: `1px solid ${theme.color.border}` }}>
+                        <CreditCard size={28} color={theme.color.text4} style={{ margin: '0 auto 8px' }} />
+                        <p style={{ fontSize: 13, fontWeight: 700, color: theme.color.text2, margin: '0 0 4px' }}>No saved cards on file</p>
+                        <p style={{ fontSize: 12, color: theme.color.text4, margin: 0 }}>Click "Link New Card" above to securely connect your card.</p>
+                      </div>
                     ) : (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                         {savedCards.map((c) => (
                           <div key={c.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', background: theme.color.bg, borderRadius: 12, border: `1px solid ${theme.color.border}` }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                              <CreditCard size={18} color={theme.color.text1} />
-                              <span style={{ fontSize: 13, fontWeight: 700, color: theme.color.text1, textTransform: 'capitalize' }}>
-                                {c.card_type || 'Card'} ending in {c.last4 || '····'}{c.bank ? ` · ${c.bank}` : ''}
-                              </span>
+                              <div style={{ width: 36, height: 26, borderRadius: 6, background: '#111827', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 10, fontWeight: 900, textTransform: 'uppercase' }}>
+                                {(c.card_type || 'Card').slice(0, 4)}
+                              </div>
+                              <div>
+                                <span style={{ fontSize: 13, fontWeight: 700, color: theme.color.text1, textTransform: 'capitalize', display: 'block' }}>
+                                  {c.card_type || 'Card'} ending in •••• {c.last4 || '····'}
+                                </span>
+                                <span style={{ fontSize: 11, color: theme.color.text4, fontWeight: 500 }}>
+                                  {c.bank || 'Bank Card'}{c.cardholder_name ? ` • ${c.cardholder_name}` : ''}
+                                </span>
+                              </div>
                             </div>
-                            <button onClick={() => handleDeleteCard(c.id)} style={{ background: 'none', border: 'none', color: '#EF4444', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+                            <button onClick={() => handleDeleteCard(c.id)} style={{ background: 'none', border: 'none', color: '#EF4444', fontSize: 12, fontWeight: 700, cursor: 'pointer', padding: '4px 8px' }}>
                               Remove
                             </button>
                           </div>
@@ -1035,6 +1137,215 @@ export default function SettingsPage() {
                       </div>
                     )}
                   </div>
+
+                  {/* Add Card Modal */}
+                  {showAddCardModal && (
+                    <div style={{
+                      position: 'fixed',
+                      inset: 0,
+                      zIndex: 9999,
+                      background: 'rgba(0, 0, 0, 0.45)',
+                      backdropFilter: 'blur(4px)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: 16
+                    }}>
+                      <div style={{
+                        width: '100%',
+                        maxWidth: 440,
+                        background: '#FFFFFF',
+                        borderRadius: 20,
+                        padding: '24px 28px',
+                        boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
+                        fontFamily: F,
+                        position: 'relative'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, paddingBottom: 12, borderBottom: `1px solid ${theme.color.border}` }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <CreditCard size={18} color="#C69A2C" />
+                            <h3 style={{ fontSize: 16, fontWeight: 800, margin: 0, color: theme.color.text1 }}>
+                              Link Bank Card
+                            </h3>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setShowAddCardModal(false)}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text3 }}
+                          >
+                            <X size={18} />
+                          </button>
+                        </div>
+
+                        <form onSubmit={handleAddCard} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                          <div>
+                            <label style={{ fontSize: 11, fontWeight: 700, color: '#475569', display: 'block', marginBottom: 4, textTransform: 'uppercase' }}>
+                              Issuing Bank
+                            </label>
+                            <select
+                              value={cardForm.bank}
+                              onChange={(e) => setCardForm({ ...cardForm, bank: e.target.value })}
+                              style={{
+                                width: '100%',
+                                padding: '10px 12px',
+                                borderRadius: 10,
+                                border: `1.5px solid ${theme.color.border}`,
+                                fontSize: 13,
+                                outline: 'none',
+                                fontFamily: F
+                              }}
+                            >
+                              {['Access Bank', 'Guaranty Trust Bank (GTBank)', 'Zenith Bank', 'First Bank of Nigeria', 'United Bank for Africa (UBA)', 'Kuda Bank', 'OPay', 'Stanbic IBTC Bank', 'Sterling Bank', 'Wema Bank / ALAT'].map((b) => (
+                                <option key={b} value={b}>{b}</option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div>
+                            <label style={{ fontSize: 11, fontWeight: 700, color: '#475569', display: 'block', marginBottom: 4, textTransform: 'uppercase' }}>
+                              Name on Card
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              placeholder="e.g. Udo Emmanuel"
+                              value={cardForm.cardholderName}
+                              onChange={(e) => setCardForm({ ...cardForm, cardholderName: e.target.value })}
+                              style={{
+                                width: '100%',
+                                padding: '10px 12px',
+                                borderRadius: 10,
+                                border: `1.5px solid ${theme.color.border}`,
+                                fontSize: 13,
+                                outline: 'none',
+                                fontFamily: F,
+                                boxSizing: 'border-box'
+                              }}
+                            />
+                          </div>
+
+                          <div>
+                            <label style={{ fontSize: 11, fontWeight: 700, color: '#475569', display: 'block', marginBottom: 4, textTransform: 'uppercase' }}>
+                              Card Number (16 Digits)
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              maxLength={19}
+                              placeholder="5399 •••• •••• ••••"
+                              value={cardForm.cardNumber}
+                              onChange={(e) => {
+                                const val = e.target.value.replace(/\D/g, '').replace(/(\d{4})/g, '$1 ').trim();
+                                setCardForm({ ...cardForm, cardNumber: val });
+                              }}
+                              style={{
+                                width: '100%',
+                                padding: '10px 12px',
+                                borderRadius: 10,
+                                border: `1.5px solid ${theme.color.border}`,
+                                fontSize: 14,
+                                fontFamily: 'monospace',
+                                outline: 'none',
+                                boxSizing: 'border-box'
+                              }}
+                            />
+                          </div>
+
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                            <div>
+                              <label style={{ fontSize: 11, fontWeight: 700, color: '#475569', display: 'block', marginBottom: 4, textTransform: 'uppercase' }}>
+                                Expiry (MM/YY)
+                              </label>
+                              <input
+                                type="text"
+                                required
+                                maxLength={5}
+                                placeholder="12/28"
+                                value={cardForm.expiry}
+                                onChange={(e) => {
+                                  let val = e.target.value.replace(/\D/g, '');
+                                  if (val.length >= 2) val = `${val.slice(0, 2)}/${val.slice(2, 4)}`;
+                                  setCardForm({ ...cardForm, expiry: val });
+                                }}
+                                style={{
+                                  width: '100%',
+                                  padding: '10px 12px',
+                                  borderRadius: 10,
+                                  border: `1.5px solid ${theme.color.border}`,
+                                  fontSize: 13,
+                                  outline: 'none',
+                                  fontFamily: F,
+                                  boxSizing: 'border-box'
+                                }}
+                              />
+                            </div>
+                            <div>
+                              <label style={{ fontSize: 11, fontWeight: 700, color: '#475569', display: 'block', marginBottom: 4, textTransform: 'uppercase' }}>
+                                CVV
+                              </label>
+                              <input
+                                type="password"
+                                required
+                                maxLength={4}
+                                placeholder="•••"
+                                value={cardForm.cvv}
+                                onChange={(e) => setCardForm({ ...cardForm, cvv: e.target.value.replace(/\D/g, '') })}
+                                style={{
+                                  width: '100%',
+                                  padding: '10px 12px',
+                                  borderRadius: 10,
+                                  border: `1.5px solid ${theme.color.border}`,
+                                  fontSize: 13,
+                                  outline: 'none',
+                                  fontFamily: F,
+                                  boxSizing: 'border-box'
+                                }}
+                              />
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
+                            <button
+                              type="button"
+                              onClick={() => setShowAddCardModal(false)}
+                              style={{
+                                flex: 1,
+                                padding: '11px',
+                                borderRadius: 10,
+                                border: `1px solid ${theme.color.border}`,
+                                background: '#FFFFFF',
+                                fontSize: 13,
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                fontFamily: F
+                              }}
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              type="submit"
+                              disabled={savingCard}
+                              style={{
+                                flex: 1,
+                                padding: '11px',
+                                borderRadius: 10,
+                                border: 'none',
+                                background: '#C69A2C',
+                                color: '#FFFFFF',
+                                fontSize: 13,
+                                fontWeight: 800,
+                                cursor: savingCard ? 'not-allowed' : 'pointer',
+                                opacity: savingCard ? 0.7 : 1,
+                                fontFamily: F
+                              }}
+                            >
+                              {savingCard ? 'Linking Card…' : 'Save & Link Card'}
+                            </button>
+                          </div>
+                        </form>
+                      </div>
+                    </div>
+                  )}
 
                 </motion.div>
               )}

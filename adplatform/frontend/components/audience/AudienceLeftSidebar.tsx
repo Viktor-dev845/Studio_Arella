@@ -10,9 +10,11 @@ import {
   Gamepad2, 
   Settings, 
   Plus,
-  LayoutDashboard 
+  LayoutDashboard,
+  Loader2
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
+import { startRouteTransition } from '@/components/ui/RouteTransitionLoader';
 import api from '@/lib/api';
 
 interface AudienceLeftSidebarProps {
@@ -35,6 +37,23 @@ export default function AudienceLeftSidebar({
   const { user, loadFromStorage } = useAuthStore();
   const [currentMenu, setCurrentMenu] = useState(activeMenu);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [isSwitchingToDashboard, setIsSwitchingToDashboard] = useState<boolean>(false);
+
+  // Eager prefetch of dashboard route to eliminate navigation delay
+  useEffect(() => {
+    try {
+      router.prefetch('/dashboard');
+    } catch {
+      // ignore
+    }
+  }, [router]);
+
+  const handleReturnToDashboard = () => {
+    if (isSwitchingToDashboard) return;
+    setIsSwitchingToDashboard(true);
+    startRouteTransition();
+    router.push('/dashboard');
+  };
 
   useEffect(() => {
     loadFromStorage();
@@ -298,17 +317,31 @@ export default function AudienceLeftSidebar({
         <div className="pt-2 mt-1 border-t border-gray-100">
           <button
             type="button"
-            onClick={() => router.push('/dashboard')}
-            className="w-full flex items-center justify-between py-2.5 px-3.5 rounded-xl bg-amber-50/80 hover:bg-amber-100/90 border border-amber-200/70 text-[#8c711a] text-left transition-all cursor-pointer group shadow-2xs"
+            onClick={handleReturnToDashboard}
+            onMouseEnter={() => {
+              try { router.prefetch('/dashboard'); } catch {}
+            }}
+            disabled={isSwitchingToDashboard}
+            className="w-full flex items-center justify-between py-2.5 px-3.5 rounded-xl bg-amber-50/80 hover:bg-amber-100/90 border border-amber-200/70 text-[#8c711a] text-left transition-all cursor-pointer group shadow-2xs disabled:cursor-wait"
             title="Return to Advertiser Dashboard"
           >
             <div className="flex items-center gap-2.5">
-              <LayoutDashboard size={18} className="text-[#D4AF37] group-hover:scale-110 transition-transform" />
+              {isSwitchingToDashboard ? (
+                <Loader2 size={18} className="animate-spin text-[#D4AF37]" />
+              ) : (
+                <LayoutDashboard size={18} className="text-[#D4AF37] group-hover:scale-110 transition-transform" />
+              )}
               <span className="text-[13px] font-bold">
-                {user?.role === 'creator' ? 'Creator Dashboard' : 'Advertiser Portal'}
+                {isSwitchingToDashboard 
+                  ? 'Switching to Dashboard...' 
+                  : (user?.role === 'creator' ? 'Creator Dashboard' : 'Advertiser Portal')}
               </span>
             </div>
-            <span className="text-[13px] font-bold text-[#D4AF37] group-hover:translate-x-0.5 transition-transform">&rarr;</span>
+            {isSwitchingToDashboard ? (
+              <Loader2 size={13} className="animate-spin text-[#D4AF37]" />
+            ) : (
+              <span className="text-[13px] font-bold text-[#D4AF37] group-hover:translate-x-0.5 transition-transform">&rarr;</span>
+            )}
           </button>
         </div>
       </div>

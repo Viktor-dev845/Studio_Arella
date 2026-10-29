@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { ArrowLeft, X, ChevronDown, Check } from 'lucide-react';
+import { ArrowLeft, X, ChevronDown, Check, Loader2 } from 'lucide-react';
+import { useAuthStore } from '@/store/authStore';
+import { useToast } from '@/components/ui/ToastProvider';
 
 interface AudienceSetupAccountModalProps {
   isOpen: boolean;
@@ -47,13 +49,16 @@ export default function AudienceSetupAccountModal({
   const [alwaysUse, setAlwaysUse] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const { user } = useAuthStore();
+  const { toast } = useToast();
+
   if (!isOpen) return null;
 
   const filteredBanks = NIGERIAN_BANKS.filter((b) =>
     b.toLowerCase().includes(bankSearch.toLowerCase())
   );
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
@@ -64,11 +69,27 @@ export default function AudienceSetupAccountModal({
       alwaysUse,
     };
 
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      if (user?.id) {
+        await fetch('/api/creator/wallet/bank', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: user.id,
+            bank_name: details.bank,
+            account_number: details.accountNumber,
+            account_name: details.accountName,
+          }),
+        });
+      }
+      toast('Escrow bank account linked successfully!', 'success');
       if (onFinish) onFinish(details);
       onClose();
-    }, 600);
+    } catch {
+      toast('Could not save bank details. Please try again.', 'error');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

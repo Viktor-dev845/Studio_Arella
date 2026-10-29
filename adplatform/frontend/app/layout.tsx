@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import type { Metadata, Viewport } from 'next';
 import { Quicksand, Outfit } from 'next/font/google';
 import './globals.css';
@@ -5,6 +6,7 @@ import { ToastProvider } from '@/components/ui/ToastProvider';
 import PublicThemeGuard from '@/components/ui/PublicThemeGuard';
 import GoogleOneTap from '@/components/ui/GoogleOneTap';
 import AuthInitializer from '@/components/ui/AuthInitializer';
+import RouteTransitionLoader from '@/components/ui/RouteTransitionLoader';
 
 const quicksand = Quicksand({
   subsets: ['latin'],
@@ -26,11 +28,6 @@ export const metadata: Metadata = {
   keywords: ['outdoor advertising', 'billboard Umuahia', 'ad screen Nigeria', 'Bems Group', 'Studio Arella', 'Abia State advertising'],
 };
 
-// Without this, mobile browsers render the page at a fixed desktop-width
-// virtual viewport (~980px) and zoom the whole thing out to fit the screen
-// instead of actually laying it out at the device's real width — which
-// means every responsive breakpoint in the app's CSS never triggers on a
-// real phone, regardless of how correct the media queries themselves are.
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
@@ -42,6 +39,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <PublicThemeGuard />
         <AuthInitializer />
+        <Suspense fallback={null}>
+          <RouteTransitionLoader />
+        </Suspense>
         <ToastProvider>
           <GoogleOneTap />
           {children}

@@ -38,6 +38,8 @@ import {
 import { theme } from '@/lib/theme';
 import { useToast } from '@/components/ui/ToastProvider';
 import Link from 'next/link';
+import { useAuthStore } from '@/store/authStore';
+import CreatorAnalyticsDashboard from '@/components/analytics/CreatorAnalyticsDashboard';
 
 const F = theme.font.body;
 
@@ -60,6 +62,10 @@ const CustomChartTooltip = ({ active, payload, label }: any) => {
 };
 
 export default function AnalyticsPage() {
+  const { user } = useAuthStore();
+  const [activeTab, setActiveTab] = useState<'creator' | 'screens'>(() => {
+    return user?.role === 'creator' || user?.creator_tier ? 'creator' : 'screens';
+  });
   const [data, setData] = useState<any[]>([]);
   const [totalPlays, setTotalPlays] = useState(0);
   const [hourlyData, setHourlyData] = useState<{ hour: number; impressions: number; views: number }[]>([]);
@@ -181,8 +187,82 @@ export default function AnalyticsPage() {
       <PageTransition>
         <div style={{ fontFamily: F, maxWidth: 1150, margin: '0 auto', paddingBottom: 60 }}>
           
-          {/* ─── PAGE HEADER & TIMEFRAME TOOLBAR ─── */}
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: 28 }}>
+          {/* ─── PRIMARY MODE SELECTOR (CREATOR SPACE vs DOOH SCREENS) ─── */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24, borderBottom: `1px solid ${theme.color.border}`, paddingBottom: 12 }}>
+            <button
+              onClick={() => setActiveTab('creator')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '10px 18px',
+                borderRadius: 12,
+                fontSize: 14,
+                fontWeight: 700,
+                cursor: 'pointer',
+                fontFamily: F,
+                border: 'none',
+                background: activeTab === 'creator' ? '#111827' : 'transparent',
+                color: activeTab === 'creator' ? '#FFFFFF' : theme.color.text3,
+                boxShadow: activeTab === 'creator' ? '0 4px 12px rgba(0,0,0,0.1)' : 'none',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              <Sparkles size={16} color={activeTab === 'creator' ? '#F59E0B' : 'currentColor'} />
+              <span>Creator Space Analytics</span>
+              <span style={{
+                fontSize: 10,
+                padding: '2px 6px',
+                borderRadius: 6,
+                background: activeTab === 'creator' ? '#F59E0B' : theme.color.surface2,
+                color: activeTab === 'creator' ? '#000' : theme.color.text3,
+                fontWeight: 800,
+                letterSpacing: '0.04em'
+              }}>
+                PRO
+              </span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('screens')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '10px 18px',
+                borderRadius: 12,
+                fontSize: 14,
+                fontWeight: 700,
+                cursor: 'pointer',
+                fontFamily: F,
+                border: 'none',
+                background: activeTab === 'screens' ? '#111827' : 'transparent',
+                color: activeTab === 'screens' ? '#FFFFFF' : theme.color.text3,
+                boxShadow: activeTab === 'screens' ? '0 4px 12px rgba(0,0,0,0.1)' : 'none',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              <Tv size={16} color={activeTab === 'screens' ? '#10B981' : 'currentColor'} />
+              <span>Digital Screens & DOOH</span>
+              <span style={{
+                fontSize: 10,
+                padding: '2px 6px',
+                borderRadius: 6,
+                background: activeTab === 'screens' ? '#059669' : theme.color.surface2,
+                color: activeTab === 'screens' ? '#FFF' : theme.color.text3,
+                fontWeight: 800
+              }}>
+                LIVE
+              </span>
+            </button>
+          </div>
+
+          {activeTab === 'creator' ? (
+            <CreatorAnalyticsDashboard />
+          ) : (
+            <>
+              {/* ─── PAGE HEADER & TIMEFRAME TOOLBAR ─── */}
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: 28 }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
                 <h1 style={{ fontFamily: theme.font.display, fontSize: 24, fontWeight: 700, color: theme.color.text1, margin: 0, letterSpacing: '-0.3px' }}>
@@ -667,6 +747,8 @@ export default function AnalyticsPage() {
             </div>
 
           </FadeCard>
+            </>
+          )}
 
         </div>
 

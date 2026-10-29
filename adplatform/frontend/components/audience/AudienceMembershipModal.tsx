@@ -4,9 +4,12 @@ import { useState } from 'react';
 import { ArrowLeft, X } from 'lucide-react';
 import AudiencePaymentModal from './AudiencePaymentModal';
 
+import { useAuthStore } from '@/store/authStore';
+
 interface AudienceMembershipModalProps {
   isOpen: boolean;
   onClose: () => void;
+  creatorId?: string;
   creatorName?: string;
   clubName?: string;
   price?: string;
@@ -17,12 +20,14 @@ interface AudienceMembershipModalProps {
 export default function AudienceMembershipModal({
   isOpen,
   onClose,
+  creatorId,
   creatorName = 'Udo Emmanuel',
   clubName,
   price = 'NGN 1,000',
   headline = 'Subscribe at #1,000 to be a membered fan of this creator and get exclusive access to live events and activities',
   onSubscribeSuccess,
 }: AudienceMembershipModalProps) {
+  const { user } = useAuthStore();
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   if (!isOpen) return null;
@@ -33,8 +38,23 @@ export default function AudienceMembershipModal({
     setShowPaymentModal(true);
   };
 
-  const handlePaymentSuccess = () => {
+  const handlePaymentSuccess = async () => {
     setShowPaymentModal(false);
+    if (creatorId) {
+      try {
+        await fetch('/api/creator/memberships/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            creator_id: creatorId,
+            userId: user?.id,
+            amount: 1000,
+          }),
+        });
+      } catch (err) {
+        console.warn('Membership backend record error:', err);
+      }
+    }
     if (onSubscribeSuccess) onSubscribeSuccess();
     onClose();
   };

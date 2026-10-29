@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import api from '@/lib/api';
 import { theme } from '@/lib/theme';
 import { trackRecentPage, getRecentPages, pathToLabel, RecentPage } from '@/lib/recentPages';
+import { startRouteTransition } from '@/components/ui/RouteTransitionLoader';
 
 const F = theme.font.body;
 
@@ -31,6 +32,34 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
   // Favorites
   const [favoritePaths, setFavoritePaths] = useState<Set<string>>(new Set());
   const isAudience = pathname.startsWith('/audience');
+  const [isSwitchingMode, setIsSwitchingMode] = useState<boolean>(false);
+  const [optimisticAudience, setOptimisticAudience] = useState<boolean>(isAudience);
+
+  // Sync optimistic state with actual pathname
+  useEffect(() => {
+    setOptimisticAudience(pathname.startsWith('/audience'));
+    setIsSwitchingMode(false);
+  }, [pathname]);
+
+  // Aggressive route prefetching: eliminates network delay when switching between Audience and Dashboard
+  useEffect(() => {
+    try {
+      router.prefetch('/audience');
+      router.prefetch('/dashboard');
+    } catch {
+      // ignore
+    }
+  }, [router]);
+
+  const handleToggleMode = () => {
+    if (isSwitchingMode) return;
+    const nextIsAudience = !optimisticAudience;
+    setOptimisticAudience(nextIsAudience);
+    setIsSwitchingMode(true);
+    startRouteTransition();
+    const targetUrl = nextIsAudience ? '/audience' : '/dashboard';
+    router.push(targetUrl);
+  };
 
   // Search
   const [searchQuery, setSearchQuery] = useState('');
@@ -177,18 +206,38 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
         </button>
 
         {/* Advertiser / Audience Toggle */}
-        <div className="hide-on-mobile flex items-center gap-3 text-neutral-500 dark:text-neutral-400">
-          <span className={!isAudience ? "text-neutral-900 dark:text-white font-medium" : ""}>
+        <div className="hide-on-mobile flex items-center gap-2.5 text-xs font-medium text-neutral-500 dark:text-neutral-400 select-none">
+          <span className={`transition-colors duration-200 ${!optimisticAudience ? "text-neutral-900 dark:text-white font-semibold" : ""}`}>
             {user?.role === 'creator' ? 'Creator' : 'Advertiser'}
           </span>
           <button
-            onClick={() => router.push(isAudience ? '/dashboard' : '/audience')}
-            className="relative inline-flex h-4 w-7 items-center rounded-full bg-neutral-900 dark:bg-neutral-100 transition-colors"
-            title={isAudience ? 'Switch back to Advertiser dashboard' : 'Preview as a listener would see it'}
+            type="button"
+            onClick={handleToggleMode}
+            onMouseEnter={() => {
+              try { router.prefetch(optimisticAudience ? '/dashboard' : '/audience'); } catch {}
+            }}
+            disabled={isSwitchingMode}
+            className="relative inline-flex h-5 w-9 items-center rounded-full bg-neutral-900 dark:bg-white/20 p-0.5 transition-colors cursor-pointer disabled:cursor-wait"
+            title={optimisticAudience ? 'Switch back to Advertiser dashboard' : 'Preview Audience Creator Space'}
           >
-            <span className={`h-3 w-3 rounded-full bg-white dark:bg-black transition-all ${isAudience ? 'ml-[14px]' : 'ml-0.5'}`} />
+            <span
+              className={`flex items-center justify-center h-4 w-4 rounded-full bg-[#D4AF37] shadow-xs transition-transform duration-250 ease-out ${
+                optimisticAudience ? 'translate-x-4' : 'translate-x-0'
+              }`}
+            >
+              {isSwitchingMode ? (
+                <Loader2 size={10} className="animate-spin text-black" />
+              ) : (
+                <span className="w-1.5 h-1.5 rounded-full bg-black/80" />
+              )}
+            </span>
           </button>
-          <span className={isAudience ? "text-neutral-900 dark:text-white font-medium" : ""}>Audience</span>
+          <span className={`transition-colors duration-200 flex items-center gap-1.5 ${optimisticAudience ? "text-neutral-900 dark:text-white font-semibold" : ""}`}>
+            <span>Audience</span>
+            {isSwitchingMode && (
+              <Loader2 size={11} className="animate-spin text-[#D4AF37]" />
+            )}
+          </span>
         </div>
 
         <span className="hide-on-mobile text-neutral-300 dark:text-neutral-600">/</span>

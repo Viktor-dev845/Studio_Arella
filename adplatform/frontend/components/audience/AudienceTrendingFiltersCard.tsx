@@ -10,18 +10,26 @@ interface FilterItem {
 }
 
 const TRENDING_TOPICS: FilterItem[] = [
-  { id: 'health', label: 'Health', count: 10 },
-  { id: 'wealth', label: 'Wealth', count: 10 },
-  { id: 'politics', label: 'Politics', count: 10 },
-  { id: 'entertainment', label: 'Entertainment', count: 10 },
+  { id: 'music', label: 'Music & Highlife', count: 24 },
+  { id: 'entertainment', label: 'Comedy & Entertainment', count: 18 },
+  { id: 'film', label: 'Film & Storytelling', count: 15 },
+  { id: 'podcasts', label: 'Podcasts & Audio', count: 32 },
+  { id: 'business', label: 'Business & Tech', count: 28 },
+  { id: 'culture', label: 'Art & Nigerian Culture', count: 19 },
+  { id: 'fashion', label: 'Fashion & Lifestyle', count: 14 },
+  { id: 'food', label: 'Food & Culinary', count: 11 },
+  { id: 'sports', label: 'Sports & Gaming', count: 16 },
+  { id: 'wealth', label: 'Wealth & Investing', count: 22 },
+  { id: 'health', label: 'Health & Wellness', count: 12 },
+  { id: 'education', label: 'Education & Mentorship', count: 14 },
 ];
 
 const LIVE_EXPERIENCES: FilterItem[] = [
-  { id: 'all', label: 'All', count: 10 },
-  { id: 'family', label: 'Family', count: 10 },
-  { id: 'business', label: 'Business', count: 10 },
-  { id: 'relationship', label: 'Relationship', count: 10 },
-  { id: 'marriage', label: 'Marriage', count: 10 },
+  { id: 'all', label: 'All Live Sessions', count: 48 },
+  { id: 'music', label: 'Live Performances', count: 12 },
+  { id: 'podcast', label: 'Live Q&A & Panels', count: 16 },
+  { id: 'business', label: 'Masterclasses & Workshops', count: 9 },
+  { id: 'culture', label: 'Cultural Storytelling', count: 11 },
 ];
 
 interface AudienceTrendingFiltersCardProps {

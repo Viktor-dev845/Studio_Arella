@@ -19,6 +19,7 @@ import AudienceEditProfilePageView from '@/components/audience/AudienceEditProfi
 import AudiencePodcastPlayerView from '@/components/audience/AudiencePodcastPlayerView';
 import AudiencePremiumCard from '@/components/audience/AudiencePremiumCard';
 import AudienceGetVerifiedView from '@/components/audience/AudienceGetVerifiedView';
+import AudienceSponsoredAdCard from '@/components/audience/AudienceSponsoredAdCard';
 import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/api';
 
@@ -489,6 +490,14 @@ function AudienceContent() {
       business: 0,
       relationship: 0,
       marriage: 0,
+      music: 0,
+      film: 0,
+      podcasts: 0,
+      culture: 0,
+      fashion: 0,
+      food: 0,
+      sports: 0,
+      education: 0,
     };
 
     posts.forEach((post) => {
@@ -509,9 +518,17 @@ function AudienceContent() {
       if (check(['health', 'vitality', 'wellness', 'nutrition'])) counts.health++;
       if (check(['wealth', 'finance', 'invest', 'equity', 'cashflow'])) counts.wealth++;
       if (check(['politic', 'diplomacy', 'governance', 'policy'])) counts.politics++;
-      if (check(['entertain', 'culture', 'music', 'art', 'cinema', 'storytelling'])) counts.entertainment++;
+      if (check(['entertain', 'comedy', 'humor', 'cinema'])) counts.entertainment++;
       if (check(['family', 'parenting', 'household'])) counts.family++;
-      if (check(['business', 'media', 'billboard', 'startup'])) counts.business++;
+      if (check(['business', 'media', 'billboard', 'startup', 'tech'])) counts.business++;
+      if (check(['music', 'song', 'highlife', 'sound', 'afrobeats'])) counts.music++;
+      if (check(['film', 'cinema', 'movie', 'documentary', 'storytelling'])) counts.film++;
+      if (check(['podcast', 'episode', 'audio', 'broadcast'])) counts.podcasts++;
+      if (check(['culture', 'heritage', 'tradition', 'art', 'umuahia'])) counts.culture++;
+      if (check(['fashion', 'style', 'lifestyle', 'beauty'])) counts.fashion++;
+      if (check(['food', 'culinary', 'recipe', 'cuisine'])) counts.food++;
+      if (check(['sport', 'gaming', 'athlete', 'football'])) counts.sports++;
+      if (check(['education', 'learn', 'mentor', 'training', 'counseling'])) counts.education++;
       if (check(['relationship', 'marriage', 'love', 'intimacy'])) {
         counts.relationship++;
         if (check(['marriage'])) counts.marriage++;
@@ -864,8 +881,11 @@ function AudienceContent() {
                         )}
                       </div>
                     ) : (
-                      filteredPosts.map((post) => (
-                        <AudiencePostCard key={post.id} post={post} />
+                      filteredPosts.map((post, idx) => (
+                        <div key={post.id} className="flex flex-col gap-6">
+                          <AudiencePostCard post={post} />
+                          {idx === 2 && <AudienceSponsoredAdCard />}
+                        </div>
                       ))
                     )}
                   </div>
@@ -897,9 +917,11 @@ function AudienceContent() {
   );
 }
 
+import AudienceLoading from './loading';
+
 export default function AudienceHomePage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#F7F7F7]" />}>
+    <Suspense fallback={<AudienceLoading />}>
       <AudienceContent />
     </Suspense>
   );

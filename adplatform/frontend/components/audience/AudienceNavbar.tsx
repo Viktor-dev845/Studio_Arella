@@ -9,9 +9,11 @@ import {
   Bell, 
   MessageSquare, 
   User as UserIcon, 
-  Search 
+  Search,
+  Loader2
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
+import { startRouteTransition } from '@/components/ui/RouteTransitionLoader';
 
 interface AudienceNavbarProps {
   activeNav?: 'home' | 'video' | 'notifications' | 'messages' | 'profile' | null;
@@ -28,6 +30,23 @@ export default function AudienceNavbar({
   const { user } = useAuthStore();
   const [currentNav, setCurrentNav] = useState<'home' | 'video' | 'notifications' | 'messages' | 'profile' | null>(activeNav);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isSwitchingToDashboard, setIsSwitchingToDashboard] = useState<boolean>(false);
+
+  // Eager prefetch of dashboard route to eliminate navigation delay
+  useEffect(() => {
+    try {
+      router.prefetch('/dashboard');
+    } catch {
+      // ignore
+    }
+  }, [router]);
+
+  const handleSwitchToDashboard = () => {
+    if (isSwitchingToDashboard) return;
+    setIsSwitchingToDashboard(true);
+    startRouteTransition();
+    router.push('/dashboard');
+  };
 
   useEffect(() => {
     setCurrentNav(activeNav);
@@ -173,21 +192,37 @@ export default function AudienceNavbar({
       {/* ─── Right: Mode Toggle (Advertiser <-> Audience) + Search Box ─── */}
       <div className="flex items-center gap-3 sm:gap-4">
         {/* Mode Switch: Advertiser <-> Audience */}
-        <div 
-          onClick={() => router.push('/dashboard')}
-          className="flex items-center gap-2 text-xs font-quicksand bg-gray-50 hover:bg-gray-100 border border-gray-200/80 px-3 py-1.5 rounded-full cursor-pointer transition-all shadow-2xs group select-none shrink-0"
+        <button 
+          type="button"
+          onClick={handleSwitchToDashboard}
+          onMouseEnter={() => {
+            try { router.prefetch('/dashboard'); } catch {}
+          }}
+          disabled={isSwitchingToDashboard}
+          className="flex items-center gap-2 text-xs font-quicksand bg-gray-50 hover:bg-gray-100 border border-gray-200/80 px-3 py-1.5 rounded-full cursor-pointer transition-all shadow-2xs group select-none shrink-0 disabled:cursor-wait"
           title="Switch back to Advertiser Dashboard"
         >
-          <span className="text-gray-500 group-hover:text-black font-semibold transition-colors">
+          <span className={`font-semibold transition-colors ${isSwitchingToDashboard ? 'text-[#8c711a]' : 'text-gray-500 group-hover:text-black'}`}>
             {user?.role === 'creator' ? 'Creator' : 'Advertiser'}
           </span>
           <div className="relative inline-flex h-4 w-7 items-center rounded-full bg-neutral-900 p-0.5 transition-colors">
-            <span className="h-3 w-3 rounded-full bg-[#D4AF37] transition-all ml-[12px] shadow-xs" />
+            <span 
+              className={`flex items-center justify-center h-3 w-3 rounded-full bg-[#D4AF37] transition-all duration-250 ease-out shadow-xs ${
+                isSwitchingToDashboard ? 'ml-0.5' : 'ml-[12px]'
+              }`}
+            >
+              {isSwitchingToDashboard && (
+                <Loader2 size={8} className="animate-spin text-black" />
+              )}
+            </span>
           </div>
-          <span className="text-[#8c711a] font-bold">
-            Audience
+          <span className={`transition-colors ${isSwitchingToDashboard ? 'text-gray-400 font-normal' : 'text-[#8c711a] font-bold'}`}>
+            {isSwitchingToDashboard ? 'Switching...' : 'Audience'}
           </span>
-        </div>
+          {isSwitchingToDashboard && (
+            <Loader2 size={12} className="animate-spin text-[#D4AF37]" />
+          )}
+        </button>
 
         {/* Subtle vertical separator from Figma */}
         <div className="hidden md:block h-[28px] w-[1px] bg-black/15" />

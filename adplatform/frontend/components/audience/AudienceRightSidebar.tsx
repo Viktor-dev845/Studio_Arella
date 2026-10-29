@@ -302,6 +302,8 @@ export default function AudienceRightSidebar({
             <Loader2 className="animate-spin text-[#1D9BF0]" size={22} />
             <span className="text-xs text-gray-400">Loading recommendations...</span>
           </div>
+        ) : recommendedCreators.length === 0 ? (
+          <p className="text-[13px] text-gray-500 py-2 font-normal">No suggestions available right now.</p>
         ) : (
           <div className="flex flex-col gap-3">
             {(showAllCreators ? recommendedCreators : recommendedCreators.slice(0, 3)).map((c) => (
@@ -394,6 +396,8 @@ export default function AudienceRightSidebar({
             <Loader2 className="animate-spin text-[#1D9BF0]" size={22} />
             <span className="text-xs text-gray-400">Loading trends...</span>
           </div>
+        ) : trends.length === 0 ? (
+          <p className="text-[13px] text-gray-500 py-2 font-normal">No trending topics yet.</p>
         ) : (
           <div className="flex flex-col divide-y divide-gray-100/80">
             {(showAllTrends ? trends : trends.slice(0, 4)).map((t) => (

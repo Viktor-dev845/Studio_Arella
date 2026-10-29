@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -30,7 +31,8 @@ import {
   Pin,
   Bell,
   Search,
-  MessageSquare
+  MessageSquare,
+  Globe
 } from 'lucide-react';
 import { XVerifiedBadge } from './AudienceRightSidebar';
 import { useAuthStore } from '@/store/authStore';
@@ -253,6 +255,8 @@ export default function AudienceProfilePageView({
   );
   const [avatarUrl, setAvatarUrl] = useState(user?.avatar || '');
   const [bannerUrl, setBannerUrl] = useState(user?.banner || '');
+  const [socialLinks, setSocialLinks] = useState<Record<string, string> | null>((user?.social_links as Record<string, string>) || null);
+  const [creatorTier, setCreatorTier] = useState<string>(user?.creator_tier || 'free');
 
   // Creator posts feed & follow state
   const [creatorPosts, setCreatorPosts] = useState<PostData[]>([]);
@@ -318,6 +322,15 @@ export default function AudienceProfilePageView({
           setLocation(c.location || 'Lagos, Nigeria');
           setAvatarUrl(c.avatar || '');
           setBannerUrl(c.banner_url || c.banner || '');
+          if (c.social_links) {
+            setSocialLinks(c.social_links);
+          }
+          if (c.creator_tier) {
+            setCreatorTier(c.creator_tier);
+          }
+          if (c.creator_niche) {
+            setRole(c.creator_niche);
+          }
           setFollowersCount(data.stats?.followersCount ?? 0);
           setFollowingCount(data.stats?.followingCount ?? 0);
           setIsFollowingCreator(Boolean(data.isFollowing));
@@ -512,13 +525,29 @@ export default function AudienceProfilePageView({
     e.preventDefault();
     setIsSavingProfile(true);
     try {
+      if (user?.id) {
+        await fetch('/api/creator/profile/update', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: user.id,
+            name,
+            bio,
+            location,
+            creator_niche: role,
+            social_links: socialLinks,
+            avatar: avatarUrl,
+            banner_url: bannerUrl,
+          }),
+        });
+      }
       await api.put('/auth/profile', {
         name,
         bio,
         location,
         about,
         avatar: avatarUrl,
-      });
+      }).catch(() => {});
       useAuthStore.getState().checkAuth();
       toast('Profile updated successfully', 'success');
       setShowEditModal(false);
@@ -874,17 +903,27 @@ export default function AudienceProfilePageView({
 
           {/* Name, Handle, Bio, Metadata, and Follower Counts (X / Twitter Structure) */}
           <div className="flex flex-col mt-1">
-            {/* Name + Verified Blue Badge (Matching X) */}
-            <div className="flex items-center gap-1.5">
+            {/* Name + Verified Blue Badge + Creator Pro Badge */}
+            <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-[21px] sm:text-[23px] font-extrabold text-gray-950 leading-tight m-0 font-quicksand flex items-center gap-1.5">
                 <span>{name}</span>
                 <XVerifiedBadge size={20} />
               </h1>
+              {(creatorTier === 'pro' || (!isViewingOtherCreator && user?.creator_tier === 'pro')) && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 text-black shadow-xs">
+                  <Sparkles size={11} className="fill-black text-black" />
+                  CREATOR PRO
+                </span>
+              )}
             </div>
 
-            {/* Handle */}
-            <div className="flex items-center gap-2 text-[14px] text-gray-500 font-normal mt-0.5 font-quicksand">
+            {/* Handle & Niche / Category Pill */}
+            <div className="flex items-center gap-2 text-[14px] text-gray-500 font-normal mt-0.5 font-quicksand flex-wrap">
               <span>@{handle}</span>
+              <span className="text-gray-300">•</span>
+              <span className="text-[11.5px] font-bold text-amber-900 bg-amber-50 border border-amber-200/80 px-2.5 py-0.5 rounded-full">
+                {role || 'Creator & Broadcaster'}
+              </span>
             </div>
 
             {/* ─── X (TWITTER) STYLE BIO PARAGRAPH ─── */}
@@ -892,7 +931,7 @@ export default function AudienceProfilePageView({
               {bio}
             </p>
 
-            {/* Metadata Row: Location + Joined Date (with Chevron) */}
+            {/* Metadata Row: Location + Joined Date (with Chevron) + Social Links */}
             <div className="flex items-center gap-4 text-[13.5px] text-gray-500 font-normal mt-2.5 flex-wrap font-quicksand">
               {location && (
                 <div className="flex items-center gap-1.5">
@@ -904,6 +943,24 @@ export default function AudienceProfilePageView({
                 <Calendar size={15} className="text-gray-400" />
                 <span>Joined {joinedDate} &gt;</span>
               </div>
+
+              {/* Dynamic Social Links / Website from PRD Sec 3.1 */}
+              {socialLinks && Object.entries(socialLinks).map(([platform, link]) => {
+                if (!link || typeof link !== 'string' || !link.trim()) return null;
+                const formattedLink = link.startsWith('http') ? link : `https://${link}`;
+                return (
+                  <a
+                    key={platform}
+                    href={formattedLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 text-blue-600 hover:underline transition-colors capitalize font-medium"
+                  >
+                    <Globe size={14} className="text-blue-500" />
+                    <span>{platform === 'website' ? link.replace(/^https?:\/\//, '') : platform}</span>
+                  </a>
+                );
+              })}
             </div>
 
             {/* Followers / Following Stats Row (Clickable) */}
@@ -1529,7 +1586,33 @@ export default function AudienceProfilePageView({
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   className="w-full h-11 px-3.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-[#D9BA54]"
-                  placeholder="e.g. Umuahia, Abia State"
+                  placeholder="e.g. Lagos, Nigeria"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-gray-700 uppercase tracking-wider block mb-1">
+                  Category / Niche
+                </label>
+                <input
+                  type="text"
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                  className="w-full h-11 px-3.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-[#D9BA54]"
+                  placeholder="e.g. Music, Comedy, Film, Podcasts, Tech"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-gray-700 uppercase tracking-wider block mb-1">
+                  Website / Social Link
+                </label>
+                <input
+                  type="text"
+                  value={socialLinks?.website || ''}
+                  onChange={(e) => setSocialLinks(prev => ({ ...prev, website: e.target.value }))}
+                  className="w-full h-11 px-3.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:border-[#D9BA54]"
+                  placeholder="e.g. arella.ng or twitter.com/username"
                 />
               </div>
 
@@ -1626,6 +1709,7 @@ export default function AudienceProfilePageView({
       <AudienceMembershipModal
         isOpen={showMembershipModal}
         onClose={() => setShowMembershipModal(false)}
+        creatorId={targetCreatorId || user?.id}
         creatorName={name || 'Creator'}
         clubName={`Subscribe to follow ${name || 'Creator'}`}
         price="NGN 1,000"

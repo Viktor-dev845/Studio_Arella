@@ -29,6 +29,7 @@ export async function GET(
         COALESCE(u.creator_niche, 'Creator') AS creator_niche,
         u.creator_tier,
         u.creator_verified,
+        u.social_links,
         COALESCE(u.avatar, '/audience/adam-udochi.png') AS avatar,
         COALESCE(u.banner_url, '/audience/covers/culture.jpg') AS banner_url,
         COALESCE(u.bio, 'Audio creator & broadcaster on Studio Arella') AS bio,
