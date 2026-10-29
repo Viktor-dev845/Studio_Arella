@@ -667,7 +667,9 @@ function AudienceContent() {
             ? 'notifications'
             : activeMenu === 'chats' 
             ? 'messages' 
-            : (activeMenu === 'profile' || activeMenu === 'creator-profile' || activeMenu === 'edit-profile' || activeMenu === 'settings')
+            : (activeMenu === 'profile' && (!searchParams.get('creatorId') || searchParams.get('creatorId') === user?.id))
+            ? 'profile'
+            : (activeMenu === 'edit-profile' || activeMenu === 'settings')
             ? 'profile'
             : activeMenu === 'podcast' 
             ? 'home' 
@@ -746,7 +748,7 @@ function AudienceContent() {
               <div className="flex-1 w-full min-w-0 pb-16">
                 <AudiencePodcastPlayerView 
                   podcastTitle={searchParams.get('title') || 'Zara Design Concept Podcast'}
-                  onBackToProfile={() => handleMenuChange('creator-profile')}
+                  onBackToProfile={() => handleMenuChange('podcast')}
                 />
               </div>
             ) : (activeMenu === 'profile' || activeMenu === 'creator-profile') ? (
@@ -754,6 +756,7 @@ function AudienceContent() {
               <>
                 <div className="flex-1 w-full min-w-0 pb-16">
                   <AudienceProfilePageView 
+                    key={searchParams.get('creatorId') || (activeMenu === 'creator-profile' ? 'creator-view' : 'my-profile')}
                     creatorId={searchParams.get('creatorId') || undefined}
                     isVisitor={
                       activeMenu === 'creator-profile' || 

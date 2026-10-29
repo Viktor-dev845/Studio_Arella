@@ -98,7 +98,7 @@ export default function AudiencePodcastPlayerView({
     if (onBackToProfile) {
       onBackToProfile();
     } else {
-      router.push('/audience?view=creator-profile');
+      router.push('/audience');
     }
   };
 

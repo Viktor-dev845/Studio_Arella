@@ -132,13 +132,13 @@ export default function AudienceProfilePageView({
     : (isViewingOtherCreator || queryMode === 'visitor' || queryView === 'creator-profile' || queryView === 'creator' || queryView === 'visitor-profile');
 
   const [isVisitorMode, setIsVisitorMode] = useState<boolean>(isVisitorInitial);
-  const [prevVisitorProp, setPrevVisitorProp] = useState(isVisitor);
-  if (isVisitor !== prevVisitorProp) {
-    setPrevVisitorProp(isVisitor);
-    if (isVisitor !== undefined) {
-      setIsVisitorMode(isVisitor);
-    }
-  }
+
+  useEffect(() => {
+    const computed = isVisitor !== undefined
+      ? isVisitor
+      : (Boolean(targetCreatorId && targetCreatorId !== user?.id) || queryMode === 'visitor' || queryView === 'creator-profile');
+    setIsVisitorMode(computed);
+  }, [isVisitor, targetCreatorId, user?.id, queryMode, queryView]);
 
   const querySubscribed = searchParams.get('subscribed');
   const [isSubscribed, setIsSubscribed] = useState<boolean>(() => {
@@ -244,19 +244,39 @@ export default function AudienceProfilePageView({
   const [isRequestingVerification, setIsRequestingVerification] = useState(false);
 
   // Edit form state with dynamic user defaults
-  const [name, setName] = useState(user?.name || (user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : null) || 'Creator');
-  const [handle, setHandle] = useState(user?.handle || (user?.name ? user.name.toLowerCase().replace(/[^a-z0-9]/g, '') : 'creator'));
-  const [role, setRole] = useState(user?.creator_niche || (user?.role === 'creator' ? 'Creator' : 'Studio Insider'));
-  const [bio, setBio] = useState(user?.bio || 'Audio creator & storyteller on Studio Arella.');
-  const [location, setLocation] = useState(user?.location || 'Lagos, Nigeria');
+  const [name, setName] = useState(
+    isViewingOtherCreator
+      ? 'Creator'
+      : (user?.name || (user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : null) || 'Creator')
+  );
+  const [handle, setHandle] = useState(
+    isViewingOtherCreator
+      ? 'creator'
+      : (user?.handle || (user?.name ? user.name.toLowerCase().replace(/[^a-z0-9]/g, '') : 'creator'))
+  );
+  const [role, setRole] = useState(
+    isViewingOtherCreator
+      ? 'Creator'
+      : (user?.creator_niche || (user?.role === 'creator' ? 'Creator' : 'Studio Insider'))
+  );
+  const [bio, setBio] = useState(
+    isViewingOtherCreator
+      ? 'Audio creator & storyteller on Studio Arella.'
+      : (user?.bio || 'Audio creator & storyteller on Studio Arella.')
+  );
+  const [location, setLocation] = useState(isViewingOtherCreator ? 'Lagos, Nigeria' : (user?.location || 'Lagos, Nigeria'));
   const [joinedDate, setJoinedDate] = useState('October 2026');
   const [about, setAbout] = useState(
-    user?.about || 'Welcome to my creator space on Studio Arella. Follow along for podcasts, audio recordings, and screen campaigns.'
+    isViewingOtherCreator
+      ? 'Welcome to my creator space on Studio Arella.'
+      : (user?.about || 'Welcome to my creator space on Studio Arella. Follow along for podcasts, audio recordings, and screen campaigns.')
   );
-  const [avatarUrl, setAvatarUrl] = useState(user?.avatar || '');
-  const [bannerUrl, setBannerUrl] = useState(user?.banner || '');
-  const [socialLinks, setSocialLinks] = useState<Record<string, string> | null>((user?.social_links as Record<string, string>) || null);
-  const [creatorTier, setCreatorTier] = useState<string>(user?.creator_tier || 'free');
+  const [avatarUrl, setAvatarUrl] = useState(isViewingOtherCreator ? '' : (user?.avatar || ''));
+  const [bannerUrl, setBannerUrl] = useState(isViewingOtherCreator ? '' : (user?.banner || ''));
+  const [socialLinks, setSocialLinks] = useState<Record<string, string> | null>(
+    isViewingOtherCreator ? null : ((user?.social_links as Record<string, string>) || null)
+  );
+  const [creatorTier, setCreatorTier] = useState<string>(isViewingOtherCreator ? 'free' : (user?.creator_tier || 'free'));
 
   // Creator posts feed & follow state
   const [creatorPosts, setCreatorPosts] = useState<PostData[]>([]);
@@ -604,14 +624,10 @@ export default function AudienceProfilePageView({
             <button
               type="button"
               onClick={() => {
-                if (typeof window !== 'undefined' && window.history.length > 1) {
-                  router.back();
-                } else {
-                  router.push('/audience');
-                }
+                router.push('/audience');
               }}
               className="w-9 h-9 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors cursor-pointer text-gray-800 shrink-0"
-              title="Back"
+              title="Back to Home"
             >
               <ArrowLeft size={19} />
             </button>
@@ -1421,8 +1437,9 @@ export default function AudienceProfilePageView({
                     className="w-full h-[95px] bg-white rounded-[4px] shadow-[0px_2px_8px_rgba(0,0,0,0.04)] border border-gray-100 flex items-center justify-between px-6 py-4 transition-all"
                   >
                     <div
-                      onClick={() => toast(`Viewing ${f.name}'s profile`, 'info')}
+                      onClick={() => router.push(`/audience?view=creator-profile&creatorId=${f.id}`)}
                       className="flex items-center gap-3.5 min-w-0 cursor-pointer group"
+                      title={`View ${f.name}'s profile`}
                     >
                       {f.avatar ? (
                         <div className="w-[52px] h-[52px] rounded-full overflow-hidden shrink-0 bg-neutral-200 border border-black/5">
@@ -1490,8 +1507,9 @@ export default function AudienceProfilePageView({
                     className="w-full h-[95px] bg-white rounded-[4px] shadow-[0px_2px_8px_rgba(0,0,0,0.04)] border border-gray-100/80 flex items-center justify-between pl-[24px] sm:pl-[30px] pr-[24px] py-4 transition-all"
                   >
                     <div
-                      onClick={() => toast(`Viewing ${f.name}'s profile`, 'info')}
+                      onClick={() => router.push(`/audience?view=creator-profile&creatorId=${f.id}`)}
                       className="flex items-center gap-3.5 min-w-0 cursor-pointer group"
+                      title={`View ${f.name}'s profile`}
                     >
                       {f.avatar ? (
                         <div className="w-[52px] h-[52px] rounded-full overflow-hidden shrink-0 bg-neutral-200 border border-black/5">

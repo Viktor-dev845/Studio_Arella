@@ -309,7 +309,10 @@ export default function AudienceRightSidebar({
             {(showAllCreators ? recommendedCreators : recommendedCreators.slice(0, 3)).map((c) => (
               <div key={c.id} className="flex items-center justify-between gap-2.5">
                 <div 
-                  onClick={() => router.push(`/audience?view=creator-profile&creatorId=${c.id}`)}
+                  onClick={() => {
+                    const cid = c.id || encodeURIComponent(c.name);
+                    router.push(`/audience?view=creator-profile&creatorId=${cid}`);
+                  }}
                   className="flex items-center gap-2.5 min-w-0 cursor-pointer group flex-1"
                   title={`View ${c.name}'s profile`}
                 >
