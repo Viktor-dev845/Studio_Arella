@@ -423,12 +423,14 @@ function AudienceContent() {
     };
   }, [activeMenu]);
 
-  // Real-time topic and live experience filter
+  // Real-time topic, search query, and live experience filter connected to backend posts
+  const searchQuery = (searchParams.get('q') || '').toLowerCase().trim();
   const filteredPosts = useMemo(() => {
     const hasTopicFilter = selectedTopics.length > 0;
     const hasLiveFilter = selectedLiveExp.length > 0 && !selectedLiveExp.includes('all');
+    const hasSearch = Boolean(searchQuery);
 
-    if (!hasTopicFilter && !hasLiveFilter) {
+    if (!hasTopicFilter && !hasLiveFilter && !hasSearch) {
       return posts;
     }
 
@@ -437,6 +439,15 @@ function AudienceContent() {
       const postTitle = (post.title || '').toLowerCase();
       const postDesc = (post.description || '').toLowerCase();
       const postTags = (post.tags || []).map((t) => t.toLowerCase());
+      const authorName = (post.author?.name || '').toLowerCase();
+
+      const matchesSearch = !hasSearch || (
+        postTitle.includes(searchQuery) ||
+        postDesc.includes(searchQuery) ||
+        postCat.includes(searchQuery) ||
+        authorName.includes(searchQuery) ||
+        postTags.some((tag) => tag.includes(searchQuery.replace('#', '')))
+      );
 
       const matchesTopic = !hasTopicFilter || selectedTopics.some((topic) => {
         const t = topic.toLowerCase();
@@ -462,9 +473,9 @@ function AudienceContent() {
         );
       });
 
-      return matchesTopic && matchesLive;
+      return matchesSearch && matchesTopic && matchesLive;
     });
-  }, [posts, selectedTopics, selectedLiveExp]);
+  }, [posts, selectedTopics, selectedLiveExp, searchQuery]);
 
   // Dynamic counts for each topic and live experience
   const topicCounts = useMemo(() => {
@@ -722,21 +733,37 @@ function AudienceContent() {
                 />
               </div>
             ) : (activeMenu === 'profile' || activeMenu === 'creator-profile') ? (
-              /* ─── Profile View: Frame 2121459585 (850px wide container matching Figma) ─── */
-              <div className="flex-1 w-full min-w-0 pb-16">
-                <AudienceProfilePageView 
-                  creatorId={searchParams.get('creatorId') || undefined}
-                  isVisitor={
-                    activeMenu === 'creator-profile' || 
-                    queryView === 'creator-profile' || 
-                    queryView === 'creator' || 
-                    queryView === 'visitor-profile' || 
-                    searchParams.get('mode') === 'visitor' ||
-                    Boolean(searchParams.get('creatorId') && searchParams.get('creatorId') !== user?.id)
-                  }
-                  onEditProfileClick={() => handleMenuChange('edit-profile')} 
+              /* ─── Profile View: Authentic 3-Column Layout matching X ─── */
+              <>
+                <div className="flex-1 w-full min-w-0 pb-16">
+                  <AudienceProfilePageView 
+                    creatorId={searchParams.get('creatorId') || undefined}
+                    isVisitor={
+                      activeMenu === 'creator-profile' || 
+                      queryView === 'creator-profile' || 
+                      queryView === 'creator' || 
+                      queryView === 'visitor-profile' || 
+                      searchParams.get('mode') === 'visitor' ||
+                      Boolean(searchParams.get('creatorId') && searchParams.get('creatorId') !== user?.id)
+                    }
+                    onEditProfileClick={() => handleMenuChange('edit-profile')} 
+                  />
+                </div>
+                <AudienceRightSidebar 
+                  view="profile"
+                  selectedTopics={selectedTopics}
+                  selectedLiveExp={selectedLiveExp}
+                  topicCounts={topicCounts}
+                  onFilterChange={(topics, liveExp) => {
+                    setSelectedTopics(topics);
+                    setSelectedLiveExp(liveExp);
+                  }}
+                  onClearFilters={() => {
+                    setSelectedTopics([]);
+                    setSelectedLiveExp([]);
+                  }}
                 />
-              </div>
+              </>
             ) : activeMenu === 'memberships' ? (
               /* ─── Memberships View: Row 1 (Post Composer + Premium Card) + Row 2 (Membership Card) ─── */
               <section className="flex-1 w-full min-w-0 flex flex-col gap-6 pb-16">

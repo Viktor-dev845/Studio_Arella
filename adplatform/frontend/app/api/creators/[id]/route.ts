@@ -71,7 +71,51 @@ export async function GET(
       isFollowing = followCheck.rows.length > 0;
     }
 
-    // 4. Fetch Creator's Published Content
+    // 4. Fetch Mutual or Featured Followers from PostgreSQL for Social Proof
+    let socialProofUsers: any[] = [];
+    let isMutualProof = false;
+
+    if (currentUserId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(currentUserId) && currentUserId !== creatorId) {
+      const mutualRes = await pool.query(
+        `SELECT u.id, u.name, COALESCE(u.handle, LOWER(REGEXP_REPLACE(u.name, '[^a-zA-Z0-9]', '', 'g'))) AS handle, COALESCE(u.avatar, '/audience/adam-udochi.png') AS avatar
+         FROM follows f1
+         JOIN follows f2 ON f1.follower_id = f2.followed_id AND f2.follower_id = $2
+         JOIN users u ON f1.follower_id = u.id
+         WHERE f1.followed_id = $1
+         LIMIT 3`,
+        [creatorId, currentUserId]
+      );
+      if (mutualRes.rows.length > 0) {
+        socialProofUsers = mutualRes.rows;
+        isMutualProof = true;
+      }
+    }
+
+    if (socialProofUsers.length === 0) {
+      const followersRes = await pool.query(
+        `SELECT u.id, u.name, COALESCE(u.handle, LOWER(REGEXP_REPLACE(u.name, '[^a-zA-Z0-9]', '', 'g'))) AS handle, COALESCE(u.avatar, '/audience/adam-udochi.png') AS avatar
+         FROM follows f
+         JOIN users u ON f.follower_id = u.id
+         WHERE f.followed_id = $1
+         LIMIT 3`,
+        [creatorId]
+      );
+      if (followersRes.rows.length > 0) {
+        socialProofUsers = followersRes.rows;
+      } else {
+        const platformUsers = await pool.query(
+          `SELECT u.id, u.name, COALESCE(u.handle, LOWER(REGEXP_REPLACE(u.name, '[^a-zA-Z0-9]', '', 'g'))) AS handle, COALESCE(u.avatar, '/audience/adam-udochi.png') AS avatar
+           FROM users u
+           WHERE u.id != $1 AND (u.role = 'creator' OR u.creator_niche IS NOT NULL)
+           ORDER BY u.created_at DESC
+           LIMIT 3`,
+          [creatorId]
+        );
+        socialProofUsers = platformUsers.rows;
+      }
+    }
+
+    // 5. Fetch Creator's Published Content
     const contentRes = await pool.query(
       `SELECT 
         c.id,
@@ -141,6 +185,11 @@ export async function GET(
         postsCount: formattedPosts.length,
       },
       isFollowing,
+      socialProof: {
+        users: socialProofUsers,
+        count: followersCount,
+        isMutual: isMutualProof,
+      },
       posts: formattedPosts,
     });
   } catch (error: any) {

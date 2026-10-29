@@ -3,6 +3,7 @@
 import { Suspense } from 'react';
 import AudienceNavbar from '@/components/audience/AudienceNavbar';
 import AudienceLeftSidebar from '@/components/audience/AudienceLeftSidebar';
+import AudienceRightSidebar from '@/components/audience/AudienceRightSidebar';
 import AudienceProfilePageView from '@/components/audience/AudienceProfilePageView';
 import { PageTransition } from '@/components/ui/Animations';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -46,11 +47,16 @@ function FanUserProfileContent() {
               onMenuSelect={handleMenuChange}
             />
 
-            {/* Profile Content Column (850px: Hero Banner + Tabs + People You Follow) */}
-            <AudienceProfilePageView 
-              initialTab={tab as 'profile' | 'followers' | 'following'}
-              onEditProfileClick={() => router.push('/user-profile/overview')}
-            />
+            {/* Profile Content Column */}
+            <div className="flex-1 w-full min-w-0">
+              <AudienceProfilePageView 
+                initialTab={tab as 'profile' | 'followers' | 'following'}
+                onEditProfileClick={() => router.push('/user-profile/overview')}
+              />
+            </div>
+
+            {/* Right Sidebar (X Style) */}
+            <AudienceRightSidebar view="profile" />
           </div>
         </main>
       </PageTransition>

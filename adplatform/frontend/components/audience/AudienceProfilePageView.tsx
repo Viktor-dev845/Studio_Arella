@@ -23,8 +23,16 @@ import {
   Flag,
   ShieldAlert,
   Heart,
-  Sparkles
+  Sparkles,
+  ArrowLeft,
+  Mail,
+  MapPin,
+  Pin,
+  Bell,
+  Search,
+  MessageSquare
 } from 'lucide-react';
+import { XVerifiedBadge } from './AudienceRightSidebar';
 import { useAuthStore } from '@/store/authStore';
 import { useToast } from '@/components/ui/ToastProvider';
 import api from '@/lib/api';
@@ -93,7 +101,7 @@ interface AudienceProfilePageViewProps {
   creatorId?: string;
   onEditProfileClick?: () => void;
   isVisitor?: boolean;
-  initialTab?: 'posts' | 'profile' | 'followers' | 'following';
+  initialTab?: 'posts' | 'replies' | 'reposts' | 'media' | 'profile' | 'followers' | 'following';
 }
 
 export default function AudienceProfilePageView({
@@ -110,6 +118,9 @@ export default function AudienceProfilePageView({
   const queryCreatorId = searchParams.get('creatorId');
   const { toast } = useToast();
   const { user, logout } = useAuthStore();
+
+  const [dismissVerifiedBanner, setDismissVerifiedBanner] = useState(false);
+  const [isNotified, setIsNotified] = useState(false);
 
   const targetCreatorId = creatorId || queryCreatorId || '';
   const isViewingOtherCreator = Boolean(targetCreatorId && targetCreatorId !== user?.id);
@@ -154,23 +165,26 @@ export default function AudienceProfilePageView({
     toast('Creator has been blocked.', 'info');
   };
 
-  const [activeTab, setActiveTab] = useState<'posts' | 'profile' | 'followers' | 'following'>(() => {
-    if (queryTab === 'posts') return 'posts';
+  const [activeTab, setActiveTab] = useState<'posts' | 'replies' | 'reposts' | 'media' | 'profile' | 'followers' | 'following'>(() => {
+    if (queryTab === 'replies') return 'replies';
+    if (queryTab === 'reposts') return 'reposts';
+    if (queryTab === 'media') return 'media';
     if (queryTab === 'followers') return 'followers';
     if (queryTab === 'following') return 'following';
     if (queryTab === 'profile') return 'profile';
     if (initialTab) return initialTab;
-    if (isViewingOtherCreator) return 'posts';
-    return 'profile';
+    return 'posts';
   });
 
   useEffect(() => {
     if (queryTab === 'posts') setActiveTab('posts');
+    else if (queryTab === 'replies') setActiveTab('replies');
+    else if (queryTab === 'reposts') setActiveTab('reposts');
+    else if (queryTab === 'media') setActiveTab('media');
     else if (queryTab === 'followers') setActiveTab('followers');
     else if (queryTab === 'following') setActiveTab('following');
     else if (queryTab === 'profile') setActiveTab('profile');
-    else if (isViewingOtherCreator && !queryTab) setActiveTab('posts');
-  }, [queryTab, isViewingOtherCreator]);
+  }, [queryTab]);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [isAboutExpanded, setIsAboutExpanded] = useState(false);
   const [showAllPodcasts, setShowAllPodcasts] = useState(false);
@@ -246,23 +260,35 @@ export default function AudienceProfilePageView({
   const [isFollowingCreator, setIsFollowingCreator] = useState<boolean>(false);
   const [isTogglingFollow, setIsTogglingFollow] = useState<boolean>(false);
 
-  // Live Followers & Following lists
+  // Live Followers, Following, Social Proof, Replies, and Reposts
   const [followers, setFollowers] = useState<any[]>([]);
   const [following, setFollowing] = useState<any[]>([]);
   const [followersCount, setFollowersCount] = useState<number>(0);
   const [followingCount, setFollowingCount] = useState<number>(0);
+  const [socialProof, setSocialProof] = useState<{ users: any[]; count: number; isMutual: boolean }>({
+    users: [],
+    count: 0,
+    isMutual: false,
+  });
+  const [creatorReplies, setCreatorReplies] = useState<any[]>([]);
+  const [isLoadingReplies, setIsLoadingReplies] = useState<boolean>(false);
+  const [creatorReposts, setCreatorReposts] = useState<PostData[]>([]);
+  const [isLoadingReposts, setIsLoadingReposts] = useState<boolean>(false);
   const [podcasts, setPodcasts] = useState<ShowItem[]>(DEFAULT_PODCAST_ITEMS);
+  const [fanEvents, setFanEvents] = useState<EventClubItem[]>([]);
 
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Fetch creator profile or own profile data
+  // Fetch creator profile or own profile data directly from PostgreSQL API
   useEffect(() => {
     let isMounted = true;
     setIsLoadingProfile(true);
 
-    if (isViewingOtherCreator && targetCreatorId) {
+    const profileId = targetCreatorId || user?.id;
+
+    if (profileId) {
       // 1. Fetch Creator Profile via dedicated direct Next.js API route
-      fetch(`/api/creators/${targetCreatorId}?currentUserId=${user?.id || ''}`)
+      fetch(`/api/creators/${profileId}?currentUserId=${user?.id || ''}`)
         .then(async (res) => {
           if (!res.ok) throw new Error('Failed to load creator');
           return res.json();
@@ -296,6 +322,9 @@ export default function AudienceProfilePageView({
           setFollowingCount(data.stats?.followingCount ?? 0);
           setIsFollowingCreator(Boolean(data.isFollowing));
           setCreatorPosts(data.posts || []);
+          if (data.socialProof) {
+            setSocialProof(data.socialProof);
+          }
           if (c.created_at) {
             setJoinedDate(new Date(c.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }));
           }
@@ -306,72 +335,72 @@ export default function AudienceProfilePageView({
         .finally(() => {
           if (isMounted) setIsLoadingProfile(false);
         });
-    } else {
-      // 2. Own Profile: populate from current user state
-      if (user) {
-        if (user.name) setName(user.name);
-        setHandle(user.handle || (user.name ? user.name.toLowerCase().replace(/[^a-z0-9]/g, '') : 'creator'));
-        setRole(user.creator_niche || (user.role === 'creator' ? 'Creator' : 'Studio Insider'));
-        if (user.bio) setBio(user.bio);
-        if (user.location) setLocation(user.location);
-        if (user.about) setAbout(user.about);
-        if (user.avatar) setAvatarUrl(user.avatar);
-        if (user.banner) setBannerUrl(user.banner);
-        if (user.created_at) {
-          setJoinedDate(new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }));
-        }
-      }
-      setIsLoadingProfile(false);
 
-      // Fetch own posts
-      fetch(`/api/content/feed`)
-        .then(async (res) => {
-          if (!res.ok) return;
-          const data = await res.json();
-          if (isMounted && data.posts) {
-            const myPosts = data.posts.filter((p: any) => 
-              p.author?.id === user?.id || p.creator_id === user?.id || p.author_id === user?.id
-            );
-            setCreatorPosts(myPosts);
+      // 2. Fetch live events/shows from backend
+      fetch(`/api/creators/${profileId}/events`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (isMounted && Array.isArray(data.events)) {
+            setFanEvents(data.events);
           }
         })
         .catch(() => {});
-
-      // Fetch live followers, following, and shows
-      Promise.allSettled([
-        api.get('/follows/followers'),
-        api.get('/follows/following'),
-        api.get('/shows/mine'),
-      ]).then(([fRes, ingRes, showsRes]) => {
-        if (!isMounted) return;
-        if (fRes.status === 'fulfilled' && fRes.value.data?.followers) {
-          setFollowers(fRes.value.data.followers);
-          if (fRes.value.data.followers.length > 0) {
-            setFollowersCount(fRes.value.data.followers.length);
-          }
-        }
-        if (ingRes.status === 'fulfilled' && ingRes.value.data?.following) {
-          setFollowing(ingRes.value.data.following);
-          if (ingRes.value.data.following.length > 0) {
-            setFollowingCount(ingRes.value.data.following.length);
-          }
-        }
-        if (showsRes.status === 'fulfilled' && showsRes.value.data?.shows?.length > 0) {
-          const mappedShows: ShowItem[] = showsRes.value.data.shows.map((s: any) => ({
-            id: s.id,
-            title: s.title,
-            subtitle: `${s.episode_count || 0} episodes · ${new Date(s.created_at || Date.now()).toLocaleDateString('en-GB')}`,
-            cover: s.cover_url || DEFAULT_PODCAST_ITEMS[0]?.cover || '',
-          }));
-          setPodcasts(mappedShows);
-        }
-      });
+    } else {
+      setIsLoadingProfile(false);
     }
 
     return () => {
       isMounted = false;
     };
   }, [targetCreatorId, isViewingOtherCreator, user]);
+
+  // Tab change dynamic backend loader
+  useEffect(() => {
+    const profileId = targetCreatorId || user?.id;
+    if (!profileId) return;
+
+    if (activeTab === 'replies') {
+      setIsLoadingReplies(true);
+      fetch(`/api/creators/${profileId}/replies`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (Array.isArray(data.replies)) {
+            setCreatorReplies(data.replies);
+          }
+        })
+        .catch(() => {})
+        .finally(() => setIsLoadingReplies(false));
+    } else if (activeTab === 'reposts') {
+      setIsLoadingReposts(true);
+      fetch(`/api/creators/${profileId}/reposts`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (Array.isArray(data.reposts)) {
+            setCreatorReposts(data.reposts);
+          }
+        })
+        .catch(() => {})
+        .finally(() => setIsLoadingReposts(false));
+    } else if (activeTab === 'followers') {
+      fetch(`/api/creators/${profileId}/followers?viewerId=${user?.id || ''}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (Array.isArray(data.followers)) {
+            setFollowers(data.followers);
+          }
+        })
+        .catch(() => {});
+    } else if (activeTab === 'following') {
+      fetch(`/api/creators/${profileId}/following?viewerId=${user?.id || ''}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (Array.isArray(data.following)) {
+            setFollowing(data.following);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [activeTab, targetCreatorId, user?.id]);
 
   // Close more menu on click outside
   useEffect(() => {
@@ -384,7 +413,7 @@ export default function AudienceProfilePageView({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleTabChange = (tab: 'posts' | 'profile' | 'followers' | 'following') => {
+  const handleTabChange = (tab: 'posts' | 'replies' | 'reposts' | 'media' | 'profile' | 'followers' | 'following') => {
     setActiveTab(tab);
     const viewParam = isViewingOtherCreator ? 'creator-profile' : 'profile';
     const creatorParam = isViewingOtherCreator ? `&creatorId=${targetCreatorId}` : '';
@@ -427,43 +456,55 @@ export default function AudienceProfilePageView({
   };
 
   const [unfollowedMap, setUnfollowedMap] = useState<Record<string, boolean>>({});
-  const [followerStatusMap, setFollowerStatusMap] = useState<Record<string, boolean>>(() => {
-    const initialMap: Record<string, boolean> = {};
-    DEFAULT_DESIGNER_FOLLOWERS.forEach((f) => {
-      initialMap[f.id] = Boolean(f.isFollowing);
-    });
-    return initialMap;
-  });
+  const [followerStatusMap, setFollowerStatusMap] = useState<Record<string, boolean>>({});
 
-  const handleToggleFollowerItem = (id: string, name: string) => {
-    setFollowerStatusMap((prev) => {
-      const isCurrentlyFollowing = Boolean(prev[id]);
-      const next = !isCurrentlyFollowing;
-      toast(next ? `Following ${name}` : `Unfollowed ${name}`, next ? 'success' : 'info');
-      return { ...prev, [id]: next };
-    });
+  const handleToggleFollowerItem = async (id: string, targetName: string) => {
+    if (!user) {
+      toast('Please sign in to follow users', 'error');
+      router.push('/auth/login');
+      return;
+    }
+    const isCurrentlyFollowing = Boolean(followerStatusMap[id]);
+    const next = !isCurrentlyFollowing;
+    setFollowerStatusMap((prev) => ({ ...prev, [id]: next }));
+    toast(next ? `Following ${targetName}` : `Unfollowed ${targetName}`, next ? 'success' : 'info');
+
+    try {
+      await fetch(`/api/creators/${id}/follow`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ followerId: user.id }),
+      });
+    } catch (err) {
+      console.warn('API follow error:', err);
+    }
   };
 
   const handleToggleFollow = async (creatorId: string, creatorName: string) => {
+    if (!user) {
+      toast('Please sign in to follow creators', 'error');
+      router.push('/auth/login');
+      return;
+    }
     const isCurrentlyUnfollowed = Boolean(unfollowedMap[creatorId]);
     if (isCurrentlyUnfollowed) {
       setUnfollowedMap((prev) => ({ ...prev, [creatorId]: false }));
       setFollowingCount((prev) => prev + 1);
       toast(`Following ${creatorName}`, 'success');
-      try {
-        await api.post(`/follows/${creatorId}`);
-      } catch (err) {
-        console.warn('API follow error:', err);
-      }
     } else {
       setUnfollowedMap((prev) => ({ ...prev, [creatorId]: true }));
       setFollowingCount((prev) => Math.max(0, prev - 1));
       toast(`Unfollowed ${creatorName}`, 'info');
-      try {
-        await api.delete(`/follows/${creatorId}`);
-      } catch (err) {
-        console.warn('API unfollow error:', err);
-      }
+    }
+
+    try {
+      await fetch(`/api/creators/${creatorId}/follow`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ followerId: user.id }),
+      });
+    } catch (err) {
+      console.warn('API follow error:', err);
     }
   };
 
@@ -525,11 +566,62 @@ export default function AudienceProfilePageView({
   };
 
   return (
-    <section className="flex-1 w-full min-w-0 flex flex-col gap-6 font-quicksand">
-      {/* ─── 1. Profile Hero Card (Figma: 850px x 360px, radius 4px) ─── */}
-      <div className="w-full bg-white rounded-[4px] shadow-[0px_20px_60px_rgba(241,244,248,0.5)] border border-gray-100 overflow-hidden relative">
-        {/* Banner (850px x 180px) */}
-        <div className="w-full h-[180px] relative bg-neutral-900 overflow-hidden">
+    <section className="flex-1 w-full min-w-0 flex flex-col gap-5 font-quicksand">
+      {/* ─── 1. Profile Hero Card (X / Twitter Structure) ─── */}
+      <div className="w-full bg-white rounded-2xl shadow-[0px_4px_20px_rgba(0,0,0,0.04)] border border-gray-100 overflow-hidden relative">
+        {/* Sticky Top Bar matching X / Twitter */}
+        <div className="sticky top-0 bg-white/95 backdrop-blur-md z-30 flex items-center justify-between px-4 sm:px-6 py-2 border-b border-gray-100">
+          <div className="flex items-center gap-4 min-w-0">
+            <button
+              type="button"
+              onClick={() => {
+                if (typeof window !== 'undefined' && window.history.length > 1) {
+                  router.back();
+                } else {
+                  router.push('/audience');
+                }
+              }}
+              className="w-9 h-9 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors cursor-pointer text-gray-800 shrink-0"
+              title="Back"
+            >
+              <ArrowLeft size={19} />
+            </button>
+            <div className="flex flex-col min-w-0">
+              <div className="flex items-center gap-1.5">
+                <h2 className="text-[17px] sm:text-[18px] font-bold text-gray-950 leading-tight truncate m-0 font-quicksand">
+                  {name}
+                </h2>
+                <XVerifiedBadge size={16} />
+              </div>
+              <span className="text-[12px] text-gray-500 font-normal leading-tight font-quicksand">
+                {creatorPosts.length} {creatorPosts.length === 1 ? 'post' : 'posts'}
+              </span>
+            </div>
+          </div>
+
+          {/* Right side quick actions (Search + Share) matching X header */}
+          <div className="flex items-center gap-1 text-gray-700">
+            <button
+              type="button"
+              onClick={() => router.push('/audience?view=trending')}
+              className="w-9 h-9 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors cursor-pointer text-gray-700"
+              title="Search"
+            >
+              <Search size={17} />
+            </button>
+            <button
+              type="button"
+              onClick={handleShareProfile}
+              className="w-9 h-9 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors cursor-pointer text-gray-700"
+              title="Share profile"
+            >
+              <Share2 size={16} />
+            </button>
+          </div>
+        </div>
+
+        {/* Banner (Full Bleed Hero Header) */}
+        <div className="w-full h-[185px] sm:h-[220px] relative bg-neutral-900 overflow-hidden">
           {bannerUrl ? (
             <img
               src={bannerUrl}
@@ -543,111 +635,29 @@ export default function AudienceProfilePageView({
             </div>
           )}
 
-          {/* Banner Tools Overlay (Upload/Share on left, Tools on right) */}
-          <div className="absolute inset-0 p-5 flex items-start justify-between pointer-events-none">
-            {/* Upload / Share Button (36px x 36px, radius 4px) */}
-            <button
-              type="button"
-              onClick={isVisitorMode ? handleShareProfile : () => toast('Click Edit Profile to change your cover picture.', 'info')}
-              className="w-9 h-9 rounded-[4px] bg-white/90 backdrop-blur-sm shadow-[0px_10px_30px_rgba(113,123,133,0.05)] flex items-center justify-center text-[#181818] hover:bg-white transition-colors pointer-events-auto cursor-pointer"
-              title={isVisitorMode ? "Share profile" : "Upload cover"}
-            >
-              <Upload size={16} />
-            </button>
-
-            {/* Right Buttons: Edit profile (owner only) + More (...) */}
-            <div className="flex items-center gap-2 pointer-events-auto relative" ref={menuRef}>
-              {!isVisitorMode && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (onEditProfileClick) {
-                      onEditProfileClick();
-                    } else {
-                      router.push('/audience?view=edit-profile');
-                    }
-                  }}
-                  className="w-[132px] h-[36px] px-3 rounded-[4px] bg-white/90 backdrop-blur-sm shadow-[0px_10px_30px_rgba(113,123,133,0.05)] flex items-center justify-center gap-2 text-[12px] font-normal uppercase tracking-wider text-[#181818] hover:bg-white transition-colors cursor-pointer"
-                >
-                  <Edit3 size={15} className="text-[#181818]" />
-                  <span className="font-quicksand">EDIT PROFILE</span>
-                </button>
-              )}
-
+          {/* Banner Tools Overlay (Upload cover for profile owner) */}
+          {!isVisitorMode && (
+            <div className="absolute top-4 right-4 pointer-events-auto">
               <button
                 type="button"
-                onClick={() => setShowMoreMenu((prev) => !prev)}
-                className="w-9 h-9 rounded-[4px] bg-white/90 backdrop-blur-sm shadow-[0px_10px_30px_rgba(113,123,133,0.05)] flex items-center justify-center text-[#181818] hover:bg-white transition-colors cursor-pointer"
-                title="More options"
+                onClick={() => toast('Click Edit Profile below to change your cover picture.', 'info')}
+                className="px-3.5 py-1.5 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-sm text-white text-[12px] font-medium flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
+                title="Change cover"
               >
-                <MoreVertical size={18} />
+                <Upload size={13} />
+                <span>Change cover</span>
               </button>
-
-              {/* More Dropdown Menu (Frame 2121459585: 200px x 101px, radius 10px) */}
-              {showMoreMenu && (
-                <div
-                  className="absolute right-0 top-11 w-[200px] h-[101px] bg-white rounded-[10px] shadow-[-4.75px_30px_30px_rgba(184,184,184,0.25)] border border-gray-100/70 pt-[23px] pb-[18px] pl-[14px] pr-[13px] z-50 flex items-start justify-between animate-in fade-in zoom-in-95 duration-100 select-none font-quicksand"
-                >
-                  <div className="flex flex-col gap-[11px] w-[134px]">
-                    {isVisitorMode ? (
-                      <>
-                        <button
-                          type="button"
-                          onClick={handleShareProfile}
-                          className="text-left text-[14px] font-normal text-[#181818] hover:text-[#D9BA54] transition-colors cursor-pointer flex items-center gap-2"
-                        >
-                          <Share2 size={16} />
-                          Share profile
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handleReportCreator}
-                          className="text-left text-[14px] font-normal text-[#F64A4A] hover:opacity-80 transition-opacity cursor-pointer flex items-center gap-2"
-                        >
-                          <Flag size={16} />
-                          Report creator
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <button
-                          type="button"
-                          onClick={handleLogout}
-                          className="text-left text-[15px] leading-[18px] font-normal text-[#F64A4A] hover:opacity-80 transition-opacity cursor-pointer bg-transparent border-none p-0 font-quicksand"
-                        >
-                          Log out
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setShowMoreMenu(false);
-                            setShowDeactivateModal(true);
-                          }}
-                          className="text-left text-[15px] leading-[18px] font-normal text-[#000000] hover:opacity-80 transition-opacity cursor-pointer bg-transparent border-none p-0 whitespace-nowrap font-quicksand"
-                        >
-                          Deactivate account
-                        </button>
-                      </>
-                    )}
-                  </div>
-
-                  {/* Golden vertical indicator line (Frame 13 & Rectangle 7) */}
-                  <div className="w-[2px] h-[63px] bg-[#D4AF37]/15 rounded-[10px] relative ml-2 shrink-0">
-                    <div className="w-[2px] h-[14px] bg-[#D4AF37] rounded-[20px] absolute top-[9px] left-0" />
-                  </div>
-                </div>
-              )}
             </div>
-          </div>
+          )}
         </div>
 
         {/* Profile Info Header Container (X / Twitter style) */}
-        <div className="px-6 sm:px-8 pb-6 pt-0 relative flex flex-col gap-3 font-quicksand">
+        <div className="px-5 sm:px-8 pb-5 pt-0 relative flex flex-col gap-3 font-quicksand">
           
           {/* Top Row: Avatar on left overlapping banner, Action Buttons on right */}
-          <div className="flex items-end justify-between gap-4 -mt-[70px] sm:-mt-[85px] relative z-10 flex-wrap sm:flex-nowrap">
-            {/* Circular Avatar (130px on mobile, 155px on desktop) */}
-            <div className="w-[130px] h-[130px] sm:w-[155px] sm:h-[155px] rounded-full border-[6px] sm:border-[8px] border-white overflow-hidden bg-neutral-100 shrink-0 shadow-[0_4px_16px_rgba(0,0,0,0.08)] flex items-center justify-center">
+          <div className="flex items-end justify-between gap-4 -mt-[65px] sm:-mt-[80px] relative z-10 flex-wrap sm:flex-nowrap">
+            {/* Circular Avatar (130px mobile, 150px desktop) */}
+            <div className="w-[125px] h-[125px] sm:w-[150px] sm:h-[150px] rounded-full border-[5px] sm:border-[6px] border-white overflow-hidden bg-neutral-100 shrink-0 shadow-[0_4px_16px_rgba(0,0,0,0.12)] flex items-center justify-center">
               {avatarUrl ? (
                 <img
                   src={avatarUrl}
@@ -662,146 +672,248 @@ export default function AudienceProfilePageView({
               )}
             </div>
 
-            {/* Action Buttons Aligned on Top-Right */}
-            <div className="flex items-center gap-2.5 flex-wrap pb-1 self-end">
-              {isVisitorMode ? (
-                <>
-                  {/* X / Twitter Style Follow Button */}
-                  {isViewingOtherCreator && (
-                    <button
-                      type="button"
-                      onClick={handleToggleFollowTargetCreator}
-                      disabled={isTogglingFollow}
-                      className={`h-9 px-6 rounded-full text-[13px] font-bold tracking-wide transition-all cursor-pointer flex items-center justify-center font-quicksand shadow-xs ${
-                        isFollowingCreator
-                          ? 'border border-gray-300 bg-white text-[#0F1419] group hover:border-red-500 hover:bg-red-50 hover:text-red-600'
-                          : 'bg-[#0F1419] hover:bg-[#272C30] text-white'
-                      }`}
-                    >
-                      {isFollowingCreator ? (
-                        <>
-                          <span className="group-hover:hidden">Following</span>
-                          <span className="hidden group-hover:inline">Unfollow</span>
-                        </>
-                      ) : (
-                        <span>Follow</span>
-                      )}
-                    </button>
-                  )}
+            {/* Action Buttons Aligned on Top-Right (Clean X / Twitter Style) */}
+            <div className="flex items-center gap-2 pb-1 self-end relative" ref={menuRef}>
+              {/* More (...) Button */}
+              <button
+                type="button"
+                onClick={() => setShowMoreMenu((prev) => !prev)}
+                className="w-9 h-9 rounded-full border border-gray-300 hover:bg-gray-100 flex items-center justify-center text-gray-800 transition-colors cursor-pointer shrink-0 shadow-2xs"
+                title="More options"
+              >
+                <MoreVertical size={17} />
+              </button>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (isSubscribed) {
-                        toast('You are a Membered Fan with full access to live events and activities!', 'info');
-                      } else {
-                        setShowMembershipModal(true);
-                      }
-                    }}
-                    className="h-9 px-4 rounded-full text-[12px] font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center font-quicksand bg-[#D9BA54] hover:bg-[#c9a73e] text-black shadow-xs"
-                  >
-                    {isSubscribed ? 'MEMBERED FAN' : 'SUBSCRIBE TO BE A MEMBERED FAN'}
-                  </button>
-
-                  {isViewingOtherCreator && (
-                    <button
-                      type="button"
-                      onClick={() => setShowTipModal(true)}
-                      className="h-9 px-4 rounded-full text-[12px] font-bold uppercase tracking-wider bg-amber-50 hover:bg-amber-100 text-[#8c711a] border border-amber-300 transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
-                      title={`Send a tip to ${name}`}
-                    >
-                      <Heart size={14} className="fill-[#D4AF37] text-[#D4AF37]" />
-                      <span>Tip Creator</span>
-                    </button>
-                  )}
-                </>
-              ) : (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (onEditProfileClick) onEditProfileClick();
-                      else setShowEditModal(true);
-                    }}
-                    className="h-9 px-5 rounded-full border border-gray-300 bg-white hover:bg-gray-50 text-gray-900 text-[13px] font-bold tracking-wide transition-all cursor-pointer flex items-center gap-2 shadow-xs"
-                  >
-                    <Edit3 size={15} />
-                    <span>Edit Profile</span>
-                  </button>
-
-                  {(user as any)?.creator_tier !== 'pro' ? (
-                    <button
-                      type="button"
-                      onClick={handleUpgradePro}
-                      disabled={isUpgradingPro}
-                      className="h-9 px-4 rounded-full text-[12px] font-bold uppercase tracking-wider bg-gradient-to-r from-[#D4AF37] to-[#E5C158] hover:opacity-95 text-black transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
-                    >
-                      <Sparkles size={14} />
-                      <span>{isUpgradingPro ? 'Upgrading...' : 'Upgrade to Creator Pro'}</span>
-                    </button>
+              {/* More Dropdown Menu */}
+              {showMoreMenu && (
+                <div
+                  className="absolute right-0 top-11 w-[220px] bg-white rounded-2xl shadow-[0_10px_35px_rgba(0,0,0,0.15)] border border-gray-100 py-2 z-50 animate-in fade-in zoom-in-95 duration-100 select-none font-quicksand"
+                >
+                  {isVisitorMode ? (
+                    <div className="flex flex-col">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowMoreMenu(false);
+                          setShowTipModal(true);
+                        }}
+                        className="px-4 py-2.5 text-left text-[14px] font-medium text-gray-800 hover:bg-gray-50 flex items-center gap-2.5 transition-colors cursor-pointer"
+                      >
+                        <Heart size={16} className="text-[#D4AF37]" />
+                        <span>Tip @{handle}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowMoreMenu(false);
+                          setShowMembershipModal(true);
+                        }}
+                        className="px-4 py-2.5 text-left text-[14px] font-medium text-gray-800 hover:bg-gray-50 flex items-center gap-2.5 transition-colors cursor-pointer"
+                      >
+                        <Sparkles size={16} className="text-[#D4AF37]" />
+                        <span>Become a Membered Fan</span>
+                      </button>
+                      <div className="w-full h-[1px] bg-gray-100 my-1" />
+                      <button
+                        type="button"
+                        onClick={handleShareProfile}
+                        className="px-4 py-2.5 text-left text-[14px] font-medium text-gray-800 hover:bg-gray-50 flex items-center gap-2.5 transition-colors cursor-pointer"
+                      >
+                        <Share2 size={16} />
+                        <span>Share profile</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleShareProfile}
+                        className="px-4 py-2.5 text-left text-[14px] font-medium text-gray-800 hover:bg-gray-50 flex items-center gap-2.5 transition-colors cursor-pointer"
+                      >
+                        <Copy size={16} />
+                        <span>Copy link to profile</span>
+                      </button>
+                      <div className="w-full h-[1px] bg-gray-100 my-1" />
+                      <button
+                        type="button"
+                        onClick={handleReportCreator}
+                        className="px-4 py-2.5 text-left text-[14px] font-medium text-red-600 hover:bg-red-50 flex items-center gap-2.5 transition-colors cursor-pointer"
+                      >
+                        <Flag size={16} />
+                        <span>Report @{handle}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleBlockCreator}
+                        className="px-4 py-2.5 text-left text-[14px] font-medium text-red-600 hover:bg-red-50 flex items-center gap-2.5 transition-colors cursor-pointer"
+                      >
+                        <UserX size={16} />
+                        <span>Block @{handle}</span>
+                      </button>
+                    </div>
                   ) : (
-                    <span className="h-9 px-3.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-gradient-to-r from-[#D4AF37] to-[#E5C158] text-black flex items-center gap-1 shadow-xs">
-                      <Sparkles size={13} /> PRO CREATOR
-                    </span>
+                    <div className="flex flex-col">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowMoreMenu(false);
+                          if (onEditProfileClick) onEditProfileClick();
+                          else setShowEditModal(true);
+                        }}
+                        className="px-4 py-2.5 text-left text-[14px] font-medium text-gray-800 hover:bg-gray-50 flex items-center gap-2.5 transition-colors cursor-pointer"
+                      >
+                        <Edit3 size={16} />
+                        <span>Edit Profile</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowMoreMenu(false);
+                          setShowVerifyModal(true);
+                        }}
+                        className="px-4 py-2.5 text-left text-[14px] font-medium text-gray-800 hover:bg-gray-50 flex items-center gap-2.5 transition-colors cursor-pointer"
+                      >
+                        <Sparkles size={16} className="text-[#1D9BF0]" />
+                        <span>Get Verified</span>
+                      </button>
+                      <Link
+                        href="/finances?tab=creator"
+                        className="px-4 py-2.5 text-left text-[14px] font-medium text-gray-800 hover:bg-gray-50 flex items-center gap-2.5 transition-colors cursor-pointer"
+                      >
+                        <span>Earnings & Payouts</span>
+                      </Link>
+                      <div className="w-full h-[1px] bg-gray-100 my-1" />
+                      <button
+                        type="button"
+                        onClick={handleLogout}
+                        className="px-4 py-2.5 text-left text-[14px] font-medium text-red-600 hover:bg-red-50 flex items-center gap-2.5 transition-colors cursor-pointer"
+                      >
+                        <LogOut size={16} />
+                        <span>Log out</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowMoreMenu(false);
+                          setShowDeactivateModal(true);
+                        }}
+                        className="px-4 py-2.5 text-left text-[14px] font-medium text-gray-700 hover:bg-gray-50 flex items-center gap-2.5 transition-colors cursor-pointer"
+                      >
+                        <ShieldAlert size={16} />
+                        <span>Deactivate account</span>
+                      </button>
+                    </div>
                   )}
+                </div>
+              )}
 
-                  <Link
-                    href="/finances?tab=creator"
-                    className="h-9 px-4 rounded-full text-[12px] font-semibold uppercase tracking-wider bg-gray-100 hover:bg-gray-200 text-gray-800 transition-all flex items-center gap-1.5 cursor-pointer"
+              {/* Direct Message (Chat) Circle Button - Matching X */}
+              {isViewingOtherCreator && (
+                <button
+                  type="button"
+                  onClick={() => router.push(`/chat?recipient=${encodeURIComponent(name)}`)}
+                  className="w-9 h-9 rounded-full border border-gray-300 hover:bg-gray-100 flex items-center justify-center text-gray-800 transition-colors cursor-pointer shrink-0 shadow-2xs"
+                  title={`Message ${name}`}
+                >
+                  <Mail size={17} />
+                </button>
+              )}
+
+              {/* Bell / Notification Button - Matching X */}
+              {isViewingOtherCreator && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsNotified((prev) => !prev);
+                    toast(isNotified ? `Notifications turned off for @${handle}` : `You will be notified of new posts from @${handle}`, 'info');
+                  }}
+                  className={`w-9 h-9 rounded-full border border-gray-300 hover:bg-gray-100 flex items-center justify-center transition-colors cursor-pointer shrink-0 shadow-2xs ${
+                    isNotified ? 'text-[#1D9BF0] border-[#1D9BF0]' : 'text-gray-800'
+                  }`}
+                  title={isNotified ? 'Turn off notifications' : 'Turn on notifications'}
+                >
+                  <Bell size={17} className={isNotified ? 'fill-[#1D9BF0]' : ''} />
+                </button>
+              )}
+
+              {/* Follow / Following Black Pill Button - Matching X */}
+              {isVisitorMode ? (
+                isViewingOtherCreator && (
+                  <button
+                    type="button"
+                    onClick={handleToggleFollowTargetCreator}
+                    disabled={isTogglingFollow}
+                    className={`h-9 px-6 rounded-full text-[13px] font-bold tracking-wide transition-all cursor-pointer flex items-center justify-center font-quicksand shadow-xs ${
+                      isFollowingCreator
+                        ? 'border border-gray-300 bg-white text-[#0F1419] group hover:border-red-500 hover:bg-red-50 hover:text-red-600'
+                        : 'bg-[#0F1419] hover:bg-[#272C30] text-white'
+                    }`}
                   >
-                    <span>Earnings & Payouts</span>
-                  </Link>
-                </>
+                    {isFollowingCreator ? (
+                      <>
+                        <span className="group-hover:hidden">Following</span>
+                        <span className="hidden group-hover:inline">Unfollow</span>
+                      </>
+                    ) : (
+                      <span>Follow</span>
+                    )}
+                  </button>
+                )
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (onEditProfileClick) onEditProfileClick();
+                    else setShowEditModal(true);
+                  }}
+                  className="h-9 px-5 rounded-full border border-gray-300 bg-white hover:bg-gray-50 text-gray-900 text-[13px] font-bold tracking-wide transition-all cursor-pointer flex items-center gap-2 shadow-xs"
+                >
+                  <Edit3 size={15} />
+                  <span>Edit profile</span>
+                </button>
               )}
             </div>
           </div>
 
           {/* Name, Handle, Bio, Metadata, and Follower Counts (X / Twitter Structure) */}
           <div className="flex flex-col mt-1">
-            {/* Name + Verified Shield Check */}
-            <div className="flex items-center gap-2">
-              <h1 className="text-[20px] sm:text-[22px] font-bold text-gray-950 leading-tight m-0 font-quicksand flex items-center gap-1.5">
+            {/* Name + Verified Blue Badge (Matching X) */}
+            <div className="flex items-center gap-1.5">
+              <h1 className="text-[21px] sm:text-[23px] font-extrabold text-gray-950 leading-tight m-0 font-quicksand flex items-center gap-1.5">
                 <span>{name}</span>
-                <span title="Verified Creator" className="text-[#D4AF37] inline-flex items-center">
-                  <ShieldCheck size={18} className="fill-[#D4AF37] text-white" />
-                </span>
+                <XVerifiedBadge size={20} />
               </h1>
             </div>
 
-            {/* Handle & Niche Tag */}
-            <div className="flex items-center gap-2 text-[13px] text-gray-500 font-normal mt-0.5 font-quicksand">
+            {/* Handle */}
+            <div className="flex items-center gap-2 text-[14px] text-gray-500 font-normal mt-0.5 font-quicksand">
               <span>@{handle}</span>
-              <span>·</span>
-              <span className="text-[#8B7322] font-semibold">{role}</span>
             </div>
 
             {/* ─── X (TWITTER) STYLE BIO PARAGRAPH ─── */}
-            <p className="text-[14px] text-gray-800 leading-relaxed font-normal mt-2.5 mb-1 max-w-2xl whitespace-pre-line font-quicksand">
+            <p className="text-[14.5px] text-gray-900 leading-relaxed font-normal mt-3 mb-1 max-w-2xl whitespace-pre-line font-quicksand">
               {bio}
             </p>
 
-            {/* Metadata Row: Location + Joined Date */}
-            <div className="flex items-center gap-4 text-[13px] text-gray-500 font-normal mt-2 flex-wrap font-quicksand">
+            {/* Metadata Row: Location + Joined Date (with Chevron) */}
+            <div className="flex items-center gap-4 text-[13.5px] text-gray-500 font-normal mt-2.5 flex-wrap font-quicksand">
               {location && (
-                <div className="flex items-center gap-1">
-                  <Navigation size={13} className="text-gray-400 rotate-45" />
+                <div className="flex items-center gap-1.5">
+                  <MapPin size={15} className="text-gray-400" />
                   <span>{location}</span>
                 </div>
               )}
-              <div className="flex items-center gap-1">
-                <Calendar size={13} className="text-gray-400" />
-                <span>Joined {joinedDate}</span>
+              <div className="flex items-center gap-1.5 cursor-pointer hover:underline">
+                <Calendar size={15} className="text-gray-400" />
+                <span>Joined {joinedDate} &gt;</span>
               </div>
             </div>
 
             {/* Followers / Following Stats Row (Clickable) */}
-            <div className="flex items-center gap-5 text-[14px] mt-3 pt-1 font-quicksand">
+            <div className="flex items-center gap-5 text-[14px] mt-3 pt-0.5 font-quicksand">
               <button
                 type="button"
                 onClick={() => handleTabChange('following')}
                 className="hover:underline cursor-pointer flex items-center gap-1.5 bg-transparent border-none p-0"
               >
-                <span className="font-bold text-gray-950">{followingCount}</span>
+                <span className="font-bold text-gray-950">{followingCount.toLocaleString()}</span>
                 <span className="text-gray-500">Following</span>
               </button>
 
@@ -810,105 +922,113 @@ export default function AudienceProfilePageView({
                 onClick={() => handleTabChange('followers')}
                 className="hover:underline cursor-pointer flex items-center gap-1.5 bg-transparent border-none p-0"
               >
-                <span className="font-bold text-gray-950">{followersCount}</span>
+                <span className="font-bold text-gray-950">{followersCount.toLocaleString()}</span>
                 <span className="text-gray-500">Followers</span>
               </button>
             </div>
+
+            {/* Social Proof Subtext (Connected to Real Database Users) */}
+            {socialProof.users && socialProof.users.length > 0 && (
+              <div className="flex items-center gap-2.5 text-[12.5px] text-gray-500 font-normal mt-2.5 font-quicksand">
+                <div className="flex items-center -space-x-1.5 shrink-0">
+                  {socialProof.users.slice(0, 3).map((u: any, i: number) => (
+                    <div key={u.id || i} className="w-5 h-5 rounded-full overflow-hidden border border-white bg-neutral-200 shadow-2xs">
+                      <img src={u.avatar || '/audience/adam-udochi.png'} alt={u.name} className="w-full h-full object-cover" />
+                    </div>
+                  ))}
+                </div>
+                <span className="truncate">
+                  {socialProof.isMutual ? 'Followed by ' : 'Followers include '}
+                  <span className="font-semibold text-gray-900">{socialProof.users[0]?.name}</span>
+                  {socialProof.users.length > 1 && (
+                    <>
+                      {', '}
+                      <span className="font-semibold text-gray-900">{socialProof.users[1]?.name}</span>
+                    </>
+                  )}
+                  {socialProof.count > 2 && (
+                    <span>{`, and ${socialProof.count - 2} ${socialProof.isMutual ? 'others you follow' : 'others'}`}</span>
+                  )}
+                </span>
+              </div>
+            )}
+
+            {/* ─── INLINE "GET VERIFIED" CALLOUT BANNER (Exact Match from Screenshot) ─── */}
+            {!dismissVerifiedBanner && (
+              <div className="mt-4 p-4 rounded-2xl bg-[#E8F8F0] border border-[#C6EFDA] flex items-start justify-between gap-3 relative transition-all animate-in fade-in">
+                <div className="flex flex-col gap-1 max-w-lg">
+                  <div className="flex items-center gap-1.5 text-[14px] font-bold text-gray-950">
+                    <span>@{user?.handle || (user?.name ? user.name.toLowerCase().replace(/[^a-z0-9]/g, '') : 'Uncle_vick27')}, you aren&apos;t verified yet</span>
+                    <span className="w-4 h-4 rounded-full bg-black text-white flex items-center justify-center text-[10px]">✓</span>
+                  </div>
+                  <p className="text-[13px] text-gray-700 leading-normal">
+                    Get Verified like @{handle} to stand out and get boosted reach.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setShowVerifyModal(true)}
+                    className="mt-2 w-fit px-4 py-1.5 rounded-full bg-[#0F1419] hover:bg-[#272C30] text-white text-[13px] font-bold transition-all cursor-pointer shadow-xs"
+                  >
+                    Get Verified
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setDismissVerifiedBanner(true)}
+                  className="w-7 h-7 rounded-full hover:bg-black/5 flex items-center justify-center text-gray-500 hover:text-black transition-colors shrink-0"
+                  title="Dismiss"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Optional Creator Action Row (shown only if explicitly queried in creator mode) */}
-        {!isVisitorMode && queryMode === 'creator' && (
-          <div className="px-7 pb-6 flex items-center gap-4 flex-wrap">
-            <button
-              type="button"
-              onClick={() => setShowCreateEventModal(true)}
-              className="w-[170px] h-8 bg-[#D9BA54] hover:bg-[#c9a73e] text-black text-[12px] font-normal uppercase tracking-wider rounded-[6px] transition-colors cursor-pointer flex items-center justify-center font-quicksand"
-            >
-              Create an Event
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setShowVerifyModal(true)}
-              className="w-[170px] h-8 bg-white hover:bg-amber-50/50 border border-[#D9BA54] text-[#D9BA54] text-[12px] font-medium uppercase tracking-wider rounded-[6px] transition-colors cursor-pointer flex items-center justify-center font-quicksand"
-            >
-              Get Verified
-            </button>
-          </div>
-        )}
+        {/* ─── 2. Flat Underline Tabs Bar (Exact X / Twitter Style) ─── */}
+        <div className="w-full flex items-center border-t border-b border-gray-200 mt-3 font-quicksand bg-white">
+          {[
+            { key: 'posts', label: 'Posts' },
+            { key: 'replies', label: 'Replies' },
+            { key: 'reposts', label: 'Reposts' },
+            { key: 'media', label: 'Media' },
+          ].map((tab) => {
+            const isActive = activeTab === tab.key;
+            return (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => handleTabChange(tab.key as any)}
+                className="flex-1 py-3.5 px-3 text-center relative hover:bg-gray-50/80 transition-colors cursor-pointer group"
+              >
+                <span
+                  className={`text-[15px] transition-colors ${
+                    isActive ? 'font-bold text-gray-950' : 'font-medium text-gray-500 group-hover:text-gray-800'
+                  }`}
+                >
+                  {tab.label}
+                </span>
+                {/* Active Indicator Bar (X Blue) */}
+                {isActive && (
+                  <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-1 bg-[#1D9BF0] rounded-full" />
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
-
-      {/* ─── 2. Tabs Bar (Figma: 720px wide) ─── */}
-      <div className="w-full max-w-[720px] flex items-end border-b border-[#E7E7E7] relative font-quicksand z-10 overflow-x-auto">
-        <button
-          type="button"
-          onClick={() => handleTabChange('posts')}
-          className={`min-w-[130px] px-5 text-[12px] font-semibold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center ${
-            activeTab === 'posts'
-              ? 'h-[50px] bg-[#D9BA54] text-black rounded-t-[6px] shadow-sm'
-              : 'h-[40px] bg-white text-[#181818] border border-[#E7E7E7] border-b-0 hover:bg-gray-50'
-          }`}
-        >
-          Posts ({creatorPosts.length})
-        </button>
-
-        <button
-          type="button"
-          onClick={() => handleTabChange('profile')}
-          className={`min-w-[130px] px-5 text-[12px] font-semibold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center ${
-            activeTab === 'profile'
-              ? 'h-[50px] bg-[#D9BA54] text-black rounded-t-[6px] shadow-sm'
-              : 'h-[40px] bg-white text-[#181818] border border-[#E7E7E7] border-b-0 hover:bg-gray-50'
-          }`}
-        >
-          About & Shows
-        </button>
-
-        <button
-          type="button"
-          onClick={() => handleTabChange('followers')}
-          className={`min-w-[130px] px-5 text-[12px] font-semibold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center ${
-            activeTab === 'followers'
-              ? 'h-[50px] bg-[#D9BA54] text-black rounded-t-[6px] shadow-sm'
-              : 'h-[40px] bg-white text-[#181818] border border-[#E7E7E7] border-b-0 hover:bg-gray-50'
-          }`}
-        >
-          Followers ({followersCount})
-        </button>
-
-        <button
-          type="button"
-          onClick={() => handleTabChange('following')}
-          className={`min-w-[130px] px-5 text-[12px] font-semibold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center ${
-            activeTab === 'following'
-              ? 'h-[50px] bg-[#D9BA54] text-black rounded-t-[6px] shadow-sm'
-              : 'h-[40px] bg-white text-[#181818] border border-[#E7E7E7] border-b-0 hover:bg-gray-50'
-          }`}
-        >
-          Following ({followingCount})
-        </button>
-      </div>
-
-      {/* Downward Gradient Under Tab Strip matching Figma */}
-      <div 
-        className="w-full max-w-[720px] h-[35px] -mt-6 mb-2 pointer-events-none"
-        style={{
-          background: 'linear-gradient(180deg, rgba(241, 244, 248, 0.8) 0%, rgba(241, 244, 248, 0) 100%)',
-        }}
-      />
 
       {/* ─── 3. Tab Contents ─── */}
       {activeTab === 'posts' ? (
         <div className="flex flex-col gap-4 w-full">
           {isLoadingProfile ? (
-            <div className="w-full bg-white rounded-[4px] p-12 text-center flex flex-col items-center justify-center gap-3 border border-gray-100 shadow-2xs">
-              <Loader2 className="animate-spin text-[#D9BA54]" size={28} />
-              <p className="text-[13px] text-gray-500 font-medium">Loading {name}'s posts...</p>
+            <div className="w-full bg-white rounded-2xl p-12 text-center flex flex-col items-center justify-center gap-3 border border-gray-100 shadow-2xs">
+              <Loader2 className="animate-spin text-[#1D9BF0]" size={28} />
+              <p className="text-[13px] text-gray-500 font-medium">Loading {name}&apos;s posts...</p>
             </div>
           ) : creatorPosts.length === 0 ? (
-            <div className="w-full bg-white rounded-[4px] p-12 text-center flex flex-col items-center justify-center gap-2 border border-gray-100 shadow-2xs">
-              <Sparkles size={26} className="text-[#D9BA54] mb-1" />
+            <div className="w-full bg-white rounded-2xl p-12 text-center flex flex-col items-center justify-center gap-2 border border-gray-100 shadow-2xs">
+              <Sparkles size={26} className="text-[#1D9BF0] mb-1" />
               <h4 className="text-[16px] font-semibold text-[#181818]">No posts published yet</h4>
               <p className="text-[13px] text-gray-500 max-w-sm">
                 {isViewingOtherCreator
@@ -917,10 +1037,115 @@ export default function AudienceProfilePageView({
               </p>
             </div>
           ) : (
-            creatorPosts.map((post) => (
+            creatorPosts.map((post, idx) => (
+              <AudiencePostCard 
+                key={post.id} 
+                post={post} 
+                isPinned={idx === 0 && isViewingOtherCreator}
+              />
+            ))
+          )}
+        </div>
+      ) : activeTab === 'replies' ? (
+        <div className="flex flex-col gap-4 w-full">
+          {isLoadingReplies ? (
+            <div className="w-full bg-white rounded-2xl p-12 text-center flex flex-col items-center justify-center gap-3 border border-gray-100 shadow-2xs">
+              <Loader2 className="animate-spin text-[#1D9BF0]" size={28} />
+              <p className="text-[13px] text-gray-500 font-medium">Loading replies from database...</p>
+            </div>
+          ) : creatorReplies.length === 0 ? (
+            <div className="w-full bg-white rounded-2xl p-12 text-center flex flex-col items-center justify-center gap-2 border border-gray-100 shadow-2xs">
+              <MessageSquare size={26} className="text-gray-400 mb-1" />
+              <h4 className="text-[16px] font-semibold text-[#181818]">No replies yet</h4>
+              <p className="text-[13px] text-gray-500 max-w-sm">
+                When @{handle} participates in discussions or replies to episodes, they will show up here.
+              </p>
+            </div>
+          ) : (
+            creatorReplies.map((reply) => (
+              <div 
+                key={reply.id} 
+                className="w-full bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 shadow-2xs flex flex-col gap-3 font-quicksand hover:border-gray-200 transition-colors"
+              >
+                {/* Replying to Context Bar */}
+                {reply.postTitle && (
+                  <div className="flex items-center gap-2 text-[12px] text-gray-500 border-b border-gray-50 pb-2.5">
+                    <span>Replying to</span>
+                    <span 
+                      onClick={() => reply.postId && router.push(`/audience?view=podcast-player&id=${reply.postId}`)}
+                      className="font-bold text-[#1D9BF0] hover:underline cursor-pointer truncate max-w-sm"
+                    >
+                      {reply.postTitle}
+                    </span>
+                  </div>
+                )}
+                
+                {/* Reply Author & Body */}
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-full overflow-hidden bg-neutral-200 shrink-0 border border-black/5">
+                    <img 
+                      src={reply.author?.avatar || '/audience/adam-udochi.png'} 
+                      alt={reply.author?.name || 'Author'} 
+                      className="w-full h-full object-cover" 
+                      onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
+                    />
+                  </div>
+                  <div className="flex flex-col min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-[14px] font-bold text-gray-950 truncate">{reply.author?.name}</span>
+                      <XVerifiedBadge size={14} />
+                      <span className="text-[12px] text-gray-400">
+                        · {new Date(reply.createdAt).toLocaleDateString('en-GB', { month: 'short', day: 'numeric' })}
+                      </span>
+                    </div>
+                    <p className="text-[14px] text-gray-900 leading-relaxed mt-1 font-normal whitespace-pre-line">
+                      {reply.text}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      ) : activeTab === 'reposts' ? (
+        <div className="flex flex-col gap-4 w-full">
+          {isLoadingReposts ? (
+            <div className="w-full bg-white rounded-2xl p-12 text-center flex flex-col items-center justify-center gap-3 border border-gray-100 shadow-2xs">
+              <Loader2 className="animate-spin text-[#1D9BF0]" size={28} />
+              <p className="text-[13px] text-gray-500 font-medium">Loading reposts from database...</p>
+            </div>
+          ) : creatorReposts.length === 0 ? (
+            <div className="w-full bg-white rounded-2xl p-12 text-center flex flex-col items-center justify-center gap-2 border border-gray-100 shadow-2xs">
+              <Sparkles size={26} className="text-gray-400 mb-1" />
+              <h4 className="text-[16px] font-semibold text-[#181818]">No reposts yet</h4>
+              <p className="text-[13px] text-gray-500 max-w-sm">
+                When @{handle} reposts or quotes content from other creators, they will show up here.
+              </p>
+            </div>
+          ) : (
+            creatorReposts.map((post) => (
               <AudiencePostCard key={post.id} post={post} />
             ))
           )}
+        </div>
+      ) : activeTab === 'media' ? (
+        <div className="flex flex-col gap-4 w-full">
+          {(() => {
+            const mediaPosts = creatorPosts.filter((p) => Boolean(p.mediaUrl));
+            return mediaPosts.length === 0 ? (
+              <div className="w-full bg-white rounded-2xl p-12 text-center flex flex-col items-center justify-center gap-2 border border-gray-100 shadow-2xs">
+                <Play size={26} className="text-gray-400 mb-1" />
+                <h4 className="text-[16px] font-semibold text-[#181818]">No media yet</h4>
+                <p className="text-[13px] text-gray-500 max-w-sm">
+                  Photos, podcast audio covers, and video episodes shared by @{handle} will be displayed here.
+                </p>
+              </div>
+            ) : (
+              mediaPosts.map((post) => (
+                <AudiencePostCard key={post.id} post={post} />
+              ))
+            );
+          })()}
         </div>
       ) : activeTab === 'profile' ? (
         <div className="flex flex-col gap-6 w-full">
@@ -1041,56 +1266,73 @@ export default function AudienceProfilePageView({
               Fan club events you joined
             </h2>
 
-            {/* 3 Columns Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-              {(showAllEvents ? DEFAULT_FAN_EVENTS : DEFAULT_FAN_EVENTS.slice(0, 3)).map((ev) => (
-                <div
-                  key={ev.id}
-                  onClick={() => setSelectedEventForModal(ev)}
-                  className="w-full h-[80px] bg-white border border-[#F4F4F4] rounded-[6px] px-4 py-3 flex flex-col justify-between hover:border-gray-300 transition-colors cursor-pointer shadow-sm group"
+            {/* Fan Club Events Grid or Empty State */}
+            {fanEvents.length === 0 ? (
+              <div className="py-8 text-center flex flex-col items-center justify-center bg-gray-50/50 rounded-[4px] border border-dashed border-gray-200">
+                <p className="text-[14px] font-medium text-gray-700 m-0 mb-1">No fan club events joined yet</p>
+                <p className="text-[12px] text-gray-400 m-0 mb-4 max-w-xs">Host or join live audio spaces and fan gatherings.</p>
+                <button
+                  type="button"
+                  onClick={() => setShowCreateEventModal(true)}
+                  className="px-4 py-2 bg-[#D4AF37] hover:bg-[#c49f2b] text-black text-[12px] font-semibold rounded-[6px] transition-colors cursor-pointer"
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="text-[14px] font-medium text-[#181818] truncate pr-2 group-hover:text-[#D9BA54] transition-colors">
-                      {ev.title}
-                    </span>
-                    <span className="text-[14px] font-semibold text-[#15411F]">
-                      {ev.count}
-                    </span>
-                  </div>
+                  Create Live Event
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+                {(showAllEvents ? fanEvents : fanEvents.slice(0, 3)).map((ev) => (
+                  <div
+                    key={ev.id}
+                    onClick={() => setSelectedEventForModal(ev)}
+                    className="w-full h-[80px] bg-white border border-[#F4F4F4] rounded-[6px] px-4 py-3 flex flex-col justify-between hover:border-gray-300 transition-colors cursor-pointer shadow-sm group"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-[14px] font-medium text-[#181818] truncate pr-2 group-hover:text-[#D9BA54] transition-colors">
+                        {ev.title}
+                      </span>
+                      <span className="text-[14px] font-semibold text-[#15411F]">
+                        {ev.count}
+                      </span>
+                    </div>
 
-                  {/* Overlapping Avatar Stack */}
-                  <div className="flex items-center">
-                    {ev.avatars.map((av, i) => (
-                      <div
-                        key={i}
-                        className="w-6 h-6 rounded-full overflow-hidden border-2 border-white -ml-1.5 first:ml-0 bg-neutral-200 shrink-0"
-                      >
-                        <img
-                          src={av}
-                          alt="participant"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    ))}
-                    {ev.badgeCount && (
-                      <div className="w-6 h-6 rounded-full bg-[#0275B1] text-white text-[10px] font-semibold -ml-1.5 border-2 border-white flex items-center justify-center shrink-0">
-                        +{ev.badgeCount}
-                      </div>
-                    )}
+                    {/* Overlapping Avatar Stack */}
+                    <div className="flex items-center">
+                      {(ev.avatars || []).map((av, i) => (
+                        <div
+                          key={i}
+                          className="w-6 h-6 rounded-full overflow-hidden border-2 border-white -ml-1.5 first:ml-0 bg-neutral-200 shrink-0"
+                        >
+                          <img
+                            src={av}
+                            alt="participant"
+                            className="w-full h-full object-cover"
+                            onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}
+                          />
+                        </div>
+                      ))}
+                      {ev.badgeCount && (
+                        <div className="w-6 h-6 rounded-full bg-[#0275B1] text-white text-[10px] font-semibold -ml-1.5 border-2 border-white flex items-center justify-center shrink-0">
+                          +{ev.badgeCount}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
 
-            <div className="mt-6">
-              <button
-                type="button"
-                onClick={() => setShowAllEvents(!showAllEvents)}
-                className="text-[12px] font-semibold uppercase tracking-wider text-[#D9BA54] hover:underline cursor-pointer bg-transparent border-none p-0"
-              >
-                {showAllEvents ? 'SHOW LESS' : 'SHOW ALL (17)'}
-              </button>
-            </div>
+            {fanEvents.length > 3 && (
+              <div className="mt-6">
+                <button
+                  type="button"
+                  onClick={() => setShowAllEvents(!showAllEvents)}
+                  className="text-[12px] font-semibold uppercase tracking-wider text-[#D9BA54] hover:underline cursor-pointer bg-transparent border-none p-0"
+                >
+                  {showAllEvents ? 'SHOW LESS' : `SHOW ALL (${fanEvents.length})`}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       ) : activeTab === 'followers' ? (

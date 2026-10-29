@@ -18,11 +18,13 @@ import {
   Check,
   PenLine,
   X,
-  Eye
+  Eye,
+  Pin
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useToast } from '@/components/ui/ToastProvider';
 import AudienceTipModal from './AudienceTipModal';
+import { XVerifiedBadge } from './AudienceRightSidebar';
 
 export interface PostData {
   id: string;
@@ -76,9 +78,10 @@ interface CommentItem {
 
 interface AudiencePostCardProps {
   post: PostData;
+  isPinned?: boolean;
 }
 
-export default function AudiencePostCard({ post }: AudiencePostCardProps) {
+export default function AudiencePostCard({ post, isPinned }: AudiencePostCardProps) {
   const router = useRouter();
   const { user } = useAuthStore();
   const { toast } = useToast();
@@ -626,6 +629,14 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
       id={post.id}
       className="w-full bg-white rounded-2xl p-4 sm:p-5 shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-gray-100 flex flex-col gap-3.5 font-quicksand transition-all hover:shadow-[0_4px_20px_rgba(0,0,0,0.08)]"
     >
+      {/* ─── Pinned Post Indicator (X / Twitter style) ─── */}
+      {isPinned && (
+        <div className="flex items-center gap-2 text-[12px] font-bold text-gray-500 -mt-0.5 -mb-1 pl-1">
+          <Pin size={13} className="fill-gray-500 text-gray-500 rotate-45" />
+          <span>Pinned</span>
+        </div>
+      )}
+
       {/* ─── 1. Header: Author Info & Tip Action ─── */}
       <div className="flex items-center justify-between">
         <div 
@@ -658,13 +669,14 @@ export default function AudiencePostCard({ post }: AudiencePostCardProps) {
           </div>
 
           <div className="flex flex-col">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <h4 
                 onClick={handleAuthorClick}
-                className="text-[14px] font-bold text-gray-900 group-hover:text-[#D4AF37] transition-colors leading-tight cursor-pointer"
+                className="text-[14px] font-bold text-gray-900 group-hover:text-[#1D9BF0] transition-colors leading-tight cursor-pointer"
               >
                 {post.author.name}
               </h4>
+              <XVerifiedBadge size={14} />
               {post.author.tier === 'pro' && (
                 <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded-md bg-gradient-to-r from-[#D4AF37] to-[#E5C158] text-black tracking-wider shadow-2xs">
                   PRO
