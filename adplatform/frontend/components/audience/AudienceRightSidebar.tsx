@@ -98,6 +98,57 @@ export default function AudienceRightSidebar({
   const [messagesOpen, setMessagesOpen] = useState(false);
   const [showTopicFilters, setShowTopicFilters] = useState(false);
 
+const DEFAULT_RECOMMENDED_CREATORS: CreatorRecommendation[] = [
+  {
+    id: '0e0d0c45-7c57-40eb-8910-f3d8cc573b99',
+    name: 'Audrey Alexander',
+    handle: 'audreyalexander',
+    avatar: '/audience/audrey-alexander.png',
+    role: 'Diplomacy & Political Analyst',
+    followed: false,
+  },
+  {
+    id: '3a9555f6-fa47-47ef-aa88-f19d80a90e6e',
+    name: 'Darlene Black',
+    handle: 'darleneblack',
+    avatar: '/audience/darlene-black.png',
+    role: 'Relationship Host & Storyteller',
+    followed: false,
+  },
+  {
+    id: 'd167c089-35e2-4f25-a627-c7d55f7c713f',
+    name: 'Adam Udochi',
+    handle: 'adamudochi',
+    avatar: '/audience/adam-udochi.png',
+    role: 'UI/UX Designer & Producer',
+    followed: false,
+  },
+  {
+    id: 'e3101424-a3ac-4a9d-9ea9-3f0d957edf78',
+    name: 'Nermmen Saif',
+    handle: 'nermmensaif',
+    avatar: '/audience/nermmen-saif.png',
+    role: 'Design & Media Creator',
+    followed: false,
+  },
+  {
+    id: '34debe18-75a3-49d3-9404-d82df7b5cd62',
+    name: 'Theresa Steward',
+    handle: 'theresasteward',
+    avatar: '/audience/theresa-steward.png',
+    role: 'Executive Producer',
+    followed: false,
+  },
+  {
+    id: 'f4f4d1be-9134-48e4-9789-fc92fc4cb8f4',
+    name: 'Kyle Fisher',
+    handle: 'kylefisher',
+    avatar: '/audience/kyle-fisher.png',
+    role: 'Family Counselor',
+    followed: false,
+  },
+];
+
   // 1. Fetch real creator recommendations from PostgreSQL backend
   useEffect(() => {
     let isMounted = true;
@@ -108,12 +159,17 @@ export default function AudienceRightSidebar({
       .then((res) => res.json())
       .then((data) => {
         if (!isMounted) return;
-        if (Array.isArray(data.creators)) {
+        if (Array.isArray(data.creators) && data.creators.length > 0) {
           setRecommendedCreators(data.creators);
+        } else {
+          setRecommendedCreators(DEFAULT_RECOMMENDED_CREATORS.filter(c => c.id !== currentId));
         }
       })
       .catch((err) => {
         console.warn('Could not load recommended creators:', err);
+        if (isMounted) {
+          setRecommendedCreators(DEFAULT_RECOMMENDED_CREATORS.filter(c => c.id !== currentId));
+        }
       })
       .finally(() => {
         if (isMounted) setIsLoadingCreators(false);

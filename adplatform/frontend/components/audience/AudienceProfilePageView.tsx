@@ -104,6 +104,7 @@ interface AudienceProfilePageViewProps {
   onEditProfileClick?: () => void;
   isVisitor?: boolean;
   initialTab?: 'posts' | 'replies' | 'reposts' | 'media' | 'profile' | 'followers' | 'following';
+  onBack?: () => void;
 }
 
 export default function AudienceProfilePageView({
@@ -111,6 +112,7 @@ export default function AudienceProfilePageView({
   onEditProfileClick,
   isVisitor,
   initialTab,
+  onBack,
 }: AudienceProfilePageViewProps = {}) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -624,7 +626,11 @@ export default function AudienceProfilePageView({
             <button
               type="button"
               onClick={() => {
-                router.push('/audience');
+                if (onBack) {
+                  onBack();
+                } else {
+                  router.push('/audience');
+                }
               }}
               className="w-9 h-9 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors cursor-pointer text-gray-800 shrink-0"
               title="Back to Home"
@@ -1035,7 +1041,9 @@ export default function AudienceProfilePageView({
                     <span className="w-4 h-4 rounded-full bg-black text-white flex items-center justify-center text-[10px]">✓</span>
                   </div>
                   <p className="text-[13px] text-gray-700 leading-normal">
-                    Get Verified like @{handle} to stand out and get boosted reach.
+                    {isViewingOtherCreator 
+                      ? `Get Verified like @${handle} to stand out and get boosted reach.` 
+                      : 'Get Verified to stand out, unlock your verified badge, and get boosted reach across Studio Arella.'}
                   </p>
                   <button
                     type="button"

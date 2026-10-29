@@ -234,63 +234,33 @@ function AudienceContent() {
   useEffect(() => {
     loadFromStorage();
   }, [loadFromStorage]);
-  const [activeMenu, setActiveMenu] = useState<'podcast' | 'trending' | 'memberships' | 'bookmarks' | 'subscriptions' | 'live' | 'live-detail' | 'chats' | 'notifications' | 'profile' | 'creator-profile' | 'podcast-player' | 'edit-profile' | 'settings' | 'get-verified' | string>(() => {
-    if (queryView === 'get-verified' || queryView === 'verify' || queryView === 'pricing') return 'get-verified';
-    if (queryView === 'podcast-player' || queryView === 'podcast-detail' || queryView === 'episode') return 'podcast-player';
-    if (queryView === 'creator-profile' || queryView === 'creator' || queryView === 'visitor-profile') return 'creator-profile';
-    if (queryView === 'login-history' || queryView === 'change-password' || queryView === 'edit-profile' || queryView === 'settings') return 'edit-profile';
-    if (queryView === 'profile') return 'profile';
-    if (queryView === 'notifications') return 'notifications';
-    if (queryView === 'chats' || queryView === 'messages') return 'chats';
-    if (queryView === 'live-detail') return 'live-detail';
-    if (queryView === 'live') return 'live';
-    if (queryView === 'subscriptions') return 'subscriptions';
-    if (queryView === 'bookmarks') return 'bookmarks';
-    if (queryView === 'memberships') return 'memberships';
-    if (queryView === 'podcast' || queryView === 'feed') return 'podcast';
-    if (queryView === 'trending') return 'trending';
+  // Synchronously derive activeMenu directly from searchParams so navigation is always 100% in sync
+  const resolveActiveMenu = (view: string | null): string => {
+    if (!view || view === 'podcast' || view === 'feed' || view === 'home') return 'podcast';
+    if (view === 'get-verified' || view === 'verify' || view === 'pricing') return 'get-verified';
+    if (view === 'podcast-player' || view === 'podcast-detail' || view === 'episode') return 'podcast-player';
+    if (view === 'creator-profile' || view === 'creator' || view === 'visitor-profile') {
+      return searchParams.get('creatorId') ? 'creator-profile' : 'podcast';
+    }
+    if (view === 'login-history' || view === 'change-password' || view === 'edit-profile' || view === 'settings') return 'edit-profile';
+    if (view === 'profile') return 'profile';
+    if (view === 'notifications') return 'notifications';
+    if (view === 'chats' || view === 'messages') return 'chats';
+    if (view === 'live-detail') return 'live-detail';
+    if (view === 'live') return 'live';
+    if (view === 'subscriptions') return 'subscriptions';
+    if (view === 'bookmarks') return 'bookmarks';
+    if (view === 'memberships') return 'memberships';
+    if (view === 'trending') return 'trending';
     return 'podcast';
-  });
+  };
+
+  const activeMenu = resolveActiveMenu(queryView);
 
   const [posts, setPosts] = useState<PostData[]>([]);
   const [isLoadingPosts, setIsLoadingPosts] = useState<boolean>(false);
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
   const [selectedLiveExp, setSelectedLiveExp] = useState<string[]>([]);
-
-  // Sync menu state when URL query changes without cascading effect
-  const [prevQueryView, setPrevQueryView] = useState(queryView);
-  if (queryView !== prevQueryView) {
-    setPrevQueryView(queryView);
-    if (queryView === 'get-verified' || queryView === 'verify' || queryView === 'pricing') {
-      setActiveMenu('get-verified');
-    } else if (queryView === 'podcast-player' || queryView === 'podcast-detail' || queryView === 'episode') {
-      setActiveMenu('podcast-player');
-    } else if (queryView === 'creator-profile' || queryView === 'creator' || queryView === 'visitor-profile') {
-      setActiveMenu('creator-profile');
-    } else if (queryView === 'login-history' || queryView === 'change-password' || queryView === 'edit-profile' || queryView === 'settings') {
-      setActiveMenu('edit-profile');
-    } else if (queryView === 'profile') {
-      setActiveMenu('profile');
-    } else if (queryView === 'notifications') {
-      setActiveMenu('notifications');
-    } else if (queryView === 'chats' || queryView === 'messages') {
-      setActiveMenu('chats');
-    } else if (queryView === 'live-detail') {
-      setActiveMenu('live-detail');
-    } else if (queryView === 'live') {
-      setActiveMenu('live');
-    } else if (queryView === 'subscriptions') {
-      setActiveMenu('subscriptions');
-    } else if (queryView === 'bookmarks') {
-      setActiveMenu('bookmarks');
-    } else if (queryView === 'memberships') {
-      setActiveMenu('memberships');
-    } else if (queryView === 'podcast' || queryView === 'feed') {
-      setActiveMenu('podcast');
-    } else if (queryView === 'trending') {
-      setActiveMenu('trending');
-    }
-  }
 
   // Fetch live posts from Creator Space API for the active view with resilient fallbacks
   useEffect(() => {
@@ -539,37 +509,10 @@ function AudienceContent() {
   }, [posts]);
 
   const handleMenuChange = (menuId: string) => {
-    setActiveMenu(menuId);
-    if (menuId === 'podcast') {
-      router.push('/audience?view=podcast', { scroll: false });
-    } else if (menuId === 'trending') {
-      router.push('/audience?view=trending', { scroll: false });
-    } else if (menuId === 'memberships') {
-      router.push('/audience?view=memberships', { scroll: false });
-    } else if (menuId === 'bookmarks') {
-      router.push('/audience?view=bookmarks', { scroll: false });
-    } else if (menuId === 'subscriptions') {
-      router.push('/audience?view=subscriptions', { scroll: false });
-    } else if (menuId === 'live') {
-      router.push('/audience?view=live', { scroll: false });
-    } else if (menuId === 'live-detail') {
-      router.push('/audience?view=live-detail', { scroll: false });
-    } else if (menuId === 'chats' || menuId === 'messages') {
-      router.push('/audience?view=chats', { scroll: false });
-    } else if (menuId === 'notifications') {
-      router.push('/audience?view=notifications', { scroll: false });
-    } else if (menuId === 'profile') {
-      router.push('/audience?view=profile', { scroll: false });
-    } else if (menuId === 'creator-profile') {
-      router.push('/audience?view=creator-profile', { scroll: false });
-    } else if (menuId === 'podcast-player' || menuId === 'podcast-detail') {
-      router.push('/audience?view=podcast-player', { scroll: false });
-    } else if (menuId === 'edit-profile' || menuId === 'settings') {
-      router.push('/audience?view=edit-profile', { scroll: false });
-    } else if (menuId === 'login-history') {
-      router.push('/audience?view=login-history', { scroll: false });
-    } else if (menuId === 'change-password') {
-      router.push('/audience?view=change-password', { scroll: false });
+    if (menuId === 'podcast' || menuId === 'feed' || menuId === 'home') {
+      router.push('/audience', { scroll: false });
+    } else {
+      router.push(`/audience?view=${menuId}`, { scroll: false });
     }
   };
 
@@ -766,6 +709,7 @@ function AudienceContent() {
                       searchParams.get('mode') === 'visitor' ||
                       Boolean(searchParams.get('creatorId') && searchParams.get('creatorId') !== user?.id)
                     }
+                    onBack={() => handleMenuChange('podcast')}
                     onEditProfileClick={() => handleMenuChange('edit-profile')} 
                   />
                 </div>
