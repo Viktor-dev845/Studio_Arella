@@ -93,65 +93,86 @@ export const createAd: RequestHandler = async (req, res) => {
         return;
       }
 
+      let uploaded = false;
       try {
         if (isVideo) {
           // Send to n8n for synchronous AI processing and Cloudinary upload
-          const formData = new FormData();
-          const blob = new Blob([file.buffer], { type: file.mimetype });
-          formData.append('file', blob, file.originalname);
-          formData.append('title', title || 'Untitled Ad');
-          formData.append('user_id', authReq.user?.id?.toString() || '');
+          try {
+            const formData = new FormData();
+            const blob = new Blob([file.buffer], { type: file.mimetype });
+            formData.append('file', blob, file.originalname);
+            formData.append('title', title || 'Untitled Ad');
+            formData.append('user_id', authReq.user?.id?.toString() || '');
 
-          const n8nResponse = await fetch('https://bems003.app.n8n.cloud/webhook/moderate-video', {
-            method: 'POST',
-            body: formData
-          });
+            const n8nResponse = await fetch('https://bems003.app.n8n.cloud/webhook/moderate-video', {
+              method: 'POST',
+              body: formData
+            });
 
-          if (!n8nResponse.ok) {
-            throw new Error(`n8n webhook failed with status ${n8nResponse.status}`);
-          }
-
-          const n8nResult = await n8nResponse.json() as any;
-          
-          if (n8nResult.status === 'rejected') {
-             res.status(400).json({ message: `Video rejected by AI moderation: ${n8nResult.reason || 'Inappropriate content detected'}` });
-             return;
-          }
-
-          const uploadedUrl = n8nResult.cloudinary_url || n8nResult.url || n8nResult.media_url || n8nResult.file_url;
-          if (!uploadedUrl) {
-             throw new Error('n8n response missing Cloudinary URL');
-          }
-          file_url = uploadedUrl;
-          file_type = 'video';
-          file_size = file.size;
-          autoApproved = n8nResult.status === 'approved' || n8nResult.status === 'success';
-        } else {
-          // Images bypass n8n and go directly to Cloudinary
-          const folder = `bems-screens/${authReq.user?.id}`;
-          const uploadResult = await new Promise<any>((resolve, reject) => {
-            const stream = cloudinary.uploader.upload_stream(
-              { folder, resource_type: 'image' },
-              (error, result) => {
-                if (error) return reject(error);
-                resolve(result);
+            if (n8nResponse.ok) {
+              const n8nResult = await n8nResponse.json() as any;
+              if (n8nResult.status === 'rejected') {
+                res.status(400).json({ message: `Video rejected by AI moderation: ${n8nResult.reason || 'Inappropriate content detected'}` });
+                return;
               }
-            );
-            const { Readable } = require('stream');
-            const readable = new Readable();
-            readable.push(file.buffer);
-            readable.push(null);
-            readable.pipe(stream);
-          });
+              const uploadedUrl = n8nResult.cloudinary_url || n8nResult.url || n8nResult.media_url || n8nResult.file_url;
+              if (uploadedUrl) {
+                file_url = uploadedUrl;
+                file_type = 'video';
+                file_size = file.size;
+                autoApproved = n8nResult.status === 'approved' || n8nResult.status === 'success';
+                uploaded = true;
+              }
+            }
+          } catch (n8nErr) {
+            console.warn('n8n video moderation unavailable, falling back:', n8nErr);
+          }
+        } else {
+          // Images: try Cloudinary if credentials configured
+          if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
+            try {
+              const folder = `bems-screens/${authReq.user?.id}`;
+              const uploadResult = await new Promise<any>((resolve, reject) => {
+                const stream = cloudinary.uploader.upload_stream(
+                  { folder, resource_type: 'image' },
+                  (error, result) => {
+                    if (error) return reject(error);
+                    resolve(result);
+                  }
+                );
+                const { Readable } = require('stream');
+                const readable = new Readable();
+                readable.push(file.buffer);
+                readable.push(null);
+                readable.pipe(stream);
+              });
 
-          file_url = uploadResult.secure_url;
-          file_type = ext === 'gif' ? 'gif' : 'image';
+              file_url = uploadResult.secure_url;
+              file_type = ext === 'gif' ? 'gif' : 'image';
+              file_size = file.size;
+              uploaded = true;
+            } catch (cErr) {
+              console.warn('Cloudinary upload failed (403 or quota), falling back to server storage:', cErr);
+            }
+          }
+        }
+
+        // Resilient fallback to server /uploads directory if cloud provider failed
+        if (!uploaded) {
+          const uploadDir = path.join(__dirname, '../../public/uploads');
+          if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+          const safeName = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${ext}`;
+          const filepath = path.join(uploadDir, safeName);
+          fs.writeFileSync(filepath, file.buffer);
+          file_url = `/uploads/${safeName}`;
+          file_type = isVideo ? 'video' : (ext === 'gif' ? 'gif' : 'image');
           file_size = file.size;
+          autoApproved = false;
         }
       } catch (uploadErr: any) {
-        console.error('Upload/Moderation error:', uploadErr);
+        console.error('Upload error:', uploadErr);
         const errMsg = uploadErr?.message || (typeof uploadErr === 'object' ? JSON.stringify(uploadErr) : String(uploadErr));
-        res.status(500).json({ message: `Upload or AI processing failed: ${errMsg}` });
+        res.status(500).json({ message: `Upload failed: ${errMsg}` });
         return;
       }
     }
