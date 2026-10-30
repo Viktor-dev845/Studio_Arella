@@ -95,8 +95,8 @@ export const createAd: RequestHandler = async (req, res) => {
 
       let uploaded = false;
       try {
-        if (isVideo) {
-          // Send to n8n for synchronous AI processing and Cloudinary upload
+        if (isVideo && file.size <= 25 * 1024 * 1024) {
+          // Send to n8n for synchronous AI processing and Cloudinary upload (n8n has 25MB max payload limit)
           try {
             const formData = new FormData();
             const blob = new Blob([file.buffer], { type: file.mimetype });
