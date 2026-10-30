@@ -160,7 +160,7 @@ export default function AdsPage() {
                 Filter
               </button>
               <Link 
-                href="/bookings?tab=screen"
+                href="/book"
                 className="h-[40px] px-6 bg-[#D4AF37] hover:bg-[#b58b24] text-black font-semibold rounded-[6px] text-[14px] transition-colors flex items-center justify-center text-decoration-none"
               >
                 Book Ad Slot
@@ -187,7 +187,7 @@ export default function AdsPage() {
                     : "No ads match your current filter criteria."}
                 </p>
                 <Link
-                  href="/bookings?tab=screen"
+                  href="/book"
                   className="px-5 py-2.5 bg-[#D4AF37] hover:bg-[#b58b24] text-black font-semibold text-[13px] rounded-[8px] text-decoration-none transition-colors"
                 >
                   Book Ad Slot
@@ -250,7 +250,7 @@ export default function AdsPage() {
               Get 10% off our standard Ad rate when you book a digital screen slot for 1 week and above.
             </p>
             <Link 
-              href="/bookings?tab=screen"
+              href="/book"
               className="bg-[#FBFF79] shadow-[0_0_7px_rgba(251,255,121,0.32)] rounded-[6px] px-[14px] py-[6px] mt-[14px] text-[#051235] text-[9.5px] font-bold uppercase tracking-wide z-10 relative inline-block text-decoration-none"
             >
               Book Ad space
