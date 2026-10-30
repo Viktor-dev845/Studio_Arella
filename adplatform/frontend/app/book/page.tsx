@@ -279,19 +279,19 @@ function BookAdForm() {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                   {/* Duration dropdown */}
                   <div className="relative">
                     <button type="button" onClick={() => { setShowDurationDropdown((o) => !o); setShowCampaignDropdown(false); }}
                       className={`${inputClasses} flex items-center justify-between h-[56px]`}>
-                      <span className={durationUnit === 'hourly' ? 'text-[rgba(162,161,168,0.8)]' : ''}>{durationLabel === 'Hourly' ? 'Duration' : durationLabel}</span>
+                      <span className="text-[#16151C] font-normal">{durationLabel}</span>
                       <ChevronDown size={24} className={`text-[#16151C] transition-transform ${showDurationDropdown ? 'rotate-180' : ''}`} />
                     </button>
                     {showDurationDropdown && (
                       <div className={dropdownMenuClasses}>
                         {(['hourly', 'weekly', 'monthly'] as DurationUnit[]).map((u) => (
                           <button key={u} type="button" onClick={() => { setDurationUnit(u); setShowDurationDropdown(false); }} className={dropdownItemClasses}>
-                            <span>{{ hourly: 'Hourly', weekly: 'Weekly', monthly: 'Monthly' }[u]}</span>
+                            <span className={durationUnit === u ? 'font-semibold text-[#D4AF37]' : ''}>{{ hourly: 'Hourly', weekly: 'Weekly', monthly: 'Monthly' }[u]}</span>
                             {durationUnit === u && <div className="w-[2px] h-[14px] bg-[#D4AF37] rounded-full" />}
                           </button>
                         ))}
@@ -299,18 +299,31 @@ function BookAdForm() {
                     )}
                   </div>
 
+                  {/* Duration Count (hours/weeks/months) */}
+                  <div>
+                    <input 
+                      type="number" 
+                      min={1} 
+                      max={durationUnit === 'hourly' ? 12 : 52}
+                      value={durationCount} 
+                      onChange={(e) => setDurationCount(e.target.value)} 
+                      placeholder={`Number of ${durationUnit === 'monthly' ? 'months' : durationUnit === 'weekly' ? 'weeks' : 'hours'}`} 
+                      className={`${inputClasses} h-[56px]`} 
+                    />
+                  </div>
+
                   {/* Campaign type dropdown */}
                   <div className="relative">
                     <button type="button" onClick={() => { setShowCampaignDropdown((o) => !o); setShowDurationDropdown(false); }}
                       className={`${inputClasses} flex items-center justify-between h-[56px]`}>
-                      <span className={campaignType === 'one_time' ? 'text-[rgba(162,161,168,0.8)]' : ''}>{campaignLabel === 'One time booking' ? 'How would you run your Ad campaign?' : campaignLabel}</span>
+                      <span className="text-[#16151C] font-normal">{campaignLabel}</span>
                       <ChevronDown size={24} className={`text-[#16151C] transition-transform ${showCampaignDropdown ? 'rotate-180' : ''}`} />
                     </button>
                     {showCampaignDropdown && (
                       <div className={dropdownMenuClasses}>
                         {(['one_time', 'recurring'] as CampaignType[]).map((c) => (
                           <button key={c} type="button" onClick={() => { setCampaignType(c); setShowCampaignDropdown(false); }} className={dropdownItemClasses}>
-                            <span>{{ one_time: 'One time booking', recurring: 'Recurring booking' }[c]}</span>
+                            <span className={campaignType === c ? 'font-semibold text-[#D4AF37]' : ''}>{{ one_time: 'One time booking', recurring: 'Recurring booking' }[c]}</span>
                             {campaignType === c && <div className="w-[2px] h-[14px] bg-[#D4AF37] rounded-full" />}
                           </button>
                         ))}
@@ -318,12 +331,6 @@ function BookAdForm() {
                     )}
                   </div>
                 </div>
-
-                {(durationUnit !== 'hourly' || campaignType === 'recurring') && (
-                  <div>
-                    <input type="number" min={1} value={durationCount} onChange={(e) => setDurationCount(e.target.value)} placeholder={`Enter number of ${durationUnit === 'monthly' ? 'months' : durationUnit === 'weekly' ? 'weeks' : 'hours'}`} className={`${inputClasses} h-[56px]`} />
-                  </div>
-                )}
 
                 <div className="pt-2">
                   <p className="text-[16px] text-[#16151C] font-light mb-4 font-body">Upload Ad materials (You can upload multiple files at once)</p>
