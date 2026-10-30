@@ -397,7 +397,7 @@ function BookAdForm() {
                       value={scheduleDate} 
                       onChange={(e) => setScheduleDate(e.target.value)} 
                       onClick={(e) => { try { (e.currentTarget as any).showPicker(); } catch {} }}
-                      className={`${inputClasses} h-[58px] pr-12 cursor-pointer`} 
+                      className={`${inputClasses} h-[58px] pr-12 cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer`} 
                       placeholder="Schedule service delivery timeline" 
                       style={{ color: scheduleDate ? 'inherit' : 'transparent' }} 
                     />
@@ -411,7 +411,7 @@ function BookAdForm() {
                       value={scheduleTime} 
                       onChange={(e) => setScheduleTime(e.target.value)} 
                       onClick={(e) => { try { (e.currentTarget as any).showPicker(); } catch {} }}
-                      className={`${inputClasses} h-[58px] pr-12 cursor-pointer`} 
+                      className={`${inputClasses} h-[58px] pr-12 cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer`} 
                       placeholder="Set timer (optional)" 
                       style={{ color: scheduleTime ? 'inherit' : 'transparent' }} 
                     />
