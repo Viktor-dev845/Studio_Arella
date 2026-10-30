@@ -167,9 +167,9 @@ export default function CampaignsPage() {
 
   const addMaterialFiles = (files: FileList | null) => {
     if (!files) return;
-    const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
-    const valid = Array.from(files).filter((f) => allowed.includes(f.type));
-    if (valid.length < files.length) toast('Only JPG, PNG, and GIF files are supported', 'error');
+    const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'video/mp4', 'video/quicktime', 'video/webm', 'application/pdf'];
+    const valid = Array.from(files).filter((f) => allowed.includes(f.type) || f.type.startsWith('video/') || f.type.startsWith('image/'));
+    if (valid.length < files.length) toast('Only standard images (JPG, PNG, GIF) and videos (MP4, MOV, WebM) are supported', 'error');
     if (valid.length > 0) setMaterialFiles((prev) => [...prev, ...valid]);
   };
 
@@ -200,7 +200,7 @@ export default function CampaignsPage() {
           formData.append('file', f);
           formData.append('title', `${name} — ${f.name}`);
           formData.append('campaign_id', campaignId);
-          formData.append('media_type', 'image');
+          formData.append('media_type', f.type.startsWith('video/') ? 'video' : 'image');
           await api.post('/ads', formData, { headers: { 'Content-Type': undefined } });
         } catch (uploadErr: any) {
           toast(`"${f.name}" could not be uploaded: ${uploadErr?.response?.data?.message || 'please add it later from Ads'}`, 'error');
@@ -753,7 +753,7 @@ export default function CampaignsPage() {
                       ref={materialsInputRef}
                       type="file"
                       multiple
-                      accept="image/jpeg,image/jpg,image/png,application/pdf"
+                      accept="image/jpeg,image/jpg,image/png,image/gif,video/mp4,video/quicktime,video/webm,application/pdf"
                       onChange={(e) => addMaterialFiles(e.target.files)}
                       className="hidden"
                       id="campaign-materials-input"
@@ -766,7 +766,7 @@ export default function CampaignsPage() {
                         <Upload size={18} className="text-white" />
                       </div>
                       <span className="text-[13px] font-medium text-slate-900 dark:text-slate-200">Drag & Drop or choose file to upload</span>
-                      <span className="text-[11.5px] text-slate-400 font-medium">Supported formats .jpeg, .png, .pdf</span>
+                      <span className="text-[11.5px] text-slate-400 font-medium">Supported formats: JPG, PNG, MP4, MOV, WebM (Images & Short Video Ads)</span>
                     </label>
                     {materialFiles.length > 0 && (
                       <div className="flex flex-wrap gap-2 mt-3">
