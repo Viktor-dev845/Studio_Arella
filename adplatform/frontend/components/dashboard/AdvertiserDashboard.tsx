@@ -106,7 +106,14 @@ export default function AdvertiserDashboard() {
   const [loading, setLoading] = useState(false);
   const [analytics, setAnalytics] = useState<any>(null);
   const [notifications, setNotifications] = useState<any[]>([]);
-  const [podcastTraffic, setPodcastTraffic] = useState<{ name: string; filled: number }[]>([]);
+  const [podcastTraffic, setPodcastTraffic] = useState<{
+    id?: string;
+    name: string;
+    filled: number;
+    views: number;
+    sharePercent: number;
+    displayStat: string;
+  }[]>([]);
 
   useEffect(() => {
     let isMounted = true;
@@ -118,13 +125,38 @@ export default function AdvertiserDashboard() {
     api.get('/content/feed').then((res) => {
       const posts = res.data?.posts || [];
       if (isMounted && posts.length > 0) {
-        const totalViews = posts.reduce((sum: number, p: any) => sum + (parseInt(p.views_count, 10) || parseInt(p.likes_count, 10) || 1), 0);
+        const totalViews = posts.reduce((sum: number, p: any) => {
+          const v = parseInt(p.views_count, 10);
+          return sum + (Number.isFinite(v) && v > 0 ? v : 0);
+        }, 0);
+
+        const maxViews = Math.max(
+          1,
+          ...posts.map((p: any) => {
+            const v = parseInt(p.views_count, 10);
+            return Number.isFinite(v) && v > 0 ? v : 0;
+          })
+        );
+
+        const formatViewsCompact = (val: number) => {
+          if (val >= 1000000) return `${(val / 1000000).toFixed(1)}M`;
+          if (val >= 1000) return `${(val / 1000).toFixed(1)}k`;
+          return `${val}`;
+        };
+
         const mapped = posts.slice(0, 6).map((p: any) => {
-          const score = (parseInt(p.views_count, 10) || parseInt(p.likes_count, 10) || 1);
-          const filled = Math.min(95, Math.max(20, Math.round((score / (totalViews || 1)) * 100)));
+          const rawViews = parseInt(p.views_count, 10);
+          const views = Number.isFinite(rawViews) && rawViews > 0 ? rawViews : 0;
+          const sharePercent = totalViews > 0 ? Math.round((views / totalViews) * 100) : 0;
+          const filled = totalViews > 0 && views > 0 ? Math.max(8, Math.round((views / maxViews) * 100)) : 0;
+
           return {
-            name: p.title ? p.title.replace(/^-/, '') : 'Podcast show',
+            id: p.id,
+            name: p.title ? p.title.replace(/^-/, '').trim() : 'Podcast show',
             filled,
+            views,
+            sharePercent,
+            displayStat: totalViews > 0 ? `${sharePercent}%` : `${formatViewsCompact(views)} views`,
           };
         });
         setPodcastTraffic(mapped);
@@ -366,8 +398,22 @@ export default function AdvertiserDashboard() {
 
           {/* Right Card: Traffic by Podcast */}
           <div style={{ background: theme.color.surface, borderRadius: 20, padding: '22px 24px', border: `1px solid ${theme.color.surface2}` }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 18px' }}>
               <p style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1, margin: 0 }}>Traffic by Podcast</p>
+              <Link
+                href="/audience"
+                style={{
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: theme.color.gold,
+                  textDecoration: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 3,
+                }}
+              >
+                Audience Feed →
+              </Link>
             </div>
             {podcastTraffic.length === 0 ? (
               <div style={{ padding: '28px 12px', textAlign: 'center' }}>
@@ -377,17 +423,75 @@ export default function AdvertiserDashboard() {
                 </p>
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 {podcastTraffic.map((t, idx) => (
-                  <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14 }}>
-                    <span style={{ fontSize: 12, color: theme.color.text2, fontWeight: 500, width: 85, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <Link
+                    key={t.id || idx}
+                    href="/audience"
+                    title={`${t.name} • ${t.views.toLocaleString()} views (${t.sharePercent}% share)`}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: 12,
+                      textDecoration: 'none',
+                      padding: '6px 8px',
+                      margin: '0 -8px',
+                      borderRadius: 10,
+                      transition: 'background 0.15s ease',
+                      cursor: 'pointer',
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(0,0,0,0.03)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                  >
+                    <span
+                      style={{
+                        fontSize: 12,
+                        color: theme.color.text2,
+                        fontWeight: 600,
+                        maxWidth: 110,
+                        minWidth: 70,
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                    >
                       {t.name}
                     </span>
-                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 0 }}>
-                      <div style={{ height: 2, width: `${t.filled}%`, background: '#111111' }} />
-                      <div style={{ height: 2, width: `${100 - t.filled}%`, background: '#EAEAEA' }} />
+                    <div
+                      style={{
+                        flex: 1,
+                        minWidth: 50,
+                        height: 5,
+                        background: 'rgba(128,128,128,0.18)',
+                        borderRadius: 999,
+                        overflow: 'hidden',
+                        display: 'flex',
+                      }}
+                    >
+                      <div
+                        style={{
+                          height: '100%',
+                          width: `${t.filled}%`,
+                          background: theme.color.text1,
+                          borderRadius: 999,
+                          transition: 'width 0.4s ease',
+                        }}
+                      />
                     </div>
-                  </div>
+                    <span
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 700,
+                        color: theme.color.text3,
+                        minWidth: 46,
+                        textAlign: 'right',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {t.displayStat}
+                    </span>
+                  </Link>
                 ))}
               </div>
             )}
