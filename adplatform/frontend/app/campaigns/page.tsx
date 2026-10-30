@@ -1301,10 +1301,10 @@ export default function CampaignsPage() {
               >
                 {/* Header */}
                 <div className="flex items-center justify-between w-full px-[40px] pt-[40px]">
-                  <button onClick={() => setWizardStep('otp')} className="text-black hover:opacity-70 transition-opacity">
-                    <ArrowLeft size={24} strokeWidth={2} />
-                  </button>
-                  <span className="text-[20px] font-medium text-black">Pay with Wema card</span>
+                  <div className="w-6" />
+                  <span className="text-[20px] font-medium text-black">
+                    {billingMethod === 'wallet' ? 'Paid with Wallet' : 'Payment Successful'}
+                  </span>
                   <button onClick={resetWizard} className="text-black hover:opacity-70 transition-opacity">
                     <X size={24} strokeWidth={2} />
                   </button>
