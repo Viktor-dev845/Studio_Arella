@@ -74,6 +74,19 @@ export default function CampaignsPage() {
   const [draftCampaignId, setDraftCampaignId] = useState<string | null>(null);
   const [materialFiles, setMaterialFiles] = useState<File[]>([]);
   const materialsInputRef = useRef<HTMLInputElement>(null);
+  const startDateRef = useRef<HTMLInputElement>(null);
+  const endDateRef = useRef<HTMLInputElement>(null);
+
+  const triggerDatePicker = (ref: React.RefObject<HTMLInputElement | null>) => {
+    if (ref.current) {
+      ref.current.type = 'date';
+      try {
+        ref.current.showPicker();
+      } catch {
+        ref.current.focus();
+      }
+    }
+  };
 
   // ── Wizard: "Request Ad creative services" sub-flow ──
   const [serviceType, setServiceType] = useState(CREATIVE_SERVICES[0]);
@@ -678,27 +691,57 @@ export default function CampaignsPage() {
                   <div className="grid grid-cols-2 gap-5 shrink-0">
                     <div className="relative">
                       <input
+                        ref={startDateRef}
                         type={startDate ? "date" : "text"}
-                        onFocus={(e) => (e.target.type = "date")}
+                        onFocus={(e) => {
+                          e.target.type = "date";
+                          try { e.target.showPicker(); } catch {}
+                        }}
+                        onClick={(e) => {
+                          (e.target as HTMLInputElement).type = "date";
+                          try { (e.target as HTMLInputElement).showPicker(); } catch {}
+                        }}
                         onBlur={(e) => (e.target.type = e.target.value ? "date" : "text")}
                         placeholder="Start date (dd/mm/yyyy)"
                         value={startDate}
                         onChange={(e) => setStartDate(e.target.value)}
-                        className="w-full pl-5 pr-10 py-3.5 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[12px] text-[13px] font-medium text-slate-900 dark:text-slate-50 placeholder:text-slate-400 focus:outline-none focus:border-[#C69A2C] appearance-none"
+                        className="w-full pl-5 pr-11 py-3.5 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[12px] text-[13px] font-medium text-slate-900 dark:text-slate-50 placeholder:text-slate-400 focus:outline-none focus:border-[#C69A2C] cursor-pointer"
                       />
-                      {!startDate && <Calendar size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />}
+                      <button
+                        type="button"
+                        onClick={() => triggerDatePicker(startDateRef)}
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#C69A2C] transition-colors p-1 flex items-center justify-center cursor-pointer"
+                        title="Choose start date"
+                      >
+                        <Calendar size={16} />
+                      </button>
                     </div>
                     <div className="relative">
                       <input
+                        ref={endDateRef}
                         type={endDate ? "date" : "text"}
-                        onFocus={(e) => (e.target.type = "date")}
+                        onFocus={(e) => {
+                          e.target.type = "date";
+                          try { e.target.showPicker(); } catch {}
+                        }}
+                        onClick={(e) => {
+                          (e.target as HTMLInputElement).type = "date";
+                          try { (e.target as HTMLInputElement).showPicker(); } catch {}
+                        }}
                         onBlur={(e) => (e.target.type = e.target.value ? "date" : "text")}
                         placeholder="End date (dd/mm/yyyy)"
                         value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
-                        className="w-full pl-5 pr-10 py-3.5 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[12px] text-[13px] font-medium text-slate-900 dark:text-slate-50 placeholder:text-slate-400 focus:outline-none focus:border-[#C69A2C] appearance-none"
+                        className="w-full pl-5 pr-11 py-3.5 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[12px] text-[13px] font-medium text-slate-900 dark:text-slate-50 placeholder:text-slate-400 focus:outline-none focus:border-[#C69A2C] cursor-pointer"
                       />
-                      {!endDate && <Calendar size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />}
+                      <button
+                        type="button"
+                        onClick={() => triggerDatePicker(endDateRef)}
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#C69A2C] transition-colors p-1 flex items-center justify-center cursor-pointer"
+                        title="Choose end date"
+                      >
+                        <Calendar size={16} />
+                      </button>
                     </div>
                   </div>
 
