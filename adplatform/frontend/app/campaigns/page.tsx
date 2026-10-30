@@ -655,7 +655,7 @@ export default function CampaignsPage() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required
-                    className="w-full px-5 py-3.5 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[12px] text-[13px] font-medium text-slate-900 dark:text-slate-50 placeholder:text-slate-300 focus:outline-none focus:border-[#C69A2C]"
+                    className="w-full shrink-0 px-5 py-3.5 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[12px] text-[13px] font-medium text-slate-900 dark:text-slate-50 placeholder:text-slate-400 focus:outline-none focus:border-[#C69A2C]"
                   />
 
                   <textarea
@@ -663,7 +663,7 @@ export default function CampaignsPage() {
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     rows={4}
-                    className="w-full px-5 py-3.5 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[12px] text-[13px] font-medium text-slate-900 dark:text-slate-50 placeholder:text-slate-300 focus:outline-none focus:border-[#C69A2C] resize-none"
+                    className="w-full min-h-[96px] shrink-0 px-5 py-3.5 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[12px] text-[13px] font-medium leading-relaxed text-slate-900 dark:text-slate-50 placeholder:text-slate-400 focus:outline-none focus:border-[#C69A2C] resize-none"
                   />
 
                   <input
@@ -672,10 +672,10 @@ export default function CampaignsPage() {
                     value={budget}
                     onChange={(e) => setBudget(e.target.value)}
                     required
-                    className="w-full px-5 py-3.5 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[12px] text-[13px] font-medium text-slate-900 dark:text-slate-50 placeholder:text-slate-300 focus:outline-none focus:border-[#C69A2C]"
+                    className="w-full shrink-0 px-5 py-3.5 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[12px] text-[13px] font-medium text-slate-900 dark:text-slate-50 placeholder:text-slate-400 focus:outline-none focus:border-[#C69A2C]"
                   />
 
-                  <div className="grid grid-cols-2 gap-5">
+                  <div className="grid grid-cols-2 gap-5 shrink-0">
                     <div className="relative">
                       <input
                         type={startDate ? "date" : "text"}
@@ -684,7 +684,7 @@ export default function CampaignsPage() {
                         placeholder="Start date (dd/mm/yyyy)"
                         value={startDate}
                         onChange={(e) => setStartDate(e.target.value)}
-                        className="w-full pl-5 pr-10 py-3.5 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[12px] text-[13px] font-medium text-slate-900 dark:text-slate-50 placeholder:text-slate-300 focus:outline-none focus:border-[#C69A2C] appearance-none"
+                        className="w-full pl-5 pr-10 py-3.5 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[12px] text-[13px] font-medium text-slate-900 dark:text-slate-50 placeholder:text-slate-400 focus:outline-none focus:border-[#C69A2C] appearance-none"
                       />
                       {!startDate && <Calendar size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />}
                     </div>
@@ -696,13 +696,13 @@ export default function CampaignsPage() {
                         placeholder="End date (dd/mm/yyyy)"
                         value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
-                        className="w-full pl-5 pr-10 py-3.5 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[12px] text-[13px] font-medium text-slate-900 dark:text-slate-50 placeholder:text-slate-300 focus:outline-none focus:border-[#C69A2C] appearance-none"
+                        className="w-full pl-5 pr-10 py-3.5 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[12px] text-[13px] font-medium text-slate-900 dark:text-slate-50 placeholder:text-slate-400 focus:outline-none focus:border-[#C69A2C] appearance-none"
                       />
                       {!endDate && <Calendar size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />}
                     </div>
                   </div>
 
-                  <div>
+                  <div className="shrink-0">
                     <label className="block text-[13px] font-medium text-slate-900 dark:text-slate-50 mb-3">
                       Upload campaign materials <span className="font-normal text-slate-500">(You can upload multiple files at once)</span>
                     </label>
@@ -795,7 +795,7 @@ export default function CampaignsPage() {
                     value={serviceBrief}
                     onChange={(e) => setServiceBrief(e.target.value)}
                     rows={3}
-                    className="w-full px-4 py-3 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[12px] text-[13px] text-slate-900 dark:text-slate-50 focus:outline-none focus:border-[#C69A2C] resize-none"
+                    className="w-full min-h-[84px] shrink-0 px-4 py-3 bg-white dark:bg-[#111111] border border-slate-200 dark:border-white/10 rounded-[12px] text-[13px] leading-relaxed text-slate-900 dark:text-slate-50 placeholder:text-slate-400 focus:outline-none focus:border-[#C69A2C] resize-none"
                   />
 
                   <div>
