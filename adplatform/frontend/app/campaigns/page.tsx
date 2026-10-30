@@ -766,7 +766,7 @@ export default function CampaignsPage() {
                         <Upload size={18} className="text-white" />
                       </div>
                       <span className="text-[13px] font-medium text-slate-900 dark:text-slate-200">Drag & Drop or choose file to upload</span>
-                      <span className="text-[11.5px] text-slate-400 font-medium">Supported formats .jpeg, png, pf</span>
+                      <span className="text-[11.5px] text-slate-400 font-medium">Supported formats .jpeg, .png, .pdf</span>
                     </label>
                     {materialFiles.length > 0 && (
                       <div className="flex flex-wrap gap-2 mt-3">
