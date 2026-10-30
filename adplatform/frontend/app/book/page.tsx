@@ -49,6 +49,8 @@ function BookAdForm() {
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const dateInputRef = useRef<HTMLInputElement>(null);
+  const timeInputRef = useRef<HTMLInputElement>(null);
 
   const [scheduleDate, setScheduleDate] = useState(searchParams.get('date') || '');
   const [scheduleTime, setScheduleTime] = useState('');
@@ -358,7 +360,7 @@ function BookAdForm() {
                         <p className="text-[14px] font-light text-[#16151C] mb-1 font-body">
                           Drag & Drop or <span className="text-[#3E8B7C]">choose file</span> to upload
                         </p>
-                        <p className="text-[11px] font-light text-[#A2A1A8] font-body mt-1">Supported formats : jpeg, png, pf</p>
+                        <p className="text-[11px] font-light text-[#A2A1A8] font-body mt-1">Supported formats : JPEG, PNG, GIF, MP4, MOV</p>
                       </div>
                     )}
                   </div>
@@ -380,17 +382,32 @@ function BookAdForm() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
-                  <div className="relative">
-                    <input type="date" min={new Date().toISOString().slice(0, 10)} value={scheduleDate} onChange={(e) => setScheduleDate(e.target.value)} 
-                      className={`${inputClasses} h-[58px] pr-12`} placeholder="Schedule service delivery timeline" 
-                      style={{ color: scheduleDate ? 'inherit' : 'transparent' }} />
+                  <div className="relative cursor-pointer" onClick={() => { try { (dateInputRef.current as any)?.showPicker(); } catch {} }}>
+                    <input 
+                      ref={dateInputRef}
+                      type="date" 
+                      min={new Date().toISOString().slice(0, 10)} 
+                      value={scheduleDate} 
+                      onChange={(e) => setScheduleDate(e.target.value)} 
+                      onClick={(e) => { try { (e.currentTarget as any).showPicker(); } catch {} }}
+                      className={`${inputClasses} h-[58px] pr-12 cursor-pointer`} 
+                      placeholder="Schedule service delivery timeline" 
+                      style={{ color: scheduleDate ? 'inherit' : 'transparent' }} 
+                    />
                     {!scheduleDate && <span className="absolute left-5 top-1/2 -translate-y-1/2 text-[rgba(162,161,168,0.8)] text-[17px] font-light pointer-events-none bg-white pr-2 font-body">Schedule service delivery timeline</span>}
                     <Calendar size={24} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#16151C] pointer-events-none" />
                   </div>
-                  <div className="relative">
-                    <input type="time" value={scheduleTime} onChange={(e) => setScheduleTime(e.target.value)} 
-                      className={`${inputClasses} h-[58px] pr-12`} placeholder="Set timer (optional)" 
-                      style={{ color: scheduleTime ? 'inherit' : 'transparent' }} />
+                  <div className="relative cursor-pointer" onClick={() => { try { (timeInputRef.current as any)?.showPicker(); } catch {} }}>
+                    <input 
+                      ref={timeInputRef}
+                      type="time" 
+                      value={scheduleTime} 
+                      onChange={(e) => setScheduleTime(e.target.value)} 
+                      onClick={(e) => { try { (e.currentTarget as any).showPicker(); } catch {} }}
+                      className={`${inputClasses} h-[58px] pr-12 cursor-pointer`} 
+                      placeholder="Set timer (optional)" 
+                      style={{ color: scheduleTime ? 'inherit' : 'transparent' }} 
+                    />
                     {!scheduleTime && <span className="absolute left-5 top-1/2 -translate-y-1/2 text-[rgba(162,161,168,0.8)] text-[17px] font-light pointer-events-none bg-white pr-2 font-body">Set timer (optional)</span>}
                     <Clock size={24} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#16151C] pointer-events-none" />
                   </div>
