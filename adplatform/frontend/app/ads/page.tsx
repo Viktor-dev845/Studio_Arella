@@ -127,7 +127,7 @@ export default function AdsPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex h-full w-full bg-[#FFFFFF]" style={{ fontFamily: F }}>
+      <div className="flex h-full w-full bg-white dark:bg-[#0a0a0a]" style={{ fontFamily: F }}>
         {/* Left Column (Main Content) */}
         <div className="flex-1 flex flex-col h-full overflow-y-auto pt-[32px]">
           
@@ -150,11 +150,11 @@ export default function AdsPage() {
 
           {/* Actions Row */}
           <div className="flex justify-between items-center px-4 sm:px-8 mb-6">
-            <h2 className="text-[18px] font-bold text-black">My Ads</h2>
+            <h2 className="text-[18px] font-bold text-black dark:text-white">My Ads</h2>
             <div className="flex items-center gap-2.5 sm:gap-4">
               <button 
                 onClick={() => setShowFilter(true)} 
-                className="h-[38px] sm:h-[40px] px-3 sm:px-4 flex items-center gap-1.5 sm:gap-2 border border-[rgba(162,161,168,0.2)] rounded-[8px] text-[13px] sm:text-[14px] text-[#16151C] hover:bg-slate-50 transition-colors font-medium cursor-pointer"
+                className="h-[38px] sm:h-[40px] px-3 sm:px-4 flex items-center gap-1.5 sm:gap-2 border border-[rgba(162,161,168,0.2)] dark:border-white/10 rounded-[8px] text-[13px] sm:text-[14px] text-[#16151C] dark:text-neutral-200 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors font-medium cursor-pointer"
               >
                 <Settings2 size={16} strokeWidth={1.5} />
                 Filter
@@ -231,12 +231,12 @@ export default function AdsPage() {
         </div>
 
         {/* Right Sidebar */}
-        <div className="w-[280px] shrink-0 border-l border-[rgba(0,0,0,0.1)] pt-2 pb-6 px-4 relative flex flex-col bg-[#FFFFFF] hidden xl:flex overflow-x-hidden">
+        <div className="w-[280px] shrink-0 border-l border-[rgba(0,0,0,0.1)] dark:border-white/10 pt-2 pb-6 px-4 relative flex flex-col bg-white dark:bg-[#111111] hidden xl:flex overflow-x-hidden">
           
           {/* Request Creative Service Button */}
           <button 
             onClick={() => setShowCreativeModal(true)}
-            className="w-full h-[37px] bg-[#F5F1E8] hover:bg-[#ebe5d5] rounded-[6px] flex items-center justify-center text-[15px] font-semibold text-[#121212] mb-4 mt-[7px] transition-colors cursor-pointer"
+            className="w-full h-[37px] bg-[#F5F1E8] dark:bg-white/10 hover:bg-[#ebe5d5] dark:hover:bg-white/15 rounded-[6px] flex items-center justify-center text-[15px] font-semibold text-[#121212] dark:text-white mb-4 mt-[7px] transition-colors cursor-pointer"
           >
             Request creative service
           </button>
@@ -271,26 +271,26 @@ export default function AdsPage() {
 
           {/* Calendar Section */}
           <div>
-            <h3 className="text-[14px] font-bold text-black mb-[16px]">Recent Ad Booking Calendar</h3>
+            <h3 className="text-[14px] font-bold text-black dark:text-white mb-[16px]">Recent Ad Booking Calendar</h3>
             
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <span className="text-[#7D7D7D] text-[13px] font-medium">{todayStr}</span>
-                <span className="bg-[#2B2E48] text-white text-[9.5px] font-bold px-[7px] py-[2px] rounded-full">TODAY</span>
+                <span className="text-[#7D7D7D] dark:text-neutral-400 text-[13px] font-medium">{todayStr}</span>
+                <span className="bg-[#2B2E48] dark:bg-white/10 text-white text-[9.5px] font-bold px-[7px] py-[2px] rounded-full">TODAY</span>
               </div>
             </div>
 
             <div className="flex flex-col gap-[10px]">
               {upcomingEvents.length === 0 ? (
-                <div className="text-center py-6 px-3 bg-gray-50 rounded-[8px] border border-gray-100">
-                  <p className="text-[12px] text-gray-500 m-0">No active bookings today</p>
+                <div className="text-center py-6 px-3 bg-gray-50 dark:bg-white/5 rounded-[8px] border border-gray-100 dark:border-white/10">
+                  <p className="text-[12px] text-gray-500 dark:text-neutral-400 m-0">No active bookings today</p>
                 </div>
               ) : (
                 upcomingEvents.map((ev, i) => (
-                  <div key={i} className="relative border border-[#DCDCDD] rounded-[6px] py-[10px] px-[15px] overflow-hidden bg-white">
+                  <div key={i} className="relative border border-[#DCDCDD] dark:border-white/10 rounded-[6px] py-[10px] px-[15px] overflow-hidden bg-white dark:bg-[#161618]">
                     <div className="absolute left-0 top-0 bottom-0 w-[4px]" style={{ backgroundColor: ev.border }}></div>
-                    <p className="text-[13px] font-semibold text-black mb-1 leading-[18px] truncate">{ev.title}</p>
-                    <p className="text-[11px] text-black/50 leading-[14px] m-0">{ev.time}</p>
+                    <p className="text-[13px] font-semibold text-black dark:text-white mb-1 leading-[18px] truncate">{ev.title}</p>
+                    <p className="text-[11px] text-black/50 dark:text-neutral-400 leading-[14px] m-0">{ev.time}</p>
                   </div>
                 ))
               )}

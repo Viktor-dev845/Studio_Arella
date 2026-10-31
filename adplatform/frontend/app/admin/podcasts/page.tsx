@@ -1,651 +1,350 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { PageTransition, FadeCard, Skeleton } from '@/components/ui/Animations';
+import { useState, useEffect } from 'react';
+import { PageTransition } from '@/components/ui/Animations';
 import { useToast } from '@/components/ui/ToastProvider';
 import api from '@/lib/api';
 import { theme } from '@/lib/theme';
 import StatusBadge from '@/components/ui/StatusBadge';
-import {
-  Search,
-  Loader2,
-  Mic,
-  Calendar,
-  Clock,
-  CheckCircle2,
-  XCircle,
-  RotateCcw,
-  User,
-  Mail,
-  FileText,
-  DollarSign,
-  AlertTriangle,
-  Info,
-  ChevronRight
-} from 'lucide-react';
+import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell } from '@/components/ui/Table';
+import { Search, Loader2, Mic, Eye, CheckCircle2, Ban, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const F = theme.font.body;
-
-interface PodcastBooking {
-  id: string;
-  booking_number: string;
-  user_id: string;
-  user_name: string | null;
-  user_email: string | null;
-  package_type: string;
-  start_time: string;
-  end_time: string;
-  duration_minutes: number;
-  addons: any[];
-  base_cost: number | string;
-  addons_cost: number | string;
-  total_cost: number | string;
-  status: string;
-  payment_status: string;
-  notes: string | null;
-  cancellation_reason: string | null;
-  refund_amount: number | string | null;
-  cancelled_at: string | null;
-  series_id: string | null;
-  created_at: string;
-}
+const card = { background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: theme.radius.lg, overflow: 'hidden' } as React.CSSProperties;
 
 export default function AdminPodcastsPage() {
-  const [bookings, setBookings] = useState<PodcastBooking[]>([]);
-  const [counts, setCounts] = useState({ all: 0, confirmed: 0, completed: 0, cancelled: 0, pending: 0 });
+  const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'all' | 'confirmed' | 'completed' | 'cancelled'>('all');
   const [search, setSearch] = useState('');
-  const { toast } = useToast();
+  const [statusFilter, setStatusFilter] = useState('all');
 
-  // Modals
-  const [selectedDetails, setSelectedDetails] = useState<PodcastBooking | null>(null);
-  const [completeTarget, setCompleteTarget] = useState<PodcastBooking | null>(null);
-  const [cancelTarget, setCancelTarget] = useState<PodcastBooking | null>(null);
-
-  // Form states
-  const [adminNotes, setAdminNotes] = useState('');
+  const [selectedBooking, setSelectedBooking] = useState<any | null>(null);
+  const [cancelTarget, setCancelTarget] = useState<any | null>(null);
   const [cancelReason, setCancelReason] = useState('');
   const [refundToWallet, setRefundToWallet] = useState(true);
-  const [processing, setProcessing] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
 
-  const fetchBookings = async (tab = activeTab) => {
+  const { toast } = useToast();
+
+  const fetchBookings = async () => {
     try {
-      setLoading(true);
-      const params: any = { limit: 100 };
-      if (tab !== 'all') params.status = tab;
-      const res = await api.get('/admin/podcasts', { params });
+      const res = await api.get('/admin/podcasts?limit=100');
       setBookings(res.data.bookings || []);
-      if (res.data.counts) {
-        setCounts(res.data.counts);
-      }
     } catch (err: any) {
       toast('Failed to load podcast bookings', 'error');
-      setBookings([]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchBookings(activeTab);
-  }, [activeTab]);
+    fetchBookings();
+  }, []);
 
-  const handleMarkCompleted = async () => {
-    if (!completeTarget) return;
-    setProcessing(true);
+  const handleUpdateStatus = async (id: string, newStatus: string, reason?: string, refund = false) => {
+    setActionLoading(true);
     try {
-      await api.put(`/admin/podcasts/${completeTarget.id}/status`, {
-        status: 'completed',
-        notes: adminNotes.trim() ? `${completeTarget.notes ? completeTarget.notes + ' | ' : ''}Studio Note: ${adminNotes.trim()}` : completeTarget.notes,
+      const res = await api.put(`/admin/podcasts/${id}/status`, {
+        status: newStatus,
+        reason,
+        refund,
       });
-      toast(`Session ${completeTarget.booking_number} marked as completed. Customer notified.`, 'success');
-      setCompleteTarget(null);
-      setAdminNotes('');
-      fetchBookings(activeTab);
-    } catch (err: any) {
-      toast(err?.response?.data?.message || 'Failed to complete session', 'error');
-    } finally {
-      setProcessing(false);
-    }
-  };
-
-  const handleCancelBooking = async () => {
-    if (!cancelTarget) return;
-    setProcessing(true);
-    try {
-      await api.put(`/admin/podcasts/${cancelTarget.id}/status`, {
-        status: 'cancelled',
-        reason: cancelReason.trim() || 'Cancelled by admin',
-        refund: refundToWallet,
-      });
-      toast(
-        refundToWallet
-          ? `Session ${cancelTarget.booking_number} cancelled & ₦${Number(cancelTarget.total_cost).toLocaleString()} refunded to customer wallet.`
-          : `Session ${cancelTarget.booking_number} cancelled without refund.`,
-        'success'
-      );
+      toast(res.data.message || `Booking status updated to ${newStatus}`, 'success');
+      setBookings(prev => prev.map(b => b.id === id ? { ...b, status: newStatus } : b));
       setCancelTarget(null);
-      setCancelReason('');
-      fetchBookings(activeTab);
+      if (selectedBooking && selectedBooking.id === id) {
+        setSelectedBooking((prev: any) => ({ ...prev, status: newStatus }));
+      }
     } catch (err: any) {
-      toast(err?.response?.data?.message || 'Failed to cancel session', 'error');
+      toast(err?.response?.data?.message || 'Failed to update booking status', 'error');
     } finally {
-      setProcessing(false);
+      setActionLoading(false);
     }
   };
 
-  const filteredBookings = useMemo(() => {
-    if (!search.trim()) return bookings;
+  const filteredBookings = bookings.filter((b) => {
     const q = search.toLowerCase();
-    return bookings.filter(
-      (b) =>
-        (b.booking_number || '').toLowerCase().includes(q) ||
-        (b.user_name || '').toLowerCase().includes(q) ||
-        (b.user_email || '').toLowerCase().includes(q) ||
-        (b.notes || '').toLowerCase().includes(q) ||
-        (b.package_type || '').toLowerCase().includes(q)
-    );
-  }, [bookings, search]);
+    const matchSearch =
+      (b.booking_number || '').toLowerCase().includes(q) ||
+      (b.user_name || '').toLowerCase().includes(q) ||
+      (b.user_email || '').toLowerCase().includes(q) ||
+      (b.package_type || '').toLowerCase().includes(q);
+
+    const matchStatus = statusFilter === 'all' || b.status === statusFilter;
+    return matchSearch && matchStatus;
+  });
 
   return (
     <PageTransition>
-      <div style={{ fontFamily: F, maxWidth: 1200, margin: '0 auto', paddingBottom: 60 }}>
-        {/* Header */}
-        <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16 }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-              <div style={{ width: 36, height: 36, borderRadius: 10, background: theme.color.goldLight, border: `1px solid ${theme.color.goldMid}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Mic size={18} color={theme.color.goldDark} />
-              </div>
-              <h1 style={{ fontFamily: theme.font.display, fontSize: 24, fontWeight: 700, color: theme.color.text1, margin: 0 }}>
-                Podcast Studio Sessions
-              </h1>
+      <div style={{ fontFamily: F }}>
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+            <div style={{ padding: '8px', background: theme.color.goldLight, borderRadius: theme.radius.md, display: 'flex' }}>
+              <Mic size={20} color={theme.color.goldDark} />
             </div>
-            <p style={{ fontSize: 13, color: theme.color.text3, margin: 0 }}>
-              Manage physical recording studio bookings, complete live sessions, and handle customer cancellations & refunds.
-            </p>
+            <h1 style={{ fontFamily: theme.font.display, fontSize: 26, fontWeight: 700, color: theme.color.text1, margin: 0, letterSpacing: '-0.02em' }}>All Podcast Bookings</h1>
           </div>
-
-          <button
-            onClick={() => fetchBookings(activeTab)}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-              padding: '9px 16px',
-              background: theme.color.surface,
-              border: `1px solid ${theme.color.border}`,
-              borderRadius: 10,
-              fontSize: 13,
-              fontWeight: 600,
-              color: theme.color.text2,
-              cursor: 'pointer',
-              fontFamily: F,
-            }}
-          >
-            <RotateCcw size={13} color={theme.color.text3} /> Refresh
-          </button>
+          <p style={{ fontSize: 13, color: theme.color.text3, margin: 0 }}>
+            {bookings.length} studio recording and production bookings across Studio Arella
+          </p>
         </div>
 
-        {/* Status Tabs & Search */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: 14,
-            marginBottom: 20,
-          }}
-        >
-          {/* Status Tabs */}
-          <div
-            style={{
-              display: 'flex',
-              gap: 6,
-              background: theme.color.surface2,
-              padding: 4,
-              borderRadius: 12,
-              border: `1px solid ${theme.color.border}`,
-            }}
-          >
-            {[
-              { id: 'all', label: 'All Sessions', count: counts.all, color: theme.color.text2 },
-              { id: 'confirmed', label: 'Confirmed / Upcoming', count: counts.confirmed, color: theme.color.goldDark },
-              { id: 'completed', label: 'Completed', count: counts.completed, color: theme.color.success },
-              { id: 'cancelled', label: 'Cancelled', count: counts.cancelled, color: theme.color.error },
-            ].map((tab) => {
-              const active = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 8,
-                    padding: '8px 14px',
-                    borderRadius: 9,
-                    border: 'none',
-                    background: active ? theme.color.surface : 'transparent',
-                    color: active ? theme.color.text1 : theme.color.text3,
-                    boxShadow: active ? theme.shadow.sm : 'none',
-                    fontWeight: active ? 700 : 500,
-                    fontSize: 13,
-                    cursor: 'pointer',
-                    fontFamily: F,
-                    transition: 'all 0.15s ease',
-                  }}
-                >
-                  <span>{tab.label}</span>
-                  <span
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 800,
-                      padding: '2px 7px',
-                      borderRadius: 100,
-                      background: active ? theme.color.surface2 : 'rgba(0,0,0,0.04)',
-                      color: tab.color,
-                      border: `1px solid ${theme.color.border2}`,
-                    }}
-                  >
-                    {tab.count}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Search box */}
-          <div style={{ position: 'relative', width: 300, maxWidth: '100%' }}>
-            <Search
-              size={14}
-              color={theme.color.text4}
-              style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }}
-            />
+        {/* Search and Filters */}
+        <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+          <div style={{ position: 'relative', flex: 1, minWidth: 240 }}>
+            <Search size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: theme.color.text3 }} />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by booking #, name, notes..."
+              placeholder="Search by booking #, name, email, or package..."
               style={{
                 width: '100%',
-                padding: '9px 12px 9px 34px',
-                borderRadius: 10,
-                border: `1px solid ${theme.color.border}`,
+                paddingLeft: 36,
+                paddingRight: 14,
+                paddingTop: 10,
+                paddingBottom: 10,
+                borderRadius: 9,
+                border: `1.5px solid ${theme.color.border}`,
                 background: theme.color.surface,
                 color: theme.color.text1,
                 fontSize: 13,
-                fontFamily: F,
                 outline: 'none',
-                boxSizing: 'border-box',
+                fontFamily: F,
+                boxSizing: 'border-box'
               }}
             />
           </div>
+
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {['all', 'confirmed', 'completed', 'cancelled'].map(s => (
+              <button
+                key={s}
+                onClick={() => setStatusFilter(s)}
+                style={{
+                  padding: '7px 12px',
+                  borderRadius: 8,
+                  fontSize: 12,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  border: `1px solid ${statusFilter === s ? theme.color.gold : theme.color.border}`,
+                  background: statusFilter === s ? theme.color.gold : theme.color.surface,
+                  color: statusFilter === s ? theme.color.charcoal900 : theme.color.text2,
+                  textTransform: 'capitalize'
+                }}
+              >
+                {s === 'all' ? 'All Statuses' : s}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Main Table / Container */}
-        <div
-          style={{
-            background: theme.color.surface,
-            borderRadius: 16,
-            border: `1px solid ${theme.color.border}`,
-            overflow: 'hidden',
-            boxShadow: theme.shadow.sm,
-          }}
-        >
+        <div style={card}>
           {loading ? (
-            <div style={{ padding: 60, textAlign: 'center' }}>
-              <Loader2 size={28} className="animate-spin" color={theme.color.gold} style={{ margin: '0 auto 12px' }} />
-              <p style={{ fontSize: 13, color: theme.color.text3 }}>Loading podcast sessions...</p>
-            </div>
+            <div style={{ padding: 48, textAlign: 'center' }}><Loader2 size={24} className="animate-spin" color={theme.color.gold} style={{ margin: '0 auto' }} /></div>
           ) : filteredBookings.length === 0 ? (
             <div style={{ padding: 60, textAlign: 'center', color: theme.color.text3 }}>
-              <div style={{ width: 56, height: 56, borderRadius: 16, background: theme.color.surface2, border: `1px solid ${theme.color.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
-                <Mic size={24} color={theme.color.text3} />
-              </div>
-              <p style={{ fontSize: 15, fontWeight: 700, color: theme.color.text1, margin: '0 0 4px' }}>
-                No podcast bookings found
-              </p>
-              <p style={{ fontSize: 13, color: theme.color.text3, margin: 0 }}>
-                {search ? 'Try clearing your search term.' : `There are no ${activeTab === 'all' ? '' : activeTab} podcast sessions.`}
-              </p>
+              {bookings.length === 0 ? 'No podcast bookings found.' : 'No bookings match your search.'}
             </div>
           ) : (
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-                <thead>
-                  <tr style={{ background: theme.color.surface2, borderBottom: `1px solid ${theme.color.border}` }}>
-                    <th style={{ padding: '14px 20px', textAlign: 'left', fontWeight: 700, color: theme.color.text2, whiteSpace: 'nowrap' }}>Booking</th>
-                    <th style={{ padding: '14px 20px', textAlign: 'left', fontWeight: 700, color: theme.color.text2, whiteSpace: 'nowrap' }}>Customer</th>
-                    <th style={{ padding: '14px 20px', textAlign: 'left', fontWeight: 700, color: theme.color.text2, whiteSpace: 'nowrap' }}>Package & Schedule</th>
-                    <th style={{ padding: '14px 20px', textAlign: 'left', fontWeight: 700, color: theme.color.text2, whiteSpace: 'nowrap' }}>Session Notes</th>
-                    <th style={{ padding: '14px 20px', textAlign: 'left', fontWeight: 700, color: theme.color.text2, whiteSpace: 'nowrap' }}>Total</th>
-                    <th style={{ padding: '14px 20px', textAlign: 'left', fontWeight: 700, color: theme.color.text2, whiteSpace: 'nowrap' }}>Status</th>
-                    <th style={{ padding: '14px 20px', textAlign: 'right', fontWeight: 700, color: theme.color.text2, whiteSpace: 'nowrap' }}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredBookings.map((b) => {
-                    const isConfirmed = b.status === 'confirmed';
-                    const isCompleted = b.status === 'completed';
-                    const isCancelled = b.status === 'cancelled';
+            <Table>
+              <TableHead>
+                {['Booking', 'Customer', 'Package & Schedule', 'Amount', 'Status', 'Actions'].map(h => (
+                  <TableHeaderCell key={h}>{h}</TableHeaderCell>
+                ))}
+              </TableHead>
+              <TableBody>
+                {filteredBookings.map((b) => (
+                  <TableRow key={b.id}>
+                    <TableCell>
+                      <div style={{ fontWeight: 800, color: theme.color.text1 }}>{b.booking_number}</div>
+                      <div style={{ fontSize: 11, color: theme.color.text4, marginTop: 2 }}>
+                        {new Date(b.created_at).toLocaleDateString()}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div style={{ fontWeight: 600, color: theme.color.text1 }}>{b.user_name || 'Studio Creator'}</div>
+                      <div style={{ fontSize: 11, color: theme.color.text3 }}>{b.user_email || '—'}</div>
+                    </TableCell>
+                    <TableCell>
+                      <div style={{ fontWeight: 700, color: theme.color.text1 }}>{b.package_type}</div>
+                      <div style={{ fontSize: 12, color: theme.color.text3, marginTop: 2 }}>
+                        {new Date(b.start_time).toLocaleString()} ({Math.round(b.duration_minutes / 60)} hr)
+                      </div>
+                      {b.addons && b.addons.length > 0 && (
+                        <div style={{ marginTop: 4, display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                          {b.addons.map((a: any, i: number) => (
+                            <span key={i} style={{ background: theme.color.surface2, padding: '1px 6px', borderRadius: 4, fontSize: 10, color: theme.color.text2 }}>
+                              {a.name}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div style={{ fontWeight: 800, color: theme.color.success }}>
+                        ₦{Number(b.total_cost).toLocaleString()}
+                      </div>
+                      {b.payment_status === 'paid' && <div style={{ fontSize: 10, color: theme.color.success, fontWeight: 700, marginTop: 2 }}>PAID</div>}
+                    </TableCell>
+                    <TableCell>
+                      <StatusBadge status={b.status === 'confirmed' ? 'active' : b.status} />
+                    </TableCell>
+                    <TableCell>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <button
+                          onClick={() => setSelectedBooking(b)}
+                          title="View details"
+                          style={{
+                            background: theme.color.surface2,
+                            border: `1px solid ${theme.color.border}`,
+                            padding: '5px 8px',
+                            borderRadius: 6,
+                            color: theme.color.text2,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 4,
+                            fontSize: 12
+                          }}
+                        >
+                          <Eye size={13} />
+                        </button>
 
-                    return (
-                      <tr
-                        key={b.id}
-                        style={{
-                          borderBottom: `1px solid ${theme.color.border}`,
-                          transition: 'background 0.15s ease',
-                        }}
-                      >
-                        {/* Booking Number */}
-                        <td style={{ padding: '16px 20px', verticalAlign: 'top' }}>
-                          <span
-                            className="mono"
+                        {b.status === 'confirmed' && (
+                          <button
+                            onClick={() => handleUpdateStatus(b.id, 'completed')}
+                            title="Mark completed"
                             style={{
-                              fontWeight: 800,
-                              color: theme.color.text1,
-                              display: 'inline-block',
-                              background: theme.color.surface2,
-                              padding: '2px 8px',
+                              background: theme.color.successLight,
+                              border: `1px solid ${theme.color.success}`,
+                              padding: '5px 8px',
                               borderRadius: 6,
-                              border: `1px solid ${theme.color.border}`,
+                              color: theme.color.success,
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 4,
+                              fontSize: 12,
+                              fontWeight: 600
                             }}
                           >
-                            {b.booking_number}
-                          </span>
-                          <div style={{ fontSize: 11, color: theme.color.text4, marginTop: 4 }}>
-                            Booked {new Date(b.created_at).toLocaleDateString()}
-                          </div>
-                          {b.series_id && (
-                            <span
-                              style={{
-                                display: 'inline-block',
-                                marginTop: 4,
-                                fontSize: 10,
-                                fontWeight: 700,
-                                color: theme.color.goldDark,
-                                background: theme.color.goldLight,
-                                padding: '1px 6px',
-                                borderRadius: 4,
-                              }}
-                            >
-                              Recurring Series
-                            </span>
-                          )}
-                        </td>
+                            <CheckCircle2 size={13} /> Complete
+                          </button>
+                        )}
 
-                        {/* Customer */}
-                        <td style={{ padding: '16px 20px', verticalAlign: 'top' }}>
-                          <div style={{ fontWeight: 700, color: theme.color.text1 }}>
-                            {b.user_name || 'Customer'}
-                          </div>
-                          <div style={{ fontSize: 12, color: theme.color.text3 }}>
-                            <a href={`mailto:${b.user_email}`} style={{ color: theme.color.text3, textDecoration: 'none' }}>
-                              {b.user_email}
-                            </a>
-                          </div>
-                        </td>
-
-                        {/* Package & Schedule */}
-                        <td style={{ padding: '16px 20px', verticalAlign: 'top' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <span
-                              style={{
-                                fontWeight: 700,
-                                color: theme.color.text1,
-                                fontSize: 13,
-                              }}
-                            >
-                              {b.package_type}
-                            </span>
-                            <span
-                              style={{
-                                fontSize: 11,
-                                color: theme.color.text3,
-                                background: theme.color.surface2,
-                                padding: '1px 6px',
-                                borderRadius: 4,
-                              }}
-                            >
-                              {b.duration_minutes ? `${b.duration_minutes} min` : '1 hr'}
-                            </span>
-                          </div>
-
-                          <div style={{ fontSize: 12, color: theme.color.text2, marginTop: 4, display: 'flex', alignItems: 'center', gap: 5 }}>
-                            <Calendar size={13} color={theme.color.text3} />
-                            <span>{new Date(b.start_time).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                          </div>
-                          <div style={{ fontSize: 12, color: theme.color.goldDark, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5, marginTop: 2 }}>
-                            <Clock size={13} />
-                            <span>
-                              {new Date(b.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} – {new Date(b.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </span>
-                          </div>
-
-                          {b.addons && b.addons.length > 0 && (
-                            <div style={{ marginTop: 6, display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                              {b.addons.map((a: any, idx: number) => (
-                                <span
-                                  key={idx}
-                                  style={{
-                                    fontSize: 10,
-                                    background: theme.color.surface2,
-                                    color: theme.color.text2,
-                                    padding: '1px 6px',
-                                    borderRadius: 4,
-                                    border: `1px solid ${theme.color.border2}`,
-                                  }}
-                                >
-                                  +{a.name || a}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                        </td>
-
-                        {/* Customer Notes */}
-                        <td style={{ padding: '16px 20px', verticalAlign: 'top', maxWidth: 220 }}>
-                          {b.notes ? (
-                            <div
-                              style={{
-                                fontSize: 12,
-                                color: theme.color.text2,
-                                background: theme.color.surface2,
-                                padding: '6px 10px',
-                                borderRadius: 8,
-                                border: `1px solid ${theme.color.border2}`,
-                                lineHeight: 1.4,
-                              }}
-                            >
-                              "{b.notes}"
-                            </div>
-                          ) : (
-                            <span style={{ fontSize: 12, color: theme.color.text4 }}>No special notes</span>
-                          )}
-
-                          {isCancelled && b.cancellation_reason && (
-                            <div style={{ marginTop: 6, fontSize: 11, color: theme.color.error }}>
-                              <strong>Cancelled:</strong> {b.cancellation_reason}
-                            </div>
-                          )}
-                        </td>
-
-                        {/* Cost */}
-                        <td style={{ padding: '16px 20px', verticalAlign: 'top' }}>
-                          <div className="mono" style={{ fontWeight: 800, color: theme.color.text1, fontSize: 14 }}>
-                            ₦{Number(b.total_cost).toLocaleString()}
-                          </div>
-                          {b.payment_status === 'paid' ? (
-                            <span style={{ fontSize: 10, fontWeight: 800, color: '#16A34A', background: '#F0FDF4', border: '1px solid #BBF7D0', padding: '1px 6px', borderRadius: 4, display: 'inline-block', marginTop: 3 }}>
-                              PAID
-                            </span>
-                          ) : (
-                            <span style={{ fontSize: 10, fontWeight: 700, color: theme.color.goldDark, background: theme.color.goldLight, padding: '1px 6px', borderRadius: 4, display: 'inline-block', marginTop: 3 }}>
-                              {b.payment_status}
-                            </span>
-                          )}
-                        </td>
-
-                        {/* Status */}
-                        <td style={{ padding: '16px 20px', verticalAlign: 'top' }}>
-                          <StatusBadge status={b.status === 'confirmed' ? 'active' : b.status} />
-                        </td>
-
-                        {/* Action buttons */}
-                        <td style={{ padding: '16px 20px', verticalAlign: 'top', textAlign: 'right' }}>
-                          <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-                            <button
-                              onClick={() => setSelectedDetails(b)}
-                              style={{
-                                padding: '6px 10px',
-                                background: theme.color.surface2,
-                                border: `1px solid ${theme.color.border}`,
-                                borderRadius: 7,
-                                fontSize: 12,
-                                fontWeight: 600,
-                                color: theme.color.text2,
-                                cursor: 'pointer',
-                                fontFamily: F,
-                              }}
-                            >
-                              Details
-                            </button>
-
-                            {isConfirmed && (
-                              <>
-                                <button
-                                  onClick={() => {
-                                    setCompleteTarget(b);
-                                    setAdminNotes('');
-                                  }}
-                                  style={{
-                                    padding: '6px 12px',
-                                    background: '#F0FDF4',
-                                    border: '1px solid #BBF7D0',
-                                    borderRadius: 7,
-                                    fontSize: 12,
-                                    fontWeight: 700,
-                                    color: '#16A34A',
-                                    cursor: 'pointer',
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: 4,
-                                    fontFamily: F,
-                                  }}
-                                  title="Mark studio recording finished"
-                                >
-                                  <CheckCircle2 size={13} /> Complete
-                                </button>
-
-                                <button
-                                  onClick={() => {
-                                    setCancelTarget(b);
-                                    setCancelReason('');
-                                    setRefundToWallet(true);
-                                  }}
-                                  style={{
-                                    padding: '6px 10px',
-                                    background: '#FEF2F2',
-                                    border: '1px solid #FECACA',
-                                    borderRadius: 7,
-                                    fontSize: 12,
-                                    fontWeight: 700,
-                                    color: '#DC2626',
-                                    cursor: 'pointer',
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: 4,
-                                    fontFamily: F,
-                                  }}
-                                >
-                                  <XCircle size={13} /> Cancel
-                                </button>
-                              </>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                        {b.status === 'confirmed' && (
+                          <button
+                            onClick={() => {
+                              setCancelTarget(b);
+                              setCancelReason('');
+                              setRefundToWallet(true);
+                            }}
+                            title="Cancel session"
+                            style={{
+                              background: theme.color.errorLight,
+                              border: `1px solid ${theme.color.error}`,
+                              padding: '5px 8px',
+                              borderRadius: 6,
+                              color: theme.color.error,
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 4,
+                              fontSize: 12,
+                              fontWeight: 600
+                            }}
+                          >
+                            <Ban size={13} /> Cancel
+                          </button>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           )}
         </div>
 
-        {/* Modal: Mark Completed */}
+        {/* View Details Modal */}
         <AnimatePresence>
-          {completeTarget && (
+          {selectedBooking && (
             <>
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                onClick={() => setCompleteTarget(null)}
-                style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 200, backdropFilter: 'blur(3px)' }}
+                onClick={() => setSelectedBooking(null)}
+                style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 100, backdropFilter: 'blur(4px)' }}
               />
-              <div style={{ position: 'fixed', inset: 0, zIndex: 201, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+              <div style={{ position: 'fixed', inset: 0, zIndex: 101, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  style={{ width: '100%', maxWidth: 480, background: theme.color.surface, borderRadius: 18, padding: 24, border: `1px solid ${theme.color.border}`, boxShadow: theme.shadow.lg, fontFamily: F }}
+                  initial={{ opacity: 0, scale: 0.95, y: 16 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: 16 }}
+                  style={{ background: theme.color.surface, width: '100%', maxWidth: 500, borderRadius: 16, border: `1px solid ${theme.color.border}`, overflow: 'hidden', boxShadow: theme.shadow.lg, fontFamily: F }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-                    <div style={{ width: 36, height: 36, borderRadius: 10, background: '#F0FDF4', border: '1px solid #BBF7D0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <CheckCircle2 size={18} color="#16A34A" />
+                  <div style={{ padding: '20px 24px', borderBottom: `1px solid ${theme.color.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={{ width: 34, height: 34, borderRadius: 10, background: theme.color.goldLight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Mic size={16} color={theme.color.goldDark} />
+                      </div>
+                      <div>
+                        <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: theme.color.text1 }}>Session {selectedBooking.booking_number}</h3>
+                        <p style={{ margin: 0, fontSize: 12, color: theme.color.text3 }}>{selectedBooking.package_type}</p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 style={{ fontSize: 17, fontWeight: 700, margin: 0, color: theme.color.text1 }}>Complete Podcast Session</h3>
-                      <p style={{ fontSize: 12, color: theme.color.text3, margin: 0 }}>Booking #{completeTarget.booking_number}</p>
-                    </div>
+                    <button onClick={() => setSelectedBooking(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text3, padding: 4 }}>
+                      <X size={18} />
+                    </button>
                   </div>
 
-                  <p style={{ fontSize: 13, color: theme.color.text2, lineHeight: 1.5, marginBottom: 16 }}>
-                    This confirms that <strong style={{ color: theme.color.text1 }}>{completeTarget.user_name}</strong>'s recording session ({completeTarget.package_type}) has wrapped up. An in-app notification will be sent to the customer.
-                  </p>
+                  <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                      <div>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: theme.color.text4, textTransform: 'uppercase' }}>Customer</div>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: theme.color.text1, marginTop: 2 }}>{selectedBooking.user_name || '—'}</div>
+                        <div style={{ fontSize: 12, color: theme.color.text3 }}>{selectedBooking.user_email || '—'}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: theme.color.text4, textTransform: 'uppercase' }}>Status</div>
+                        <div style={{ marginTop: 4 }}><StatusBadge status={selectedBooking.status === 'confirmed' ? 'active' : selectedBooking.status} /></div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: theme.color.text4, textTransform: 'uppercase' }}>Session Time</div>
+                        <div style={{ fontSize: 13, color: theme.color.text1, marginTop: 2 }}>{new Date(selectedBooking.start_time).toLocaleString()}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: theme.color.text4, textTransform: 'uppercase' }}>Total Amount</div>
+                        <div style={{ fontSize: 16, fontWeight: 800, color: theme.color.success, marginTop: 2 }}>₦{Number(selectedBooking.total_cost || 0).toLocaleString()}</div>
+                      </div>
+                    </div>
 
-                  <div style={{ marginBottom: 18 }}>
-                    <label style={{ fontSize: 11, fontWeight: 700, color: theme.color.text2, display: 'block', marginBottom: 6, textTransform: 'uppercase' }}>
-                      Optional Studio / Handover Note
-                    </label>
-                    <input
-                      type="text"
-                      value={adminNotes}
-                      onChange={(e) => setAdminNotes(e.target.value)}
-                      placeholder="e.g. Master audio WAV file uploaded to drive, stems provided..."
-                      style={{
-                        width: '100%',
-                        padding: '10px 12px',
-                        borderRadius: 10,
-                        border: `1px solid ${theme.color.border}`,
-                        background: theme.color.surface2,
-                        color: theme.color.text1,
-                        fontSize: 13,
-                        boxSizing: 'border-box',
-                        outline: 'none',
-                      }}
-                    />
-                  </div>
+                    {selectedBooking.notes && (
+                      <div style={{ padding: '12px 14px', background: theme.color.surface2, borderRadius: 8, fontSize: 13, color: theme.color.text2 }}>
+                        <strong>Notes:</strong> {selectedBooking.notes}
+                      </div>
+                    )}
 
-                  <div style={{ display: 'flex', gap: 10 }}>
-                    <button
-                      onClick={() => setCompleteTarget(null)}
-                      style={{ flex: 1, padding: '11px', background: theme.color.surface2, border: `1px solid ${theme.color.border}`, borderRadius: 10, fontSize: 13, fontWeight: 600, color: theme.color.text2, cursor: 'pointer', fontFamily: F }}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={handleMarkCompleted}
-                      disabled={processing}
-                      style={{ flex: 1, padding: '11px', background: '#16A34A', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 700, color: '#fff', cursor: 'pointer', fontFamily: F }}
-                    >
-                      {processing ? 'Updating...' : 'Confirm Completed'}
-                    </button>
+                    <div style={{ display: 'flex', gap: 10, marginTop: 8, justifyContent: 'flex-end' }}>
+                      <button
+                        onClick={() => setSelectedBooking(null)}
+                        style={{
+                          padding: '8px 16px',
+                          background: theme.color.surface2,
+                          color: theme.color.text1,
+                          border: `1px solid ${theme.color.border}`,
+                          borderRadius: 8,
+                          fontSize: 13,
+                          fontWeight: 600,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Close
+                      </button>
+                    </div>
                   </div>
                 </motion.div>
               </div>
@@ -653,7 +352,7 @@ export default function AdminPodcastsPage() {
           )}
         </AnimatePresence>
 
-        {/* Modal: Cancel & Refund */}
+        {/* Cancellation Modal */}
         <AnimatePresence>
           {cancelTarget && (
             <>
@@ -662,193 +361,110 @@ export default function AdminPodcastsPage() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setCancelTarget(null)}
-                style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 200, backdropFilter: 'blur(3px)' }}
+                style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 110, backdropFilter: 'blur(4px)' }}
               />
-              <div style={{ position: 'fixed', inset: 0, zIndex: 201, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+              <div style={{ position: 'fixed', inset: 0, zIndex: 111, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  style={{ width: '100%', maxWidth: 480, background: theme.color.surface, borderRadius: 18, padding: 24, border: `1px solid ${theme.color.border}`, boxShadow: theme.shadow.lg, fontFamily: F }}
+                  initial={{ opacity: 0, scale: 0.95, y: 16 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: 16 }}
+                  style={{ background: theme.color.surface, width: '100%', maxWidth: 440, borderRadius: 16, border: `1px solid ${theme.color.border}`, overflow: 'hidden', boxShadow: theme.shadow.lg, fontFamily: F }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-                    <div style={{ width: 36, height: 36, borderRadius: 10, background: '#FEF2F2', border: '1px solid #FECACA', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <AlertTriangle size={18} color="#DC2626" />
+                  <div style={{ padding: '20px 24px', borderBottom: `1px solid ${theme.color.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={{ width: 34, height: 34, borderRadius: 10, background: theme.color.errorLight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Ban size={16} color={theme.color.error} />
+                      </div>
+                      <div>
+                        <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: theme.color.text1 }}>Cancel Podcast Session</h3>
+                        <p style={{ margin: 0, fontSize: 12, color: theme.color.text3 }}>{cancelTarget.booking_number} ({cancelTarget.package_type})</p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 style={{ fontSize: 17, fontWeight: 700, margin: 0, color: theme.color.text1 }}>Cancel Podcast Session</h3>
-                      <p style={{ fontSize: 12, color: theme.color.text3, margin: 0 }}>Booking #{cancelTarget.booking_number}</p>
-                    </div>
+                    <button onClick={() => setCancelTarget(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text3, padding: 4 }}>
+                      <X size={18} />
+                    </button>
                   </div>
 
-                  <p style={{ fontSize: 13, color: theme.color.text2, lineHeight: 1.5, marginBottom: 16 }}>
-                    Are you sure you want to cancel the session for <strong style={{ color: theme.color.text1 }}>{cancelTarget.user_name}</strong>?
-                  </p>
+                  <form onSubmit={(e) => {
+                    e.preventDefault();
+                    handleUpdateStatus(cancelTarget.id, 'cancelled', cancelReason, refundToWallet);
+                  }} style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    <p style={{ margin: 0, fontSize: 13, color: theme.color.text2, lineHeight: 1.5 }}>
+                      Cancel studio session <strong>{cancelTarget.booking_number}</strong> for {cancelTarget.user_name || 'the user'}?
+                    </p>
 
-                  <div style={{ marginBottom: 14 }}>
-                    <label style={{ fontSize: 11, fontWeight: 700, color: theme.color.text2, display: 'block', marginBottom: 6, textTransform: 'uppercase' }}>
-                      Cancellation Reason <span style={{ color: theme.color.error }}>*</span>
+                    <div>
+                      <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: theme.color.text2, marginBottom: 6 }}>
+                        Cancellation Reason *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={cancelReason}
+                        onChange={e => setCancelReason(e.target.value)}
+                        placeholder="e.g. Schedule clash, studio maintenance..."
+                        style={{
+                          width: '100%',
+                          padding: '10px 12px',
+                          borderRadius: 8,
+                          border: `1.5px solid ${theme.color.border}`,
+                          background: theme.color.surface,
+                          color: theme.color.text1,
+                          fontSize: 13,
+                          fontFamily: F,
+                          outline: 'none',
+                          boxSizing: 'border-box'
+                        }}
+                      />
+                    </div>
+
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: theme.color.text1, cursor: 'pointer' }}>
+                      <input
+                        type="checkbox"
+                        checked={refundToWallet}
+                        onChange={e => setRefundToWallet(e.target.checked)}
+                      />
+                      <span>Refund session fee (₦{Number(cancelTarget.total_cost).toLocaleString()}) to user wallet</span>
                     </label>
-                    <textarea
-                      rows={2}
-                      value={cancelReason}
-                      onChange={(e) => setCancelReason(e.target.value)}
-                      placeholder="e.g. Studio maintenance, client requested schedule conflict..."
-                      style={{
-                        width: '100%',
-                        padding: '10px 12px',
-                        borderRadius: 10,
-                        border: `1px solid ${theme.color.border}`,
-                        background: theme.color.surface2,
-                        color: theme.color.text1,
-                        fontSize: 13,
-                        boxSizing: 'border-box',
-                        outline: 'none',
-                        resize: 'none',
-                      }}
-                    />
-                  </div>
 
-                  {/* Refund checkbox */}
-                  <label
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 10,
-                      padding: '12px 14px',
-                      background: theme.color.surface2,
-                      border: `1px solid ${theme.color.border}`,
-                      borderRadius: 10,
-                      marginBottom: 18,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={refundToWallet}
-                      onChange={(e) => setRefundToWallet(e.target.checked)}
-                      style={{ width: 16, height: 16, cursor: 'pointer' }}
-                    />
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: theme.color.text1 }}>
-                        Refund ₦{Number(cancelTarget.total_cost).toLocaleString()} to Customer Wallet
-                      </div>
-                      <div style={{ fontSize: 11, color: theme.color.text3 }}>
-                        Credits will be deposited immediately into customer's platform wallet balance.
-                      </div>
+                    <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+                      <button
+                        type="button"
+                        onClick={() => setCancelTarget(null)}
+                        style={{
+                          flex: 1,
+                          padding: '10px',
+                          background: theme.color.surface2,
+                          color: theme.color.text2,
+                          border: `1px solid ${theme.color.border}`,
+                          borderRadius: 8,
+                          fontSize: 13,
+                          fontWeight: 600,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Keep Session
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={actionLoading}
+                        style={{
+                          flex: 1,
+                          padding: '10px',
+                          background: theme.color.error,
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: 8,
+                          fontSize: 13,
+                          fontWeight: 700,
+                          cursor: actionLoading ? 'not-allowed' : 'pointer',
+                          opacity: actionLoading ? 0.7 : 1
+                        }}
+                      >
+                        {actionLoading ? 'Cancelling…' : 'Confirm Cancel'}
+                      </button>
                     </div>
-                  </label>
-
-                  <div style={{ display: 'flex', gap: 10 }}>
-                    <button
-                      onClick={() => setCancelTarget(null)}
-                      style={{ flex: 1, padding: '11px', background: theme.color.surface2, border: `1px solid ${theme.color.border}`, borderRadius: 10, fontSize: 13, fontWeight: 600, color: theme.color.text2, cursor: 'pointer', fontFamily: F }}
-                    >
-                      Keep Booking
-                    </button>
-                    <button
-                      onClick={handleCancelBooking}
-                      disabled={processing}
-                      style={{ flex: 1, padding: '11px', background: '#DC2626', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 700, color: '#fff', cursor: 'pointer', fontFamily: F }}
-                    >
-                      {processing ? 'Cancelling...' : 'Confirm Cancellation'}
-                    </button>
-                  </div>
-                </motion.div>
-              </div>
-            </>
-          )}
-        </AnimatePresence>
-
-        {/* Modal: Full Booking Details */}
-        <AnimatePresence>
-          {selectedDetails && (
-            <>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setSelectedDetails(null)}
-                style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 200, backdropFilter: 'blur(3px)' }}
-              />
-              <div style={{ position: 'fixed', inset: 0, zIndex: 201, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  style={{ width: '100%', maxWidth: 540, background: theme.color.surface, borderRadius: 18, padding: 24, border: `1px solid ${theme.color.border}`, boxShadow: theme.shadow.lg, fontFamily: F }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18 }}>
-                    <div>
-                      <span className="mono" style={{ fontSize: 12, fontWeight: 800, color: theme.color.goldDark }}>
-                        {selectedDetails.booking_number}
-                      </span>
-                      <h3 style={{ fontSize: 18, fontWeight: 700, margin: '4px 0 0', color: theme.color.text1 }}>
-                        Podcast Session Breakdown
-                      </h3>
-                    </div>
-                    <StatusBadge status={selectedDetails.status === 'confirmed' ? 'active' : selectedDetails.status} />
-                  </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
-                    <div style={{ background: theme.color.surface2, padding: 12, borderRadius: 10, border: `1px solid ${theme.color.border2}` }}>
-                      <div style={{ fontSize: 11, color: theme.color.text3, fontWeight: 700, textTransform: 'uppercase' }}>Customer</div>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: theme.color.text1, marginTop: 2 }}>{selectedDetails.user_name || 'N/A'}</div>
-                      <div style={{ fontSize: 12, color: theme.color.text3 }}>{selectedDetails.user_email}</div>
-                    </div>
-
-                    <div style={{ background: theme.color.surface2, padding: 12, borderRadius: 10, border: `1px solid ${theme.color.border2}` }}>
-                      <div style={{ fontSize: 11, color: theme.color.text3, fontWeight: 700, textTransform: 'uppercase' }}>Package</div>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: theme.color.text1, marginTop: 2 }}>{selectedDetails.package_type}</div>
-                      <div style={{ fontSize: 12, color: theme.color.text3 }}>{selectedDetails.duration_minutes || 60} minutes</div>
-                    </div>
-
-                    <div style={{ background: theme.color.surface2, padding: 12, borderRadius: 10, border: `1px solid ${theme.color.border2}` }}>
-                      <div style={{ fontSize: 11, color: theme.color.text3, fontWeight: 700, textTransform: 'uppercase' }}>Date & Time</div>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: theme.color.text1, marginTop: 2 }}>
-                        {new Date(selectedDetails.start_time).toLocaleDateString()}
-                      </div>
-                      <div style={{ fontSize: 12, color: theme.color.goldDark, fontWeight: 600 }}>
-                        {new Date(selectedDetails.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} – {new Date(selectedDetails.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </div>
-                    </div>
-
-                    <div style={{ background: theme.color.surface2, padding: 12, borderRadius: 10, border: `1px solid ${theme.color.border2}` }}>
-                      <div style={{ fontSize: 11, color: theme.color.text3, fontWeight: 700, textTransform: 'uppercase' }}>Financials</div>
-                      <div className="mono" style={{ fontSize: 15, fontWeight: 800, color: theme.color.text1, marginTop: 2 }}>
-                        ₦{Number(selectedDetails.total_cost).toLocaleString()}
-                      </div>
-                      <div style={{ fontSize: 11, color: '#16A34A', fontWeight: 700 }}>
-                        {selectedDetails.payment_status.toUpperCase()}
-                      </div>
-                    </div>
-                  </div>
-
-                  {selectedDetails.notes && (
-                    <div style={{ marginBottom: 16, background: theme.color.surface2, padding: 12, borderRadius: 10, border: `1px solid ${theme.color.border2}` }}>
-                      <div style={{ fontSize: 11, color: theme.color.text3, fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>Customer Notes</div>
-                      <div style={{ fontSize: 13, color: theme.color.text1, lineHeight: 1.4 }}>{selectedDetails.notes}</div>
-                    </div>
-                  )}
-
-                  {selectedDetails.cancellation_reason && (
-                    <div style={{ marginBottom: 16, background: '#FEF2F2', padding: 12, borderRadius: 10, border: '1px solid #FECACA' }}>
-                      <div style={{ fontSize: 11, color: '#DC2626', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>Cancellation Reason</div>
-                      <div style={{ fontSize: 13, color: '#991B1B' }}>{selectedDetails.cancellation_reason}</div>
-                      {selectedDetails.refund_amount && Number(selectedDetails.refund_amount) > 0 && (
-                        <div style={{ fontSize: 12, color: '#16A34A', fontWeight: 700, marginTop: 4 }}>
-                          Refunded: ₦{Number(selectedDetails.refund_amount).toLocaleString()}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  <button
-                    onClick={() => setSelectedDetails(null)}
-                    style={{ width: '100%', padding: '10px', background: theme.color.surface2, border: `1px solid ${theme.color.border}`, borderRadius: 10, fontSize: 13, fontWeight: 600, color: theme.color.text1, cursor: 'pointer', fontFamily: F }}
-                  >
-                    Close Details
-                  </button>
+                  </form>
                 </motion.div>
               </div>
             </>

@@ -20,6 +20,8 @@ export default function AdminCreativeRequestsPage() {
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [updating, setUpdating] = useState(false);
 
+  const [statusFilter, setStatusFilter] = useState('all');
+
   const fetchRequests = () => {
     api.get('/creative-requests/all')
       .then(r => setRequests(r.data || []))
@@ -39,6 +41,7 @@ export default function AdminCreativeRequestsPage() {
       if (selectedRequest && selectedRequest.id === id) {
         setSelectedRequest({ ...selectedRequest, status: newStatus });
       }
+      toast(`Status updated to ${newStatus.replace('_', ' ')}`, 'success');
     } catch (err: any) {
       toast(err?.response?.data?.message || 'Failed to update status', 'error');
     } finally {
@@ -46,35 +49,62 @@ export default function AdminCreativeRequestsPage() {
     }
   };
 
-  const filtered = requests.filter(r =>
-    r.business_name?.toLowerCase().includes(search.toLowerCase()) ||
-    r.user_name?.toLowerCase().includes(search.toLowerCase()) ||
-    r.ad_type?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = requests.filter(r => {
+    const q = search.toLowerCase();
+    const matchSearch =
+      r.business_name?.toLowerCase().includes(q) ||
+      r.user_name?.toLowerCase().includes(q) ||
+      r.ad_type?.toLowerCase().includes(q);
+
+    const matchStatus = statusFilter === 'all' || r.status === statusFilter;
+    return matchSearch && matchStatus;
+  });
 
   return (
     <PageTransition>
       <div style={{ fontFamily: F }}>
-        <div style={{ marginBottom: 32 }}>
+        <div style={{ marginBottom: 24 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
             <div style={{ padding: '8px', background: theme.color.goldLight, borderRadius: theme.radius.md, display: 'flex' }}>
               <PenTool size={20} color={theme.color.goldDark} />
             </div>
             <h1 style={{ fontFamily: theme.font.display, fontSize: 26, fontWeight: 700, color: theme.color.text1, margin: 0, letterSpacing: '-0.02em' }}>Creative Requests</h1>
           </div>
-          <p style={{ fontSize: 14, color: theme.color.text3, margin: 0 }}>{requests.length} ad design requests submitted by advertisers</p>
+          <p style={{ fontSize: 13, color: theme.color.text3, margin: 0 }}>{requests.length} ad design requests submitted by advertisers</p>
         </div>
 
-        <div style={{ position: 'relative', marginBottom: 24, maxWidth: 400 }}>
-          <Search size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: theme.color.text3 }} />
-          <input 
-            value={search} 
-            onChange={e => setSearch(e.target.value)} 
-            placeholder="Search business name, user, or ad type..." 
-            style={{ width: '100%', paddingLeft: 42, paddingRight: 16, paddingTop: 12, paddingBottom: 12, background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: theme.radius.md, color: theme.color.text1, fontSize: 14, outline: 'none', fontFamily: F, boxSizing: 'border-box', transition: 'all 0.2s ease', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.02)' }} 
-            onFocus={e => { e.currentTarget.style.borderColor = theme.color.gold; e.currentTarget.style.boxShadow = `0 0 0 3px ${theme.color.goldLight}` }} 
-            onBlur={e => { e.currentTarget.style.borderColor = theme.color.border; e.currentTarget.style.boxShadow = 'inset 0 1px 2px rgba(0,0,0,0.02)' }}
-          />
+        <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+          <div style={{ position: 'relative', flex: 1, minWidth: 240 }}>
+            <Search size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: theme.color.text3 }} />
+            <input 
+              value={search} 
+              onChange={e => setSearch(e.target.value)} 
+              placeholder="Search business name, user, or ad type..." 
+              style={{ width: '100%', paddingLeft: 36, paddingRight: 14, paddingTop: 10, paddingBottom: 10, background: theme.color.surface, border: `1.5px solid ${theme.color.border}`, borderRadius: 9, color: theme.color.text1, fontSize: 13, outline: 'none', fontFamily: F, boxSizing: 'border-box' }} 
+            />
+          </div>
+
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {['all', 'pending', 'in_progress', 'completed'].map(s => (
+              <button
+                key={s}
+                onClick={() => setStatusFilter(s)}
+                style={{
+                  padding: '7px 12px',
+                  borderRadius: 8,
+                  fontSize: 12,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  border: `1px solid ${statusFilter === s ? theme.color.gold : theme.color.border}`,
+                  background: statusFilter === s ? theme.color.gold : theme.color.surface,
+                  color: statusFilter === s ? theme.color.charcoal900 : theme.color.text2,
+                  textTransform: 'capitalize'
+                }}
+              >
+                {s === 'all' ? 'All Requests' : s.replace('_', ' ')}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div style={card}>

@@ -51,8 +51,8 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 
 const BAR_COLORS = [
-  '#FFF6DC', '#FBF2E3', '#111111', '#F1F9CD', '#E8C170', '#FFF6DC',
-  '#FBF2E3', '#FFF6DC', '#111111', '#FFF6DC', '#FBF2E3', '#F1F9CD',
+  '#D4AF37', 'rgba(212,175,55,0.65)', '#EFC65E', 'rgba(212,175,55,0.8)', '#D4AF37', 'rgba(212,175,55,0.6)',
+  '#EFC65E', 'rgba(212,175,55,0.75)', '#D4AF37', 'rgba(212,175,55,0.7)', '#EFC65E', '#D4AF37',
 ];
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -309,14 +309,15 @@ export default function AdvertiserDashboard() {
           <div
             className="dash-stat-card"
             style={{
-              background: '#FFFDF5',
+              background: theme.color.surface,
               borderRadius: 16,
               padding: '20px',
-              border: '1px solid rgba(212,175,55,0.04)',
+              border: `1px solid ${theme.color.border}`,
+              boxShadow: theme.shadow.sm,
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 12px' }}>
-              <p style={{ fontSize: 13, color: theme.color.text1, margin: 0, fontWeight: 500 }}>Active Campaigns</p>
+              <p style={{ fontSize: 13, color: theme.color.text3, margin: 0, fontWeight: 600 }}>Active Campaigns</p>
             </div>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
               <span className="dash-stat-number" style={{ fontSize: 28, fontWeight: 700, color: theme.color.text1, lineHeight: 1 }}>{analytics?.active_campaigns || 0}</span>
@@ -327,14 +328,15 @@ export default function AdvertiserDashboard() {
           <div
             className="dash-stat-card"
             style={{
-              background: '#FFFDF5',
+              background: theme.color.surface,
               borderRadius: 16,
               padding: '20px',
-              border: '1px solid rgba(212,175,55,0.04)',
+              border: `1px solid ${theme.color.border}`,
+              boxShadow: theme.shadow.sm,
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 12px' }}>
-              <p style={{ fontSize: 13, color: theme.color.text1, margin: 0, fontWeight: 500 }}>Total Ad Bookings</p>
+              <p style={{ fontSize: 13, color: theme.color.text3, margin: 0, fontWeight: 600 }}>Total Ad Bookings</p>
             </div>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
               <span className="dash-stat-number" style={{ fontSize: 28, fontWeight: 700, color: theme.color.text1, lineHeight: 1 }}>{adBookings.length}</span>
@@ -345,14 +347,15 @@ export default function AdvertiserDashboard() {
           <div
             className="dash-stat-card"
             style={{
-              background: '#FFFDF5',
+              background: theme.color.surface,
               borderRadius: 16,
               padding: '20px',
-              border: '1px solid rgba(212,175,55,0.04)',
+              border: `1px solid ${theme.color.border}`,
+              boxShadow: theme.shadow.sm,
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 12px' }}>
-              <p style={{ fontSize: 13, color: theme.color.text1, margin: 0, fontWeight: 500 }}>Total Spend</p>
+              <p style={{ fontSize: 13, color: theme.color.text3, margin: 0, fontWeight: 600 }}>Total Spend</p>
             </div>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
               <span className="dash-stat-number" style={{ fontSize: 28, fontWeight: 700, color: theme.color.text1, lineHeight: 1, wordBreak: 'break-all' }}>{formatCurrency(analytics?.total_revenue || 0, currency, rates)}</span>
@@ -363,14 +366,15 @@ export default function AdvertiserDashboard() {
           <div
             className="dash-stat-card"
             style={{
-              background: '#FFFDF5',
+              background: theme.color.surface,
               borderRadius: 16,
               padding: '20px',
-              border: '1px solid rgba(212,175,55,0.04)',
+              border: `1px solid ${theme.color.border}`,
+              boxShadow: theme.shadow.sm,
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 12px' }}>
-              <p style={{ fontSize: 13, color: theme.color.text1, margin: 0, fontWeight: 500 }}>Podcast Slots</p>
+              <p style={{ fontSize: 13, color: theme.color.text3, margin: 0, fontWeight: 600 }}>Podcast Slots</p>
             </div>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
               <span className="dash-stat-number" style={{ fontSize: 28, fontWeight: 700, color: theme.color.text1, lineHeight: 1 }}>{bookedPodcastSlots}</span>
@@ -388,11 +392,11 @@ export default function AdvertiserDashboard() {
                 <span style={{ fontSize: 13, fontWeight: 500, color: theme.color.text4, cursor: 'pointer' }}>Total Followers</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: theme.color.text1, fontWeight: 600 }}>
-                  <span style={{ fontSize: 18, lineHeight: 0.5, color: theme.color.text1 }}>•</span> This year
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: theme.color.text2, fontWeight: 600 }}>
+                  <span style={{ fontSize: 18, lineHeight: 0.5, color: theme.color.gold }}>•</span> This year
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: theme.color.text1, fontWeight: 600 }}>
-                  <span style={{ fontSize: 18, lineHeight: 0.5, color: theme.color.text1 }}>•</span> Last year
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: theme.color.text2, fontWeight: 600 }}>
+                  <span style={{ fontSize: 18, lineHeight: 0.5, color: theme.color.text4 }}>•</span> Last year
                 </div>
               </div>
             </div>
@@ -400,7 +404,7 @@ export default function AdvertiserDashboard() {
             <div style={{ height: 210, width: '100%' }}>
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={dynamicViewsData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
-                  <CartesianGrid vertical={false} stroke={theme.color.bg} />
+                  <CartesianGrid vertical={false} stroke={theme.color.border} strokeOpacity={0.6} />
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: theme.color.text4 }} dy={8} />
                   <YAxis
                     domain={[0, maxViewsVal]}
@@ -411,8 +415,8 @@ export default function AdvertiserDashboard() {
                     tickFormatter={(val) => (val === 0 ? '0' : val >= 1000 ? `${(val / 1000).toFixed(0)}K` : val)}
                   />
                   <Tooltip content={<CustomTooltip />} />
-                  <Line type="monotone" dataKey="thisYear" name="This year" stroke="#111111" strokeWidth={1.5} dot={false} activeDot={{ r: 4 }} />
-                  <Line type="monotone" dataKey="lastYear" name="Last year" stroke="#C4D2E3" strokeWidth={1.5} strokeDasharray="3 3" dot={false} activeDot={{ r: 4 }} />
+                  <Line type="monotone" dataKey="thisYear" name="This year" stroke={theme.color.gold} strokeWidth={2} dot={false} activeDot={{ r: 5, fill: theme.color.gold }} />
+                  <Line type="monotone" dataKey="lastYear" name="Last year" stroke={theme.color.text4} strokeWidth={1.5} strokeDasharray="3 3" dot={false} activeDot={{ r: 4 }} />
                 </LineChart>
               </ResponsiveContainer>
             </div>

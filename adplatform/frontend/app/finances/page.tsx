@@ -423,10 +423,10 @@ function FinancesPageContent() {
             {/* Header & Mode Switch */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h1 style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 700, fontSize: '24px', lineHeight: '31px', color: '#101828' }}>
+                <h1 className="text-gray-900 dark:text-white" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 700, fontSize: '24px', lineHeight: '31px' }}>
                   {activeWalletTab === 'creator' ? 'Creator Earnings & Payouts' : 'Wallet'}
                 </h1>
-                <p className="text-[13px] text-gray-500 mt-1">
+                <p className="text-[13px] text-gray-500 dark:text-neutral-400 mt-1">
                   {activeWalletTab === 'creator'
                     ? 'Track your fan tips, subscriber memberships, and withdraw funds directly to your Nigerian bank account'
                     : 'Manage your billboard advertising budget, view ad credit balances, and fund campaigns'}
@@ -573,9 +573,9 @@ function FinancesPageContent() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               
               {/* Total Transaction */}
-              <div className="bg-white rounded-[24px] p-[24px] flex flex-col justify-between relative shadow-sm border border-[#F0F0F0] min-h-[188px]">
+              <div className="bg-white dark:bg-[#111111] rounded-[24px] p-[24px] flex flex-col justify-between relative shadow-sm border border-[#F0F0F0] dark:border-white/10 min-h-[188px]">
                 <div>
-                   <h3 style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '18px', color: '#101828' }}>Total Transaction</h3>
+                   <h3 className="text-[#101828] dark:text-white" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '18px' }}>Total Transaction</h3>
                    <div className="w-[36px] h-[25px] px-1.5 flex items-center justify-center rounded-[8px] mt-[10px]" style={{ background: 'rgba(3, 197, 210, 0.2)' }}>
                       <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 600, fontSize: '14px', color: '#005055' }}>
                         {loading ? '—' : transactions.length}
@@ -585,20 +585,20 @@ function FinancesPageContent() {
                 <div className="flex justify-between items-center w-full">
                   <button 
                     onClick={handleExportCSV}
-                    className="flex items-center gap-[10px] w-full max-w-[287px] bg-[#FFFFFF] shadow-sm rounded-[14px] px-[20px] py-[14px] border border-[#F0F0F0] hover:bg-gray-50 transition-colors cursor-pointer"
+                    className="flex items-center gap-[10px] w-full max-w-[287px] bg-[#FFFFFF] dark:bg-white/5 shadow-sm rounded-[14px] px-[20px] py-[14px] border border-[#F0F0F0] dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10 transition-colors cursor-pointer"
                   >
                     <div className="w-[24px] h-[24px] bg-[#E5F9FA] rounded-full flex items-center justify-center">
                       <Download size={14} color="#005055" />
                     </div>
-                    <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '16px', color: '#101828' }}>Download transaction history</span>
+                    <span className="text-[#101828] dark:text-neutral-200" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '16px' }}>Download transaction history</span>
                   </button>
                 </div>
               </div>
 
               {/* Linked Bank Card */}
-              <div className="bg-white rounded-[24px] p-[24px] flex flex-col justify-between relative shadow-sm border border-[#F0F0F0] min-h-[188px]">
+              <div className="bg-white dark:bg-[#111111] rounded-[24px] p-[24px] flex flex-col justify-between relative shadow-sm border border-[#F0F0F0] dark:border-white/10 min-h-[188px]">
                 <div>
-                   <h3 style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '18px', color: '#101828' }}>Linked Bank Card</h3>
+                   <h3 className="text-[#101828] dark:text-white" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '18px' }}>Linked Bank Card</h3>
                    <div className="w-[36px] h-[25px] px-1.5 flex items-center justify-center rounded-[8px] mt-[10px]" style={{ background: savedCards.length > 0 ? 'rgba(34, 197, 94, 0.15)' : 'rgba(227, 24, 24, 0.15)' }}>
                       <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 600, fontSize: '14px', color: savedCards.length > 0 ? '#15803d' : '#E31818' }}>
                         {loading ? '—' : savedCards.length}
@@ -610,9 +610,9 @@ function FinancesPageContent() {
                   <button 
                     onClick={handleLinkCardWithMonnify} 
                     disabled={linkingCard}
-                    className="flex items-center justify-center w-full max-w-[287px] bg-[#101828] hover:bg-[#1a2538] shadow-sm rounded-[14px] px-[20px] py-[14px] transition-colors cursor-pointer disabled:opacity-60"
+                    className="flex items-center justify-center w-full max-w-[287px] bg-[#101828] dark:bg-[#D4AF37] hover:bg-[#1a2538] dark:hover:bg-[#b89839] shadow-sm rounded-[14px] px-[20px] py-[14px] transition-colors cursor-pointer disabled:opacity-60"
                   >
-                    <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '16px', color: '#FFFFFF' }}>
+                    <span className="text-[#FFFFFF] dark:text-black font-semibold" style={{ fontFamily: 'var(--font-dm-sans)', fontSize: '16px' }}>
                       {linkingCard ? 'Connecting...' : 'Add A Bank Card'}
                     </span>
                   </button>
@@ -620,7 +620,7 @@ function FinancesPageContent() {
                   {/* Linked Card Indicator or Card Circles */}
                   <div className="flex relative items-center h-[50px] w-[90px] justify-end">
                      {savedCards.length > 0 ? (
-                       <div className="flex items-center gap-1.5 bg-[#F9FAFB] border border-[#E4E7EC] px-2.5 py-1.5 rounded-[10px] text-[11px] font-semibold text-[#344054]">
+                       <div className="flex items-center gap-1.5 bg-[#F9FAFB] dark:bg-white/10 border border-[#E4E7EC] dark:border-white/10 px-2.5 py-1.5 rounded-[10px] text-[11px] font-semibold text-[#344054] dark:text-neutral-200">
                          <CreditCard size={14} className="text-[#D4AF37]" />
                          <span>•••• {savedCards[0].last4 || 'Card'}</span>
                        </div>
@@ -636,9 +636,9 @@ function FinancesPageContent() {
               </div>
 
               {/* Dedicated Account Card */}
-              <div className="bg-white rounded-[24px] p-[20px] sm:p-[22px] flex flex-col justify-between relative shadow-sm border border-[#F0F0F0] min-h-[188px]">
+              <div className="bg-white dark:bg-[#111111] rounded-[24px] p-[20px] sm:p-[22px] flex flex-col justify-between relative shadow-sm border border-[#F0F0F0] dark:border-white/10 min-h-[188px]">
                 <div>
-                   <h3 style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '18px', color: '#101828' }}>Dedicated Account</h3>
+                   <h3 className="text-[#101828] dark:text-white" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '18px' }}>Dedicated Account</h3>
                 </div>
                 
                 {!hasReservedAccount ? (
@@ -675,10 +675,10 @@ function FinancesPageContent() {
             </div>
 
             {/* Bottom Section: Transaction Table */}
-            <div className="bg-white rounded-[10px] shadow-sm border border-[#F0F0F0] overflow-hidden w-full overflow-x-auto">
+            <div className="bg-white dark:bg-[#111111] rounded-[10px] shadow-sm border border-[#F0F0F0] dark:border-white/10 overflow-hidden w-full overflow-x-auto">
                
                {/* Table Header Area */}
-               <div className="flex items-center justify-between px-[24px] py-[24px] border-b border-[#F0F0F0]" 
+               <div className="flex items-center justify-between px-[24px] py-[24px] border-b border-[#F0F0F0] dark:border-white/10" 
                     style={{ background: 'linear-gradient(95.19deg, #D4AF37 29.12%, rgba(126, 84, 0, 0.33) 111.32%, rgba(217, 192, 28, 0.33) 111.32%)' }}>
                   
                   <div>
@@ -714,10 +714,10 @@ function FinancesPageContent() {
                {/* Table */}
                <table className="w-full text-left border-collapse min-w-[1000px]">
                  <thead>
-                   <tr className="bg-white border-b border-[#F0F0F0]">
-                     <th className="px-[24px] py-[16px] text-[#5F6D7E] font-medium text-[13px]" style={{ fontFamily: 'var(--font-dm-sans)' }}>Service</th>
-                     <th className="px-[24px] py-[16px] text-[#5F6D7E] font-medium text-[13px]" style={{ fontFamily: 'var(--font-dm-sans)' }}>Account</th>
-                     <th className="px-[24px] py-[16px] text-[#5F6D7E] font-medium text-[13px]" style={{ fontFamily: 'var(--font-dm-sans)' }}>Ref</th>
+                   <tr className="bg-white dark:bg-white/5 border-b border-[#F0F0F0] dark:border-white/10">
+                     <th className="px-[24px] py-[16px] text-[#5F6D7E] dark:text-neutral-400 font-medium text-[13px]" style={{ fontFamily: 'var(--font-dm-sans)' }}>Service</th>
+                     <th className="px-[24px] py-[16px] text-[#5F6D7E] dark:text-neutral-400 font-medium text-[13px]" style={{ fontFamily: 'var(--font-dm-sans)' }}>Account</th>
+                     <th className="px-[24px] py-[16px] text-[#5F6D7E] dark:text-neutral-400 font-medium text-[13px]" style={{ fontFamily: 'var(--font-dm-sans)' }}>Ref</th>
                      <th className="px-[24px] py-[16px] text-[#5F6D7E] font-medium text-[13px]" style={{ fontFamily: 'var(--font-inter)' }}>No. of Transactions</th>
                      <th className="px-[24px] py-[16px] text-[#5F6D7E] font-medium text-[13px]" style={{ fontFamily: 'var(--font-inter)' }}>Estimated income</th>
                      <th className="px-[24px] py-[16px] text-[#5F6D7E] font-medium text-[13px]" style={{ fontFamily: 'var(--font-inter)' }}>Status</th>
@@ -782,10 +782,10 @@ function FinancesPageContent() {
                       const channelBadge = (t.channel || (isCredit ? 'Monnify' : 'Wallet')).toUpperCase().slice(0, 4);
 
                       return (
-                        <tr key={t.id || t.reference} className="border-b border-[#F0F0F0] bg-white hover:bg-gray-50/50 transition-colors">
+                        <tr key={t.id || t.reference} className="border-b border-[#F0F0F0] dark:border-white/10 bg-white dark:bg-[#111111] hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-colors">
                           <td className="px-[24px] py-[14px]">
                             <div className="flex flex-col">
-                              <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px', color: '#101828' }}>
+                              <span className="text-[#101828] dark:text-white" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 500, fontSize: '14px' }}>
                                 {serviceName}
                               </span>
                               <span style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 400, fontSize: '13px', color: '#5F6D7E' }}>
@@ -795,18 +795,18 @@ function FinancesPageContent() {
                           </td>
                           <td className="px-[24px] py-[14px]">
                             <div className="flex items-center">
-                              <span className="px-2 py-0.5 bg-gray-100 border border-gray-200 rounded text-[10px] text-gray-700 font-bold uppercase tracking-wider">
+                              <span className="px-2 py-0.5 bg-gray-100 dark:bg-white/10 border border-gray-200 dark:border-white/10 rounded text-[10px] text-gray-700 dark:text-neutral-300 font-bold uppercase tracking-wider">
                                 {channelBadge}
                               </span>
                             </div>
                           </td>
-                          <td className="px-[24px] py-[14px]" style={{ fontFamily: 'monospace', fontWeight: 500, fontSize: '12px', color: '#475467' }}>
+                          <td className="px-[24px] py-[14px]" style={{ fontFamily: 'monospace', fontWeight: 500, fontSize: '12px', color: '#71717A' }}>
                             {t.reference ? (t.reference.length > 18 ? `${t.reference.slice(0, 8)}...${t.reference.slice(-6)}` : t.reference) : '—'}
                           </td>
-                          <td className="px-[24px] py-[14px] text-center" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 400, fontSize: '13px', color: '#5F6D7E' }}>
+                          <td className="px-[24px] py-[14px] text-center" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 400, fontSize: '13px', color: '#71717A' }}>
                             {t.created_at ? new Date(t.created_at).toLocaleDateString('en-GB') : '—'}
                           </td>
-                          <td className="px-[24px] py-[14px]" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 600, fontSize: '14px', color: isCredit ? '#16A34A' : '#101828' }}>
+                          <td className="px-[24px] py-[14px]" style={{ fontFamily: 'var(--font-dm-sans)', fontWeight: 600, fontSize: '14px', color: isCredit ? '#16A34A' : 'var(--text-1)' }}>
                             {isCredit ? '+' : '-'}{formatCurrency(Number(t.amount) || 0, currency, rates)}
                           </td>
                           <td className="px-[24px] py-[14px]">
