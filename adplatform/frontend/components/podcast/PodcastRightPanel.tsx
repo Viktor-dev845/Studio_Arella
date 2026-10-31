@@ -167,13 +167,14 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
             href="/chat"
             style={{
               textDecoration: 'none',
-              background: '#FFFFFF',
+              background: theme.color.surface,
+              border: `1px solid ${theme.color.border}`,
               borderRadius: 24,
               padding: '14px 20px',
               display: 'inline-flex',
               alignItems: 'center',
               gap: 12,
-              boxShadow: '0 8px 30px rgba(0,0,0,0.06)',
+              boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
               position: 'relative',
               cursor: 'pointer',
             }}
@@ -193,7 +194,7 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
                 left: 32,
                 width: 16,
                 height: 16,
-                background: '#FFFFFF',
+                background: theme.color.surface,
                 clipPath: 'polygon(0 0, 100% 0, 100% 100%)',
                 transform: 'rotate(25deg)',
               }}

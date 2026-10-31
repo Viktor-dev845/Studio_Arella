@@ -8,7 +8,12 @@ if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 const storage = multer.memoryStorage();
 
 const fileFilter = (_req: any, file: any, cb: any) => {
-  const allowed = ['image/jpeg','image/jpg','image/png','image/gif','video/mp4','video/quicktime','audio/mpeg','audio/mp3'];
+  const allowed = [
+    'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp',
+    'video/mp4', 'video/quicktime',
+    'audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/x-wav', 'audio/wave',
+    'audio/m4a', 'audio/x-m4a', 'audio/aac', 'audio/ogg', 'audio/webm'
+  ];
   if (allowed.includes(file.mimetype)) {
     cb(null, true);
   } else {

@@ -200,20 +200,34 @@ export default function AddNewEpisodePage() {
                   width: 90,
                   height: 90,
                   borderRadius: 12,
-                  border: `1px solid ${theme.color.border}`,
-                  background: '#FFFFFF',
+                  border: `1px dashed ${theme.color.border2}`,
+                  background: theme.color.surface2,
                   display: 'flex',
+                  flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
+                  gap: 4,
                   cursor: 'pointer',
                   overflow: 'hidden',
                   padding: 0,
+                  transition: 'all 0.15s ease',
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.borderColor = theme.color.gold;
+                  e.currentTarget.style.background = theme.color.surface;
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.borderColor = theme.color.border2;
+                  e.currentTarget.style.background = theme.color.surface2;
                 }}
               >
                 {coverPhoto ? (
                   <img src={coverPhoto} alt="Cover Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 ) : (
-                  <Camera size={22} color={theme.color.text1} strokeWidth={1.5} />
+                  <>
+                    <Camera size={24} color={theme.color.gold} strokeWidth={1.75} />
+                    <span style={{ fontSize: 10, fontWeight: 600, color: theme.color.text3 }}>Upload</span>
+                  </>
                 )}
               </button>
             </div>
@@ -341,7 +355,7 @@ export default function AddNewEpisodePage() {
                   border: '1px dashed #DCA525',
                   borderRadius: 12,
                   padding: '40px 20px',
-                  background: '#FFFFFF',
+                  background: theme.color.surface,
                   textAlign: 'center',
                   cursor: 'pointer',
                   display: 'flex',
@@ -350,8 +364,8 @@ export default function AddNewEpisodePage() {
                   justifyContent: 'center',
                   transition: 'background 0.15s ease',
                 }}
-                onMouseOver={(e) => (e.currentTarget.style.background = '#FFFBEB')}
-                onMouseOut={(e) => (e.currentTarget.style.background = '#FFFFFF')}
+                onMouseOver={(e) => (e.currentTarget.style.background = theme.color.surface2)}
+                onMouseOut={(e) => (e.currentTarget.style.background = theme.color.surface)}
               >
                 <div
                   style={{
@@ -370,7 +384,7 @@ export default function AddNewEpisodePage() {
 
                 <p style={{ fontSize: 13, fontWeight: 400, color: theme.color.text1, margin: '0 0 8px' }}>
                   {audioFile ? audioFile.name : (
-                    <>Drag & Drop or <span style={{ color: '#2F6B4A' }}>choose file</span> to upload</>
+                    <>Drag & Drop or <span style={{ color: '#E0A526', fontWeight: 600 }}>choose file</span> to upload</>
                   )}
                 </p>
                 <p style={{ fontSize: 11, color: theme.color.text4, margin: 0, fontWeight: 400 }}>
@@ -512,13 +526,16 @@ export default function AddNewEpisodePage() {
                     padding: '10px 24px',
                     borderRadius: 8,
                     border: `1px solid ${theme.color.border}`,
-                    background: '#FFFFFF',
+                    background: theme.color.surface,
                     fontSize: 14,
                     fontWeight: 500,
                     color: theme.color.text1,
                     cursor: 'pointer',
                     fontFamily: F,
+                    transition: 'all 0.15s ease',
                   }}
+                  onMouseOver={(e) => (e.currentTarget.style.background = theme.color.surface2)}
+                  onMouseOut={(e) => (e.currentTarget.style.background = theme.color.surface)}
                 >
                   Cancel
                 </button>

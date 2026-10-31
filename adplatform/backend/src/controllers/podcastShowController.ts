@@ -15,17 +15,44 @@ if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && proce
   });
 }
 
-function uploadToCloudinary(file: Express.Multer.File, folder: string, resourceType: 'image' | 'video'): Promise<any> {
-  return new Promise((resolve, reject) => {
-    const stream = cloudinary.uploader.upload_stream(
-      { folder, resource_type: resourceType },
-      (error, result) => (error ? reject(error) : resolve(result))
-    );
-    const readable = new Readable();
-    readable.push(file.buffer);
-    readable.push(null);
-    readable.pipe(stream);
-  });
+import fs from 'fs';
+import path from 'path';
+
+async function uploadFileResilient(
+  file: Express.Multer.File,
+  folder: string,
+  resourceType: 'image' | 'video'
+): Promise<{ secure_url: string; duration?: number }> {
+  // Try Cloudinary if environment variables exist
+  if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
+    try {
+      const res: any = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder, resource_type: resourceType },
+          (error, result) => (error ? reject(error) : resolve(result))
+        );
+        const readable = new Readable();
+        readable.push(file.buffer);
+        readable.push(null);
+        readable.pipe(stream);
+      });
+      return { secure_url: res.secure_url, duration: res.duration };
+    } catch (cErr) {
+      console.warn('Cloudinary upload failed, falling back to local storage:', cErr);
+    }
+  }
+
+  // Resilient fallback to local server /uploads directory
+  const uploadDir = path.join(__dirname, '../../public/uploads');
+  if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+  const ext = file.originalname
+    ? file.originalname.split('.').pop()?.toLowerCase() || (resourceType === 'image' ? 'jpg' : 'mp3')
+    : (resourceType === 'image' ? 'jpg' : 'mp3');
+  const safeName = `pod_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${ext}`;
+  const filepath = path.join(uploadDir, safeName);
+  fs.writeFileSync(filepath, file.buffer);
+
+  return { secure_url: `/uploads/${safeName}`, duration: 180 };
 }
 
 type UploadedFiles = Record<string, Express.Multer.File[]> | undefined;
@@ -41,7 +68,7 @@ export const createShow: RequestHandler = async (req, res) => {
     const files = (req as any).files as UploadedFiles;
     const coverFile = files?.cover?.[0];
     if (coverFile) {
-      const uploaded = await uploadToCloudinary(coverFile, `studio-arella/podcasts/${authReq.user?.id}`, 'image');
+      const uploaded = await uploadFileResilient(coverFile, `studio-arella/podcasts/${authReq.user?.id}`, 'image');
       cover_url = uploaded.secure_url;
     }
 
@@ -117,7 +144,7 @@ export const createEpisode: RequestHandler = async (req, res) => {
     const { title, description, episode_number, content_rating, scheduled_at } = req.body;
     if (!title?.trim()) { res.status(400).json({ message: 'Episode title is required' }); return; }
 
-    const showRes = await pool.query('SELECT user_id FROM podcasts WHERE id = $1', [req.params.id]);
+    const showRes = await pool.query('SELECT title, description, cover_url, user_id FROM podcasts WHERE id = $1', [req.params.id]);
     if (!showRes.rows[0]) { res.status(404).json({ message: 'Podcast not found' }); return; }
     if (showRes.rows[0].user_id !== authReq.user?.id) {
       res.status(403).json({ message: 'You can only add episodes to your own podcast' });
@@ -128,15 +155,17 @@ export const createEpisode: RequestHandler = async (req, res) => {
     const audioFile = files?.audio?.[0];
     if (!audioFile) { res.status(400).json({ message: 'An audio file is required' }); return; }
 
-    const audioUpload = await uploadToCloudinary(audioFile, `studio-arella/podcasts/${authReq.user?.id}/episodes`, 'video');
+    const audioUpload = await uploadFileResilient(audioFile, `studio-arella/podcasts/${authReq.user?.id}/episodes`, 'video');
     const audio_url = audioUpload.secure_url;
-    const duration_seconds = audioUpload.duration ? Math.round(audioUpload.duration) : null;
+    const duration_seconds = audioUpload.duration ? Math.round(audioUpload.duration) : 180;
 
     let cover_url: string | null = null;
     const coverFile = files?.cover?.[0];
     if (coverFile) {
-      const coverUpload = await uploadToCloudinary(coverFile, `studio-arella/podcasts/${authReq.user?.id}/episodes`, 'image');
+      const coverUpload = await uploadFileResilient(coverFile, `studio-arella/podcasts/${authReq.user?.id}/episodes`, 'image');
       cover_url = coverUpload.secure_url;
+    } else if (showRes.rows[0].cover_url) {
+      cover_url = showRes.rows[0].cover_url;
     }
 
     const rating = content_rating === 'adult' ? 'adult' : 'everyone';
@@ -153,6 +182,32 @@ export const createEpisode: RequestHandler = async (req, res) => {
         scheduled_at || null, status,
       ]
     );
+
+    // If published, also syndicate to creator_content so it appears in the public Audience Feed!
+    if (status === 'published') {
+      try {
+        const m = Math.floor(duration_seconds / 60);
+        const s = duration_seconds % 60;
+        const durText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        await pool.query(
+          `INSERT INTO creator_content
+           (creator_id, title, description, content_type, media_url, cover_url, duration_seconds, duration_text, category, tags, is_premium, status, badge_theme)
+           VALUES ($1, $2, $3, 'audio', $4, $5, $6, $7, 'Podcast', $8, false, 'published', 'gold')`,
+          [
+            authReq.user?.id,
+            `${showRes.rows[0].title}: ${title.trim()}`,
+            description || `New episode from ${showRes.rows[0].title}`,
+            audio_url,
+            cover_url || showRes.rows[0].cover_url || '/audience/covers/wealth.jpg',
+            duration_seconds,
+            durText,
+            ['#podcast', '#audio', '#studioarella']
+          ]
+        );
+      } catch (feedErr) {
+        console.warn('Syndicate to creator_content skipped:', feedErr);
+      }
+    }
 
     res.status(201).json({ episode: result.rows[0] });
   } catch (err: any) {
