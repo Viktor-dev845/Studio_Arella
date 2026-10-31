@@ -204,10 +204,29 @@ export const reserveSlots: RequestHandler = async (req, res) => {
       `, [bookingId, screen_id, startDt.toISOString(), endDt.toISOString()]);
     }
 
+    let campaignCoveredAmount = 0;
+    let walletAmountToDeduct = totalCost;
+    if (campaign_id) {
+      const campCheck = await client.query(
+        `SELECT c.paid_budget,
+         COALESCE((SELECT SUM(b2.total_cost) FROM bookings b2 WHERE b2.campaign_id = c.id AND b2.status IN ('active','ended','completed')), 0) as spent
+         FROM campaigns c WHERE c.id = $1 AND c.user_id = $2`,
+        [campaign_id, authReq.user?.id]
+      );
+      if (campCheck.rows.length > 0) {
+        const remainingBudget = Math.max(0, Number(campCheck.rows[0].paid_budget) - Number(campCheck.rows[0].spent));
+        campaignCoveredAmount = Math.min(totalCost, remainingBudget);
+        walletAmountToDeduct = Math.max(0, totalCost - campaignCoveredAmount);
+      }
+    }
+
     await client.query('COMMIT');
     res.status(200).json({ 
        booking_id: bookingId, 
        total_cost: totalCost,
+       campaign_id: campaign_id || null,
+       campaign_covered_amount: campaignCoveredAmount,
+       wallet_amount_to_deduct: walletAmountToDeduct,
        slots_count: slots.length,
        duration_seconds: totalSeconds,
        locked_until: new Date(Date.now() + 5 * 60000)

@@ -72,6 +72,13 @@ function BookAdForm() {
   const [savedCards, setSavedCards] = useState<any[]>([]);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'saved_card' | 'card' | 'wallet'>('wallet');
 
+  // Campaigns state
+  const [campaigns, setCampaigns] = useState<any[]>([]);
+  const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(searchParams.get('campaign_id') || null);
+  const [showCampaignPicker, setShowCampaignPicker] = useState(false);
+  const [campaignCovered, setCampaignCovered] = useState(0);
+  const [walletAmountToDeduct, setWalletAmountToDeduct] = useState(0);
+
   useEffect(() => {
     api.get('/finances/balance').then((res) => setWalletBalance(Number(res.data?.credits ?? 0))).catch(() => {});
     api.get('/payments/cards').then((res) => {
@@ -83,6 +90,14 @@ function BookAdForm() {
       const list = (res.data?.screens || []).filter((s: any) => s.status === 'active');
       setScreens(list);
       if (list.length > 0) setSelectedScreenId((prev) => prev || list[0].id);
+    }).catch(() => {});
+    api.get('/campaigns?limit=100').then((res) => {
+      const list = res.data?.campaigns || [];
+      setCampaigns(list);
+      const urlCampId = searchParams.get('campaign_id');
+      if (urlCampId && list.some((c: any) => c.id === urlCampId)) {
+        setSelectedCampaignId(urlCampId);
+      }
     }).catch(() => {});
   }, []);
 
@@ -96,7 +111,8 @@ function BookAdForm() {
     setFilePreview(URL.createObjectURL(f));
   };
 
-  const durationLabel = { hourly: 'Hourly', weekly: 'Weekly', monthly: 'Monthly' }[durationUnit];
+  const selectedCampaign = campaigns.find(c => c.id === selectedCampaignId);
+  const durationLabel = { '30_mins': '30 Minutes', hourly: 'Hourly', weekly: 'Weekly', monthly: 'Monthly' }[durationUnit];
   const campaignLabel = { one_time: 'One time booking', recurring: 'Recurring booking' }[campaignType];
 
   // Shared by both "Book Slot" and "Add to Cart" — uploads the creative for
@@ -107,6 +123,7 @@ function BookAdForm() {
     formData.append('file', file as File);
     formData.append('title', description.slice(0, 60) || `Ad booked ${new Date().toLocaleDateString()}`);
     formData.append('description', description);
+    if (selectedCampaignId) formData.append('campaign_id', selectedCampaignId);
     formData.append('media_type', (file as File).type.startsWith('video') ? 'video' : 'image');
     const adRes = await api.post('/ads', formData, { headers: { 'Content-Type': undefined } });
     const ad = adRes.data?.ad;
@@ -131,9 +148,20 @@ function BookAdForm() {
 
       // Reserve the real slot(s) computed from the form.
       const slots = buildSlots(scheduleDate, scheduleTime, durationUnit, count, campaignType);
-      const reserveRes = await api.post('/bookings/reserve', { screen_id: selectedScreenId, ad_id: ad.id, slots });
+      const reserveRes = await api.post('/bookings/reserve', { 
+        screen_id: selectedScreenId, 
+        ad_id: ad.id, 
+        slots, 
+        campaign_id: selectedCampaignId || undefined 
+      });
+      const cost = Number(reserveRes.data.total_cost || 0);
+      const covered = Number(reserveRes.data.campaign_covered_amount || 0);
+      const netToPay = Number(reserveRes.data.wallet_amount_to_deduct ?? (cost - covered));
+
       setBookingId(reserveRes.data.booking_id);
-      setTotalCost(Number(reserveRes.data.total_cost || 0));
+      setTotalCost(cost);
+      setCampaignCovered(covered);
+      setWalletAmountToDeduct(netToPay);
       setStep('billing');
     } catch (err: any) {
       toast(err?.response?.data?.message || 'Could not book this slot. Please try again.', 'error');
@@ -269,6 +297,77 @@ function BookAdForm() {
             <div className="flex-1 min-w-0 w-full max-w-[850px]">
               <div className="space-y-6">
                 
+                {/* Link to Campaign (Optional) */}
+                <div className="relative">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-[14px] font-medium text-gray-700 font-body">
+                      Link to Campaign (Optional)
+                    </label>
+                    {selectedCampaign && (
+                      <span className="text-[12px] font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                        Pre-paid Budget Available: ₦{Math.max(0, Number(selectedCampaign.paid_budget || selectedCampaign.budget || 0) - Number(selectedCampaign.spent || 0)).toLocaleString()}
+                      </span>
+                    )}
+                  </div>
+                  <button 
+                    type="button" 
+                    onClick={() => { setShowCampaignPicker(o => !o); setShowDurationDropdown(false); setShowCampaignDropdown(false); }}
+                    className={`${inputClasses} flex items-center justify-between h-[56px] text-left`}
+                  >
+                    <div className="flex items-center gap-2.5 truncate">
+                      <span className="text-[#D4AF37] text-base">🎯</span>
+                      {selectedCampaign ? (
+                        <div className="truncate">
+                          <span className="font-semibold text-gray-900">{selectedCampaign.name}</span>
+                          <span className="ml-2 text-[13px] text-emerald-600 font-medium">
+                            (₦{Math.max(0, Number(selectedCampaign.paid_budget || selectedCampaign.budget || 0) - Number(selectedCampaign.spent || 0)).toLocaleString()} budget)
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-gray-500 font-light">Standalone booking (No campaign linked)</span>
+                      )}
+                    </div>
+                    <ChevronDown size={22} className={`text-gray-600 transition-transform ${showCampaignPicker ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {showCampaignPicker && (
+                    <div className={dropdownMenuClasses}>
+                      <button
+                        type="button"
+                        onClick={() => { setSelectedCampaignId(null); setShowCampaignPicker(false); }}
+                        className={dropdownItemClasses}
+                      >
+                        <span className={!selectedCampaignId ? 'font-semibold text-[#D4AF37]' : ''}>
+                          Standalone booking (No campaign linked)
+                        </span>
+                        {!selectedCampaignId && <div className="w-[2px] h-[14px] bg-[#D4AF37] rounded-full" />}
+                      </button>
+
+                      {campaigns.map((c) => {
+                        const remaining = Math.max(0, Number(c.paid_budget || c.budget || 0) - Number(c.spent || 0));
+                        return (
+                          <button
+                            key={c.id}
+                            type="button"
+                            onClick={() => { setSelectedCampaignId(c.id); setShowCampaignPicker(false); }}
+                            className={`${dropdownItemClasses} border-t border-gray-100/60`}
+                          >
+                            <div className="flex flex-col text-left">
+                              <span className={`text-[14px] ${selectedCampaignId === c.id ? 'font-bold text-[#D4AF37]' : 'font-medium text-gray-800'}`}>
+                                {c.name}
+                              </span>
+                              <span className="text-[12px] text-emerald-600 font-medium">
+                                ₦{remaining.toLocaleString()} pre-paid budget remaining
+                              </span>
+                            </div>
+                            {selectedCampaignId === c.id && <div className="w-[2px] h-[14px] bg-[#D4AF37] rounded-full" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
                 {/* Describe Ad */}
                 <div>
                   <textarea
@@ -282,16 +381,22 @@ function BookAdForm() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                   {/* Duration dropdown */}
                   <div className="relative">
-                    <button type="button" onClick={() => { setShowDurationDropdown((o) => !o); setShowCampaignDropdown(false); }}
+                    <button type="button" onClick={() => { setShowDurationDropdown((o) => !o); setShowCampaignDropdown(false); setShowCampaignPicker(false); }}
                       className={`${inputClasses} flex items-center justify-between h-[56px]`}>
                       <span className="text-[#16151C] font-normal">{durationLabel}</span>
                       <ChevronDown size={24} className={`text-[#16151C] transition-transform ${showDurationDropdown ? 'rotate-180' : ''}`} />
                     </button>
                     {showDurationDropdown && (
                       <div className={dropdownMenuClasses}>
-                        {(['hourly', 'weekly', 'monthly'] as DurationUnit[]).map((u) => (
-                          <button key={u} type="button" onClick={() => { setDurationUnit(u); setShowDurationDropdown(false); }} className={dropdownItemClasses}>
-                            <span className={durationUnit === u ? 'font-semibold text-[#D4AF37]' : ''}>{{ hourly: 'Hourly', weekly: 'Weekly', monthly: 'Monthly' }[u]}</span>
+                        {(['30_mins', 'hourly', 'weekly', 'monthly'] as DurationUnit[]).map((u) => (
+                          <button key={u} type="button" onClick={() => { 
+                            setDurationUnit(u); 
+                            if (u === '30_mins') setDurationCount('1');
+                            setShowDurationDropdown(false); 
+                          }} className={dropdownItemClasses}>
+                            <span className={durationUnit === u ? 'font-semibold text-[#D4AF37]' : ''}>
+                              {{ '30_mins': '30 Minutes', hourly: 'Hourly', weekly: 'Weekly', monthly: 'Monthly' }[u]}
+                            </span>
                             {durationUnit === u && <div className="w-[2px] h-[14px] bg-[#D4AF37] rounded-full" />}
                           </button>
                         ))}
@@ -304,17 +409,18 @@ function BookAdForm() {
                     <input 
                       type="number" 
                       min={1} 
-                      max={durationUnit === 'hourly' ? 12 : 52}
+                      max={durationUnit === 'hourly' ? 12 : durationUnit === '30_mins' ? 1 : 52}
                       value={durationCount} 
+                      disabled={durationUnit === '30_mins'}
                       onChange={(e) => setDurationCount(e.target.value)} 
-                      placeholder={`Number of ${durationUnit === 'monthly' ? 'months' : durationUnit === 'weekly' ? 'weeks' : 'hours'}`} 
-                      className={`${inputClasses} h-[56px]`} 
+                      placeholder={durationUnit === '30_mins' ? '30 Minutes (Fixed)' : `Number of ${durationUnit === 'monthly' ? 'months' : durationUnit === 'weekly' ? 'weeks' : 'hours'}`} 
+                      className={`${inputClasses} h-[56px] disabled:bg-gray-50 disabled:text-gray-500`} 
                     />
                   </div>
 
                   {/* Campaign type dropdown */}
                   <div className="relative">
-                    <button type="button" onClick={() => { setShowCampaignDropdown((o) => !o); setShowDurationDropdown(false); }}
+                    <button type="button" onClick={() => { setShowCampaignDropdown((o) => !o); setShowDurationDropdown(false); setShowCampaignPicker(false); }}
                       className={`${inputClasses} flex items-center justify-between h-[56px]`}>
                       <span className="text-[#16151C] font-normal">{campaignLabel}</span>
                       <ChevronDown size={24} className={`text-[#16151C] transition-transform ${showCampaignDropdown ? 'rotate-180' : ''}`} />
@@ -499,10 +605,17 @@ function BookAdForm() {
               <div className="px-6 sm:px-8 py-6 flex-1 overflow-y-auto flex flex-col items-center">
                 {step === 'billing' && (
                   <div className="w-full max-w-[468px] flex flex-col items-center my-auto">
-                    <p className="text-center text-[15px] sm:text-[16px] font-bold text-[#101828] mb-6">
-                      {durationCount} {durationUnit === 'hourly' ? 'hours' : durationUnit === 'weekly' ? 'weeks' : 'months'} Ad space at<br/>
+                    <p className="text-center text-[15px] sm:text-[16px] font-bold text-[#101828] mb-4">
+                      {durationUnit === '30_mins' ? '30 Minutes' : `${durationCount} ${durationUnit === 'hourly' ? 'hours' : durationUnit === 'weekly' ? 'weeks' : 'months'}`} Ad space at<br/>
                       <span className="text-[18px] font-extrabold text-[#D4AF37]">{formatCurrency(totalCost, currency, rates)}</span>
                     </p>
+
+                    {campaignCovered > 0 && (
+                      <div className="w-full rounded-[14px] bg-emerald-50 border border-emerald-200 px-4 py-2.5 mb-4 text-[13px] text-emerald-800 flex justify-between items-center font-medium shadow-xs">
+                        <span>Paid from Campaign ({selectedCampaign?.name || 'Campaign'}):</span>
+                        <span className="font-bold text-emerald-700">-{formatCurrency(campaignCovered, currency, rates)}</span>
+                      </div>
+                    )}
                     
                     <div className="w-full space-y-3.5 mb-6">
                       {/* Wallet Option */}
@@ -517,8 +630,12 @@ function BookAdForm() {
                           <span className="text-[15px] font-medium text-[#101828]">Pay with Studio Arella Wallet</span>
                         </div>
                         <div className="ml-[28px] flex items-center justify-between text-[#101828]">
-                          <span className="text-[13px] text-gray-500">Available balance</span>
-                          <span className="text-[14px] font-bold text-[#D4AF37]">{formatCurrency(walletBalance, currency, rates)}</span>
+                          <span className="text-[13px] text-gray-500">
+                            {campaignCovered > 0 ? (walletAmountToDeduct === 0 ? 'No extra payment required' : 'Net charge from wallet') : 'Available balance'}
+                          </span>
+                          <span className="text-[14px] font-bold text-[#D4AF37]">
+                            {campaignCovered > 0 ? (walletAmountToDeduct === 0 ? '₦0.00' : formatCurrency(walletAmountToDeduct, currency, rates)) : formatCurrency(walletBalance, currency, rates)}
+                          </span>
                         </div>
                       </div>
 
@@ -700,23 +817,41 @@ function BookAdForm() {
                 {step === 'wallet' && (
                   <div className="w-full max-w-[460px] flex flex-col items-center my-auto">
                     {/* Wallet summary card */}
-                    <div className="w-full rounded-[18px] border-2 border-[#D4AF37] p-5 sm:p-6 bg-gradient-to-br from-[#FAF7F0] to-[#FFFFFF] space-y-3.5 mb-6 shadow-sm">
+                    <div className="w-full rounded-[18px] border-2 border-[#D4AF37] p-5 sm:p-6 bg-gradient-to-br from-[#FAF7F0] to-[#FFFFFF] space-y-3 mb-6 shadow-sm">
                       <div className="flex justify-between items-center text-[#101828]">
                         <span className="text-[14px] sm:text-[15px] font-medium text-gray-600">Total billboard cost</span>
                         <span className="text-[17px] sm:text-[18px] font-extrabold text-[#101828]">{formatCurrency(totalCost, currency, rates)}</span>
                       </div>
-                      <div className="flex justify-between items-center pt-3 border-t border-[#E8DFCC]">
-                        <span className="text-[13px] sm:text-[14px] text-gray-600">Available wallet balance</span>
-                        <span className="text-[15px] font-bold text-[#D4AF37]">{formatCurrency(walletBalance, currency, rates)}</span>
+
+                      {campaignCovered > 0 && (
+                        <div className="flex justify-between items-center py-2 px-3 text-[13px] sm:text-[14px] text-emerald-800 bg-emerald-50 rounded-lg border border-emerald-200">
+                          <span className="font-medium">Paid from Campaign Budget:</span>
+                          <span className="font-bold text-emerald-700">-{formatCurrency(campaignCovered, currency, rates)}</span>
+                        </div>
+                      )}
+
+                      <div className="flex justify-between items-center pt-2 border-t border-[#E8DFCC]">
+                        <span className="text-[13px] sm:text-[14px] text-gray-600">Net charge to wallet</span>
+                        <span className="text-[16px] font-bold text-[#D4AF37]">{formatCurrency(walletAmountToDeduct, currency, rates)}</span>
                       </div>
-                      {walletBalance >= totalCost ? (
-                        <div className="flex justify-between items-center pt-1 text-[13px] sm:text-[14px]">
+
+                      <div className="flex justify-between items-center text-[13px] sm:text-[14px] text-gray-500">
+                        <span>Available wallet balance</span>
+                        <span className="font-semibold text-gray-800">{formatCurrency(walletBalance, currency, rates)}</span>
+                      </div>
+
+                      {walletAmountToDeduct === 0 ? (
+                        <div className="p-2.5 rounded-lg bg-emerald-100/70 text-emerald-800 text-[13px] font-medium text-center">
+                          🎉 100% covered by your pre-paid campaign budget!
+                        </div>
+                      ) : walletBalance >= walletAmountToDeduct ? (
+                        <div className="flex justify-between items-center text-[13px] sm:text-[14px]">
                           <span className="text-gray-600">Balance after payment</span>
-                          <span className="font-bold text-emerald-600">{formatCurrency(walletBalance - totalCost, currency, rates)}</span>
+                          <span className="font-bold text-emerald-600">{formatCurrency(walletBalance - walletAmountToDeduct, currency, rates)}</span>
                         </div>
                       ) : (
                         <p className="text-red-500 text-[13px] font-medium pt-1">
-                          Insufficient wallet balance. Please top up your wallet or pay with a card.
+                          Insufficient wallet balance for remaining amount. Please top up your wallet.
                         </p>
                       )}
                     </div>
@@ -724,11 +859,11 @@ function BookAdForm() {
                     <div className="w-full">
                       <button 
                         onClick={handlePayWallet} 
-                        disabled={paying || walletBalance < totalCost} 
+                        disabled={paying || (walletAmountToDeduct > 0 && walletBalance < walletAmountToDeduct)} 
                         className="w-full h-[50px] bg-[#D4AF37] hover:bg-[#b58b24] text-[#000000] rounded-[8px] text-[16px] font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm"
                       >
                         {paying && <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />}
-                        {paying ? 'Processing…' : walletBalance < totalCost ? 'Insufficient balance' : `Pay ${formatCurrency(totalCost, currency, rates)}`}
+                        {paying ? 'Processing…' : walletAmountToDeduct === 0 ? 'Confirm Booking (₦0 Extra)' : walletBalance < walletAmountToDeduct ? 'Insufficient balance' : `Pay ${formatCurrency(walletAmountToDeduct, currency, rates)}`}
                       </button>
                     </div>
                   </div>

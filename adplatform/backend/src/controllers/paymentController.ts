@@ -228,22 +228,63 @@ export const payFromWallet: RequestHandler = async (req, res) => {
       }
     }
 
-    // 3. Check wallet balance
+    // 3. Compute campaign budget drawdown vs general wallet balance
     const userRes = await client.query('SELECT credits FROM users WHERE id = $1 FOR UPDATE', [authReq.user?.id]);
     const credits = parseFloat(userRes.rows[0].credits);
     const totalCost = parseFloat(booking.total_cost);
     
-    if (credits < totalCost) {
-      await client.query('ROLLBACK');
-      res.status(400).json({ message: 'Insufficient wallet balance' }); return;
+    let campaignCoveredAmount = 0;
+    let walletAmountToDeduct = totalCost;
+    let campaignName = '';
+
+    if (booking.campaign_id) {
+      const campRes = await client.query(
+        `SELECT c.id, c.name, c.paid_budget,
+         COALESCE((SELECT SUM(b2.total_cost) FROM bookings b2 WHERE b2.campaign_id = c.id AND b2.status IN ('active','ended','completed')), 0) as spent
+         FROM campaigns c WHERE c.id = $1 AND c.user_id = $2 FOR UPDATE`,
+        [booking.campaign_id, authReq.user?.id]
+      );
+      if (campRes.rows.length > 0) {
+        const camp = campRes.rows[0];
+        campaignName = camp.name;
+        const remainingBudget = Math.max(0, Number(camp.paid_budget) - Number(camp.spent));
+        campaignCoveredAmount = Math.min(totalCost, remainingBudget);
+        walletAmountToDeduct = Math.max(0, totalCost - campaignCoveredAmount);
+      }
     }
 
-    // 4. Deduct balance & create transaction
-    await client.query('UPDATE users SET credits = credits - $1 WHERE id = $2', [totalCost, authReq.user?.id]);
-    await client.query(`
-      INSERT INTO transactions (user_id, type, source, amount, description, reference)
-      VALUES ($1, 'debit', 'booking', $2, $3, $4)
-    `, [authReq.user?.id, totalCost, `Paid for booking ${booking.booking_number}`, booking.booking_number]);
+    if (credits < walletAmountToDeduct) {
+      await client.query('ROLLBACK');
+      res.status(400).json({ 
+        message: campaignCoveredAmount > 0
+          ? `Campaign budget covers ₦${campaignCoveredAmount.toLocaleString()}, but the remaining ₦${walletAmountToDeduct.toLocaleString()} exceeds your wallet balance (₦${credits.toLocaleString()}).`
+          : 'Insufficient wallet balance' 
+      });
+      return;
+    }
+
+    // 4. Deduct balance & create transaction records
+    if (walletAmountToDeduct > 0) {
+      await client.query('UPDATE users SET credits = credits - $1 WHERE id = $2', [walletAmountToDeduct, authReq.user?.id]);
+      await client.query(`
+        INSERT INTO transactions (user_id, type, source, amount, description, reference)
+        VALUES ($1, 'debit', 'booking', $2, $3, $4)
+      `, [
+        authReq.user?.id, 
+        walletAmountToDeduct, 
+        campaignCoveredAmount > 0 
+          ? `Paid for booking ${booking.booking_number} (₦${campaignCoveredAmount.toLocaleString()} drawn from campaign "${campaignName}")`
+          : `Paid for booking ${booking.booking_number}`, 
+        booking.booking_number
+      ]);
+    }
+
+    if (campaignCoveredAmount > 0) {
+      await client.query(`
+        INSERT INTO transactions (user_id, type, source, amount, description, reference)
+        VALUES ($1, 'debit', 'campaign_drawdown', $2, $3, $4)
+      `, [authReq.user?.id, campaignCoveredAmount, `Campaign budget drawdown for booking ${booking.booking_number} (${campaignName})`, `${booking.booking_number}-CAMP`]);
+    }
 
     // 5. Activate booking & slots
     if (booking_type === 'podcast') {

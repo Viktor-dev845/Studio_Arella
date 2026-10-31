@@ -195,11 +195,19 @@ export default function CampaignDetailsPage() {
           </div>
 
           {/* Action Button Section */}
-          <div className="flex flex-col items-center gap-[12px] mb-[50px]">
+          <div className="flex flex-wrap items-center justify-center gap-4 mb-[50px]">
+            {!isEnded && (
+              <Link 
+                href={`/book?campaign_id=${campaign.id}`}
+                className="px-8 h-[44px] bg-[#D4AF37] hover:bg-[#c9a32c] rounded-[8px] text-[#111111] text-[14px] font-bold flex items-center justify-center transition-colors shadow-sm text-decoration-none"
+              >
+                + Book Billboard Slot for this Campaign
+              </Link>
+            )}
             {!isEnded ? (
               <button 
                 onClick={() => setModalState('confirm')}
-                className="px-8 h-[44px] bg-[#D4AF37] hover:bg-[#c9a32c] rounded-[8px] text-[#111111] text-[14px] font-bold flex items-center justify-center transition-colors cursor-pointer"
+                className="px-6 h-[44px] border border-gray-300 hover:bg-gray-100 rounded-[8px] text-gray-700 text-[14px] font-semibold flex items-center justify-center transition-colors cursor-pointer"
               >
                 Cancel Campaign
               </button>
