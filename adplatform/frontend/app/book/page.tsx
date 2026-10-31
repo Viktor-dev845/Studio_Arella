@@ -462,52 +462,62 @@ function BookAdForm() {
 
         {/* ─── Billing / payment modals ─── */}
         {step !== 'form' && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[rgba(162,161,168,0.2)] backdrop-blur-[10px] p-4">
-            <div className="bg-white rounded-[32px] w-full max-w-[625px] h-[836px] shadow-2xl relative animate-in fade-in zoom-in duration-200 flex flex-col font-body pt-8 pb-10">
+          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[rgba(162,161,168,0.2)] backdrop-blur-[10px] p-4 sm:p-6">
+            <div className="bg-white rounded-[24px] sm:rounded-[32px] w-full max-w-[560px] max-h-[90vh] shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 flex flex-col font-body overflow-hidden">
               
-              <div className="flex items-center justify-between px-10 pb-2 absolute top-8 left-0 right-0">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between px-6 sm:px-8 py-5 border-b border-gray-100 shrink-0">
                 {step !== 'billing' && step !== 'success' && step !== 'otp' ? (
-                  <button onClick={() => setStep('billing')} className="hover:opacity-70 transition-opacity text-[#101828]"><ArrowLeft size={28} strokeWidth={2.5} /></button>
+                  <button onClick={() => setStep('billing')} className="p-1 hover:opacity-70 transition-opacity text-[#101828]">
+                    <ArrowLeft size={24} strokeWidth={2.5} />
+                  </button>
                 ) : step === 'otp' ? (
-                  <button onClick={() => setStep('card')} className="hover:opacity-70 transition-opacity text-[#101828]"><ArrowLeft size={28} strokeWidth={2.5} /></button>
+                  <button onClick={() => setStep('card')} className="p-1 hover:opacity-70 transition-opacity text-[#101828]">
+                    <ArrowLeft size={24} strokeWidth={2.5} />
+                  </button>
+                ) : step === 'success' ? (
+                  <div className="w-6" />
                 ) : (
-                  <button onClick={() => setStep('form')} className="hover:opacity-70 transition-opacity text-[#101828]"><ArrowLeft size={28} strokeWidth={2.5} /></button>
+                  <button onClick={() => setStep('form')} className="p-1 hover:opacity-70 transition-opacity text-[#101828]">
+                    <ArrowLeft size={24} strokeWidth={2.5} />
+                  </button>
                 )}
                 
-                <span className="text-[20px] font-medium text-[#101828] text-center flex-1">
+                <span className="text-[18px] sm:text-[20px] font-semibold text-[#101828] text-center flex-1">
                   {step === 'billing' ? 'Billing' : 
                    step === 'success' && selectedPaymentMethod !== 'wallet' ? 'Pay with card' : 
                    step === 'card' || step === 'otp' ? (selectedPaymentMethod === 'card' ? 'Pay with a new card' : 'Pay with card') : 
                    step === 'wallet' || (step === 'success' && selectedPaymentMethod === 'wallet') ? 'Pay from wallet' : ''}
                 </span>
                 
-                <button onClick={() => { if(step === 'success') { router.push('/bookings'); } else { setStep('form'); } }} className="hover:opacity-70 transition-opacity text-[#101828]">
-                  <X size={28} strokeWidth={2.5} />
+                <button onClick={() => { if(step === 'success') { router.push('/bookings'); } else { setStep('form'); } }} className="p-1 hover:opacity-70 transition-opacity text-[#101828]">
+                  <X size={24} strokeWidth={2.5} />
                 </button>
               </div>
 
-              <div className="px-10 flex-1 flex flex-col items-center pt-24">
+              {/* Modal Body */}
+              <div className="px-6 sm:px-8 py-6 flex-1 overflow-y-auto flex flex-col items-center">
                 {step === 'billing' && (
-                  <div className="w-full max-w-[468px] flex flex-col items-center h-full">
-                    <p className="text-center text-[16px] font-bold text-[#101828] mb-12">
+                  <div className="w-full max-w-[468px] flex flex-col items-center my-auto">
+                    <p className="text-center text-[15px] sm:text-[16px] font-bold text-[#101828] mb-6">
                       {durationCount} {durationUnit === 'hourly' ? 'hours' : durationUnit === 'weekly' ? 'weeks' : 'months'} Ad space at<br/>
-                      {formatCurrency(totalCost, currency, rates)}
+                      <span className="text-[18px] font-extrabold text-[#D4AF37]">{formatCurrency(totalCost, currency, rates)}</span>
                     </p>
                     
-                    <div className="w-full space-y-4">
+                    <div className="w-full space-y-3.5 mb-6">
                       {/* Wallet Option */}
                       <div 
                         onClick={() => setSelectedPaymentMethod('wallet')}
-                        className={`w-full h-[100px] rounded-[16px] border cursor-pointer transition-all flex flex-col justify-center px-6 relative ${selectedPaymentMethod === 'wallet' ? 'border-2 border-[#D4AF37]' : 'border border-[#D7D7D7]'}`}
+                        className={`w-full min-h-[84px] rounded-[16px] border cursor-pointer transition-all flex flex-col justify-center px-5 py-3 relative ${selectedPaymentMethod === 'wallet' ? 'border-2 border-[#D4AF37] bg-[#D4AF37]/5' : 'border border-[#D7D7D7] hover:border-gray-400'}`}
                       >
-                        <div className="flex items-center gap-4 mb-2">
+                        <div className="flex items-center gap-3 mb-1.5">
                           <div className={`w-[16px] h-[16px] rounded-full border flex items-center justify-center shrink-0 ${selectedPaymentMethod === 'wallet' ? 'border-[#D4AF37]' : 'border-[#D7D7D7]'}`}>
                             {selectedPaymentMethod === 'wallet' && <div className="w-[8px] h-[8px] rounded-full bg-[#DF4308]" />}
                           </div>
-                          <span className="text-[16px] font-medium text-[#101828]">Pay with Studio Arella Wallet</span>
+                          <span className="text-[15px] font-medium text-[#101828]">Pay with Studio Arella Wallet</span>
                         </div>
-                        <div className="ml-[32px] flex items-center justify-between text-[#101828] pr-4">
-                          <span className="text-[14px] font-medium">Available balance</span>
+                        <div className="ml-[28px] flex items-center justify-between text-[#101828]">
+                          <span className="text-[13px] text-gray-500">Available balance</span>
                           <span className="text-[14px] font-bold text-[#D4AF37]">{formatCurrency(walletBalance, currency, rates)}</span>
                         </div>
                       </div>
@@ -517,17 +527,17 @@ function BookAdForm() {
                         <div 
                           key={c.id}
                           onClick={() => setSelectedPaymentMethod('saved_card')}
-                          className={`w-full h-[100px] rounded-[16px] border cursor-pointer transition-all flex flex-col justify-center px-6 relative ${selectedPaymentMethod === 'saved_card' ? 'border-2 border-[#D4AF37]' : 'border border-[#D7D7D7]'}`}
+                          className={`w-full min-h-[84px] rounded-[16px] border cursor-pointer transition-all flex flex-col justify-center px-5 py-3 relative ${selectedPaymentMethod === 'saved_card' ? 'border-2 border-[#D4AF37] bg-[#D4AF37]/5' : 'border border-[#D7D7D7] hover:border-gray-400'}`}
                         >
-                          <div className="flex items-center gap-4 mb-2">
+                          <div className="flex items-center gap-3 mb-1.5">
                             <div className={`w-[16px] h-[16px] rounded-full border flex items-center justify-center shrink-0 ${selectedPaymentMethod === 'saved_card' ? 'border-[#D4AF37]' : 'border-[#D7D7D7]'}`}>
                               {selectedPaymentMethod === 'saved_card' && <div className="w-[8px] h-[8px] rounded-full bg-[#DF4308]" />}
                             </div>
-                            <span className="text-[16px] font-medium text-[#101828]">Pay with {c.bank || c.brand || 'Saved Card'}</span>
+                            <span className="text-[15px] font-medium text-[#101828]">Pay with {c.bank || c.brand || 'Saved Card'}</span>
                           </div>
-                          <div className="ml-[32px] flex items-center justify-between text-[#101828] pr-4">
-                            <span className="text-[14px] font-medium tracking-[0.05em]">•••• •••• •••• {c.last4 || '****'}</span>
-                            <span className="text-[14px] font-medium">{c.account_name || user?.name || 'Cardholder'}</span>
+                          <div className="ml-[28px] flex items-center justify-between text-[#101828]">
+                            <span className="text-[13px] text-gray-500 tracking-[0.05em]">•••• •••• •••• {c.last4 || '****'}</span>
+                            <span className="text-[13px] font-medium">{c.account_name || user?.name || 'Cardholder'}</span>
                           </div>
                         </div>
                       ))}
@@ -535,16 +545,16 @@ function BookAdForm() {
                       {/* New Card Option */}
                       <div 
                         onClick={() => setSelectedPaymentMethod('card')}
-                        className={`w-full h-[60px] rounded-[16px] border border-dashed cursor-pointer transition-all flex items-center justify-center gap-2 ${selectedPaymentMethod === 'card' ? 'border-[#D4AF37] bg-[#D4AF37]/5' : 'border-[rgba(162,161,168,0.5)]'}`}
+                        className={`w-full h-[52px] rounded-[14px] border border-dashed cursor-pointer transition-all flex items-center justify-center gap-2 ${selectedPaymentMethod === 'card' ? 'border-[#D4AF37] bg-[#D4AF37]/5' : 'border-[rgba(162,161,168,0.5)] hover:border-gray-400'}`}
                       >
                         <div className="w-5 h-5 rounded-full border border-[#101828] flex items-center justify-center">
-                          <Plus size={14} className="text-[#101828]" />
+                          <Plus size={13} className="text-[#101828]" />
                         </div>
                         <span className="text-[14px] font-medium text-[#101828]">Pay with a new bank card</span>
                       </div>
                     </div>
 
-                    <div className="mt-auto w-full pt-10">
+                    <div className="w-full pt-2">
                       <button 
                         onClick={() => {
                           if (selectedPaymentMethod === 'saved_card') {
@@ -553,7 +563,7 @@ function BookAdForm() {
                             setStep(selectedPaymentMethod);
                           }
                         }}
-                        className="w-full h-[50px] bg-[#D4AF37] hover:bg-[#b58b24] text-[#000000] rounded-[6px] text-[16px] font-normal transition-colors"
+                        className="w-full h-[50px] bg-[#D4AF37] hover:bg-[#b58b24] text-[#000000] rounded-[8px] text-[16px] font-semibold transition-colors shadow-sm"
                       >
                         Continue
                       </button>
@@ -562,33 +572,33 @@ function BookAdForm() {
                 )}
 
                 {step === 'card' && (
-                  <div className="w-full max-w-[420px] flex flex-col items-center h-full mx-auto relative">
-                    <p className="text-center text-[16px] font-bold text-[#101828] mb-12">
+                  <div className="w-full max-w-[420px] flex flex-col items-center my-auto">
+                    <p className="text-center text-[15px] font-bold text-[#101828] mb-6">
                       {durationCount} {durationUnit === 'hourly' ? 'hours' : durationUnit === 'weekly' ? 'weeks' : 'months'} Ad space at<br/>
-                      {formatCurrency(totalCost, currency, rates)}
+                      <span className="text-[18px] font-extrabold text-[#D4AF37]">{formatCurrency(totalCost, currency, rates)}</span>
                     </p>
                     
                     {selectedPaymentMethod === 'card' ? (
-                      <div className="w-full space-y-[24px] mb-[40px]">
+                      <div className="w-full space-y-3.5 mb-5">
                         {/* Select bank */}
                         <div className="relative w-full">
-                          <select className="w-full h-[56px] rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-[#FFFFFF] px-[16px] text-[17px] text-[rgba(162,161,168,0.8)] font-light outline-none focus:border-[#D4AF37] appearance-none cursor-pointer">
+                          <select className="w-full h-[50px] rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-[#FFFFFF] px-[16px] text-[15px] text-[#16151C] font-light outline-none focus:border-[#D4AF37] appearance-none cursor-pointer">
                             <option value="" disabled selected>--- Select bank ---</option>
-                            <option value="gtb" className="text-black">GTB</option>
-                            <option value="wema" className="text-black">Wema</option>
-                            <option value="access" className="text-black">Access</option>
+                            <option value="gtb">GTB</option>
+                            <option value="wema">Wema</option>
+                            <option value="access">Access</option>
                           </select>
-                          <ChevronDown size={24} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#16151C] pointer-events-none" />
+                          <ChevronDown size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#16151C] pointer-events-none" />
                         </div>
 
                         {/* Enter card name */}
                         <div className="w-full">
-                          <input placeholder="Enter card name" value={cardForm.name} onChange={(e) => setCardForm({...cardForm, name: e.target.value})} className="w-full h-[56px] rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-[#FFFFFF] px-[16px] text-[17px] text-[#16151C] font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
+                          <input placeholder="Enter card name" value={cardForm.name} onChange={(e) => setCardForm({...cardForm, name: e.target.value})} className="w-full h-[50px] rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-[#FFFFFF] px-[16px] text-[15px] text-[#16151C] font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
                         </div>
 
                         {/* Enter card number */}
                         <div className="relative w-full">
-                          <input placeholder="Enter card number" value={cardForm.number} onChange={(e) => setCardForm({...cardForm, number: e.target.value})} className="w-full h-[56px] rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-[#FFFFFF] px-[16px] text-[17px] text-[#16151C] font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
+                          <input placeholder="Enter card number" value={cardForm.number} onChange={(e) => setCardForm({...cardForm, number: e.target.value})} className="w-full h-[50px] rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-[#FFFFFF] px-[16px] text-[15px] text-[#16151C] font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
                           <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center">
                             <div className="w-[20px] h-[16px] relative flex items-center justify-center border border-[#C5CDD0] rounded-[2px] bg-[#FFFFFF] overflow-hidden">
                               <div className="w-[9px] h-[9px] rounded-full bg-[#EB001B] absolute left-[0.5px] mix-blend-multiply opacity-90" />
@@ -598,17 +608,17 @@ function BookAdForm() {
                         </div>
 
                         {/* Expiry and CVV */}
-                        <div className="flex gap-[20px]">
-                          <input placeholder="Expiry date (MM/YY)" value={cardForm.expiry} onChange={(e) => setCardForm({...cardForm, expiry: e.target.value})} className="w-full h-[56px] rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-[#FFFFFF] px-[16px] text-[17px] text-[#16151C] font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
-                          <input placeholder="CVV" value={cardForm.cvv} onChange={(e) => setCardForm({...cardForm, cvv: e.target.value})} className="w-full h-[56px] rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-[#FFFFFF] px-[16px] text-[17px] text-[#16151C] font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
+                        <div className="flex gap-3">
+                          <input placeholder="Expiry date (MM/YY)" value={cardForm.expiry} onChange={(e) => setCardForm({...cardForm, expiry: e.target.value})} className="w-full h-[50px] rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-[#FFFFFF] px-[16px] text-[15px] text-[#16151C] font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
+                          <input placeholder="CVV" value={cardForm.cvv} onChange={(e) => setCardForm({...cardForm, cvv: e.target.value})} className="w-full h-[50px] rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-[#FFFFFF] px-[16px] text-[15px] text-[#16151C] font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
                         </div>
                       </div>
                     ) : (
-                      <div className="w-full space-y-[20px] mb-[68px]">
-                        <input placeholder="Enter amount" className="w-full h-[60px] rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-[#FFFFFF] px-4 text-[16px] text-[#16151C] font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
-                        <input placeholder="Cardholder Name" value={cardForm.name} onChange={(e) => setCardForm({...cardForm, name: e.target.value})} className="w-full h-[60px] rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-[#FFFFFF] px-4 text-[16px] text-[#16151C] font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
+                      <div className="w-full space-y-3.5 mb-5">
+                        <input placeholder="Enter amount" className="w-full h-[50px] rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-[#FFFFFF] px-4 text-[15px] text-[#16151C] font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
+                        <input placeholder="Cardholder Name" value={cardForm.name} onChange={(e) => setCardForm({...cardForm, name: e.target.value})} className="w-full h-[50px] rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-[#FFFFFF] px-4 text-[15px] text-[#16151C] font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
                         <div className="relative w-full">
-                          <input placeholder="•••• •••• •••• ••••" value={cardForm.number} onChange={(e) => setCardForm({...cardForm, number: e.target.value})} className="w-full h-[60px] rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-[#FFFFFF] px-4 text-[16px] text-[#16151C] font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
+                          <input placeholder="•••• •••• •••• ••••" value={cardForm.number} onChange={(e) => setCardForm({...cardForm, number: e.target.value})} className="w-full h-[50px] rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-[#FFFFFF] px-4 text-[15px] text-[#16151C] font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
                           <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center">
                             <div className="w-[30px] h-[20px] relative flex items-center justify-center border rounded-[2px] bg-white overflow-hidden p-0.5">
                               <div className="w-[12px] h-[12px] rounded-full bg-[#EA001B] absolute left-1 mix-blend-multiply opacity-90" />
@@ -616,39 +626,40 @@ function BookAdForm() {
                             </div>
                           </div>
                         </div>
-                        <div className="flex gap-[20px]">
-                          <input placeholder="Expiry date (MM/YY)" value={cardForm.expiry} onChange={(e) => setCardForm({...cardForm, expiry: e.target.value})} className="w-full h-[60px] rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-[#FFFFFF] px-4 text-[16px] text-[#16151C] font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
-                          <input placeholder="CVV" value={cardForm.cvv} onChange={(e) => setCardForm({...cardForm, cvv: e.target.value})} className="w-full h-[60px] rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-[#FFFFFF] px-4 text-[16px] text-[#16151C] font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
+                        <div className="flex gap-3">
+                          <input placeholder="Expiry date (MM/YY)" value={cardForm.expiry} onChange={(e) => setCardForm({...cardForm, expiry: e.target.value})} className="w-full h-[50px] rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-[#FFFFFF] px-4 text-[15px] text-[#16151C] font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
+                          <input placeholder="CVV" value={cardForm.cvv} onChange={(e) => setCardForm({...cardForm, cvv: e.target.value})} className="w-full h-[50px] rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-[#FFFFFF] px-4 text-[15px] text-[#16151C] font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
                         </div>
                       </div>
                     )}
 
                     {selectedPaymentMethod === 'card' && (
-                      <div className="w-full flex items-center gap-[10px] mb-[64px]">
-                        <div className="w-[20px] h-[20px] relative rounded-[4px] flex items-center justify-center bg-[#D4AF37] border border-[#D4AF37] cursor-pointer">
-                           <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <div className="w-full flex items-center gap-2 mb-5">
+                        <div className="w-[18px] h-[18px] relative rounded-[4px] flex items-center justify-center bg-[#D4AF37] border border-[#D4AF37] cursor-pointer">
+                           <svg width="10" height="10" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                               <path d="M2.5 6.5L4.5 8.5L9.5 3.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                            </svg>
                         </div>
-                        <span className="text-[16px] font-normal text-[#696F79]">Add this card</span>
+                        <span className="text-[14px] font-normal text-[#696F79]">Add this card for future payments</span>
                       </div>
                     )}
 
-                    <div className="w-full mt-auto mb-8">
-                      <button onClick={handlePayCard} disabled={paying} className="w-full h-[56px] bg-[#D4AF37] hover:bg-[#b58b24] text-[#000000] rounded-[6px] text-[16px] font-medium transition-colors flex items-center justify-center gap-2">
+                    <div className="w-full">
+                      <button onClick={handlePayCard} disabled={paying} className="w-full h-[50px] bg-[#D4AF37] hover:bg-[#b58b24] text-[#000000] rounded-[8px] text-[16px] font-medium transition-colors flex items-center justify-center gap-2 shadow-sm">
                         {paying && <div className="w-4 h-4 border-2 border-[rgba(0,0,0,0.3)] border-t-black rounded-full animate-spin" />}
                         {paying ? 'Processing...' : 'Pay'}
                       </button>
                     </div>
                   </div>
                 )}
+
                 {step === 'otp' && (
-                  <div className="w-full max-w-[468px] flex flex-col items-center h-full">
-                    <p className="text-center text-[16px] font-bold text-[#101828] mb-8">
-                      Enter code*
+                  <div className="w-full max-w-[420px] flex flex-col items-center my-auto">
+                    <p className="text-center text-[16px] font-bold text-[#101828] mb-5">
+                      Enter verification code
                     </p>
                     
-                    <div className="flex gap-4 justify-center mb-6 w-full">
+                    <div className="flex gap-3 justify-center mb-5 w-full">
                       {[0, 1, 2, 3].map((index) => (
                         <input
                           key={index}
@@ -658,9 +669,9 @@ function BookAdForm() {
                           value={otpDigits[index]}
                           onChange={(e) => handleOtpChange(index, e.target.value.replace(/\D/g, ''))}
                           onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                          className={`w-[70px] h-[66px] rounded-[8px] border bg-white text-center text-[24px] font-medium text-[#101828] focus:outline-none transition-colors ${
+                          className={`w-[60px] h-[58px] rounded-[10px] border bg-white text-center text-[22px] font-semibold text-[#101828] focus:outline-none transition-colors ${
                             otpDigits[index] || document.activeElement?.id === `otp-${index}` 
-                              ? 'border-[#D4AF37]' 
+                              ? 'border-[#D4AF37] ring-1 ring-[#D4AF37]' 
                               : 'border-[rgba(134,146,166,0.5)]'
                           }`}
                           maxLength={1}
@@ -668,64 +679,85 @@ function BookAdForm() {
                       ))}
                     </div>
 
-                    <div className="flex items-center gap-1 mb-8 text-[14px]">
+                    <div className="flex items-center gap-1 mb-5 text-[14px]">
                       <span className="text-[#8692A6]">Didn&apos;t get code?</span>
-                      <button className="text-[#D4AF37] font-medium hover:underline">Resend</button>
+                      <button className="text-[#D4AF37] font-semibold hover:underline">Resend</button>
                     </div>
 
-                    <p className="text-center text-[14px] leading-[1.6] text-[rgba(162,161,168,1)] mb-auto px-4 max-w-[400px]">
-                      To authorize this payment, enter the OTP sent to the email <span className="text-[#101828] font-medium">{user?.email || 'your registered email'}</span> attached to your Studio Arella account
+                    <p className="text-center text-[13px] leading-[1.6] text-gray-500 mb-6 px-2">
+                      To authorize this payment, enter the OTP sent to your registered email <span className="text-[#101828] font-medium">{user?.email || 'your account email'}</span>
                     </p>
 
-                    <div className="w-full mt-auto mb-8">
-                      <button onClick={handleVerifyOtp} disabled={verifyingOtp} className="w-full h-[50px] bg-[#D4AF37] hover:bg-[#b58b24] text-[#000000] rounded-[6px] text-[16px] font-normal transition-colors flex items-center justify-center gap-2">
+                    <div className="w-full">
+                      <button onClick={handleVerifyOtp} disabled={verifyingOtp} className="w-full h-[50px] bg-[#D4AF37] hover:bg-[#b58b24] text-[#000000] rounded-[8px] text-[16px] font-medium transition-colors flex items-center justify-center gap-2 shadow-sm">
                         {verifyingOtp && <div className="w-4 h-4 border-2 border-[rgba(0,0,0,0.3)] border-t-black rounded-full animate-spin" />}
-                        {verifyingOtp ? 'Processing...' : 'Pay'}
+                        {verifyingOtp ? 'Processing...' : 'Verify & Pay'}
                       </button>
                     </div>
                   </div>
                 )}
 
                 {step === 'wallet' && (
-                  <div className="w-full max-w-[468px] flex flex-col items-center h-full pt-10">
-                    <div className="w-full h-[127px] rounded-[16px] border-2 border-[#D4AF37] px-[44px] flex justify-between items-center bg-white mb-8">
-                      <span className="text-[16px] font-medium text-[#101828]">Total amount</span>
-                      <span className="text-[14px] font-medium text-[#101828]">{formatCurrency(totalCost, currency, rates)}</span>
+                  <div className="w-full max-w-[460px] flex flex-col items-center my-auto">
+                    {/* Wallet summary card */}
+                    <div className="w-full rounded-[18px] border-2 border-[#D4AF37] p-5 sm:p-6 bg-gradient-to-br from-[#FAF7F0] to-[#FFFFFF] space-y-3.5 mb-6 shadow-sm">
+                      <div className="flex justify-between items-center text-[#101828]">
+                        <span className="text-[14px] sm:text-[15px] font-medium text-gray-600">Total billboard cost</span>
+                        <span className="text-[17px] sm:text-[18px] font-extrabold text-[#101828]">{formatCurrency(totalCost, currency, rates)}</span>
+                      </div>
+                      <div className="flex justify-between items-center pt-3 border-t border-[#E8DFCC]">
+                        <span className="text-[13px] sm:text-[14px] text-gray-600">Available wallet balance</span>
+                        <span className="text-[15px] font-bold text-[#D4AF37]">{formatCurrency(walletBalance, currency, rates)}</span>
+                      </div>
+                      {walletBalance >= totalCost ? (
+                        <div className="flex justify-between items-center pt-1 text-[13px] sm:text-[14px]">
+                          <span className="text-gray-600">Balance after payment</span>
+                          <span className="font-bold text-emerald-600">{formatCurrency(walletBalance - totalCost, currency, rates)}</span>
+                        </div>
+                      ) : (
+                        <p className="text-red-500 text-[13px] font-medium pt-1">
+                          Insufficient wallet balance. Please top up your wallet or pay with a card.
+                        </p>
+                      )}
                     </div>
                     
-                    <div className="mt-8 w-full flex-1 flex flex-col justify-end">
+                    <div className="w-full">
                       <button 
                         onClick={handlePayWallet} 
                         disabled={paying || walletBalance < totalCost} 
-                        className="w-full h-[56px] bg-[#D4AF37] hover:bg-[#b58b24] text-[#000000] rounded-[6px] text-[16px] font-medium transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+                        className="w-full h-[50px] bg-[#D4AF37] hover:bg-[#b58b24] text-[#000000] rounded-[8px] text-[16px] font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm"
                       >
                         {paying && <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />}
-                        {paying ? 'Processing…' : walletBalance < totalCost ? 'Insufficient balance' : 'Pay'}
+                        {paying ? 'Processing…' : walletBalance < totalCost ? 'Insufficient balance' : `Pay ${formatCurrency(totalCost, currency, rates)}`}
                       </button>
                     </div>
                   </div>
                 )}
 
                 {step === 'success' && (
-                  <div className="w-full max-w-[468px] flex flex-col items-center h-full pt-[80px]">
-                    <div className="relative flex items-center justify-center w-[90px] h-[90px] mb-14">
-                      <div className="absolute w-[160px] h-[160px] rounded-full bg-[#D4AF37] opacity-10 blur-[20px]" />
-                      <div className="absolute w-[120px] h-[120px] rounded-full bg-[#D4AF37] opacity-20 blur-[10px]" />
-                      <div className="relative w-[90px] h-[90px] rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(180deg, #A47B2E 0%, #D4AF37 100%)' }}>
-                        <svg width="34" height="26" viewBox="0 0 34 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <div className="w-full max-w-[440px] flex flex-col items-center my-auto py-4 text-center">
+                    <div className="relative flex items-center justify-center w-[80px] h-[80px] mb-5">
+                      <div className="absolute w-[110px] h-[110px] rounded-full bg-[#D4AF37] opacity-20 blur-[15px]" />
+                      <div className="relative w-[80px] h-[80px] rounded-full flex items-center justify-center shadow-lg" style={{ background: 'linear-gradient(180deg, #A47B2E 0%, #D4AF37 100%)' }}>
+                        <svg width="30" height="22" viewBox="0 0 34 26" fill="none" xmlns="http://www.w3.org/2000/svg">
                           <path d="M2.5 13L12.5 23L31.5 2.5" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
                         </svg>
                       </div>
                     </div>
                     
-                    <h3 className="text-[22px] font-semibold text-[#16151C]">Payment successful and Ad booked</h3>
+                    <h3 className="text-[20px] sm:text-[22px] font-bold text-[#16151C] mb-2">
+                      Payment Successful!
+                    </h3>
+                    <p className="text-[14px] text-gray-500 mb-6 max-w-[320px]">
+                      Your billboard slot for <span className="font-semibold text-gray-800">{description || 'your campaign'}</span> has been successfully booked and scheduled.
+                    </p>
                     
-                    <div className="mt-16 w-full flex-1 flex flex-col justify-end">
+                    <div className="w-full">
                       <button 
                         onClick={() => router.push('/bookings')} 
-                        className="w-full h-[56px] bg-[#D4AF37] hover:bg-[#b58b24] text-[#000000] rounded-[8px] text-[16px] font-medium transition-colors flex items-center justify-center"
+                        className="w-full h-[50px] bg-[#D4AF37] hover:bg-[#b58b24] text-[#000000] rounded-[8px] text-[16px] font-semibold transition-colors flex items-center justify-center shadow-sm"
                       >
-                        Finish
+                        View My Bookings
                       </button>
                     </div>
                   </div>

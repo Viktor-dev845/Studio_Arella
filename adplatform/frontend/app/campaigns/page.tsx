@@ -909,11 +909,11 @@ export default function CampaignsPage() {
           {createModalOpen && wizardStep === 'card-confirm' && (
             <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[rgba(162,161,168,0.2)] backdrop-blur-[10px] p-4">
               <div 
-                className="bg-[#FFFFFF] rounded-[32px] w-[625px] shadow-2xl relative animate-in fade-in zoom-in-95 duration-150 flex flex-col"
-                style={{ height: '836px', fontFamily: 'var(--font-dm-sans)' }}
+                className="bg-[#FFFFFF] rounded-[32px] w-[625px] max-w-full max-h-[90vh] overflow-y-auto shadow-2xl relative animate-in fade-in zoom-in-95 duration-150 flex flex-col"
+                style={{ fontFamily: 'var(--font-dm-sans)' }}
               >
                 {/* Header */}
-                <div className="flex items-center justify-between w-full px-[40px] pt-[40px]">
+                <div className="flex items-center justify-between w-full px-[40px] pt-[30px] pb-2 shrink-0">
                   <button onClick={() => setWizardStep('card')} className="text-black hover:opacity-70 transition-opacity">
                     <ArrowLeft size={24} strokeWidth={2} />
                   </button>
@@ -924,7 +924,7 @@ export default function CampaignsPage() {
                 </div>
 
                 {/* Body */}
-                <div className="flex flex-col items-center w-full px-[60px] pt-[80px]">
+                <div className="flex flex-col items-center w-full px-[40px] sm:px-[60px] py-[30px]">
                   <p className="text-[16px] font-bold text-black text-center mb-[60px] leading-[26px]">
                     {billingHeader || 'Campaign budget'} at<br/>
                     ₦{budgetAmount.toLocaleString()}
@@ -1058,11 +1058,11 @@ export default function CampaignsPage() {
           {createModalOpen && wizardStep === 'billing' && (
             <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[rgba(162,161,168,0.2)] backdrop-blur-[10px] p-4">
               <div 
-                className="bg-[#FFFFFF] rounded-[32px] w-[625px] shadow-2xl relative animate-in fade-in zoom-in-95 duration-150 flex flex-col"
-                style={{ height: '836px', fontFamily: 'var(--font-dm-sans)' }}
+                className="bg-[#FFFFFF] rounded-[32px] w-[625px] max-w-full max-h-[90vh] overflow-y-auto shadow-2xl relative animate-in fade-in zoom-in-95 duration-150 flex flex-col"
+                style={{ fontFamily: 'var(--font-dm-sans)' }}
               >
                 {/* Header */}
-                <div className="flex items-center justify-between w-full px-[40px] pt-[40px]">
+                <div className="flex items-center justify-between w-full px-[40px] pt-[30px] pb-2 shrink-0">
                   <button onClick={() => setWizardStep('details')} className="text-black hover:opacity-70 transition-opacity">
                     <ArrowLeft size={24} strokeWidth={2} />
                   </button>
@@ -1073,7 +1073,7 @@ export default function CampaignsPage() {
                 </div>
 
                 {/* Body */}
-                <div className="flex flex-col items-center w-full px-[60px] pt-[80px]">
+                <div className="flex flex-col items-center w-full px-[40px] sm:px-[60px] py-[30px]">
                   <p className="text-[16px] font-bold text-black text-center mb-[40px] leading-[26px]">
                     {billingHeader || '3 months Ad space'} at<br/>
                     #{budgetAmount.toLocaleString()}
