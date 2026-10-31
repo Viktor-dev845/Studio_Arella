@@ -290,20 +290,22 @@ export default function CreativeStudioPage() {
   return (
     <DashboardLayout>
       <PageTransition>
-        <div style={{ fontFamily: F, maxWidth: 1180, margin: '0 auto', paddingBottom: 60 }}>
+        <div className="px-4 sm:px-6" style={{ fontFamily: F, maxWidth: 1180, margin: '0 auto', paddingBottom: 60 }}>
           
           {/* Header & Luxury Hero Banner */}
-          <div style={{
-            position: 'relative',
-            background: 'linear-gradient(135deg, #0B0E14 0%, #161B26 60%, #1F2739 100%)',
-            borderRadius: 24,
-            padding: '36px 36px',
-            color: '#fff',
-            marginBottom: 32,
-            overflow: 'hidden',
-            boxShadow: '0 12px 36px rgba(0,0,0,0.12)',
-            border: '1px solid rgba(198,154,44,0.2)',
-          }}>
+          <div
+            className="p-5 sm:p-9"
+            style={{
+              position: 'relative',
+              background: 'linear-gradient(135deg, #0B0E14 0%, #161B26 60%, #1F2739 100%)',
+              borderRadius: 24,
+              color: '#fff',
+              marginBottom: 32,
+              overflow: 'hidden',
+              boxShadow: '0 12px 36px rgba(0,0,0,0.12)',
+              border: '1px solid rgba(198,154,44,0.2)',
+            }}
+          >
             {/* Ambient gold glow */}
             <div style={{ position: 'absolute', top: -40, right: -40, width: 260, height: 260, borderRadius: '50%', background: 'radial-gradient(circle, rgba(198,154,44,0.25) 0%, transparent 70%)', pointerEvents: 'none' }} />
             <div style={{ position: 'absolute', bottom: -60, left: '35%', width: 220, height: 220, borderRadius: '50%', background: 'radial-gradient(circle, rgba(198,154,44,0.12) 0%, transparent 70%)', pointerEvents: 'none' }} />
@@ -318,7 +320,7 @@ export default function CreativeStudioPage() {
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 20 }}>
                 <div style={{ maxWidth: 660 }}>
-                  <h1 style={{ fontFamily: theme.font.display, fontSize: 32, fontWeight: 700, margin: '0 0 10px', color: '#fff', letterSpacing: '-0.03em' }}>
+                  <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2.5 text-white" style={{ fontFamily: theme.font.display }}>
                     Commercial Creative & Audio Production
                   </h1>
                   <p style={{ fontSize: 14, color: theme.color.text4, margin: 0, lineHeight: 1.6 }}>
@@ -478,7 +480,7 @@ export default function CreativeStudioPage() {
               </div>
 
               {/* Service Cards Grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 24, marginBottom: 40 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 24, marginBottom: 40 }}>
                 {SERVICE_DISCIPLINES.map((svc) => {
                   const Icon = svc.icon;
                   return (
@@ -736,7 +738,7 @@ export default function CreativeStudioPage() {
                         Who are we building this creative for? Our Creative Director will reach out to this contact.
                       </p>
 
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 24 }}>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-6">
                         <div>
                           <label style={{ fontSize: 13, fontWeight: 700, color: '#1E293B', display: 'block', marginBottom: 8 }}>
                             Brand / Business Name *
@@ -902,7 +904,7 @@ export default function CreativeStudioPage() {
                         Finalize your production scope. Our creative director will review this brief and contact you within 24 hours.
                       </p>
 
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 24 }}>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-6">
                         <div>
                           <label style={{ fontSize: 13, fontWeight: 700, color: '#1E293B', display: 'block', marginBottom: 8 }}>
                             Production Budget Tier
@@ -1137,7 +1139,8 @@ export default function CreativeStudioPage() {
                             Production Pipeline Progress
                           </span>
 
-                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, position: 'relative' }}>
+                          <div className="overflow-x-auto no-scrollbar pb-1">
+                            <div className="min-w-[460px]" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, position: 'relative' }}>
                             {PIPELINE_STAGES.map((st) => {
                               const isCompleted = currentStage >= st.step;
                               const isCurrent = currentStage === st.step;
@@ -1164,6 +1167,7 @@ export default function CreativeStudioPage() {
                                 </div>
                               );
                             })}
+                            </div>
                           </div>
                         </div>
 
@@ -1309,31 +1313,6 @@ export default function CreativeStudioPage() {
               </div>
             )}
           </AnimatePresence>
-
-          {/* Floating Chat with Arella Widget */}
-          <Link
-            href="/chat"
-            style={{
-              position: 'fixed',
-              bottom: 24,
-              right: 24,
-              background: theme.color.charcoal900,
-              color: '#fff',
-              borderRadius: 30,
-              padding: '12px 20px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 10,
-              boxShadow: '0 8px 30px rgba(0,0,0,0.2)',
-              textDecoration: 'none',
-              zIndex: 40,
-              border: '1px solid rgba(198,154,44,0.4)',
-              transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-            }}
-          >
-            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#22C55E' }} />
-            <span style={{ fontSize: 13, fontWeight: 700, fontFamily: F }}>Chat with Arella 🌐</span>
-          </Link>
 
         </div>
       </PageTransition>

@@ -257,6 +257,8 @@ export default function PodcastsPage() {
           @media (max-width: 960px) {
             .podcast-page-layout {
               flex-direction: column !important;
+              padding: 16px 14px 40px !important;
+              gap: 24px !important;
             }
             .podcast-page-layout > * {
               width: 100% !important;

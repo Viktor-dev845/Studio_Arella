@@ -292,35 +292,35 @@ export default function UserProfileOverview() {
   return (
     <DashboardLayout>
       <PageTransition>
-        <div className="w-full max-w-[1200px] mx-auto p-6 lg:p-10 pb-24" style={{ fontFamily: F }}>
+        <div className="w-full max-w-[1200px] mx-auto px-4 py-6 sm:px-6 lg:p-10 pb-24" style={{ fontFamily: F }}>
           {!editingMode ? (
             <>
-              <h1 className="text-[24px] font-semibold text-[#16151C] mb-8">Profile Details</h1>
+              <h1 className="text-[20px] sm:text-[24px] font-semibold text-[#16151C] mb-6 sm:mb-8">Profile Details</h1>
 
           {/* Avatar & Header Section */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
-            <div className="flex items-center gap-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 sm:mb-12">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
               {avatarUrl ? (
                 <img 
                   src={avatarUrl} 
                   alt={fullName} 
-                  className="w-[100px] h-[100px] rounded-[10px] object-cover border border-gray-100 shadow-sm"
+                  className="w-[84px] h-[84px] sm:w-[100px] sm:h-[100px] rounded-[10px] object-cover border border-gray-100 shadow-sm"
                 />
               ) : (
-                <div className="w-[100px] h-[100px] rounded-[10px] bg-[#FAF5E6] border border-[#D4AF37]/30 flex items-center justify-center font-bold text-[#D4AF37] text-3xl shadow-xs">
+                <div className="w-[84px] h-[84px] sm:w-[100px] sm:h-[100px] rounded-[10px] bg-[#FAF5E6] border border-[#D4AF37]/30 flex items-center justify-center font-bold text-[#D4AF37] text-2xl sm:text-3xl shadow-xs">
                   {fullName.charAt(0).toUpperCase()}
                 </div>
               )}
               <div className="flex flex-col gap-2">
-                <h2 className="text-[24px] font-semibold text-[#16151C]">{fullName}</h2>
-                <div className="flex flex-col gap-2">
-                  <div className="flex items-center gap-2.5 text-[#16151C] text-[16px] font-light">
-                    <Briefcase size={20} strokeWidth={1.5} />
+                <h2 className="text-[20px] sm:text-[24px] font-semibold text-[#16151C]">{fullName}</h2>
+                <div className="flex flex-col gap-1.5 sm:gap-2">
+                  <div className="flex items-center gap-2.5 text-[#16151C] text-[14px] sm:text-[16px] font-light">
+                    <Briefcase size={18} strokeWidth={1.5} />
                     <span>{userRole}</span>
                   </div>
                   {email !== '—' && (
-                    <div className="flex items-center gap-2.5 text-[#16151C] text-[16px] font-light">
-                      <Mail size={20} strokeWidth={1.5} />
+                    <div className="flex items-center gap-2.5 text-[#16151C] text-[14px] sm:text-[16px] font-light">
+                      <Mail size={18} strokeWidth={1.5} />
                       <span>{email}</span>
                     </div>
                   )}
@@ -328,19 +328,19 @@ export default function UserProfileOverview() {
               </div>
             </div>
             
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
               <Link 
                 href="/user-profile"
-                className="flex items-center justify-center gap-2 border border-[#D4AF37] hover:bg-[#D4AF37]/10 transition-colors text-black h-[50px] px-5 rounded-[6px] text-[15px] font-medium shadow-sm"
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 border border-[#D4AF37] hover:bg-[#D4AF37]/10 transition-colors text-black h-[46px] sm:h-[50px] px-4 sm:px-5 rounded-[6px] text-[14px] sm:text-[15px] font-medium shadow-sm"
               >
-                <ExternalLink size={18} strokeWidth={1.5} />
+                <ExternalLink size={16} strokeWidth={1.5} />
                 View Fan Profile
               </Link>
               <button 
                 onClick={() => setEditingMode(activeTab as 'personal' | 'business')}
-                className="flex items-center justify-center gap-2 bg-[#D4AF37] hover:bg-[#c29f31] transition-colors text-black h-[50px] px-6 rounded-[6px] text-[16px] font-light shadow-sm"
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#D4AF37] hover:bg-[#c29f31] transition-colors text-black h-[46px] sm:h-[50px] px-5 sm:px-6 rounded-[6px] text-[14px] sm:text-[16px] font-light shadow-sm"
               >
-                <Edit2 size={20} strokeWidth={1.5} />
+                <Edit2 size={18} strokeWidth={1.5} />
                 Edit Profile
               </button>
             </div>
@@ -939,7 +939,7 @@ export default function UserProfileOverview() {
 
                   {/* Tab Content */}
                   {supportTab === 'contact' && (
-                    <div className="flex flex-wrap gap-y-8 gap-x-32 w-full max-w-[700px]">
+                    <div className="flex flex-wrap gap-y-6 gap-x-8 sm:gap-x-16 lg:gap-x-32 w-full max-w-[700px]">
                       <div className="flex flex-col gap-1.5 w-full max-w-[280px]">
                         <div className="text-[13px] font-medium text-neutral-500">Phone number</div>
                         <div className="text-[16px] font-medium text-neutral-900 dark:text-white pb-2 border-b border-neutral-200 dark:border-white/10">02034567890</div>
@@ -1253,8 +1253,8 @@ export default function UserProfileOverview() {
       </PageTransition>
 
       {showSuccessModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
-          <div className="relative w-full max-w-[625px] h-[565px] bg-white rounded-[32px] flex flex-col items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[2px] p-4">
+          <div className="relative w-full max-w-[625px] min-h-[420px] max-h-[90vh] py-10 px-6 sm:px-10 overflow-y-auto bg-white rounded-[24px] sm:rounded-[32px] flex flex-col items-center justify-center">
             {/* Close button */}
             <button 
               onClick={() => setShowSuccessModal(false)}
@@ -1294,9 +1294,9 @@ export default function UserProfileOverview() {
       )}
 
       {showLogoutModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
-          <div className="relative w-full max-w-[625px] bg-white rounded-[32px] flex flex-col items-center justify-center p-14 text-center">
-            <h3 className="text-[28px] leading-[40px] font-semibold text-[#16151C] mb-12 max-w-[500px]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[2px] p-4">
+          <div className="relative w-full max-w-[625px] bg-white rounded-[24px] sm:rounded-[32px] flex flex-col items-center justify-center p-6 sm:p-14 text-center">
+            <h3 className="text-[20px] sm:text-[28px] leading-[30px] sm:leading-[40px] font-semibold text-[#16151C] mb-8 sm:mb-12 max-w-[500px]">
               Are you sure you want to logged out on all devices you are logged into?
             </h3>
 
@@ -1327,8 +1327,8 @@ export default function UserProfileOverview() {
       )}
 
       {showLogoutSuccessModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
-          <div className="relative w-full max-w-[625px] h-[565px] bg-white rounded-[32px] flex flex-col items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[2px] p-4">
+          <div className="relative w-full max-w-[625px] min-h-[420px] max-h-[90vh] py-10 px-6 sm:px-10 overflow-y-auto bg-white rounded-[24px] sm:rounded-[32px] flex flex-col items-center justify-center">
             {/* Close button */}
             <button 
               onClick={() => setShowLogoutSuccessModal(false)}
@@ -1363,8 +1363,8 @@ export default function UserProfileOverview() {
       )}
 
       {showReportSuccessModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
-          <div className="relative w-full max-w-[625px] h-[565px] bg-white rounded-[32px] flex flex-col items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[2px] p-4">
+          <div className="relative w-full max-w-[625px] min-h-[420px] max-h-[90vh] py-10 px-6 sm:px-10 overflow-y-auto bg-white rounded-[24px] sm:rounded-[32px] flex flex-col items-center justify-center">
             {/* Close button */}
             <button 
               onClick={() => setShowReportSuccessModal(false)}
