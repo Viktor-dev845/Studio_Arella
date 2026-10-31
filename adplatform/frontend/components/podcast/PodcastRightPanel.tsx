@@ -135,7 +135,7 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
 
           <div>
             <Link
-              href="/bookings?tab=podcast"
+              href="/podcast/book"
               style={{
                 background: '#E2F163',
                 color: '#0F172A',
@@ -394,7 +394,7 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
 
         {/* Book podcast slot button */}
         <Link
-          href="/bookings?tab=podcast"
+          href="/podcast/book"
           style={{
             width: '100%',
             padding: '10px 14px',

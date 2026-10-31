@@ -790,7 +790,7 @@ export default function AdvertiserDashboard() {
               Book Ad slot
             </Link>
             <Link
-              href="/bookings?tab=podcast"
+              href="/podcast/book"
               style={{
                 padding: '8px 12px',
                 background: theme.color.surface,

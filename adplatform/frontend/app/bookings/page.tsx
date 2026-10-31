@@ -470,7 +470,7 @@ function BookingsPageContent() {
 
                   {/* Book Slot */}
                   <Link
-                    href={activeTab === 'podcast' ? "/bookings?tab=podcast" : "/book"}
+                    href={activeTab === 'podcast' ? "/podcast/book" : "/book"}
                     className="flex items-center justify-center px-4 h-[44px] sm:h-[50px] bg-[#D4AF37] hover:bg-[#b58b24] text-[#000000] rounded-[6px] text-[13px] sm:text-[14px] font-semibold transition-colors shrink-0"
                   >
                     {activeTab === 'podcast' ? 'Book Podcast' : 'Book Ad Slot'}
@@ -563,7 +563,7 @@ function BookingsPageContent() {
                                 )}
                                 {b.status === 'cancelled' && (
                                   <Link
-                                    href={activeTab === 'podcast' ? "/bookings?tab=podcast" : "/book"}
+                                    href={activeTab === 'podcast' ? "/podcast/book" : "/book"}
                                     className="text-[#91C600] hover:opacity-80 transition-colors"
                                   >
                                     Book a slot

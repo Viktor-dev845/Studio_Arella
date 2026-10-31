@@ -305,7 +305,7 @@ export default function PodcastsPage() {
 
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <Link
-                  href="/bookings?tab=podcast"
+                  href="/podcast/book"
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -422,7 +422,7 @@ export default function PodcastsPage() {
                       </Link>
 
                       <Link
-                        href="/bookings?tab=podcast"
+                        href="/podcast/book"
                         style={{
                           display: 'inline-flex',
                           alignItems: 'center',
@@ -545,7 +545,7 @@ export default function PodcastsPage() {
                       </p>
                     </div>
                     <Link
-                      href="/bookings?tab=podcast"
+                      href="/podcast/book"
                       style={{
                         display: 'inline-flex',
                         alignItems: 'center',
