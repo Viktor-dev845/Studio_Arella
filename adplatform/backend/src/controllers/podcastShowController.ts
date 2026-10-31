@@ -189,19 +189,29 @@ export const createEpisode: RequestHandler = async (req, res) => {
         const m = Math.floor(duration_seconds / 60);
         const s = duration_seconds % 60;
         const durText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        const isVideo = Boolean(
+          audioFile.mimetype?.startsWith('video/') ||
+          audioFile.originalname?.match(/\.(mp4|mov|webm)$/i)
+        );
+        const contentType = isVideo ? 'video' : 'audio';
+        const tags = isVideo
+          ? ['#podcast', '#vodcast', '#video', '#studioarella']
+          : ['#podcast', '#audio', '#studioarella'];
+
         await pool.query(
           `INSERT INTO creator_content
            (creator_id, title, description, content_type, media_url, cover_url, duration_seconds, duration_text, category, tags, is_premium, status, badge_theme)
-           VALUES ($1, $2, $3, 'audio', $4, $5, $6, $7, 'Podcast', $8, false, 'published', 'gold')`,
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'Podcast', $9, false, 'published', 'gold')`,
           [
             authReq.user?.id,
             `${showRes.rows[0].title}: ${title.trim()}`,
             description || `New episode from ${showRes.rows[0].title}`,
+            contentType,
             audio_url,
             cover_url || showRes.rows[0].cover_url || '/audience/covers/wealth.jpg',
             duration_seconds,
             durText,
-            ['#podcast', '#audio', '#studioarella']
+            tags
           ]
         );
       } catch (feedErr) {

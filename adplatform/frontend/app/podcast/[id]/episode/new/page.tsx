@@ -343,14 +343,14 @@ export default function AddNewEpisodePage() {
             {/* Upload episode box */}
             <div>
               <p style={{ fontSize: 14, fontWeight: 500, color: theme.color.text1, margin: '0 0 10px' }}>
-                Upload episode
+                Upload episode (Audio or Video Podcast)
               </p>
 
               <input
                 type="file"
                 ref={audioInputRef}
                 onChange={handleAudioUpload}
-                accept="audio/*"
+                accept="audio/*,video/mp4,video/quicktime,video/webm"
                 style={{ display: 'none' }}
               />
 
@@ -393,7 +393,7 @@ export default function AddNewEpisodePage() {
                   )}
                 </p>
                 <p style={{ fontSize: 11, color: theme.color.text4, margin: 0, fontWeight: 400 }}>
-                  Supported formats : mp3
+                  Supported formats : MP3, WAV, M4A, MP4 (Video Podcast)
                 </p>
               </div>
             </div>

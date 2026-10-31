@@ -112,7 +112,13 @@ export default function AudienceShowPage() {
                         </div>
                       </div>
                       {playingId === ep.id && (
-                        <audio controls autoPlay src={ep.audio_url} style={{ width: '100%', height: 36 }} />
+                        ep.audio_url?.match(/\.(mp4|mov|webm)$/i) || ep.audio_url?.includes('/video/upload/') ? (
+                          <div style={{ marginTop: 12, borderRadius: 12, overflow: 'hidden', background: '#000' }}>
+                            <video controls autoPlay src={ep.audio_url} style={{ width: '100%', maxHeight: 380, display: 'block' }} />
+                          </div>
+                        ) : (
+                          <audio controls autoPlay src={ep.audio_url} style={{ width: '100%', height: 36, marginTop: 8 }} />
+                        )
                       )}
                     </div>
                   ))}
