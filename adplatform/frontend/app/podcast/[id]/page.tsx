@@ -42,6 +42,15 @@ function formatEpisodeDuration(sec: number | null) {
   return `${m} min ${s.toString().padStart(2, '0')} sec`;
 }
 
+const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'https://studio-arella.onrender.com/api').replace('/api', '');
+
+function resolveCoverUrl(url: string | null | undefined): string {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  if (url.startsWith('/audience') || url.startsWith('/images') || url.startsWith('/icons')) return url;
+  return `${API_BASE}${url.startsWith('/') ? '' : '/'}${url}`;
+}
+
 
 
 const ANALYTICS_DATA = [
@@ -366,7 +375,7 @@ export default function PodcastDetailPage() {
                       >
                         {ep.cover_url || show?.cover_url ? (
                           <img
-                            src={ep.cover_url || show?.cover_url!}
+                            src={resolveCoverUrl(ep.cover_url || show?.cover_url)}
                             alt={`${ep.title} cover`}
                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                           />

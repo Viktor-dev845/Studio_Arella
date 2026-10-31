@@ -34,6 +34,15 @@ function formatDuration(sec: number | null) {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
+const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'https://studio-arella.onrender.com/api').replace('/api', '');
+
+function resolveMediaUrl(url: string | null | undefined): string {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  if (url.startsWith('/audience') || url.startsWith('/images') || url.startsWith('/icons')) return url;
+  return `${API_BASE}${url.startsWith('/') ? '' : '/'}${url}`;
+}
+
 export default function AudienceShowPage() {
   const params = useParams<{ id: string }>();
   const [show, setShow] = useState<Show | null>(null);
@@ -74,7 +83,7 @@ export default function AudienceShowPage() {
               <div style={{ display: 'flex', gap: 20, marginBottom: 28 }}>
                 <div style={{ width: 100, height: 100, borderRadius: 16, overflow: 'hidden', background: theme.color.surface2, border: `1px solid ${theme.color.border}`, flexShrink: 0 }}>
                   {show.cover_url ? (
-                    <img src={show.cover_url} alt={show.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <img src={resolveMediaUrl(show.cover_url)} alt={show.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : (
                     <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <Mic size={28} color={theme.color.text4} />
@@ -114,10 +123,10 @@ export default function AudienceShowPage() {
                       {playingId === ep.id && (
                         ep.audio_url?.match(/\.(mp4|mov|webm)$/i) || ep.audio_url?.includes('/video/upload/') ? (
                           <div style={{ marginTop: 12, borderRadius: 12, overflow: 'hidden', background: '#000' }}>
-                            <video controls autoPlay src={ep.audio_url} style={{ width: '100%', maxHeight: 380, display: 'block' }} />
+                            <video controls autoPlay src={resolveMediaUrl(ep.audio_url)} style={{ width: '100%', maxHeight: 380, display: 'block' }} />
                           </div>
                         ) : (
-                          <audio controls autoPlay src={ep.audio_url} style={{ width: '100%', height: 36, marginTop: 8 }} />
+                          <audio controls autoPlay src={resolveMediaUrl(ep.audio_url)} style={{ width: '100%', height: 36, marginTop: 8 }} />
                         )
                       )}
                     </div>
