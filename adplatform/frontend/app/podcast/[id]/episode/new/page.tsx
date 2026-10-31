@@ -47,6 +47,36 @@ export default function AddNewEpisodePage() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
+  const dateInputRef = useRef<HTMLInputElement>(null);
+  const timeInputRef = useRef<HTMLInputElement>(null);
+
+  const openDatePicker = () => {
+    if (!dateInputRef.current) return;
+    dateInputRef.current.type = 'date';
+    try {
+      if (typeof dateInputRef.current.showPicker === 'function') {
+        dateInputRef.current.showPicker();
+      } else {
+        dateInputRef.current.focus();
+      }
+    } catch {
+      dateInputRef.current.focus();
+    }
+  };
+
+  const openTimePicker = () => {
+    if (!timeInputRef.current) return;
+    timeInputRef.current.type = 'time';
+    try {
+      if (typeof timeInputRef.current.showPicker === 'function') {
+        timeInputRef.current.showPicker();
+      } else {
+        timeInputRef.current.focus();
+      }
+    } catch {
+      timeInputRef.current.focus();
+    }
+  };
 
   // Verify the parent podcast actually exists before letting someone fill out
   // (and potentially upload audio for) an episode that has nowhere to go.
@@ -403,37 +433,81 @@ export default function AddNewEpisodePage() {
               {/* Schedule post */}
               <div style={{ flex: 1, position: 'relative' }}>
                 <input
+                  ref={dateInputRef}
                   type={scheduleDate ? 'date' : 'text'}
-                  onFocus={(e) => (e.target.type = 'date')}
-                  onBlur={(e) => (e.target.type = e.target.value ? 'date' : 'text')}
+                  onClick={openDatePicker}
+                  onFocus={() => {
+                    if (dateInputRef.current) dateInputRef.current.type = 'date';
+                  }}
+                  onBlur={(e) => {
+                    if (!e.target.value) e.target.type = 'text';
+                  }}
                   placeholder="Schedule post (optional)"
                   value={scheduleDate}
                   onChange={(e) => setScheduleDate(e.target.value)}
-                  style={{ ...commonInputStyle, paddingRight: 40 }}
+                  style={{ ...commonInputStyle, paddingRight: 40, cursor: 'pointer' }}
                 />
-                <Calendar
-                  size={16}
-                  color={theme.color.text4}
-                  style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}
-                />
+                <button
+                  type="button"
+                  onClick={openDatePicker}
+                  style={{
+                    position: 'absolute',
+                    right: 12,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'transparent',
+                    border: 'none',
+                    padding: 4,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: theme.color.text4,
+                  }}
+                  title="Choose schedule date"
+                >
+                  <Calendar size={17} />
+                </button>
               </div>
 
               {/* Set timer */}
               <div style={{ flex: 1, position: 'relative' }}>
                 <input
+                  ref={timeInputRef}
                   type={timerTime ? 'time' : 'text'}
-                  onFocus={(e) => (e.target.type = 'time')}
-                  onBlur={(e) => (e.target.type = e.target.value ? 'time' : 'text')}
+                  onClick={openTimePicker}
+                  onFocus={() => {
+                    if (timeInputRef.current) timeInputRef.current.type = 'time';
+                  }}
+                  onBlur={(e) => {
+                    if (!e.target.value) e.target.type = 'text';
+                  }}
                   placeholder="Set timer (optional)"
                   value={timerTime}
                   onChange={(e) => setTimerTime(e.target.value)}
-                  style={{ ...commonInputStyle, paddingRight: 40 }}
+                  style={{ ...commonInputStyle, paddingRight: 40, cursor: 'pointer' }}
                 />
-                <Clock
-                  size={16}
-                  color={theme.color.text4}
-                  style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}
-                />
+                <button
+                  type="button"
+                  onClick={openTimePicker}
+                  style={{
+                    position: 'absolute',
+                    right: 12,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'transparent',
+                    border: 'none',
+                    padding: 4,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: theme.color.text4,
+                  }}
+                  title="Choose timer"
+                >
+                  <Clock size={17} />
+                </button>
               </div>
             </div>
 
