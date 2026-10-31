@@ -212,6 +212,26 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
             </>
           ) : (
             <>
+              {/* Admin Quick Switch Banner if admin is viewing customer pages */}
+              {isAdmin && (
+                <div className="mb-3 px-1">
+                  <Link
+                    href="/admin"
+                    onClick={onClose}
+                    className="flex items-center justify-between rounded-xl p-2.5 bg-amber-500/10 border border-amber-500/30 text-[#D4AF37] hover:border-amber-500/60 transition-all shadow-xs"
+                    style={{ textDecoration: 'none' }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Shield size={16} className="text-[#D4AF37]" />
+                      <span className="text-xs font-bold text-neutral-900 dark:text-white">Admin Workspace</span>
+                    </div>
+                    <span className="text-[10px] font-extrabold bg-[#D4AF37] text-black px-2 py-0.5 rounded-full">
+                      ENTER
+                    </span>
+                  </Link>
+                </div>
+              )}
+
               {/* Favorites / Recently tabs */}
               <div className="mb-3 flex gap-4 px-2 text-xs">
                 <button
@@ -284,15 +304,15 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
         </div>
 
         <div className="border-t border-neutral-200 dark:border-white/10 px-3 py-3 space-y-1">
-          {pathname.startsWith('/admin') ? (
+          {isAdmin ? (
             <Link
-              href="/dashboard"
+              href={pathname.startsWith('/admin') ? '/dashboard' : '/admin'}
               onClick={onClose}
               className="flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-xs font-bold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors"
             >
-              <span>Back to Dashboard</span>
+              <span>{pathname.startsWith('/admin') ? 'Customer Dashboard' : 'Admin Control Suite'}</span>
               <span className="px-2 py-0.5 rounded-full bg-[#D4AF37] text-black font-extrabold text-[10px]">
-                Exit Admin
+                {pathname.startsWith('/admin') ? 'Exit Admin' : 'Admin'}
               </span>
             </Link>
           ) : (

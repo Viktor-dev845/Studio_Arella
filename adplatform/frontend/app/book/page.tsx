@@ -258,9 +258,9 @@ function BookAdForm() {
 
 
 
-  const inputClasses = "w-full px-5 py-4 bg-white border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[17px] font-light text-gray-800 placeholder:text-[rgba(162,161,168,0.8)] focus:outline-none focus:border-[#D4AF37] transition-colors font-body";
-  const dropdownMenuClasses = "absolute top-full left-0 right-0 mt-2 bg-white rounded-[10px] shadow-[0px_30px_30px_rgba(184,184,184,0.25)] z-50 overflow-hidden py-4 px-3 border border-gray-100";
-  const dropdownItemClasses = "w-full text-left px-4 py-3 text-[15px] font-body text-black hover:bg-gray-50 transition-colors rounded-lg flex justify-between items-center";
+  const inputClasses = "w-full px-5 py-4 bg-white dark:bg-[#161618] border border-[rgba(162,161,168,0.2)] dark:border-white/10 rounded-[10px] text-[17px] font-light text-gray-800 dark:text-white placeholder:text-[rgba(162,161,168,0.8)] focus:outline-none focus:border-[#D4AF37] transition-colors font-body";
+  const dropdownMenuClasses = "absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#161618] rounded-[10px] shadow-[0px_30px_30px_rgba(0,0,0,0.3)] z-50 overflow-hidden py-4 px-3 border border-gray-100 dark:border-white/10";
+  const dropdownItemClasses = "w-full text-left px-4 py-3 text-[15px] font-body text-black dark:text-white hover:bg-gray-50 dark:hover:bg-white/5 transition-colors rounded-lg flex justify-between items-center";
 
   const handleOtpChange = (index: number, value: string) => {
     if (value.length > 1) value = value.slice(-1);
@@ -281,14 +281,14 @@ function BookAdForm() {
   return (
     <DashboardLayout>
       <PageTransition>
-        <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-6 sm:py-8 h-full relative font-body bg-white rounded-2xl sm:rounded-[24px]">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-6 sm:py-8 h-full relative font-body bg-white dark:bg-[#111111] dark:border dark:border-white/10 rounded-2xl sm:rounded-[24px]">
           
           {/* Header */}
           <div className="flex items-center gap-3 mb-6 sm:mb-10 mt-1 sm:mt-2">
-            <button onClick={() => router.back()} className="flex items-center gap-1.5 text-[20px] sm:text-[24px] font-normal text-[#16151C] hover:opacity-70 transition-opacity">
+            <button onClick={() => router.back()} className="flex items-center gap-1.5 text-[20px] sm:text-[24px] font-normal text-[#16151C] dark:text-white hover:opacity-70 transition-opacity">
               <ChevronDown className="rotate-90" size={20} strokeWidth={2.5} /> <span className="ml-1 text-[18px] sm:text-[24px] font-body">Back</span>
             </button>
-            <h1 className="text-[18px] sm:text-[20px] font-bold text-[#16151C] ml-4 sm:ml-6 mt-0.5 sm:mt-1 font-body">Book Ad</h1>
+            <h1 className="text-[18px] sm:text-[20px] font-bold text-[#16151C] dark:text-white ml-4 sm:ml-6 mt-0.5 sm:mt-1 font-body">Book Ad</h1>
           </div>
 
           <div className="flex flex-col xl:flex-row gap-8 xl:gap-20 items-start">
@@ -300,11 +300,11 @@ function BookAdForm() {
                 {/* Link to Campaign (Optional) */}
                 <div className="relative">
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-[14px] font-medium text-gray-700 font-body">
+                    <label className="text-[14px] font-medium text-gray-700 dark:text-neutral-300 font-body">
                       Link to Campaign (Optional)
                     </label>
                     {selectedCampaign && (
-                      <span className="text-[12px] font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                      <span className="text-[12px] font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
                         Pre-paid Budget Available: ₦{Math.max(0, Number(selectedCampaign.paid_budget || selectedCampaign.budget || 0) - Number(selectedCampaign.spent || 0)).toLocaleString()}
                       </span>
                     )}
@@ -318,16 +318,16 @@ function BookAdForm() {
                       <span className="text-[#D4AF37] text-base">🎯</span>
                       {selectedCampaign ? (
                         <div className="truncate">
-                          <span className="font-semibold text-gray-900">{selectedCampaign.name}</span>
-                          <span className="ml-2 text-[13px] text-emerald-600 font-medium">
+                          <span className="font-semibold text-gray-900 dark:text-white">{selectedCampaign.name}</span>
+                          <span className="ml-2 text-[13px] text-emerald-600 dark:text-emerald-400 font-medium">
                             (₦{Math.max(0, Number(selectedCampaign.paid_budget || selectedCampaign.budget || 0) - Number(selectedCampaign.spent || 0)).toLocaleString()} budget)
                           </span>
                         </div>
                       ) : (
-                        <span className="text-gray-500 font-light">Standalone booking (No campaign linked)</span>
+                        <span className="text-gray-500 dark:text-neutral-400 font-light">Standalone booking (No campaign linked)</span>
                       )}
                     </div>
-                    <ChevronDown size={22} className={`text-gray-600 transition-transform ${showCampaignPicker ? 'rotate-180' : ''}`} />
+                    <ChevronDown size={22} className={`text-gray-600 dark:text-neutral-400 transition-transform ${showCampaignPicker ? 'rotate-180' : ''}`} />
                   </button>
 
                   {showCampaignPicker && (
@@ -350,13 +350,13 @@ function BookAdForm() {
                             key={c.id}
                             type="button"
                             onClick={() => { setSelectedCampaignId(c.id); setShowCampaignPicker(false); }}
-                            className={`${dropdownItemClasses} border-t border-gray-100/60`}
+                            className={`${dropdownItemClasses} border-t border-gray-100/60 dark:border-white/10`}
                           >
                             <div className="flex flex-col text-left">
-                              <span className={`text-[14px] ${selectedCampaignId === c.id ? 'font-bold text-[#D4AF37]' : 'font-medium text-gray-800'}`}>
+                              <span className={`text-[14px] ${selectedCampaignId === c.id ? 'font-bold text-[#D4AF37]' : 'font-medium text-gray-800 dark:text-neutral-200'}`}>
                                 {c.name}
                               </span>
-                              <span className="text-[12px] text-emerald-600 font-medium">
+                              <span className="text-[12px] text-emerald-600 dark:text-emerald-400 font-medium">
                                 ₦{remaining.toLocaleString()} pre-paid budget remaining
                               </span>
                             </div>
@@ -383,8 +383,8 @@ function BookAdForm() {
                   <div className="relative">
                     <button type="button" onClick={() => { setShowDurationDropdown((o) => !o); setShowCampaignDropdown(false); setShowCampaignPicker(false); }}
                       className={`${inputClasses} flex items-center justify-between h-[56px]`}>
-                      <span className="text-[#16151C] font-normal">{durationLabel}</span>
-                      <ChevronDown size={24} className={`text-[#16151C] transition-transform ${showDurationDropdown ? 'rotate-180' : ''}`} />
+                      <span className="text-[#16151C] dark:text-white font-normal">{durationLabel}</span>
+                      <ChevronDown size={24} className={`text-[#16151C] dark:text-white transition-transform ${showDurationDropdown ? 'rotate-180' : ''}`} />
                     </button>
                     {showDurationDropdown && (
                       <div className={dropdownMenuClasses}>
@@ -414,7 +414,7 @@ function BookAdForm() {
                       disabled={durationUnit === '30_mins'}
                       onChange={(e) => setDurationCount(e.target.value)} 
                       placeholder={durationUnit === '30_mins' ? '30 Minutes (Fixed)' : `Number of ${durationUnit === 'monthly' ? 'months' : durationUnit === 'weekly' ? 'weeks' : 'hours'}`} 
-                      className={`${inputClasses} h-[56px] disabled:bg-gray-50 disabled:text-gray-500`} 
+                      className={`${inputClasses} h-[56px] disabled:bg-gray-50 dark:disabled:bg-white/5 disabled:text-gray-500`} 
                     />
                   </div>
 
@@ -422,8 +422,8 @@ function BookAdForm() {
                   <div className="relative">
                     <button type="button" onClick={() => { setShowCampaignDropdown((o) => !o); setShowDurationDropdown(false); setShowCampaignPicker(false); }}
                       className={`${inputClasses} flex items-center justify-between h-[56px]`}>
-                      <span className="text-[#16151C] font-normal">{campaignLabel}</span>
-                      <ChevronDown size={24} className={`text-[#16151C] transition-transform ${showCampaignDropdown ? 'rotate-180' : ''}`} />
+                      <span className="text-[#16151C] dark:text-white font-normal">{campaignLabel}</span>
+                      <ChevronDown size={24} className={`text-[#16151C] dark:text-white transition-transform ${showCampaignDropdown ? 'rotate-180' : ''}`} />
                     </button>
                     {showCampaignDropdown && (
                       <div className={dropdownMenuClasses}>
@@ -439,29 +439,29 @@ function BookAdForm() {
                 </div>
 
                 <div className="pt-2">
-                  <p className="text-[16px] text-[#16151C] font-light mb-4 font-body">Upload Ad materials (You can upload multiple files at once)</p>
+                  <p className="text-[16px] text-[#16151C] dark:text-white font-light mb-4 font-body">Upload Ad materials (You can upload multiple files at once)</p>
                   <div
                     onClick={() => fileInputRef.current?.click()}
                     onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
                     onDragLeave={() => setDragging(false)}
                     onDrop={(e) => { e.preventDefault(); setDragging(false); handleFile(e.dataTransfer.files?.[0] || null); }}
                     className={`relative overflow-hidden border border-dashed rounded-[10px] transition-all cursor-pointer h-[133px] flex flex-col items-center justify-center ${
-                      dragging ? 'border-[#D4AF37] bg-[#D4AF37]/5' : 'border-[#D4AF37] bg-transparent hover:bg-gray-50'
+                      dragging ? 'border-[#D4AF37] bg-[#D4AF37]/5' : 'border-[#D4AF37] bg-transparent hover:bg-gray-50 dark:hover:bg-white/5'
                     }`}
                   >
                     <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/gif,video/mp4,video/quicktime" hidden onChange={(e) => handleFile(e.target.files?.[0] || null)} />
                     {file && filePreview ? (
-                      <div className="flex items-center gap-4 bg-white p-3 rounded-[12px] shadow-sm border border-gray-100 relative z-10 w-full max-w-[90%] mx-auto">
+                      <div className="flex items-center gap-4 bg-white dark:bg-[#161618] p-3 rounded-[12px] shadow-sm border border-gray-100 dark:border-white/10 relative z-10 w-full max-w-[90%] mx-auto">
                         {file.type.startsWith('video') ? (
                           <video src={filePreview} className="w-12 h-12 object-cover rounded-[8px]" muted />
                         ) : (
                           <img src={filePreview} alt="preview" className="w-12 h-12 object-cover rounded-[8px]" />
                         )}
                         <div className="flex-1 min-w-0">
-                          <p className="text-[14px] font-medium text-gray-900 truncate">{file.name}</p>
+                          <p className="text-[14px] font-medium text-gray-900 dark:text-white truncate">{file.name}</p>
                           <p className="text-[12px] text-gray-500 mt-0.5">{(file.size / 1024 / 1024).toFixed(1)} MB</p>
                         </div>
-                        <button type="button" onClick={(e) => { e.stopPropagation(); setFile(null); setFilePreview(null); }} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 transition-colors">
+                        <button type="button" onClick={(e) => { e.stopPropagation(); setFile(null); setFilePreview(null); }} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 transition-colors">
                           <X size={16} />
                         </button>
                       </div>
@@ -470,7 +470,7 @@ function BookAdForm() {
                         <div className="w-[40px] h-[40px] rounded-[10px] bg-[#D4AF37] flex items-center justify-center mb-3">
                           <Upload size={20} className="text-white" />
                         </div>
-                        <p className="text-[14px] font-light text-[#16151C] mb-1 font-body">
+                        <p className="text-[14px] font-light text-[#16151C] dark:text-white mb-1 font-body">
                           Drag & Drop or <span className="text-[#3E8B7C]">choose file</span> to upload
                         </p>
                         <p className="text-[11px] font-light text-[#A2A1A8] font-body mt-1">Supported formats : JPEG, PNG, GIF, MP4, MOV</p>
@@ -481,12 +481,12 @@ function BookAdForm() {
                   <div className="mt-8 flex items-center">
                     {adDesignRequested ? (
                       <div className="flex items-center gap-2">
-                        <p className="text-[16px] font-light text-[#16151C] font-body">Ad banner design on request?</p>
+                        <p className="text-[16px] font-light text-[#16151C] dark:text-white font-body">Ad banner design on request?</p>
                         <button type="button" onClick={() => setShowCreativeModal(true)} className="text-[#D4AF37] text-[16px] font-light hover:underline transition-all font-body">Change</button>
                         <button type="button" onClick={() => setShowCancelCreativeModal(true)} className="text-red-500 text-[16px] font-light hover:underline transition-all ml-1 font-body">Cancel</button>
                       </div>
                     ) : (
-                      <p className="text-[16px] font-light text-[#16151C] font-body">
+                      <p className="text-[16px] font-light text-[#16151C] dark:text-white font-body">
                         Don’t have Ad materials yet?{' '}
                         <button type="button" onClick={() => setShowCreativeModal(true)} className="text-[#D4AF37] hover:underline transition-colors font-body">Request Ad creative services</button>
                       </p>
@@ -507,8 +507,8 @@ function BookAdForm() {
                       placeholder="Schedule service delivery timeline" 
                       style={{ color: scheduleDate ? 'inherit' : 'transparent' }} 
                     />
-                    {!scheduleDate && <span className="absolute left-5 top-1/2 -translate-y-1/2 text-[rgba(162,161,168,0.8)] text-[17px] font-light pointer-events-none bg-white pr-2 font-body">Schedule service delivery timeline</span>}
-                    <Calendar size={24} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#16151C] pointer-events-none" />
+                    {!scheduleDate && <span className="absolute left-5 top-1/2 -translate-y-1/2 text-[rgba(162,161,168,0.8)] text-[17px] font-light pointer-events-none bg-white dark:bg-[#161618] pr-2 font-body">Schedule service delivery timeline</span>}
+                    <Calendar size={24} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#16151C] dark:text-white pointer-events-none" />
                   </div>
                   <div className="relative cursor-pointer" onClick={() => { try { (timeInputRef.current as any)?.showPicker(); } catch {} }}>
                     <input 
@@ -521,13 +521,13 @@ function BookAdForm() {
                       placeholder="Set timer (optional)" 
                       style={{ color: scheduleTime ? 'inherit' : 'transparent' }} 
                     />
-                    {!scheduleTime && <span className="absolute left-5 top-1/2 -translate-y-1/2 text-[rgba(162,161,168,0.8)] text-[17px] font-light pointer-events-none bg-white pr-2 font-body">Set timer (optional)</span>}
-                    <Clock size={24} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#16151C] pointer-events-none" />
+                    {!scheduleTime && <span className="absolute left-5 top-1/2 -translate-y-1/2 text-[rgba(162,161,168,0.8)] text-[17px] font-light pointer-events-none bg-white dark:bg-[#161618] pr-2 font-body">Set timer (optional)</span>}
+                    <Clock size={24} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#16151C] dark:text-white pointer-events-none" />
                   </div>
                 </div>
 
                 <div className="pt-8 flex items-center justify-end gap-5">
-                  <button type="button" onClick={() => router.push('/dashboard')} className="w-[91px] h-[40px] bg-white border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[16px] font-light text-[#16151C] hover:bg-gray-50 transition-colors font-lexend">
+                  <button type="button" onClick={() => router.push('/dashboard')} className="w-[91px] h-[40px] bg-white dark:bg-white/5 border border-[rgba(162,161,168,0.2)] dark:border-white/10 rounded-[10px] text-[16px] font-light text-[#16151C] dark:text-neutral-200 hover:bg-gray-50 dark:hover:bg-white/10 transition-colors font-lexend">
                     Cancel
                   </button>
                   <button type="button" onClick={handleBookSlot} disabled={submitting || addingToCart} className="w-[116px] h-[40px] bg-[#D4AF37] hover:bg-[#b89839] text-black rounded-[6px] text-[14px] font-normal transition-all disabled:opacity-60 font-jost">
@@ -560,35 +560,35 @@ function BookAdForm() {
 
         {/* ─── Billing / payment modals ─── */}
         {step !== 'form' && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[rgba(162,161,168,0.2)] backdrop-blur-[10px] p-4 sm:p-6">
-            <div className="bg-white rounded-[24px] sm:rounded-[32px] w-full max-w-[560px] max-h-[90vh] shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 flex flex-col font-body overflow-hidden">
+          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[rgba(162,161,168,0.2)] dark:bg-black/60 backdrop-blur-[10px] p-4 sm:p-6">
+            <div className="bg-white dark:bg-[#161618] border border-transparent dark:border-white/10 rounded-[24px] sm:rounded-[32px] w-full max-w-[560px] max-h-[90vh] shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 flex flex-col font-body overflow-hidden">
               
               {/* Modal Header */}
-              <div className="flex items-center justify-between px-6 sm:px-8 py-5 border-b border-gray-100 shrink-0">
+              <div className="flex items-center justify-between px-6 sm:px-8 py-5 border-b border-gray-100 dark:border-white/10 shrink-0">
                 {step !== 'billing' && step !== 'success' && step !== 'otp' ? (
-                  <button onClick={() => setStep('billing')} className="p-1 hover:opacity-70 transition-opacity text-[#101828]">
+                  <button onClick={() => setStep('billing')} className="p-1 hover:opacity-70 transition-opacity text-[#101828] dark:text-white">
                     <ArrowLeft size={24} strokeWidth={2.5} />
                   </button>
                 ) : step === 'otp' ? (
-                  <button onClick={() => setStep('card')} className="p-1 hover:opacity-70 transition-opacity text-[#101828]">
+                  <button onClick={() => setStep('card')} className="p-1 hover:opacity-70 transition-opacity text-[#101828] dark:text-white">
                     <ArrowLeft size={24} strokeWidth={2.5} />
                   </button>
                 ) : step === 'success' ? (
                   <div className="w-6" />
                 ) : (
-                  <button onClick={() => setStep('form')} className="p-1 hover:opacity-70 transition-opacity text-[#101828]">
+                  <button onClick={() => setStep('form')} className="p-1 hover:opacity-70 transition-opacity text-[#101828] dark:text-white">
                     <ArrowLeft size={24} strokeWidth={2.5} />
                   </button>
                 )}
                 
-                <span className="text-[18px] sm:text-[20px] font-semibold text-[#101828] text-center flex-1">
+                <span className="text-[18px] sm:text-[20px] font-semibold text-[#101828] dark:text-white text-center flex-1">
                   {step === 'billing' ? 'Billing' : 
                    step === 'success' && selectedPaymentMethod !== 'wallet' ? 'Pay with card' : 
                    step === 'card' || step === 'otp' ? (selectedPaymentMethod === 'card' ? 'Pay with a new card' : 'Pay with card') : 
                    step === 'wallet' || (step === 'success' && selectedPaymentMethod === 'wallet') ? 'Pay from wallet' : ''}
                 </span>
                 
-                <button onClick={() => { if(step === 'success') { router.push('/bookings'); } else { setStep('form'); } }} className="p-1 hover:opacity-70 transition-opacity text-[#101828]">
+                <button onClick={() => { if(step === 'success') { router.push('/bookings'); } else { setStep('form'); } }} className="p-1 hover:opacity-70 transition-opacity text-[#101828] dark:text-white">
                   <X size={24} strokeWidth={2.5} />
                 </button>
               </div>
@@ -597,15 +597,15 @@ function BookAdForm() {
               <div className="px-6 sm:px-8 py-6 flex-1 overflow-y-auto flex flex-col items-center">
                 {step === 'billing' && (
                   <div className="w-full max-w-[468px] flex flex-col items-center my-auto">
-                    <p className="text-center text-[15px] sm:text-[16px] font-bold text-[#101828] mb-4">
+                    <p className="text-center text-[15px] sm:text-[16px] font-bold text-[#101828] dark:text-white mb-4">
                       {durationUnit === '30_mins' ? '30 Minutes' : `${durationCount} ${durationUnit === 'hourly' ? 'hours' : durationUnit === 'weekly' ? 'weeks' : 'months'}`} Ad space at<br/>
                       <span className="text-[18px] font-extrabold text-[#D4AF37]">{formatCurrency(totalCost, currency, rates)}</span>
                     </p>
 
                     {campaignCovered > 0 && (
-                      <div className="w-full rounded-[14px] bg-emerald-50 border border-emerald-200 px-4 py-2.5 mb-4 text-[13px] text-emerald-800 flex justify-between items-center font-medium shadow-xs">
+                      <div className="w-full rounded-[14px] bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 px-4 py-2.5 mb-4 text-[13px] text-emerald-800 dark:text-emerald-300 flex justify-between items-center font-medium shadow-xs">
                         <span>Paid from Campaign ({selectedCampaign?.name || 'Campaign'}):</span>
-                        <span className="font-bold text-emerald-700">-{formatCurrency(campaignCovered, currency, rates)}</span>
+                        <span className="font-bold text-emerald-700 dark:text-emerald-400">-{formatCurrency(campaignCovered, currency, rates)}</span>
                       </div>
                     )}
                     
@@ -613,16 +613,16 @@ function BookAdForm() {
                       {/* Wallet Option */}
                       <div 
                         onClick={() => setSelectedPaymentMethod('wallet')}
-                        className={`w-full min-h-[84px] rounded-[16px] border cursor-pointer transition-all flex flex-col justify-center px-5 py-3 relative ${selectedPaymentMethod === 'wallet' ? 'border-2 border-[#D4AF37] bg-[#D4AF37]/5' : 'border border-[#D7D7D7] hover:border-gray-400'}`}
+                        className={`w-full min-h-[84px] rounded-[16px] cursor-pointer transition-all flex flex-col justify-center px-5 py-3 relative ${selectedPaymentMethod === 'wallet' ? 'border-2 border-[#D4AF37] bg-[#D4AF37]/5 dark:bg-[#D4AF37]/10' : 'border border-[#D7D7D7] dark:border-white/10 hover:border-gray-400 dark:hover:border-white/20'}`}
                       >
                         <div className="flex items-center gap-3 mb-1.5">
-                          <div className={`w-[16px] h-[16px] rounded-full border flex items-center justify-center shrink-0 ${selectedPaymentMethod === 'wallet' ? 'border-[#D4AF37]' : 'border-[#D7D7D7]'}`}>
+                          <div className={`w-[16px] h-[16px] rounded-full border flex items-center justify-center shrink-0 ${selectedPaymentMethod === 'wallet' ? 'border-[#D4AF37]' : 'border-[#D7D7D7] dark:border-neutral-500'}`}>
                             {selectedPaymentMethod === 'wallet' && <div className="w-[8px] h-[8px] rounded-full bg-[#DF4308]" />}
                           </div>
-                          <span className="text-[15px] font-medium text-[#101828]">Pay with Studio Arella Wallet</span>
+                          <span className="text-[15px] font-medium text-[#101828] dark:text-white">Pay with Studio Arella Wallet</span>
                         </div>
-                        <div className="ml-[28px] flex items-center justify-between text-[#101828]">
-                          <span className="text-[13px] text-gray-500">
+                        <div className="ml-[28px] flex items-center justify-between text-[#101828] dark:text-white">
+                          <span className="text-[13px] text-gray-500 dark:text-neutral-400">
                             {campaignCovered > 0 ? (walletAmountToDeduct === 0 ? 'No extra payment required' : 'Net charge from wallet') : 'Available balance'}
                           </span>
                           <span className="text-[14px] font-bold text-[#D4AF37]">
@@ -636,16 +636,16 @@ function BookAdForm() {
                         <div 
                           key={c.id}
                           onClick={() => setSelectedPaymentMethod('saved_card')}
-                          className={`w-full min-h-[84px] rounded-[16px] border cursor-pointer transition-all flex flex-col justify-center px-5 py-3 relative ${selectedPaymentMethod === 'saved_card' ? 'border-2 border-[#D4AF37] bg-[#D4AF37]/5' : 'border border-[#D7D7D7] hover:border-gray-400'}`}
+                          className={`w-full min-h-[84px] rounded-[16px] cursor-pointer transition-all flex flex-col justify-center px-5 py-3 relative ${selectedPaymentMethod === 'saved_card' ? 'border-2 border-[#D4AF37] bg-[#D4AF37]/5 dark:bg-[#D4AF37]/10' : 'border border-[#D7D7D7] dark:border-white/10 hover:border-gray-400 dark:hover:border-white/20'}`}
                         >
                           <div className="flex items-center gap-3 mb-1.5">
-                            <div className={`w-[16px] h-[16px] rounded-full border flex items-center justify-center shrink-0 ${selectedPaymentMethod === 'saved_card' ? 'border-[#D4AF37]' : 'border-[#D7D7D7]'}`}>
+                            <div className={`w-[16px] h-[16px] rounded-full border flex items-center justify-center shrink-0 ${selectedPaymentMethod === 'saved_card' ? 'border-[#D4AF37]' : 'border-[#D7D7D7] dark:border-neutral-500'}`}>
                               {selectedPaymentMethod === 'saved_card' && <div className="w-[8px] h-[8px] rounded-full bg-[#DF4308]" />}
                             </div>
-                            <span className="text-[15px] font-medium text-[#101828]">Pay with {c.bank || c.brand || 'Saved Card'}</span>
+                            <span className="text-[15px] font-medium text-[#101828] dark:text-white">Pay with {c.bank || c.brand || 'Saved Card'}</span>
                           </div>
-                          <div className="ml-[28px] flex items-center justify-between text-[#101828]">
-                            <span className="text-[13px] text-gray-500 tracking-[0.05em]">•••• •••• •••• {c.last4 || '****'}</span>
+                          <div className="ml-[28px] flex items-center justify-between text-[#101828] dark:text-white">
+                            <span className="text-[13px] text-gray-500 dark:text-neutral-400 tracking-[0.05em]">•••• •••• •••• {c.last4 || '****'}</span>
                             <span className="text-[13px] font-medium">{c.account_name || user?.name || 'Cardholder'}</span>
                           </div>
                         </div>
@@ -654,12 +654,12 @@ function BookAdForm() {
                       {/* New Card Option */}
                       <div 
                         onClick={() => setSelectedPaymentMethod('card')}
-                        className={`w-full h-[52px] rounded-[14px] border border-dashed cursor-pointer transition-all flex items-center justify-center gap-2 ${selectedPaymentMethod === 'card' ? 'border-[#D4AF37] bg-[#D4AF37]/5' : 'border-[rgba(162,161,168,0.5)] hover:border-gray-400'}`}
+                        className={`w-full h-[52px] rounded-[14px] border border-dashed cursor-pointer transition-all flex items-center justify-center gap-2 ${selectedPaymentMethod === 'card' ? 'border-[#D4AF37] bg-[#D4AF37]/5 dark:bg-[#D4AF37]/10' : 'border-[rgba(162,161,168,0.5)] dark:border-white/20 hover:border-gray-400 dark:hover:border-white/30'}`}
                       >
-                        <div className="w-5 h-5 rounded-full border border-[#101828] flex items-center justify-center">
-                          <Plus size={13} className="text-[#101828]" />
+                        <div className="w-5 h-5 rounded-full border border-[#101828] dark:border-white flex items-center justify-center">
+                          <Plus size={13} className="text-[#101828] dark:text-white" />
                         </div>
-                        <span className="text-[14px] font-medium text-[#101828]">Pay with a new bank card</span>
+                        <span className="text-[14px] font-medium text-[#101828] dark:text-white">Pay with a new bank card</span>
                       </div>
                     </div>
 
@@ -682,7 +682,7 @@ function BookAdForm() {
 
                 {step === 'card' && (
                   <div className="w-full max-w-[420px] flex flex-col items-center my-auto">
-                    <p className="text-center text-[15px] font-bold text-[#101828] mb-6">
+                    <p className="text-center text-[15px] font-bold text-[#101828] dark:text-white mb-6">
                       {durationCount} {durationUnit === 'hourly' ? 'hours' : durationUnit === 'weekly' ? 'weeks' : 'months'} Ad space at<br/>
                       <span className="text-[18px] font-extrabold text-[#D4AF37]">{formatCurrency(totalCost, currency, rates)}</span>
                     </p>
@@ -691,23 +691,23 @@ function BookAdForm() {
                       <div className="w-full space-y-3.5 mb-5">
                         {/* Select bank */}
                         <div className="relative w-full">
-                          <select className="w-full h-[50px] rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-[#FFFFFF] px-[16px] text-[15px] text-[#16151C] font-light outline-none focus:border-[#D4AF37] appearance-none cursor-pointer">
+                          <select className="w-full h-[50px] rounded-[10px] border border-[rgba(162,161,168,0.2)] dark:border-white/10 bg-[#FFFFFF] dark:bg-[#111111] px-[16px] text-[15px] text-[#16151C] dark:text-white font-light outline-none focus:border-[#D4AF37] appearance-none cursor-pointer">
                             <option value="" disabled selected>--- Select bank ---</option>
-                            <option value="gtb">GTB</option>
-                            <option value="wema">Wema</option>
-                            <option value="access">Access</option>
+                            <option value="gtb" className="dark:bg-[#161618]">GTB</option>
+                            <option value="wema" className="dark:bg-[#161618]">Wema</option>
+                            <option value="access" className="dark:bg-[#161618]">Access</option>
                           </select>
-                          <ChevronDown size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#16151C] pointer-events-none" />
+                          <ChevronDown size={20} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#16151C] dark:text-white pointer-events-none" />
                         </div>
 
                         {/* Enter card name */}
                         <div className="w-full">
-                          <input placeholder="Enter card name" value={cardForm.name} onChange={(e) => setCardForm({...cardForm, name: e.target.value})} className="w-full h-[50px] rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-[#FFFFFF] px-[16px] text-[15px] text-[#16151C] font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
+                          <input placeholder="Enter card name" value={cardForm.name} onChange={(e) => setCardForm({...cardForm, name: e.target.value})} className="w-full h-[50px] rounded-[10px] border border-[rgba(162,161,168,0.2)] dark:border-white/10 bg-[#FFFFFF] dark:bg-[#111111] px-[16px] text-[15px] text-[#16151C] dark:text-white font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
                         </div>
 
                         {/* Enter card number */}
                         <div className="relative w-full">
-                          <input placeholder="Enter card number" value={cardForm.number} onChange={(e) => setCardForm({...cardForm, number: e.target.value})} className="w-full h-[50px] rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-[#FFFFFF] px-[16px] text-[15px] text-[#16151C] font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
+                          <input placeholder="Enter card number" value={cardForm.number} onChange={(e) => setCardForm({...cardForm, number: e.target.value})} className="w-full h-[50px] rounded-[10px] border border-[rgba(162,161,168,0.2)] dark:border-white/10 bg-[#FFFFFF] dark:bg-[#111111] px-[16px] text-[15px] text-[#16151C] dark:text-white font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
                           <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center">
                             <div className="w-[20px] h-[16px] relative flex items-center justify-center border border-[#C5CDD0] rounded-[2px] bg-[#FFFFFF] overflow-hidden">
                               <div className="w-[9px] h-[9px] rounded-full bg-[#EB001B] absolute left-[0.5px] mix-blend-multiply opacity-90" />
@@ -718,16 +718,16 @@ function BookAdForm() {
 
                         {/* Expiry and CVV */}
                         <div className="flex gap-3">
-                          <input placeholder="Expiry date (MM/YY)" value={cardForm.expiry} onChange={(e) => setCardForm({...cardForm, expiry: e.target.value})} className="w-full h-[50px] rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-[#FFFFFF] px-[16px] text-[15px] text-[#16151C] font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
-                          <input placeholder="CVV" value={cardForm.cvv} onChange={(e) => setCardForm({...cardForm, cvv: e.target.value})} className="w-full h-[50px] rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-[#FFFFFF] px-[16px] text-[15px] text-[#16151C] font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
+                          <input placeholder="Expiry date (MM/YY)" value={cardForm.expiry} onChange={(e) => setCardForm({...cardForm, expiry: e.target.value})} className="w-full h-[50px] rounded-[10px] border border-[rgba(162,161,168,0.2)] dark:border-white/10 bg-[#FFFFFF] dark:bg-[#111111] px-[16px] text-[15px] text-[#16151C] dark:text-white font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
+                          <input placeholder="CVV" value={cardForm.cvv} onChange={(e) => setCardForm({...cardForm, cvv: e.target.value})} className="w-full h-[50px] rounded-[10px] border border-[rgba(162,161,168,0.2)] dark:border-white/10 bg-[#FFFFFF] dark:bg-[#111111] px-[16px] text-[15px] text-[#16151C] dark:text-white font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
                         </div>
                       </div>
                     ) : (
                       <div className="w-full space-y-3.5 mb-5">
-                        <input placeholder="Enter amount" className="w-full h-[50px] rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-[#FFFFFF] px-4 text-[15px] text-[#16151C] font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
-                        <input placeholder="Cardholder Name" value={cardForm.name} onChange={(e) => setCardForm({...cardForm, name: e.target.value})} className="w-full h-[50px] rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-[#FFFFFF] px-4 text-[15px] text-[#16151C] font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
+                        <input placeholder="Enter amount" className="w-full h-[50px] rounded-[10px] border border-[rgba(162,161,168,0.2)] dark:border-white/10 bg-[#FFFFFF] dark:bg-[#111111] px-4 text-[15px] text-[#16151C] dark:text-white font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
+                        <input placeholder="Cardholder Name" value={cardForm.name} onChange={(e) => setCardForm({...cardForm, name: e.target.value})} className="w-full h-[50px] rounded-[10px] border border-[rgba(162,161,168,0.2)] dark:border-white/10 bg-[#FFFFFF] dark:bg-[#111111] px-4 text-[15px] text-[#16151C] dark:text-white font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
                         <div className="relative w-full">
-                          <input placeholder="•••• •••• •••• ••••" value={cardForm.number} onChange={(e) => setCardForm({...cardForm, number: e.target.value})} className="w-full h-[50px] rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-[#FFFFFF] px-4 text-[15px] text-[#16151C] font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
+                          <input placeholder="•••• •••• •••• ••••" value={cardForm.number} onChange={(e) => setCardForm({...cardForm, number: e.target.value})} className="w-full h-[50px] rounded-[10px] border border-[rgba(162,161,168,0.2)] dark:border-white/10 bg-[#FFFFFF] dark:bg-[#111111] px-4 text-[15px] text-[#16151C] dark:text-white font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
                           <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center">
                             <div className="w-[30px] h-[20px] relative flex items-center justify-center border rounded-[2px] bg-white overflow-hidden p-0.5">
                               <div className="w-[12px] h-[12px] rounded-full bg-[#EA001B] absolute left-1 mix-blend-multiply opacity-90" />
@@ -736,8 +736,8 @@ function BookAdForm() {
                           </div>
                         </div>
                         <div className="flex gap-3">
-                          <input placeholder="Expiry date (MM/YY)" value={cardForm.expiry} onChange={(e) => setCardForm({...cardForm, expiry: e.target.value})} className="w-full h-[50px] rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-[#FFFFFF] px-4 text-[15px] text-[#16151C] font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
-                          <input placeholder="CVV" value={cardForm.cvv} onChange={(e) => setCardForm({...cardForm, cvv: e.target.value})} className="w-full h-[50px] rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-[#FFFFFF] px-4 text-[15px] text-[#16151C] font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
+                          <input placeholder="Expiry date (MM/YY)" value={cardForm.expiry} onChange={(e) => setCardForm({...cardForm, expiry: e.target.value})} className="w-full h-[50px] rounded-[10px] border border-[rgba(162,161,168,0.2)] dark:border-white/10 bg-[#FFFFFF] dark:bg-[#111111] px-4 text-[15px] text-[#16151C] dark:text-white font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
+                          <input placeholder="CVV" value={cardForm.cvv} onChange={(e) => setCardForm({...cardForm, cvv: e.target.value})} className="w-full h-[50px] rounded-[10px] border border-[rgba(162,161,168,0.2)] dark:border-white/10 bg-[#FFFFFF] dark:bg-[#111111] px-4 text-[15px] text-[#16151C] dark:text-white font-light outline-none focus:border-[#D4AF37] placeholder:text-[rgba(162,161,168,0.8)]" />
                         </div>
                       </div>
                     )}
@@ -749,7 +749,7 @@ function BookAdForm() {
                               <path d="M2.5 6.5L4.5 8.5L9.5 3.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                            </svg>
                         </div>
-                        <span className="text-[14px] font-normal text-[#696F79]">Add this card for future payments</span>
+                        <span className="text-[14px] font-normal text-[#696F79] dark:text-neutral-400">Add this card for future payments</span>
                       </div>
                     )}
 
@@ -764,7 +764,7 @@ function BookAdForm() {
 
                 {step === 'otp' && (
                   <div className="w-full max-w-[420px] flex flex-col items-center my-auto">
-                    <p className="text-center text-[16px] font-bold text-[#101828] mb-5">
+                    <p className="text-center text-[16px] font-bold text-[#101828] dark:text-white mb-5">
                       Enter verification code
                     </p>
                     
@@ -778,10 +778,10 @@ function BookAdForm() {
                           value={otpDigits[index]}
                           onChange={(e) => handleOtpChange(index, e.target.value.replace(/\D/g, ''))}
                           onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                          className={`w-[60px] h-[58px] rounded-[10px] border bg-white text-center text-[22px] font-semibold text-[#101828] focus:outline-none transition-colors ${
+                          className={`w-[60px] h-[58px] rounded-[10px] border bg-white dark:bg-[#111111] text-center text-[22px] font-semibold text-[#101828] dark:text-white focus:outline-none transition-colors ${
                             otpDigits[index] || document.activeElement?.id === `otp-${index}` 
                               ? 'border-[#D4AF37] ring-1 ring-[#D4AF37]' 
-                              : 'border-[rgba(134,146,166,0.5)]'
+                              : 'border-[rgba(134,146,166,0.5)] dark:border-white/20'
                           }`}
                           maxLength={1}
                         />
@@ -789,12 +789,12 @@ function BookAdForm() {
                     </div>
 
                     <div className="flex items-center gap-1 mb-5 text-[14px]">
-                      <span className="text-[#8692A6]">Didn&apos;t get code?</span>
+                      <span className="text-[#8692A6] dark:text-neutral-400">Didn&apos;t get code?</span>
                       <button className="text-[#D4AF37] font-semibold hover:underline">Resend</button>
                     </div>
 
-                    <p className="text-center text-[13px] leading-[1.6] text-gray-500 mb-6 px-2">
-                      To authorize this payment, enter the OTP sent to your registered email <span className="text-[#101828] font-medium">{user?.email || 'your account email'}</span>
+                    <p className="text-center text-[13px] leading-[1.6] text-gray-500 dark:text-neutral-400 mb-6 px-2">
+                      To authorize this payment, enter the OTP sent to your registered email <span className="text-[#101828] dark:text-white font-medium">{user?.email || 'your account email'}</span>
                     </p>
 
                     <div className="w-full">
@@ -809,37 +809,37 @@ function BookAdForm() {
                 {step === 'wallet' && (
                   <div className="w-full max-w-[460px] flex flex-col items-center my-auto">
                     {/* Wallet summary card */}
-                    <div className="w-full rounded-[18px] border-2 border-[#D4AF37] p-5 sm:p-6 bg-gradient-to-br from-[#FAF7F0] to-[#FFFFFF] space-y-3 mb-6 shadow-sm">
-                      <div className="flex justify-between items-center text-[#101828]">
-                        <span className="text-[14px] sm:text-[15px] font-medium text-gray-600">Total billboard cost</span>
-                        <span className="text-[17px] sm:text-[18px] font-extrabold text-[#101828]">{formatCurrency(totalCost, currency, rates)}</span>
+                    <div className="w-full rounded-[18px] border-2 border-[#D4AF37] p-5 sm:p-6 bg-gradient-to-br from-[#FAF7F0] to-[#FFFFFF] dark:from-[#1b1a16] dark:to-[#111111] space-y-3 mb-6 shadow-sm">
+                      <div className="flex justify-between items-center text-[#101828] dark:text-white">
+                        <span className="text-[14px] sm:text-[15px] font-medium text-gray-600 dark:text-neutral-400">Total billboard cost</span>
+                        <span className="text-[17px] sm:text-[18px] font-extrabold text-[#101828] dark:text-white">{formatCurrency(totalCost, currency, rates)}</span>
                       </div>
 
                       {campaignCovered > 0 && (
-                        <div className="flex justify-between items-center py-2 px-3 text-[13px] sm:text-[14px] text-emerald-800 bg-emerald-50 rounded-lg border border-emerald-200">
+                        <div className="flex justify-between items-center py-2 px-3 text-[13px] sm:text-[14px] text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 rounded-lg border border-emerald-200 dark:border-emerald-800">
                           <span className="font-medium">Paid from Campaign Budget:</span>
-                          <span className="font-bold text-emerald-700">-{formatCurrency(campaignCovered, currency, rates)}</span>
+                          <span className="font-bold text-emerald-700 dark:text-emerald-400">-{formatCurrency(campaignCovered, currency, rates)}</span>
                         </div>
                       )}
 
-                      <div className="flex justify-between items-center pt-2 border-t border-[#E8DFCC]">
-                        <span className="text-[13px] sm:text-[14px] text-gray-600">Net charge to wallet</span>
+                      <div className="flex justify-between items-center pt-2 border-t border-[#E8DFCC] dark:border-white/10">
+                        <span className="text-[13px] sm:text-[14px] text-gray-600 dark:text-neutral-400">Net charge to wallet</span>
                         <span className="text-[16px] font-bold text-[#D4AF37]">{formatCurrency(walletAmountToDeduct, currency, rates)}</span>
                       </div>
 
-                      <div className="flex justify-between items-center text-[13px] sm:text-[14px] text-gray-500">
+                      <div className="flex justify-between items-center text-[13px] sm:text-[14px] text-gray-500 dark:text-neutral-400">
                         <span>Available wallet balance</span>
-                        <span className="font-semibold text-gray-800">{formatCurrency(walletBalance, currency, rates)}</span>
+                        <span className="font-semibold text-gray-800 dark:text-neutral-200">{formatCurrency(walletBalance, currency, rates)}</span>
                       </div>
 
                       {walletAmountToDeduct === 0 ? (
-                        <div className="p-2.5 rounded-lg bg-emerald-100/70 text-emerald-800 text-[13px] font-medium text-center">
+                        <div className="p-2.5 rounded-lg bg-emerald-100/70 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 text-[13px] font-medium text-center">
                           🎉 100% covered by your pre-paid campaign budget!
                         </div>
                       ) : walletBalance >= walletAmountToDeduct ? (
                         <div className="flex justify-between items-center text-[13px] sm:text-[14px]">
-                          <span className="text-gray-600">Balance after payment</span>
-                          <span className="font-bold text-emerald-600">{formatCurrency(walletBalance - walletAmountToDeduct, currency, rates)}</span>
+                          <span className="text-gray-600 dark:text-neutral-400">Balance after payment</span>
+                          <span className="font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(walletBalance - walletAmountToDeduct, currency, rates)}</span>
                         </div>
                       ) : (
                         <p className="text-red-500 text-[13px] font-medium pt-1">
@@ -872,11 +872,11 @@ function BookAdForm() {
                       </div>
                     </div>
                     
-                    <h3 className="text-[20px] sm:text-[22px] font-bold text-[#16151C] mb-2">
+                    <h3 className="text-[20px] sm:text-[22px] font-bold text-[#16151C] dark:text-white mb-2">
                       Payment Successful!
                     </h3>
-                    <p className="text-[14px] text-gray-500 mb-6 max-w-[320px]">
-                      Your billboard slot for <span className="font-semibold text-gray-800">{description || 'your campaign'}</span> has been successfully booked and scheduled.
+                    <p className="text-[14px] text-gray-500 dark:text-neutral-400 mb-6 max-w-[320px]">
+                      Your billboard slot for <span className="font-semibold text-gray-800 dark:text-neutral-200">{description || 'your campaign'}</span> has been successfully booked and scheduled.
                     </p>
                     
                     <div className="w-full">
@@ -896,15 +896,15 @@ function BookAdForm() {
 
         {/* Creative Services Modal */}
         {showCreativeModal && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[rgba(162,161,168,0.2)] backdrop-blur-[10px] p-4 animate-in fade-in duration-200">
-            <div className="bg-[#FFFFFF] rounded-[24px] w-full max-w-[625px] shadow-2xl relative flex flex-col pt-8 pb-10 px-10 max-h-[90vh]">
+          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[rgba(162,161,168,0.2)] dark:bg-black/60 backdrop-blur-[10px] p-4 animate-in fade-in duration-200">
+            <div className="bg-[#FFFFFF] dark:bg-[#161618] border border-transparent dark:border-white/10 rounded-[24px] w-full max-w-[625px] shadow-2xl relative flex flex-col pt-8 pb-10 px-10 max-h-[90vh]">
               {/* Header */}
               <div className="flex items-center justify-between mb-8">
-                <button onClick={() => setShowCreativeModal(false)} className="p-2 -ml-2 text-[#16151C] hover:bg-gray-100 rounded-full transition-colors">
+                <button onClick={() => setShowCreativeModal(false)} className="p-2 -ml-2 text-[#16151C] dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-full transition-colors">
                   <ArrowLeft size={24} strokeWidth={2} />
                 </button>
-                <h2 className="text-[20px] font-medium text-[#16151C]">Ad creative services</h2>
-                <button onClick={() => setShowCreativeModal(false)} className="p-2 -mr-2 text-[#16151C] hover:bg-gray-100 rounded-full transition-colors">
+                <h2 className="text-[20px] font-medium text-[#16151C] dark:text-white">Ad creative services</h2>
+                <button onClick={() => setShowCreativeModal(false)} className="p-2 -mr-2 text-[#16151C] dark:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-full transition-colors">
                   <X size={24} strokeWidth={2} />
                 </button>
               </div>
@@ -915,32 +915,32 @@ function BookAdForm() {
                 {/* Select */}
                 <div className="relative mb-[24px]">
                   <select 
-                    className="w-full h-[56px] px-4 rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-transparent text-[17px] font-light text-[rgba(162,161,168,0.8)] appearance-none focus:outline-none focus:border-[#D4AF37] cursor-pointer"
+                    className="w-full h-[56px] px-4 rounded-[10px] border border-[rgba(162,161,168,0.2)] dark:border-white/10 bg-transparent text-[17px] font-light text-[rgba(162,161,168,0.8)] dark:text-white appearance-none focus:outline-none focus:border-[#D4AF37] cursor-pointer"
                   >
                     <option value="" disabled selected>Select creative services</option>
-                    <option value="banner" className="text-black">Ad Banner design</option>
-                    <option value="storytelling" className="text-black">Ad storytelling</option>
+                    <option value="banner" className="text-black dark:text-white dark:bg-[#161618]">Ad Banner design</option>
+                    <option value="storytelling" className="text-black dark:text-white dark:bg-[#161618]">Ad storytelling</option>
                   </select>
-                  <ChevronDown size={24} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#16151C] pointer-events-none" />
+                  <ChevronDown size={24} className="absolute right-4 top-1/2 -translate-y-1/2 text-[#16151C] dark:text-white pointer-events-none" />
                 </div>
 
                 {/* Textarea */}
                 <div className="mb-[40px]">
                   <textarea
                     placeholder="Describe your Ad creative brief"
-                    className="w-full h-[131px] p-4 rounded-[10px] border border-[rgba(162,161,168,0.2)] bg-transparent text-[17px] font-light text-[rgba(162,161,168,0.8)] resize-none focus:outline-none focus:border-[#D4AF37]"
+                    className="w-full h-[131px] p-4 rounded-[10px] border border-[rgba(162,161,168,0.2)] dark:border-white/10 bg-transparent text-[17px] font-light text-[rgba(162,161,168,0.8)] dark:text-white resize-none focus:outline-none focus:border-[#D4AF37]"
                   ></textarea>
                 </div>
 
-                <p className="text-[16px] font-light text-[#16151C] mb-[16px]">Or upload Ad creative brief</p>
+                <p className="text-[16px] font-light text-[#16151C] dark:text-white mb-[16px]">Or upload Ad creative brief</p>
                 
                 {/* File Dropzone */}
                 <div className="w-full h-[133px] rounded-[10px] border border-dashed border-[#D4AF37] bg-transparent flex flex-col items-center justify-center p-[20px] mb-[40px]">
                   <div className="w-[40px] h-[40px] rounded-[10px] bg-[#D4AF37] flex items-center justify-center mb-[10px]">
                     <Upload size={20} className="text-[#FFFFFF]" />
                   </div>
-                  <p className="text-[14px] font-light text-[#16151C] mb-[5px] text-center">
-                    Drag & Drop or <span className="text-[#1F593E]">choose file</span> to upload
+                  <p className="text-[14px] font-light text-[#16151C] dark:text-white mb-[5px] text-center">
+                    Drag & Drop or <span className="text-[#1F593E] dark:text-emerald-400">choose file</span> to upload
                   </p>
                   <p className="text-[11px] font-light text-[#A2A1A8] text-center">Supported formats : jpeg, png, pf</p>
                 </div>

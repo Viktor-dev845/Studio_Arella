@@ -295,7 +295,7 @@ export default function UserProfileOverview() {
         <div className="w-full max-w-[1200px] mx-auto px-4 py-6 sm:px-6 lg:p-10 pb-24" style={{ fontFamily: F }}>
           {!editingMode ? (
             <>
-              <h1 className="text-[20px] sm:text-[24px] font-semibold text-[#16151C] mb-6 sm:mb-8">Profile Details</h1>
+              <h1 className="text-[20px] sm:text-[24px] font-semibold text-[#16151C] dark:text-white mb-6 sm:mb-8">Profile Details</h1>
 
           {/* Avatar & Header Section */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 sm:mb-12">
@@ -304,22 +304,22 @@ export default function UserProfileOverview() {
                 <img 
                   src={avatarUrl} 
                   alt={fullName} 
-                  className="w-[84px] h-[84px] sm:w-[100px] sm:h-[100px] rounded-[10px] object-cover border border-gray-100 shadow-sm"
+                  className="w-[84px] h-[84px] sm:w-[100px] sm:h-[100px] rounded-[10px] object-cover border border-gray-100 dark:border-white/10 shadow-sm"
                 />
               ) : (
-                <div className="w-[84px] h-[84px] sm:w-[100px] sm:h-[100px] rounded-[10px] bg-[#FAF5E6] border border-[#D4AF37]/30 flex items-center justify-center font-bold text-[#D4AF37] text-2xl sm:text-3xl shadow-xs">
+                <div className="w-[84px] h-[84px] sm:w-[100px] sm:h-[100px] rounded-[10px] bg-[#FAF5E6] dark:bg-[#D4AF37]/10 border border-[#D4AF37]/30 flex items-center justify-center font-bold text-[#D4AF37] text-2xl sm:text-3xl shadow-xs">
                   {fullName.charAt(0).toUpperCase()}
                 </div>
               )}
               <div className="flex flex-col gap-2">
-                <h2 className="text-[20px] sm:text-[24px] font-semibold text-[#16151C]">{fullName}</h2>
+                <h2 className="text-[20px] sm:text-[24px] font-semibold text-[#16151C] dark:text-white">{fullName}</h2>
                 <div className="flex flex-col gap-1.5 sm:gap-2">
-                  <div className="flex items-center gap-2.5 text-[#16151C] text-[14px] sm:text-[16px] font-light">
+                  <div className="flex items-center gap-2.5 text-[#16151C] dark:text-neutral-300 text-[14px] sm:text-[16px] font-light">
                     <Briefcase size={18} strokeWidth={1.5} />
                     <span>{userRole}</span>
                   </div>
                   {email !== '—' && (
-                    <div className="flex items-center gap-2.5 text-[#16151C] text-[14px] sm:text-[16px] font-light">
+                    <div className="flex items-center gap-2.5 text-[#16151C] dark:text-neutral-300 text-[14px] sm:text-[16px] font-light">
                       <Mail size={18} strokeWidth={1.5} />
                       <span>{email}</span>
                     </div>
@@ -331,7 +331,7 @@ export default function UserProfileOverview() {
             <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
               <Link 
                 href="/user-profile"
-                className="flex-1 sm:flex-none flex items-center justify-center gap-2 border border-[#D4AF37] hover:bg-[#D4AF37]/10 transition-colors text-black h-[46px] sm:h-[50px] px-4 sm:px-5 rounded-[6px] text-[14px] sm:text-[15px] font-medium shadow-sm"
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 border border-[#D4AF37] hover:bg-[#D4AF37]/10 transition-colors text-black dark:text-white h-[46px] sm:h-[50px] px-4 sm:px-5 rounded-[6px] text-[14px] sm:text-[15px] font-medium shadow-sm"
               >
                 <ExternalLink size={16} strokeWidth={1.5} />
                 View Fan Profile
@@ -346,20 +346,20 @@ export default function UserProfileOverview() {
             </div>
           </div>
 
-          <div className="w-full h-[1px] bg-[#A2A1A8]/20 mb-10"></div>
+          <div className="w-full h-[1px] bg-[#A2A1A8]/20 dark:bg-white/10 mb-10"></div>
 
           {/* Two Column Layout */}
           <div className="flex flex-col lg:flex-row gap-12">
             
             {/* Inner Sidebar */}
             <div className="w-full lg:w-[242px] shrink-0">
-              <div className="border border-[#A2A1A8]/20 rounded-[10px] overflow-hidden bg-white">
+              <div className="border border-[#A2A1A8]/20 dark:border-white/10 rounded-[10px] overflow-hidden bg-white dark:bg-[#111111]">
                 <button 
                   onClick={() => setActiveSidebar('profile')}
                   className={`w-full flex items-center gap-3 px-5 py-4 transition-colors ${
                     activeSidebar === 'profile' 
                       ? 'bg-[#D4AF37] text-black font-semibold' 
-                      : 'bg-transparent text-[#16151C] font-light hover:bg-gray-50'
+                      : 'bg-transparent text-[#16151C] dark:text-neutral-300 font-light hover:bg-gray-50 dark:hover:bg-white/5'
                   }`}
                 >
                   <User size={20} strokeWidth={activeSidebar === 'profile' ? 2 : 1.5} />
@@ -371,7 +371,7 @@ export default function UserProfileOverview() {
                   className={`w-full flex items-center gap-3 px-5 py-4 transition-colors ${
                     activeSidebar === 'settings' 
                       ? 'bg-[#D4AF37] text-black font-semibold' 
-                      : 'bg-transparent text-[#16151C] font-light hover:bg-gray-50'
+                      : 'bg-transparent text-[#16151C] dark:text-neutral-300 font-light hover:bg-gray-50 dark:hover:bg-white/5'
                   }`}
                 >
                   <Settings size={20} strokeWidth={activeSidebar === 'settings' ? 2 : 1.5} />
@@ -383,7 +383,7 @@ export default function UserProfileOverview() {
                   className={`w-full flex items-center gap-3 px-5 py-4 transition-colors ${
                     activeSidebar === 'security' 
                       ? 'bg-[#D4AF37] text-black font-semibold' 
-                      : 'bg-transparent text-[#16151C] font-light hover:bg-gray-50'
+                      : 'bg-transparent text-[#16151C] dark:text-neutral-300 font-light hover:bg-gray-50 dark:hover:bg-white/5'
                   }`}
                 >
                   <Shield size={20} strokeWidth={activeSidebar === 'security' ? 2 : 1.5} />
@@ -395,7 +395,7 @@ export default function UserProfileOverview() {
                   className={`w-full flex items-center gap-3 px-5 py-4 transition-colors ${
                     activeSidebar === 'support' 
                       ? 'bg-[#D4AF37] text-black font-semibold' 
-                      : 'bg-transparent text-[#16151C] font-light hover:bg-gray-50'
+                      : 'bg-transparent text-[#16151C] dark:text-neutral-300 font-light hover:bg-gray-50 dark:hover:bg-white/5'
                   }`}
                 >
                   <Headset size={20} strokeWidth={activeSidebar === 'support' ? 2 : 1.5} />
@@ -415,7 +415,7 @@ export default function UserProfileOverview() {
                 <button 
                   onClick={() => setActiveTab('personal')}
                   className={`flex items-center gap-2.5 pb-3 relative transition-colors ${
-                    activeTab === 'personal' ? 'text-[#D4AF37] font-semibold text-[17px]' : 'text-[#16151C] font-medium text-[17px] hover:text-gray-600'
+                    activeTab === 'personal' ? 'text-[#D4AF37] font-semibold text-[17px]' : 'text-[#16151C] dark:text-neutral-400 font-medium text-[17px] hover:text-gray-600 dark:hover:text-neutral-200'
                   }`}
                 >
                   <User size={20} strokeWidth={activeTab === 'personal' ? 2 : 1.5} />
@@ -428,7 +428,7 @@ export default function UserProfileOverview() {
                 <button 
                   onClick={() => setActiveTab('business')}
                   className={`flex items-center gap-2.5 pb-3 relative transition-colors ${
-                    activeTab === 'business' ? 'text-[#D4AF37] font-semibold text-[17px]' : 'text-[#16151C] font-medium text-[17px] hover:text-gray-600'
+                    activeTab === 'business' ? 'text-[#D4AF37] font-semibold text-[17px]' : 'text-[#16151C] dark:text-neutral-400 font-medium text-[17px] hover:text-gray-600 dark:hover:text-neutral-200'
                   }`}
                 >
                   <Briefcase size={20} strokeWidth={activeTab === 'business' ? 2 : 1.5} />
@@ -542,7 +542,7 @@ export default function UserProfileOverview() {
                     <button 
                       onClick={() => setActiveSettingsTab('notifications')}
                       className={`flex items-center gap-2.5 pb-3 relative transition-colors ${
-                        activeSettingsTab === 'notifications' ? 'text-[#D4AF37] font-semibold text-[17px]' : 'text-[#16151C] font-light text-[17px] hover:text-gray-600'
+                        activeSettingsTab === 'notifications' ? 'text-[#D4AF37] font-semibold text-[17px]' : 'text-[#16151C] dark:text-neutral-400 font-light text-[17px] hover:text-gray-600 dark:hover:text-neutral-200'
                       }`}
                     >
                       <Bell size={20} strokeWidth={activeSettingsTab === 'notifications' ? 2 : 1.5} />
@@ -555,7 +555,7 @@ export default function UserProfileOverview() {
                     <button 
                       onClick={() => setActiveSettingsTab('preferences')}
                       className={`flex items-center gap-2.5 pb-3 relative transition-colors ${
-                        activeSettingsTab === 'preferences' ? 'text-[#D4AF37] font-semibold text-[17px]' : 'text-[#16151C] font-light text-[17px] hover:text-gray-600'
+                        activeSettingsTab === 'preferences' ? 'text-[#D4AF37] font-semibold text-[17px]' : 'text-[#16151C] dark:text-neutral-400 font-light text-[17px] hover:text-gray-600 dark:hover:text-neutral-200'
                       }`}
                     >
                       <SlidersHorizontal size={20} strokeWidth={activeSettingsTab === 'preferences' ? 2 : 1.5} />
@@ -571,8 +571,8 @@ export default function UserProfileOverview() {
                       
                       <div className="flex items-center justify-between">
                         <div>
-                          <div className="text-[16px] font-medium text-[#16151C] mb-1">Email Notifications</div>
-                          <div className="text-[14px] text-[#16151C] font-light">Receive updates about your account and bookings.</div>
+                          <div className="text-[16px] font-medium text-[#16151C] dark:text-white mb-1">Email Notifications</div>
+                          <div className="text-[14px] text-[#16151C] dark:text-neutral-400 font-light">Receive updates about your account and bookings.</div>
                         </div>
                         <button 
                           onClick={() => handleToggleNotification('email')}
@@ -584,8 +584,8 @@ export default function UserProfileOverview() {
                       
                       <div className="flex items-center justify-between">
                         <div>
-                          <div className="text-[16px] font-medium text-[#16151C] mb-1">Booking Updates</div>
-                          <div className="text-[14px] text-[#16151C] font-light">Get notified when a booking is confirmed, changed or cancelled.</div>
+                          <div className="text-[16px] font-medium text-[#16151C] dark:text-white mb-1">Booking Updates</div>
+                          <div className="text-[14px] text-[#16151C] dark:text-neutral-400 font-light">Get notified when a booking is confirmed, changed or cancelled.</div>
                         </div>
                         <button 
                           onClick={() => handleToggleNotification('booking')}
@@ -597,8 +597,8 @@ export default function UserProfileOverview() {
 
                       <div className="flex items-center justify-between">
                         <div>
-                          <div className="text-[16px] font-medium text-[#16151C] mb-1">Campaign Updates</div>
-                          <div className="text-[14px] text-[#16151C] font-light">Receive updates about your campaigns.</div>
+                          <div className="text-[16px] font-medium text-[#16151C] dark:text-white mb-1">Campaign Updates</div>
+                          <div className="text-[14px] text-[#16151C] dark:text-neutral-400 font-light">Receive updates about your campaigns.</div>
                         </div>
                         <button 
                           onClick={() => handleToggleNotification('campaign')}
@@ -610,8 +610,8 @@ export default function UserProfileOverview() {
 
                       <div className="flex items-center justify-between">
                         <div>
-                          <div className="text-[16px] font-medium text-[#16151C] mb-1">Promotional Emails</div>
-                          <div className="text-[14px] text-[#16151C] font-light">Receive offers, news and updates from Studio Arella.</div>
+                          <div className="text-[16px] font-medium text-[#16151C] dark:text-white mb-1">Promotional Emails</div>
+                          <div className="text-[14px] text-[#16151C] dark:text-neutral-400 font-light">Receive offers, news and updates from Studio Arella.</div>
                         </div>
                         <button 
                           onClick={() => handleToggleNotification('promo')}
@@ -1253,12 +1253,12 @@ export default function UserProfileOverview() {
       </PageTransition>
 
       {showSuccessModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[2px] p-4">
-          <div className="relative w-full max-w-[625px] min-h-[420px] max-h-[90vh] py-10 px-6 sm:px-10 overflow-y-auto bg-white rounded-[24px] sm:rounded-[32px] flex flex-col items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-[2px] p-4">
+          <div className="relative w-full max-w-[625px] min-h-[420px] max-h-[90vh] py-10 px-6 sm:px-10 overflow-y-auto bg-white dark:bg-[#161618] border border-transparent dark:border-white/10 rounded-[24px] sm:rounded-[32px] flex flex-col items-center justify-center">
             {/* Close button */}
             <button 
               onClick={() => setShowSuccessModal(false)}
-              className="absolute top-8 right-8 text-[#101828] hover:opacity-70 transition-opacity"
+              className="absolute top-8 right-8 text-[#101828] dark:text-white hover:opacity-70 transition-opacity"
             >
               <X size={24} strokeWidth={2.5} />
             </button>
@@ -1273,7 +1273,7 @@ export default function UserProfileOverview() {
             </div>
 
             {/* Success message */}
-            <h3 className="text-[20px] font-semibold text-[#16151C] mb-8">
+            <h3 className="text-[20px] font-semibold text-[#16151C] dark:text-white mb-8 text-center">
               {successModalMessage}
             </h3>
 
@@ -1294,16 +1294,16 @@ export default function UserProfileOverview() {
       )}
 
       {showLogoutModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[2px] p-4">
-          <div className="relative w-full max-w-[625px] bg-white rounded-[24px] sm:rounded-[32px] flex flex-col items-center justify-center p-6 sm:p-14 text-center">
-            <h3 className="text-[20px] sm:text-[28px] leading-[30px] sm:leading-[40px] font-semibold text-[#16151C] mb-8 sm:mb-12 max-w-[500px]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-[2px] p-4">
+          <div className="relative w-full max-w-[625px] bg-white dark:bg-[#161618] border border-transparent dark:border-white/10 rounded-[24px] sm:rounded-[32px] flex flex-col items-center justify-center p-6 sm:p-14 text-center">
+            <h3 className="text-[20px] sm:text-[28px] leading-[30px] sm:leading-[40px] font-semibold text-[#16151C] dark:text-white mb-8 sm:mb-12 max-w-[500px]">
               Are you sure you want to logged out on all devices you are logged into?
             </h3>
 
             <div className="flex w-full gap-5 max-w-[500px]">
               <button 
                 onClick={() => setShowLogoutModal(false)}
-                className="flex-1 h-[60px] bg-white border border-[#E5E7EB] hover:bg-gray-50 text-[#16151C] font-medium text-[18px] rounded-[12px] transition-colors"
+                className="flex-1 h-[60px] bg-white dark:bg-white/5 border border-[#E5E7EB] dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10 text-[#16151C] dark:text-neutral-200 font-medium text-[18px] rounded-[12px] transition-colors"
               >
                 No
               </button>
@@ -1327,12 +1327,12 @@ export default function UserProfileOverview() {
       )}
 
       {showLogoutSuccessModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[2px] p-4">
-          <div className="relative w-full max-w-[625px] min-h-[420px] max-h-[90vh] py-10 px-6 sm:px-10 overflow-y-auto bg-white rounded-[24px] sm:rounded-[32px] flex flex-col items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-[2px] p-4">
+          <div className="relative w-full max-w-[625px] min-h-[420px] max-h-[90vh] py-10 px-6 sm:px-10 overflow-y-auto bg-white dark:bg-[#161618] border border-transparent dark:border-white/10 rounded-[24px] sm:rounded-[32px] flex flex-col items-center justify-center">
             {/* Close button */}
             <button 
               onClick={() => setShowLogoutSuccessModal(false)}
-              className="absolute top-8 right-8 text-[#101828] hover:opacity-70 transition-opacity"
+              className="absolute top-8 right-8 text-[#101828] dark:text-white hover:opacity-70 transition-opacity"
             >
               <X size={24} strokeWidth={2.5} />
             </button>
@@ -1347,7 +1347,7 @@ export default function UserProfileOverview() {
             </div>
 
             {/* Success message */}
-            <h3 className="text-[20px] font-semibold text-[#16151C] mb-8">
+            <h3 className="text-[20px] font-semibold text-[#16151C] dark:text-white mb-8 text-center">
               You logged out on all devices
             </h3>
 
@@ -1363,12 +1363,12 @@ export default function UserProfileOverview() {
       )}
 
       {showReportSuccessModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[2px] p-4">
-          <div className="relative w-full max-w-[625px] min-h-[420px] max-h-[90vh] py-10 px-6 sm:px-10 overflow-y-auto bg-white rounded-[24px] sm:rounded-[32px] flex flex-col items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-[2px] p-4">
+          <div className="relative w-full max-w-[625px] min-h-[420px] max-h-[90vh] py-10 px-6 sm:px-10 overflow-y-auto bg-white dark:bg-[#161618] border border-transparent dark:border-white/10 rounded-[24px] sm:rounded-[32px] flex flex-col items-center justify-center">
             {/* Close button */}
             <button 
               onClick={() => setShowReportSuccessModal(false)}
-              className="absolute top-8 right-8 text-[#101828] hover:opacity-70 transition-opacity"
+              className="absolute top-8 right-8 text-[#101828] dark:text-white hover:opacity-70 transition-opacity"
             >
               <X size={24} strokeWidth={2.5} />
             </button>
@@ -1383,7 +1383,7 @@ export default function UserProfileOverview() {
             </div>
 
             {/* Success message */}
-            <h3 className="text-[20px] font-semibold text-[#16151C] mb-8">
+            <h3 className="text-[20px] font-semibold text-[#16151C] dark:text-white mb-8 text-center">
               Message sent
             </h3>
 

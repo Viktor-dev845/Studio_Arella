@@ -63,10 +63,10 @@ export default function FollowersPage() {
       <PageTransition>
         <div className="w-full max-w-[850px] mx-auto pt-[40px] pb-[100px] font-sans px-4">
           <div className="flex items-center justify-between mb-[30px]">
-            <h1 className="text-[20px] font-bold text-[#181818]" style={{ fontFamily: 'var(--font-quicksand)' }}>
+            <h1 className="text-[20px] font-bold text-[#181818] dark:text-white" style={{ fontFamily: 'var(--font-quicksand)' }}>
               Community & Network
             </h1>
-            <span className="text-[13px] text-gray-500">
+            <span className="text-[13px] text-gray-500 dark:text-neutral-400">
               {followers.length} Followers · {following.length} Following
             </span>
           </div>
@@ -75,20 +75,20 @@ export default function FollowersPage() {
           <div className="flex w-full relative h-[50px] items-end" style={{ fontFamily: 'var(--font-quicksand)' }}>
             <button 
               onClick={() => setTab('followers')}
-              className={`w-[240px] uppercase text-[12px] font-bold flex items-center justify-center transition-all cursor-pointer ${tab === 'followers' ? 'h-[50px] bg-[#D4AF37] rounded-t-[8px] text-[#000000]' : 'h-[40px] bg-white border border-[#E7E7E7] text-[#181818] hover:bg-gray-50'}`}
+              className={`w-[240px] uppercase text-[12px] font-bold flex items-center justify-center transition-all cursor-pointer ${tab === 'followers' ? 'h-[50px] bg-[#D4AF37] rounded-t-[8px] text-[#000000]' : 'h-[40px] bg-white dark:bg-[#111111] border border-[#E7E7E7] dark:border-white/10 text-[#181818] dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-white/5'}`}
             >
               Followers ({followers.length})
             </button>
             <button 
               onClick={() => setTab('following')}
-              className={`w-[240px] uppercase text-[12px] font-bold flex items-center justify-center transition-all cursor-pointer ${tab === 'following' ? 'h-[50px] bg-[#D4AF37] rounded-t-[8px] text-[#000000]' : 'h-[40px] bg-white border border-[#E7E7E7] text-[#181818] hover:bg-gray-50'}`}
+              className={`w-[240px] uppercase text-[12px] font-bold flex items-center justify-center transition-all cursor-pointer ${tab === 'following' ? 'h-[50px] bg-[#D4AF37] rounded-t-[8px] text-[#000000]' : 'h-[40px] bg-white dark:bg-[#111111] border border-[#E7E7E7] dark:border-white/10 text-[#181818] dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-white/5'}`}
             >
               Following ({following.length})
             </button>
           </div>
 
-          {/* Gradient Under Tabs */}
-          <div className="w-full h-[30px] border-t border-[#E7E7E7] mb-6" style={{ background: 'linear-gradient(180deg, rgba(255, 252, 241, 0.8) 0%, rgba(255, 252, 241, 0) 100%)' }}></div>
+          {/* Border Under Tabs */}
+          <div className="w-full h-[1px] bg-[#E7E7E7] dark:bg-white/10 mb-6"></div>
 
           {loading ? (
             <div className="flex items-center justify-center py-20 text-gray-400 gap-2">
@@ -98,12 +98,12 @@ export default function FollowersPage() {
           ) : tab === 'followers' ? (
             <div style={{ fontFamily: 'var(--font-quicksand)' }}>
               {followers.length === 0 ? (
-                <div className="border border-dashed border-gray-200 rounded-[16px] p-12 text-center flex flex-col items-center justify-center max-w-[500px] mx-auto my-8">
-                  <div className="w-14 h-14 rounded-full bg-amber-50 flex items-center justify-center mb-3">
+                <div className="border border-dashed border-gray-200 dark:border-white/10 rounded-[16px] p-12 text-center flex flex-col items-center justify-center max-w-[500px] mx-auto my-8 bg-white dark:bg-[#111111]">
+                  <div className="w-14 h-14 rounded-full bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center mb-3">
                     <Users size={26} className="text-[#D4AF37]" />
                   </div>
-                  <h3 className="text-[16px] font-bold text-[#1C1C1C] mb-1">No followers yet</h3>
-                  <p className="text-[13px] text-gray-500 mb-5 max-w-[340px]">
+                  <h3 className="text-[16px] font-bold text-[#1C1C1C] dark:text-white mb-1">No followers yet</h3>
+                  <p className="text-[13px] text-gray-500 dark:text-neutral-400 mb-5 max-w-[340px]">
                     When other creators, advertisers, or screen owners follow your profile, they will appear here.
                   </p>
                   <Link
@@ -128,9 +128,9 @@ export default function FollowersPage() {
 
                       <div className="flex flex-col gap-[16px] mb-8">
                         {newFollowers.map((user) => (
-                          <div key={user.id} className="w-full min-h-[90px] bg-white rounded-[12px] border border-gray-100 shadow-sm flex items-center px-[24px] py-[16px] justify-between">
+                          <div key={user.id} className="w-full min-h-[90px] bg-white dark:bg-[#111111] rounded-[12px] border border-gray-100 dark:border-white/10 shadow-sm flex items-center px-[24px] py-[16px] justify-between">
                             <div className="flex items-center">
-                              <div className="w-[50px] h-[50px] rounded-full bg-amber-100 text-[#D4AF37] font-bold flex items-center justify-center text-[18px] flex-shrink-0 overflow-hidden">
+                              <div className="w-[50px] h-[50px] rounded-full bg-amber-100 dark:bg-amber-500/20 text-[#D4AF37] font-bold flex items-center justify-center text-[18px] flex-shrink-0 overflow-hidden">
                                 {user.avatar ? (
                                   <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
                                 ) : (
@@ -138,9 +138,9 @@ export default function FollowersPage() {
                                 )}
                               </div>
                               <div className="ml-[16px] flex flex-col">
-                                <span className="text-[15px] font-bold text-[#181818]">{user.name}</span>
-                                <span className="text-[12px] text-gray-500 mt-[1px]">{user.roleLabel || user.role || 'Member'}</span>
-                                <span className="text-[11px] text-[#15411F] mt-[2px] font-medium">{user.followerCount} followers</span>
+                                <span className="text-[15px] font-bold text-[#181818] dark:text-white">{user.name}</span>
+                                <span className="text-[12px] text-gray-500 dark:text-neutral-400 mt-[1px]">{user.roleLabel || user.role || 'Member'}</span>
+                                <span className="text-[11px] text-[#15411F] dark:text-emerald-400 mt-[2px] font-medium">{user.followerCount} followers</span>
                               </div>
                             </div>
 
@@ -199,12 +199,12 @@ export default function FollowersPage() {
             /* Following Tab */
             <div style={{ fontFamily: 'var(--font-quicksand)' }}>
               {following.length === 0 ? (
-                <div className="border border-dashed border-gray-200 rounded-[16px] p-12 text-center flex flex-col items-center justify-center max-w-[500px] mx-auto my-8">
-                  <div className="w-14 h-14 rounded-full bg-amber-50 flex items-center justify-center mb-3">
+                <div className="border border-dashed border-gray-200 dark:border-white/10 rounded-[16px] p-12 text-center flex flex-col items-center justify-center max-w-[500px] mx-auto my-8 bg-white dark:bg-[#111111]">
+                  <div className="w-14 h-14 rounded-full bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center mb-3">
                     <UserPlus size={26} className="text-[#D4AF37]" />
                   </div>
-                  <h3 className="text-[16px] font-bold text-[#1C1C1C] mb-1">Not following anyone yet</h3>
-                  <p className="text-[13px] text-gray-500 mb-5 max-w-[340px]">
+                  <h3 className="text-[16px] font-bold text-[#1C1C1C] dark:text-white mb-1">Not following anyone yet</h3>
+                  <p className="text-[13px] text-gray-500 dark:text-neutral-400 mb-5 max-w-[340px]">
                     Discover top creators, podcast hosts, and billboard owners in the community.
                   </p>
                   <Link
@@ -217,9 +217,9 @@ export default function FollowersPage() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {following.map((user) => (
-                    <div key={user.id} className="w-full min-h-[85px] bg-white rounded-[12px] border border-gray-100 shadow-sm flex items-center justify-between px-[20px] py-[14px]">
+                    <div key={user.id} className="w-full min-h-[85px] bg-white dark:bg-[#111111] rounded-[12px] border border-gray-100 dark:border-white/10 shadow-sm flex items-center justify-between px-[20px] py-[14px]">
                       <div className="flex items-center min-w-0">
-                        <div className="w-[46px] h-[46px] rounded-full bg-amber-50 text-[#D4AF37] font-bold flex items-center justify-center text-[16px] flex-shrink-0 overflow-hidden">
+                        <div className="w-[46px] h-[46px] rounded-full bg-amber-50 dark:bg-amber-500/20 text-[#D4AF37] font-bold flex items-center justify-center text-[16px] flex-shrink-0 overflow-hidden">
                           {user.avatar ? (
                             <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
                           ) : (
@@ -227,8 +227,8 @@ export default function FollowersPage() {
                           )}
                         </div>
                         <div className="ml-[14px] flex flex-col min-w-0">
-                          <span className="text-[14px] font-bold text-[#181818] truncate">{user.name}</span>
-                          <span className="text-[11px] text-gray-500 truncate">{user.roleLabel || user.role || 'Member'}</span>
+                          <span className="text-[14px] font-bold text-[#181818] dark:text-white truncate">{user.name}</span>
+                          <span className="text-[11px] text-gray-500 dark:text-neutral-400 truncate">{user.roleLabel || user.role || 'Member'}</span>
                         </div>
                       </div>
 

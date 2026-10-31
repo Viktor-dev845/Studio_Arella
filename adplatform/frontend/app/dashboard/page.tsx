@@ -20,11 +20,11 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!ready) return;
     if (!localStorage.getItem('token')) { router.push('/auth/login'); return; }
-    // A token can exist without a cached user (partial storage clear, a
-    // token set without the matching user record) — fetch it for real
-    // instead of spinning forever waiting for a value that will never arrive.
     if (!user) { checkAuth(); return; }
-    // Auto-redirect removed to allow admins to view the dashboard
+    if (user.role === 'admin') {
+      router.replace('/admin');
+      return;
+    }
   }, [ready, user, router, checkAuth]);
 
   if (!ready || !user) return (
