@@ -418,7 +418,7 @@ function FinancesPageContent() {
 
       <DashboardLayout>
         <PageTransition>
-          <div className="flex flex-col gap-[32px] pb-[60px] max-w-[1080px] mx-auto w-full mt-6">
+          <div className="flex flex-col gap-[24px] sm:gap-[32px] pb-[60px] max-w-[1080px] mx-auto w-full px-4 sm:px-6 lg:px-8 mt-4 sm:mt-6">
             
             {/* Header & Mode Switch */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -1885,52 +1885,6 @@ function FinancesPageContent() {
         </AnimatePresence>
 
         {showLinkBankModal && <LinkBankModal onClose={() => setShowLinkBankModal(false)} />}
-
-        {/* â”€â”€â”€ FLOATING "CHAT WITH ARELLA ðŸŒ" WIDGET â”€â”€â”€ */}
-        <div className="chat-fab-widget" style={{ position: 'fixed', bottom: 32, right: 32, zIndex: 90 }}>
-          <div style={{ position: 'relative' }}>
-            <Link
-              href="/chat"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 10,
-                padding: '12px 24px',
-                background: theme.color.surface,
-                border: `1px solid ${theme.color.border}`,
-                borderRadius: 24,
-                boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
-                textDecoration: 'none',
-                color: '#1E293B',
-                fontSize: 13,
-                fontWeight: 700,
-                transition: 'all 0.2s',
-                fontFamily: F
-              }}
-            >
-              <span className="chat-fab-label">Chat with Arella</span>
-              <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'linear-gradient(135deg, #6366F1, #A855F7, #EC4899)', padding: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ width: '100%', height: '100%', background: theme.color.surface, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Globe size={13} color="#4F46E5" />
-                </div>
-              </div>
-            </Link>
-            {/* Speech bubble tail */}
-            <div style={{
-              position: 'absolute',
-              bottom: -7,
-              right: 28,
-              width: 0,
-              height: 0,
-              borderLeft: '7px solid transparent',
-              borderRight: '7px solid transparent',
-              borderTop: '8px solid #FFFFFF',
-              filter: 'drop-shadow(0 2px 2px rgba(0,0,0,0.04))',
-              pointerEvents: 'none'
-            }} />
-          </div>
-        </div>
-
       </PageTransition>
     </DashboardLayout>
   );

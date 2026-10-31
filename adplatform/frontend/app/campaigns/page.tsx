@@ -461,45 +461,45 @@ export default function CampaignsPage() {
               </button>
             </div>
 
-            <div className="flex items-center justify-between mt-8 mb-6">
-              <div className="flex items-center gap-[10px]">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mt-6 mb-6">
+              <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 sm:gap-[10px] w-full md:w-auto">
                 {/* Search */}
-                <div className="relative w-[261px] h-[50px]">
+                <div className="relative flex-1 sm:w-[261px] h-[46px] sm:h-[50px]">
                   <input
                     type="text"
                     placeholder="Search campaign name..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="w-full h-full pl-[16px] pr-10 bg-transparent border border-[rgba(162,161,168,0.5)] rounded-[10px] text-[16px] font-light text-[#16151C] placeholder:text-[rgba(22,21,28,0.2)] focus:outline-none focus:border-[#D4AF37]"
+                    className="w-full h-full pl-[16px] pr-10 bg-transparent border border-[rgba(162,161,168,0.5)] rounded-[10px] text-[15px] sm:text-[16px] font-light text-[#16151C] placeholder:text-[rgba(22,21,28,0.2)] focus:outline-none focus:border-[#D4AF37]"
                   />
-                  <Search size={24} strokeWidth={1.5} className="absolute right-[16px] top-1/2 -translate-y-1/2 text-[#16151C] opacity-40 pointer-events-none" />
+                  <Search size={20} strokeWidth={1.5} className="absolute right-[16px] top-1/2 -translate-y-1/2 text-[#16151C] opacity-40 pointer-events-none" />
                 </div>
 
                 {/* Filter Button */}
                 <button
                   onClick={() => setFilterModalOpen(true)}
-                  className="flex items-center justify-center gap-[10px] w-[117px] h-[50px] bg-white border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[16px] font-light text-[#16151C] transition-colors hover:bg-gray-50"
+                  className="flex items-center justify-center gap-2 px-4 h-[46px] sm:h-[50px] bg-white border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[15px] sm:text-[16px] font-light text-[#16151C] transition-colors hover:bg-gray-50 shrink-0"
                 >
-                  <Filter size={24} strokeWidth={1.5} />
+                  <Filter size={20} strokeWidth={1.5} />
                   <span>Filter</span>
                 </button>
               </div>
               
-              <div className="flex items-center gap-[28px]">
-                {/* Create Campaign Primary Button */}
-                <button
-                  onClick={() => { setWizardStep('details'); setCreateModalOpen(true); }}
-                  className="w-[179px] h-[40px] bg-[#D4AF37] hover:bg-[#b58b24] text-[#000000] opacity-80 rounded-[6px] text-[14px] font-normal capitalize transition-colors"
-                >
-                  Create campaign
-                </button>
-                
+              <div className="flex items-center gap-3 w-full md:w-auto justify-end">
                 {/* Export Button */}
                 <button
                   onClick={handleExport}
-                  className="w-[116px] h-[40px] bg-transparent hover:bg-gray-50 border-[1.5px] border-[#D4AF37] text-[#D4AF37] opacity-80 rounded-[6px] text-[14px] font-normal capitalize transition-colors"
+                  className="flex-1 sm:flex-initial sm:w-[116px] h-[42px] sm:h-[40px] bg-transparent hover:bg-gray-50 border-[1.5px] border-[#D4AF37] text-[#D4AF37] opacity-80 rounded-[6px] text-[13px] sm:text-[14px] font-medium capitalize transition-colors"
                 >
                   Export
+                </button>
+
+                {/* Create Campaign Primary Button */}
+                <button
+                  onClick={() => { setWizardStep('details'); setCreateModalOpen(true); }}
+                  className="flex-1 sm:flex-initial sm:w-[179px] h-[42px] sm:h-[40px] bg-[#D4AF37] hover:bg-[#b58b24] text-[#000000] rounded-[6px] text-[13px] sm:text-[14px] font-semibold capitalize transition-colors shrink-0"
+                >
+                  Create campaign
                 </button>
               </div>
             </div>
@@ -572,10 +572,16 @@ export default function CampaignsPage() {
                           </span>
                         </td>
                         <td className="py-[16px] px-[24px] text-right">
-                          <div className="flex items-center justify-end gap-3">
+                          <div className="flex items-center justify-end gap-2.5">
+                            <Link
+                              href={`/book?campaign_id=${c.id}`}
+                              className="px-3 py-1 bg-[#D4AF37] hover:bg-[#b58b24] text-black font-semibold text-[12px] rounded-[6px] transition-colors shadow-xs text-decoration-none whitespace-nowrap"
+                            >
+                              + Book Ad
+                            </Link>
                             <Link
                               href={`/campaigns/${c.id}`}
-                              className="text-[12px] font-bold text-[#C69A2C] hover:underline"
+                              className="text-[12px] font-bold text-[#C69A2C] hover:underline px-1"
                             >
                               View
                             </Link>
@@ -1392,23 +1398,6 @@ export default function CampaignsPage() {
               </div>
             </div>
           )}
-
-          {/* Floating Widget: Chat with Arella */}
-          <div className="fixed bottom-8 right-8 z-30">
-            <Link
-              href="/chat"
-              className="bg-white dark:bg-[#111111] hover:bg-slate-50 dark:hover:bg-white/[0.06] text-slate-900 dark:text-slate-50 border border-slate-200 dark:border-white/10 shadow-[0_4px_24px_rgba(0,0,0,0.08)] px-5 py-3 rounded-full text-[13px] font-bold flex items-center gap-2.5 transition-all hover:shadow-lg relative group"
-            >
-              <span>Chat with Arella</span>
-              <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-400 p-[1px] flex items-center justify-center shadow-sm">
-                <div className="w-full h-full bg-white dark:bg-[#111111] rounded-full flex items-center justify-center">
-                  <Globe size={12} className="text-indigo-600" />
-                </div>
-              </div>
-              <div className="absolute -bottom-1.5 right-8 w-3 h-3 bg-white dark:bg-[#111111] border-r border-b border-slate-200 dark:border-white/10 rotate-45"></div>
-            </Link>
-          </div>
-
         </div>
       </PageTransition>
     </DashboardLayout>

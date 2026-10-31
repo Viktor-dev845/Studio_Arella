@@ -281,17 +281,17 @@ function BookAdForm() {
   return (
     <DashboardLayout>
       <PageTransition>
-        <div className="max-w-[1200px] mx-auto px-8 py-8 h-full relative font-body bg-white rounded-[24px]">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-6 sm:py-8 h-full relative font-body bg-white rounded-2xl sm:rounded-[24px]">
           
           {/* Header */}
-          <div className="flex items-center gap-3 mb-10 mt-2">
-            <button onClick={() => router.back()} className="flex items-center gap-1.5 text-[24px] font-normal text-[#16151C] hover:opacity-70 transition-opacity">
-              <ChevronDown className="rotate-90" size={24} strokeWidth={2.5} /> <span className="ml-1 text-[24px] font-body">Back</span>
+          <div className="flex items-center gap-3 mb-6 sm:mb-10 mt-1 sm:mt-2">
+            <button onClick={() => router.back()} className="flex items-center gap-1.5 text-[20px] sm:text-[24px] font-normal text-[#16151C] hover:opacity-70 transition-opacity">
+              <ChevronDown className="rotate-90" size={20} strokeWidth={2.5} /> <span className="ml-1 text-[18px] sm:text-[24px] font-body">Back</span>
             </button>
-            <h1 className="text-[20px] font-bold text-[#16151C] ml-6 mt-1 font-body">Book Ad</h1>
+            <h1 className="text-[18px] sm:text-[20px] font-bold text-[#16151C] ml-4 sm:ml-6 mt-0.5 sm:mt-1 font-body">Book Ad</h1>
           </div>
 
-          <div className="flex flex-col xl:flex-row gap-20 items-start">
+          <div className="flex flex-col xl:flex-row gap-8 xl:gap-20 items-start">
             
             {/* Form Column */}
             <div className="flex-1 min-w-0 w-full max-w-[850px]">
@@ -555,14 +555,6 @@ function BookAdForm() {
                 </div>
               </div>
             </div>
-          </div>
-          
-          {/* Chat with Arella floating button */}
-          <div className="absolute bottom-8 right-8 z-[100]">
-            <button className="h-[98px] px-8 bg-white rounded-[24px] shadow-[0px_0px_168px_rgba(0,0,0,0.15)] flex items-center gap-3 hover:scale-105 transition-transform">
-              <span className="text-[18px] font-semibold text-[#1A1A1A] font-body">Chat with Arella</span>
-              <div className="w-[27px] h-[27px] rounded-full overflow-hidden bg-gradient-to-br from-pink-300 via-purple-300 to-blue-300 animate-pulse" />
-            </button>
           </div>
         </div>
 
@@ -971,15 +963,15 @@ function BookAdForm() {
         {/* Cancel Creative Request Modal */}
         {showCancelCreativeModal && (
           <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[rgba(162,161,168,0.2)] backdrop-blur-[10px] p-4 animate-in fade-in duration-200">
-            <div className="bg-[#FFFFFF] rounded-[20px] w-[383px] h-[320px] shadow-2xl relative flex flex-col px-[20px]">
-              <h3 className="w-[343px] mt-[74px] mx-auto text-center text-[20px] font-semibold text-[#16151C] leading-[30px]">
+            <div className="bg-[#FFFFFF] rounded-[20px] w-full max-w-[383px] py-8 px-5 shadow-2xl relative flex flex-col items-center">
+              <h3 className="w-full max-w-[343px] text-center text-[18px] sm:text-[20px] font-semibold text-[#16151C] leading-[28px] sm:leading-[30px] my-6">
                 Are you sure you want to cancel your Ad creative request?
               </h3>
               
-              <div className="mt-[68px] flex items-center gap-[11px] mx-auto">
+              <div className="mt-4 flex items-center justify-center gap-3 w-full max-w-[343px]">
                 <button 
                   onClick={() => setShowCancelCreativeModal(false)}
-                  className="w-[166px] h-[50px] flex items-center justify-center bg-transparent border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[16px] font-normal text-[#16151C] hover:bg-gray-50 transition-colors"
+                  className="flex-1 h-[48px] flex items-center justify-center bg-transparent border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[15px] font-normal text-[#16151C] hover:bg-gray-50 transition-colors"
                 >
                   No
                 </button>
@@ -989,7 +981,7 @@ function BookAdForm() {
                     setShowCancelCreativeModal(false);
                     setShowCreativeCancelSuccessModal(true);
                   }}
-                  className="w-[166px] h-[50px] flex items-center justify-center bg-[#D4AF37] hover:bg-[#b58b24] text-[#000000] rounded-[6px] text-[16px] font-normal transition-colors"
+                  className="flex-1 h-[48px] flex items-center justify-center bg-[#D4AF37] hover:bg-[#b58b24] text-[#000000] rounded-[6px] text-[15px] font-normal transition-colors"
                 >
                   Yes
                 </button>

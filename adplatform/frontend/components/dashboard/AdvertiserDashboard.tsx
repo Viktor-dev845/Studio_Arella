@@ -236,6 +236,8 @@ export default function AdvertiserDashboard() {
         @media (max-width: 960px) {
           .advertiser-dashboard-layout {
             flex-direction: column !important;
+            padding: 16px 14px 32px !important;
+            gap: 20px !important;
           }
           .advertiser-dashboard-layout > * {
             width: 100% !important;
@@ -245,14 +247,34 @@ export default function AdvertiserDashboard() {
           }
           .dash-stat-cards {
             grid-template-columns: repeat(2, 1fr) !important;
+            gap: 10px !important;
           }
         }
-        @media (max-width: 480px) {
-          .dash-stat-cards {
-            grid-template-columns: 1fr !important;
+        @media (max-width: 600px) {
+          .advertiser-dashboard-layout {
+            padding: 12px 10px 24px !important;
+            gap: 16px !important;
+          }
+          .dash-stat-card {
+            padding: 14px 12px !important;
+            border-radius: 12px !important;
+          }
+          .dash-stat-number {
+            font-size: 20px !important;
+          }
+          .dash-chart-card {
+            padding: 14px 12px !important;
+            border-radius: 14px !important;
+          }
+          .dash-chart-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 8px !important;
+            margin-bottom: 12px !important;
           }
           .dash-2col {
-            grid-template-columns: 1fr !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 8px !important;
           }
         }
       `}</style>
@@ -285,6 +307,7 @@ export default function AdvertiserDashboard() {
         <div className="dash-stat-cards" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
           {/* Card 1: Total Podcast */}
           <div
+            className="dash-stat-card"
             style={{
               background: '#FFFDF5',
               borderRadius: 16,
@@ -292,19 +315,17 @@ export default function AdvertiserDashboard() {
               border: '1px solid rgba(212,175,55,0.04)',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 12px' }}>
               <p style={{ fontSize: 13, color: theme.color.text1, margin: 0, fontWeight: 500 }}>Active Campaigns</p>
             </div>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 28, fontWeight: 500, color: theme.color.text1, lineHeight: 1 }}>{analytics?.active_campaigns || 0}</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: theme.color.text1, fontSize: 11, fontWeight: 700 }}>
-                
-              </div>
+              <span className="dash-stat-number" style={{ fontSize: 28, fontWeight: 700, color: theme.color.text1, lineHeight: 1 }}>{analytics?.active_campaigns || 0}</span>
             </div>
           </div>
 
           {/* Card 2: Total Active Listeners */}
           <div
+            className="dash-stat-card"
             style={{
               background: '#FFFDF5',
               borderRadius: 16,
@@ -312,36 +333,17 @@ export default function AdvertiserDashboard() {
               border: '1px solid rgba(212,175,55,0.04)',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 12px' }}>
               <p style={{ fontSize: 13, color: theme.color.text1, margin: 0, fontWeight: 500 }}>Total Ad Bookings</p>
             </div>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 28, fontWeight: 500, color: theme.color.text1, lineHeight: 1 }}>{adBookings.length}</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: theme.color.text1, fontSize: 11, fontWeight: 700 }}>
-                
-              </div>
+              <span className="dash-stat-number" style={{ fontSize: 28, fontWeight: 700, color: theme.color.text1, lineHeight: 1 }}>{adBookings.length}</span>
             </div>
           </div>
 
           {/* Card 3: Total Spend */}
-            <div
-              style={{
-                background: '#FFFDF5',
-                borderRadius: 16,
-                padding: '20px',
-                border: '1px solid rgba(212,175,55,0.04)',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 16px' }}>
-                <p style={{ fontSize: 13, color: theme.color.text1, margin: 0, fontWeight: 500 }}>Total Spend</p>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 28, fontWeight: 500, color: theme.color.text1, lineHeight: 1 }}>{formatCurrency(analytics?.total_revenue || 0, currency, rates)}</span>
-              </div>
-            </div>
-
-            {/* Card 4: Booked Podcast Slots */}
           <div
+            className="dash-stat-card"
             style={{
               background: '#FFFDF5',
               borderRadius: 16,
@@ -349,9 +351,29 @@ export default function AdvertiserDashboard() {
               border: '1px solid rgba(212,175,55,0.04)',
             }}
           >
-            <p style={{ fontSize: 13, color: theme.color.text1, margin: '0 0 16px', fontWeight: 500 }}>Booked Podcast Slots</p>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 12px' }}>
+              <p style={{ fontSize: 13, color: theme.color.text1, margin: 0, fontWeight: 500 }}>Total Spend</p>
+            </div>
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 28, fontWeight: 500, color: theme.color.text1, lineHeight: 1 }}>{bookedPodcastSlots}</span>
+              <span className="dash-stat-number" style={{ fontSize: 28, fontWeight: 700, color: theme.color.text1, lineHeight: 1, wordBreak: 'break-all' }}>{formatCurrency(analytics?.total_revenue || 0, currency, rates)}</span>
+            </div>
+          </div>
+
+          {/* Card 4: Booked Podcast Slots */}
+          <div
+            className="dash-stat-card"
+            style={{
+              background: '#FFFDF5',
+              borderRadius: 16,
+              padding: '20px',
+              border: '1px solid rgba(212,175,55,0.04)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 12px' }}>
+              <p style={{ fontSize: 13, color: theme.color.text1, margin: 0, fontWeight: 500 }}>Podcast Slots</p>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+              <span className="dash-stat-number" style={{ fontSize: 28, fontWeight: 700, color: theme.color.text1, lineHeight: 1 }}>{bookedPodcastSlots}</span>
             </div>
           </div>
         </div>
@@ -359,8 +381,8 @@ export default function AdvertiserDashboard() {
         {/* Row 2: Line Chart & Traffic by Podcast */}
         <div className="dash-chart-split" style={{ display: 'grid', gridTemplateColumns: '2fr 1.15fr', gap: 16 }}>
           {/* Left Chart Card */}
-          <div style={{ background: theme.color.surface, borderRadius: 20, padding: '22px 24px', border: `1px solid ${theme.color.surface2}` }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+          <div className="dash-chart-card" style={{ background: theme.color.surface, borderRadius: 20, padding: '22px 24px', border: `1px solid ${theme.color.surface2}` }}>
+            <div className="dash-chart-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                 <span style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1 }}>Total Podcast Views</span>
                 <span style={{ fontSize: 13, fontWeight: 500, color: theme.color.text4, cursor: 'pointer' }}>Total Followers</span>
@@ -397,7 +419,7 @@ export default function AdvertiserDashboard() {
           </div>
 
           {/* Right Card: Traffic by Podcast */}
-          <div style={{ background: theme.color.surface, borderRadius: 20, padding: '22px 24px', border: `1px solid ${theme.color.surface2}` }}>
+          <div className="dash-chart-card" style={{ background: theme.color.surface, borderRadius: 20, padding: '22px 24px', border: `1px solid ${theme.color.surface2}` }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 18px' }}>
               <p style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1, margin: 0 }}>Traffic by Podcast</p>
               <Link
@@ -499,16 +521,16 @@ export default function AdvertiserDashboard() {
         </div>
 
         {/* Row 3: Podcast Bookings (12 Months Bar Chart) */}
-        <div style={{ background: theme.color.surface, borderRadius: 20, padding: '22px 24px', border: `1px solid ${theme.color.surface2}` }}>
+        <div className="dash-chart-card" style={{ background: theme.color.surface, borderRadius: 20, padding: '22px 24px', border: `1px solid ${theme.color.surface2}` }}>
           <p style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1, margin: '0 0 16px' }}>Podcast Bookings ({new Date().getFullYear()})</p>
           <div style={{ height: 190, width: '100%' }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={podcastBookingsMonthly} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
                 <CartesianGrid vertical={false} stroke={theme.color.bg} />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: theme.color.text4 }} dy={8} />
-                <YAxis domain={[0, monthlyMax]} ticks={yAxisTicks} allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: theme.color.text4 }} />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: theme.color.text4 }} dy={8} interval={0} />
+                <YAxis domain={[0, monthlyMax]} ticks={yAxisTicks} allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: theme.color.text4 }} />
                 <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }} />
-                <Bar dataKey="val" name="Bookings" radius={[0, 0, 0, 0]} barSize={24}>
+                <Bar dataKey="val" name="Bookings" radius={[2, 2, 0, 0]} maxBarSize={20}>
                   {podcastBookingsMonthly.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
@@ -801,61 +823,6 @@ export default function AdvertiserDashboard() {
               See full calendar &gt;
             </Link>
           </div>
-        </div>
-
-        {/* Chat with Arella Speech Bubble Widget at bottom right */}
-        <div style={{ display: 'flex', justifyContent: 'center', marginTop: 10, position: 'relative' }}>
-          <Link
-            href="/chat"
-            style={{
-              position: 'relative',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 9,
-              padding: '10px 18px',
-              background: theme.color.surface,
-              border: `1px solid ${theme.color.border}`,
-              borderRadius: 24,
-              boxShadow: '0 4px 18px rgba(0,0,0,0.06)',
-              color: theme.color.text1,
-              fontSize: 13,
-              fontWeight: 700,
-              fontFamily: F,
-              textDecoration: 'none',
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-            }}
-            className="hover:scale-105 active:scale-95 group"
-          >
-            <span>Chat with Arella</span>
-            <div
-              style={{
-                width: 22,
-                height: 22,
-                borderRadius: '50%',
-                background: 'radial-gradient(circle at 30% 30%, #5CEAEA 0%, #D987EF 30%, #FCB902 60%, #C73FCC 100%)',
-                boxShadow: 'inset -1px -1px 3px rgba(0,0,0,0.25), 0 2px 4px rgba(0,0,0,0.1)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            />
-
-            {/* Speech bubble small triangle pointer */}
-            <div
-              style={{
-                position: 'absolute',
-                bottom: -6,
-                left: 36,
-                width: 0,
-                height: 0,
-                borderLeft: '6px solid transparent',
-                borderRight: '6px solid transparent',
-                borderTop: `6px solid ${theme.color.surface}`,
-                filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.05))',
-              }}
-            />
-          </Link>
         </div>
       </div>
     </div>

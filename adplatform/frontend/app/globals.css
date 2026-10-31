@@ -179,11 +179,14 @@ html, body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
   background: #F7F7F7;
   color: var(--text-1);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
 }
 
 button, input, select, textarea, optgroup {
@@ -237,8 +240,11 @@ a {
 }
 
 .main-wrapper {
-  margin-left: 240px;
-  transition: margin-left 0.3s ease;
+  margin-left: 220px;
+  transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 .mobile-sidebar {
@@ -263,6 +269,7 @@ a {
   -webkit-overflow-scrolling: touch;
   margin-bottom: 24px;
   position: relative;
+  max-width: 100%;
 }
 
 .responsive-table-wrapper table {
@@ -271,7 +278,7 @@ a {
 
 /* A real visual cue that there's more table off to the right — the scroll
    itself already works at this width, but nothing signaled it was there. */
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
   .responsive-table-wrapper::after {
     content: '';
     position: sticky;
@@ -287,7 +294,7 @@ a {
   }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
   .hide-on-mobile { display: none !important; }
   .show-on-mobile { display: block !important; }
   .show-on-mobile-flex { display: flex !important; }
@@ -305,20 +312,14 @@ a {
   }
 }
 
-@media (max-width: 480px) {
-  /* Shrink the floating "Chat with Arella" widget to an icon-only bubble so
-     it stops overlapping page content on narrow viewports. */
+@media (max-width: 640px) {
   .chat-fab-widget {
-    padding: 12px !important;
     bottom: 16px !important;
     right: 16px !important;
   }
   .chat-fab-label {
     display: none !important;
   }
-}
-
-@media (max-width: 550px) {
   .stats-grid {
     grid-template-columns: 1fr;
   }

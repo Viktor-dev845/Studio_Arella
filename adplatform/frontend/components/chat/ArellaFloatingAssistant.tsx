@@ -48,7 +48,7 @@ export default function ArellaFloatingAssistant() {
 
   return (
     <div
-      className="chat-fab-widget fixed bottom-6 right-6 z-40 flex flex-col items-end pointer-events-none"
+      className="chat-fab-widget fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 flex flex-col items-end pointer-events-none"
       style={{ fontFamily: F }}
     >
       {/* ─── PROACTIVE SPEECH BUBBLE TOOLTIP ─── */}
@@ -59,7 +59,7 @@ export default function ArellaFloatingAssistant() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.94 }}
             transition={{ duration: 0.22, ease: 'easeOut' }}
-            className="pointer-events-auto mb-3 max-w-[310px] bg-white dark:bg-[#18181B] border border-neutral-200/90 dark:border-white/10 rounded-2xl p-3.5 shadow-[0_12px_36px_rgba(0,0,0,0.12)] relative group"
+            className="pointer-events-auto mb-3 max-w-[calc(100vw-32px)] sm:max-w-[310px] bg-white dark:bg-[#18181B] border border-neutral-200/90 dark:border-white/10 rounded-2xl p-3.5 shadow-[0_12px_36px_rgba(0,0,0,0.12)] relative group"
           >
             <div className="flex items-start gap-2.5">
               {/* Signature Orb Icon */}
@@ -106,7 +106,7 @@ export default function ArellaFloatingAssistant() {
             </div>
 
             {/* Bubble Tail */}
-            <div className="absolute -bottom-1.5 right-8 w-3 h-3 bg-white dark:bg-[#18181B] border-r border-b border-neutral-200/90 dark:border-white/10 rotate-45" />
+            <div className="absolute -bottom-1.5 right-6 sm:right-8 w-3 h-3 bg-white dark:bg-[#18181B] border-r border-b border-neutral-200/90 dark:border-white/10 rotate-45" />
           </motion.div>
         )}
       </AnimatePresence>
@@ -119,7 +119,7 @@ export default function ArellaFloatingAssistant() {
         whileHover={{ scale: 1.04 }}
         whileTap={{ scale: 0.96 }}
         onClick={handleClick}
-        className="pointer-events-auto group relative flex items-center gap-3 pl-3.5 pr-4 py-2.5 rounded-full bg-white dark:bg-[#161618] border border-neutral-200/90 dark:border-white/10 shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:shadow-[0_12px_40px_rgba(204,163,54,0.28)] transition-all duration-300 cursor-pointer"
+        className="pointer-events-auto group relative flex items-center gap-2.5 p-2 sm:pl-3.5 sm:pr-4 sm:py-2.5 rounded-full bg-white dark:bg-[#161618] border border-neutral-200/90 dark:border-white/10 shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:shadow-[0_12px_40px_rgba(204,163,54,0.28)] transition-all duration-300 cursor-pointer"
         aria-label="Open Arella AI Chat"
       >
         {/* Ambient Pulsing Aura */}
@@ -144,8 +144,8 @@ export default function ArellaFloatingAssistant() {
           </span>
         </div>
 
-        {/* Text Affordance */}
-        <div className="flex flex-col text-left">
+        {/* Text Affordance (Hidden on mobile phones, visible on tablet/desktop) */}
+        <div className="hidden sm:flex flex-col text-left">
           <div className="flex items-center gap-1.5">
             <span className="chat-fab-label text-[13.5px] font-extrabold text-neutral-900 dark:text-white leading-tight">
               Chat with Arella

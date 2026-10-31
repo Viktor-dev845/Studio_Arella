@@ -267,7 +267,17 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
           )}
         </div>
 
-        <div className="border-t border-neutral-200 dark:border-white/10 px-3 py-4">
+        <div className="border-t border-neutral-200 dark:border-white/10 px-3 py-3 space-y-1">
+          <Link
+            href={pathname.startsWith('/audience') ? '/dashboard' : '/audience'}
+            onClick={onClose}
+            className="flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-xs font-bold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors"
+          >
+            <span>{pathname.startsWith('/audience') ? 'Advertiser Dashboard' : 'Audience Space'}</span>
+            <span className="px-2 py-0.5 rounded-full bg-[#D4AF37] text-black font-extrabold text-[10px]">
+              {pathname.startsWith('/audience') ? 'Advertiser' : 'Audience'}
+            </span>
+          </Link>
           <button
             type="button"
             onClick={() => {

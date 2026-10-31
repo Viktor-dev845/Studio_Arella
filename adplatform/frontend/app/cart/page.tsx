@@ -178,7 +178,7 @@ export default function CartPage() {
   return (
     <DashboardLayout>
       <PageTransition>
-        <div style={{ fontFamily: F, maxWidth: 1100, margin: '0 auto', paddingBottom: 60 }}>
+        <div className="px-4 sm:px-6" style={{ fontFamily: F, maxWidth: 1100, margin: '0 auto', paddingBottom: 60 }}>
 
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 14 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -222,10 +222,10 @@ export default function CartPage() {
               </button>
             </FadeCard>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: 24, alignItems: 'flex-start' }}>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
 
               {/* LEFT: cart items */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div className="lg:col-span-2" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 {cart.map((item) => (
                   <div key={item.id} style={{ background: theme.color.surface, borderRadius: 18, border: `1px solid ${theme.color.border}`, padding: 18, display: 'flex', gap: 14, boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
                     {item.adPreviewUrl ? (
@@ -269,7 +269,7 @@ export default function CartPage() {
               </div>
 
               {/* RIGHT: order summary */}
-              <div style={{ position: 'sticky', top: 24, display: 'flex', flexDirection: 'column', gap: 20 }}>
+              <div className="lg:col-span-1" style={{ position: 'sticky', top: 24, display: 'flex', flexDirection: 'column', gap: 20 }}>
                 <div style={{ background: theme.color.surface, borderRadius: 24, border: `1px solid ${theme.color.border}`, padding: '24px 26px', boxShadow: '0 4px 24px rgba(0,0,0,0.03)' }}>
                   <h2 style={{ fontSize: 18, fontWeight: 800, color: theme.color.text1, margin: '0 0 16px', letterSpacing: '-0.3px' }}>Order Summary</h2>
 
@@ -439,23 +439,6 @@ export default function CartPage() {
             </>
           )}
         </AnimatePresence>
-
-        {/* Floating "Chat with Arella" widget */}
-        <div className="chat-fab-widget" style={{ position: 'fixed', bottom: 32, right: 32, zIndex: 90 }}>
-          <div style={{ position: 'relative' }}>
-            <Link
-              href="/chat"
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '12px 24px', background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 24, boxShadow: '0 4px 20px rgba(0,0,0,0.06)', textDecoration: 'none', color: theme.color.text1, fontSize: 13, fontWeight: 700, fontFamily: F }}
-            >
-              <span className="chat-fab-label">Chat with Arella</span>
-              <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'linear-gradient(135deg, #6366F1, #A855F7, #EC4899)', padding: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ width: '100%', height: '100%', background: theme.color.surface, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Globe size={13} color="#4F46E5" />
-                </div>
-              </div>
-            </Link>
-          </div>
-        </div>
       </PageTransition>
     </DashboardLayout>
   );

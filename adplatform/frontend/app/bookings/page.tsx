@@ -322,16 +322,16 @@ function BookingsPageContent() {
           </div>
 
           {/* Header & Tabs */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between border-b border-[rgba(162,161,168,0.2)] dark:border-white/10 mb-8">
-              <div className="flex items-center gap-8">
+          <div className="mb-6 sm:mb-8">
+            <div className="flex items-center justify-between border-b border-[rgba(162,161,168,0.2)] dark:border-white/10 mb-6 sm:mb-8 overflow-x-auto no-scrollbar">
+              <div className="flex items-center gap-5 sm:gap-8 min-w-max">
                 <button
                   onClick={() => setActiveTab('screen')}
-                  className={`flex items-center gap-2 pb-3 text-[17px] font-body transition-colors relative ${
+                  className={`flex items-center gap-2 pb-3 text-[15px] sm:text-[17px] font-body transition-colors relative whitespace-nowrap ${
                     activeTab === 'screen' ? 'text-[#D4AF37] font-semibold' : 'text-[#16151C] dark:text-slate-500 font-light'
                   }`}
                 >
-                  <Monitor size={20} />
+                  <Monitor size={18} className="sm:w-5 sm:h-5" />
                   Screen Ads
                   {activeTab === 'screen' && (
                     <div className="absolute -bottom-[1px] left-0 right-0 h-[3px] bg-[#D4AF37]" />
@@ -340,11 +340,11 @@ function BookingsPageContent() {
 
                 <button
                   onClick={() => setActiveTab('podcast')}
-                  className={`flex items-center gap-2 pb-3 text-[17px] font-body transition-colors relative ${
+                  className={`flex items-center gap-2 pb-3 text-[15px] sm:text-[17px] font-body transition-colors relative whitespace-nowrap ${
                     activeTab === 'podcast' ? 'text-[#D4AF37] font-semibold' : 'text-[#16151C] dark:text-slate-500 font-light'
                   }`}
                 >
-                  <Mic size={20} />
+                  <Mic size={18} className="sm:w-5 sm:h-5" />
                   Podcast studio
                   {activeTab === 'podcast' && (
                     <div className="absolute -bottom-[1px] left-0 right-0 h-[3px] bg-[#D4AF37]" />
@@ -353,11 +353,11 @@ function BookingsPageContent() {
 
                 <button
                   onClick={() => setActiveTab('calendar')}
-                  className={`flex items-center gap-2 pb-3 text-[17px] font-body transition-colors relative ${
+                  className={`flex items-center gap-2 pb-3 text-[15px] sm:text-[17px] font-body transition-colors relative whitespace-nowrap ${
                     activeTab === 'calendar' ? 'text-[#D4AF37] font-semibold' : 'text-[#16151C] dark:text-slate-500 font-light'
                   }`}
                 >
-                  <Calendar size={20} />
+                  <Calendar size={18} className="sm:w-5 sm:h-5" />
                   Calendar
                   {activeTab === 'calendar' && (
                     <div className="absolute -bottom-[1px] left-0 right-0 h-[3px] bg-[#D4AF37]" />
@@ -372,21 +372,21 @@ function BookingsPageContent() {
           ) : (
             <>
               {/* Controls */}
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-                <h2 className="font-body text-[21px] font-medium leading-[27px] tracking-[0.01em] text-[#2B2E48] dark:text-slate-50">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                <h2 className="font-body text-[18px] sm:text-[21px] font-medium leading-[27px] tracking-[0.01em] text-[#2B2E48] dark:text-slate-50">
                   {activeTab === 'podcast' ? 'All podcast bookings' : 'All Ad bookings'}
                 </h2>
 
-                <div className="flex items-center gap-3 w-full sm:w-auto">
+                <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 w-full md:w-auto">
                   {/* Search */}
-                  <div className="relative flex-1 sm:w-[261px]">
+                  <div className="relative flex-1 min-w-[150px] sm:w-[240px]">
                     <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" />
                     <input
                       type="text"
                       placeholder="Search"
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
-                      className="w-full pl-11 pr-4 h-[50px] bg-transparent border border-[rgba(162,161,168,0.5)] rounded-[10px] text-[16px] font-light font-body text-gray-900 dark:text-slate-50 placeholder:text-[rgba(22,21,28,0.3)] focus:outline-none focus:border-[#D4AF37] transition-all"
+                      className="w-full pl-11 pr-4 h-[44px] sm:h-[50px] bg-transparent border border-[rgba(162,161,168,0.5)] rounded-[10px] text-[15px] sm:text-[16px] font-light font-body text-gray-900 dark:text-slate-50 placeholder:text-[rgba(22,21,28,0.3)] focus:outline-none focus:border-[#D4AF37] transition-all"
                     />
                   </div>
 
@@ -394,56 +394,63 @@ function BookingsPageContent() {
                   <div className="relative" ref={filterRef}>
                     <button
                       onClick={() => setShowFilter(!showFilter)}
-                      className="flex items-center justify-center gap-2 px-[20px] h-[50px] bg-transparent border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[#16151C] dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-white/[0.06] transition-colors"
+                      className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-[20px] h-[44px] sm:h-[50px] bg-transparent border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[#16151C] dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-white/[0.06] transition-colors"
                     >
-                      <Filter size={20} className="text-[#16151C] dark:text-slate-300" />
-                      <span className="font-body font-light text-[16px]">Filter</span>
+                      <Filter size={18} className="text-[#16151C] dark:text-slate-300" />
+                      <span className="font-body font-light text-[15px] sm:text-[16px]">Filter</span>
                     </button>
 
                     {showFilter && (
-                      <div className="fixed inset-0 z-[120] flex items-center justify-center bg-[#16151C]/20 backdrop-blur-[4px]">
-                        <div className="bg-white rounded-[20px] p-[32px] flex flex-col w-[420px] shadow-2xl relative font-body animate-in fade-in zoom-in-95 duration-200">
+                      <div className="fixed inset-0 z-[120] flex items-center justify-center bg-[#16151C]/30 backdrop-blur-[4px] p-4">
+                        <div className="bg-white rounded-[20px] p-6 sm:p-[32px] flex flex-col w-full max-w-[420px] shadow-2xl relative font-body animate-in fade-in zoom-in-95 duration-200">
                           
-                          <h3 className="text-[20px] font-bold text-[#16151C] mb-[32px]">Filter</h3>
+                          <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-[20px] font-bold text-[#16151C]">Filter</h3>
+                            <button onClick={() => setShowFilter(false)} className="p-1 text-gray-400 hover:text-gray-600">
+                              <X size={18} />
+                            </button>
+                          </div>
                           
                           {/* Search Input */}
-                          <div className="relative mb-[32px]">
+                          <div className="relative mb-6">
                              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                              <input 
                                type="text" 
-                               placeholder="Search Employee" 
-                               className="w-full h-[50px] pl-11 pr-4 bg-transparent border border-[rgba(162,161,168,0.5)] rounded-[10px] text-[16px] text-gray-900 focus:outline-none focus:border-[#D4AF37] font-body font-light placeholder:text-[rgba(22,21,28,0.3)]" 
+                               placeholder="Search" 
+                               value={search}
+                               onChange={(e) => setSearch(e.target.value)}
+                               className="w-full h-[46px] pl-11 pr-4 bg-transparent border border-[rgba(162,161,168,0.5)] rounded-[10px] text-[15px] text-gray-900 focus:outline-none focus:border-[#D4AF37] font-body font-light placeholder:text-[rgba(22,21,28,0.3)]" 
                              />
                           </div>
 
-                          <h4 className="font-semibold text-[#16151C] mb-[20px] text-[16px]">
-                            {activeTab === 'podcast' ? 'All podcast studio session bookings' : 'All Ad bookings'}
+                          <h4 className="font-semibold text-[#16151C] mb-4 text-[15px]">
+                            {activeTab === 'podcast' ? 'Podcast Session Bookings' : 'All Ad Bookings'}
                           </h4>
                           
-                          <div className="flex items-center gap-[40px] mb-[40px]">
-                             <label className="flex items-center gap-[12px] cursor-pointer">
-                                <div className="w-[20px] h-[20px] rounded-[4px] bg-[#D4AF37] flex items-center justify-center">
-                                   <Check size={14} className="text-white" strokeWidth={3} />
+                          <div className="flex items-center gap-6 mb-8">
+                             <label className="flex items-center gap-2.5 cursor-pointer">
+                                <div className="w-[18px] h-[18px] rounded-[4px] bg-[#D4AF37] flex items-center justify-center">
+                                   <Check size={13} className="text-white" strokeWidth={3} />
                                 </div>
-                                <span className="text-[#16151C] text-[16px] font-light">Status</span>
+                                <span className="text-[#16151C] text-[15px] font-light">Status</span>
                              </label>
-                             <label className="flex items-center gap-[12px] cursor-pointer">
-                                <div className="w-[20px] h-[20px] rounded-[4px] border border-[rgba(162,161,168,0.5)] flex items-center justify-center bg-transparent">
+                             <label className="flex items-center gap-2.5 cursor-pointer">
+                                <div className="w-[18px] h-[18px] rounded-[4px] border border-[rgba(162,161,168,0.5)] flex items-center justify-center bg-transparent">
                                 </div>
-                                <span className="text-[#16151C] text-[16px] font-light">By duration</span>
+                                <span className="text-[#16151C] text-[15px] font-light">Duration</span>
                              </label>
                           </div>
 
-                          <div className="flex gap-[20px]">
+                          <div className="flex gap-3">
                              <button 
                                onClick={() => setShowFilter(false)} 
-                               className="flex-1 h-[48px] bg-transparent border-[1.5px] border-[#D4AF37] rounded-[6px] text-[#D4AF37] font-medium hover:bg-gray-50 transition-colors text-[14px]"
+                               className="flex-1 h-[44px] bg-transparent border-[1.5px] border-[#D4AF37] rounded-[6px] text-[#D4AF37] font-medium hover:bg-gray-50 transition-colors text-[14px]"
                              >
                                 Cancel
                              </button>
                              <button 
                                onClick={() => setShowFilter(false)} 
-                               className="flex-1 h-[48px] bg-[#D4AF37] rounded-[6px] text-[#16151C] font-medium hover:opacity-90 transition-opacity text-[14px]"
+                               className="flex-1 h-[44px] bg-[#D4AF37] rounded-[6px] text-[#16151C] font-medium hover:opacity-90 transition-opacity text-[14px]"
                              >
                                 Apply
                              </button>
@@ -456,7 +463,7 @@ function BookingsPageContent() {
                   {/* Export */}
                   <button
                     onClick={handleExport}
-                    className="flex items-center justify-center w-[116px] h-[40px] bg-transparent border-[1.5px] border-[#D4AF37] rounded-[6px] text-[14px] font-normal text-[#D4AF37] hover:bg-[#D4AF37]/10 transition-colors"
+                    className="flex items-center justify-center px-4 h-[44px] sm:h-[50px] bg-transparent border-[1.5px] border-[#D4AF37] rounded-[6px] text-[13px] sm:text-[14px] font-normal text-[#D4AF37] hover:bg-[#D4AF37]/10 transition-colors"
                   >
                     Export
                   </button>
@@ -464,9 +471,9 @@ function BookingsPageContent() {
                   {/* Book Slot */}
                   <Link
                     href={activeTab === 'podcast' ? "/bookings?tab=podcast" : "/book"}
-                    className="flex items-center justify-center w-[139px] h-[40px] bg-[#D4AF37] hover:bg-[#b58b24] text-[#000000] rounded-[6px] text-[14px] font-normal transition-colors"
+                    className="flex items-center justify-center px-4 h-[44px] sm:h-[50px] bg-[#D4AF37] hover:bg-[#b58b24] text-[#000000] rounded-[6px] text-[13px] sm:text-[14px] font-semibold transition-colors shrink-0"
                   >
-                    {activeTab === 'podcast' ? 'Book Podcast Slot' : 'Book Ad Slot'}
+                    {activeTab === 'podcast' ? 'Book Podcast' : 'Book Ad Slot'}
                   </Link>
                 </div>
               </div>

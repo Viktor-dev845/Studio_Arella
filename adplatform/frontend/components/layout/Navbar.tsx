@@ -192,11 +192,30 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
     return () => { if (searchDebounce.current) clearTimeout(searchDebounce.current); };
   }, [searchQuery]);
 
+  const breadcrumbParts = getBreadcrumb().split(' / ');
+  const pageTitle = breadcrumbParts[breadcrumbParts.length - 1] || 'Overview';
+
   return (
-    <header className="flex h-[65px] shrink-0 items-center justify-between border-b border-neutral-200 dark:border-white/10 px-6 bg-white dark:bg-[#111111]" style={{ fontFamily: F }}>
-      <div className="flex items-center gap-4 text-sm min-w-0">
+    <header className="flex h-[60px] sm:h-[65px] shrink-0 items-center justify-between border-b border-neutral-200 dark:border-white/10 px-3 sm:px-6 bg-white dark:bg-[#111111]" style={{ fontFamily: F }}>
+      {/* Left: Hamburger (mobile), Logo (mobile), and Breadcrumb / Page Title */}
+      <div className="flex items-center gap-2 sm:gap-4 text-sm min-w-0">
         
-        {/* Favorite */}
+        {/* Mobile Hamburger Menu (Far Left for intuitive thumb access) */}
+        <button
+          onClick={onMenuClick}
+          className="flex lg:hidden items-center justify-center p-2 -ml-1 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
+          title="Open Navigation"
+          aria-label="Open Navigation Menu"
+        >
+          <PanelLeft className="h-5 w-5" strokeWidth={2} />
+        </button>
+
+        {/* Mobile Brand Icon */}
+        <Link href="/" className="flex lg:hidden items-center shrink-0 pr-1" style={{ textDecoration: 'none' }}>
+          <img src={colorMode === 'dark' ? '/logo-white.png' : '/logo.png'} alt="Studio Arella" className="h-7 w-auto object-contain" />
+        </Link>
+
+        {/* Favorite (Desktop) */}
         <button
           onClick={toggleFavorite}
           className="hide-on-mobile flex items-center justify-center hover:opacity-80 transition-opacity"
@@ -205,7 +224,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
           <Star className="h-4 w-4 transition-colors" strokeWidth={1.75} fill={isFavorited ? theme.color.gold : 'none'} color={isFavorited ? theme.color.gold : '#9ca3af'} />
         </button>
 
-        {/* Advertiser / Audience Toggle */}
+        {/* Advertiser / Audience Toggle (Desktop) */}
         <div className="hide-on-mobile flex items-center gap-2.5 text-xs font-medium text-neutral-500 dark:text-neutral-400 select-none">
           <span className={`transition-colors duration-200 ${!optimisticAudience ? "text-neutral-900 dark:text-white font-semibold" : ""}`}>
             {user?.role === 'creator' ? 'Creator' : 'Advertiser'}
@@ -242,9 +261,16 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
 
         <span className="hide-on-mobile text-neutral-300 dark:text-neutral-600">/</span>
 
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-3 min-w-0">
-          {getBreadcrumb().split(' / ').map((part, i, arr) => (
+        {/* Mobile Page Title (Clean, no cramped breadcrumbs) */}
+        <div className="flex sm:hidden items-center min-w-0">
+          <span className="text-[15px] font-bold text-neutral-900 dark:text-white truncate max-w-[140px] xs:max-w-[180px]">
+            {pageTitle}
+          </span>
+        </div>
+
+        {/* Desktop Breadcrumb Trail */}
+        <div className="hidden sm:flex items-center gap-2.5 min-w-0">
+          {breadcrumbParts.map((part, i, arr) => (
             <React.Fragment key={i}>
               {i > 0 && <span className="text-neutral-300 dark:text-neutral-600">/</span>}
               <span className={`truncate ${i === arr.length - 1 ? 'font-medium text-neutral-900 dark:text-white' : 'text-neutral-400 dark:text-neutral-500'}`}>
@@ -255,10 +281,11 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
+      {/* Right Actions */}
+      <div className="flex items-center gap-2 sm:gap-4">
         
-        {/* Search */}
-        <div className="hidden sm:flex relative items-center gap-2 rounded-lg border border-neutral-200 dark:border-white/10 bg-neutral-50 dark:bg-white/5 px-3 py-1.5 text-sm text-neutral-400 dark:text-neutral-500 min-w-[200px]">
+        {/* Search (Desktop) */}
+        <div className="hidden md:flex relative items-center gap-2 rounded-lg border border-neutral-200 dark:border-white/10 bg-neutral-50 dark:bg-white/5 px-3 py-1.5 text-sm text-neutral-400 dark:text-neutral-500 min-w-[180px] lg:min-w-[220px]">
           <Search className="h-4 w-4" strokeWidth={1.75} />
           <input
             type="text"
@@ -299,9 +326,9 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
           </AnimatePresence>
         </div>
 
-        {/* Right Actions */}
-        <div className="flex items-center gap-3 text-neutral-400 dark:text-neutral-500">
-          <button onClick={toggleTheme} className="flex items-center justify-center hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors" title="Toggle Theme">
+        {/* Right Buttons */}
+        <div className="flex items-center gap-1.5 sm:gap-3 text-neutral-400 dark:text-neutral-500">
+          <button onClick={toggleTheme} className="p-1.5 flex items-center justify-center hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors" title="Toggle Theme">
             {colorMode === 'dark' ? <Sun className="h-[18px] w-[18px]" strokeWidth={1.75} /> : <Moon className="h-[18px] w-[18px]" strokeWidth={1.75} />}
           </button>
           
@@ -331,10 +358,6 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
           </div>
 
           <NotificationBell />
-
-          <button onClick={onMenuClick} className="flex items-center justify-center hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors lg:hidden" title="Toggle Sidebar">
-            <PanelLeft className="h-[18px] w-[18px]" strokeWidth={1.75} />
-          </button>
         </div>
 
         {/* User Avatar */}
@@ -359,6 +382,24 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
                     <p className="text-[15px] font-bold text-neutral-900 dark:text-white m-0 leading-tight">{user?.name || 'Creator'}</p>
                     <p className="text-[13px] font-medium text-neutral-500 m-0 mt-1 truncate">{user?.email || 'creator@example.com'}</p>
                   </div>
+
+                  {/* Mobile Switch to Creator / Audience / Advertiser */}
+                  <div className="sm:hidden px-3 py-2 border-b border-neutral-100 dark:border-white/10 mb-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDropOpen(false);
+                        handleToggleMode();
+                      }}
+                      className="w-full flex items-center justify-between py-1 text-[13px] font-bold text-neutral-800 dark:text-neutral-200"
+                    >
+                      <span>Switch space:</span>
+                      <span className="text-xs px-2.5 py-1 rounded-full bg-[#D4AF37] text-black font-extrabold shadow-xs">
+                        {optimisticAudience ? '→ Advertiser' : '→ Audience'}
+                      </span>
+                    </button>
+                  </div>
+
                   {[
                     { label: 'My Dashboard', href: '/dashboard', icon: LayoutDashboard },
                     { label: 'Profile Details', href: '/user-profile/overview', icon: User },

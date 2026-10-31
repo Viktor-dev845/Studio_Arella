@@ -132,36 +132,36 @@ export default function AdsPage() {
         <div className="flex-1 flex flex-col h-full overflow-y-auto pt-[32px]">
           
           {/* KPI Row */}
-          <div className="flex gap-[28px] px-8 mb-12 flex-wrap sm:flex-nowrap">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6 px-4 sm:px-8 mb-8 sm:mb-12">
             {kpis.map((kpi, idx) => (
-              <div key={idx} className={`flex-1 min-w-[180px] h-[112px] rounded-[20px] p-[24px] flex flex-col justify-center ${kpi.bg}`}>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-[24px] font-semibold text-[#1C1C1C] leading-[36px]">
+              <div key={idx} className={`rounded-[16px] sm:rounded-[20px] p-4 sm:p-[24px] flex flex-col justify-center ${kpi.bg}`}>
+                <div className="flex items-center gap-2 mb-1 sm:mb-2">
+                  <span className="text-[20px] sm:text-[24px] font-semibold text-[#1C1C1C] leading-tight sm:leading-[36px]">
                     {loading ? '—' : kpi.count}
                   </span>
                   {kpi.sub && (
-                    <span className="text-[12px] text-black leading-[16px] max-w-[50px]">{kpi.sub}</span>
+                    <span className="text-[11px] sm:text-[12px] text-black leading-tight max-w-[50px]">{kpi.sub}</span>
                   )}
                 </div>
-                <p className="text-[14px] text-black leading-[20px]">{kpi.title}</p>
+                <p className="text-[12px] sm:text-[14px] text-black leading-tight sm:leading-[20px]">{kpi.title}</p>
               </div>
             ))}
           </div>
 
           {/* Actions Row */}
-          <div className="flex justify-between items-center px-8 mb-6">
+          <div className="flex justify-between items-center px-4 sm:px-8 mb-6">
             <h2 className="text-[18px] font-bold text-black">My Ads</h2>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2.5 sm:gap-4">
               <button 
                 onClick={() => setShowFilter(true)} 
-                className="h-[40px] px-4 flex items-center gap-2 border border-[rgba(162,161,168,0.2)] rounded-[8px] text-[14px] text-[#16151C] hover:bg-slate-50 transition-colors font-medium cursor-pointer"
+                className="h-[38px] sm:h-[40px] px-3 sm:px-4 flex items-center gap-1.5 sm:gap-2 border border-[rgba(162,161,168,0.2)] rounded-[8px] text-[13px] sm:text-[14px] text-[#16151C] hover:bg-slate-50 transition-colors font-medium cursor-pointer"
               >
                 <Settings2 size={16} strokeWidth={1.5} />
                 Filter
               </button>
               <Link 
                 href="/book"
-                className="h-[40px] px-6 bg-[#D4AF37] hover:bg-[#b58b24] text-black font-semibold rounded-[6px] text-[14px] transition-colors flex items-center justify-center text-decoration-none"
+                className="h-[38px] sm:h-[40px] px-4 sm:px-6 bg-[#D4AF37] hover:bg-[#b58b24] text-black font-semibold rounded-[6px] text-[13px] sm:text-[14px] transition-colors flex items-center justify-center text-decoration-none"
               >
                 Book Ad Slot
               </Link>
@@ -169,14 +169,14 @@ export default function AdsPage() {
           </div>
 
           {/* Ads Grid */}
-          <div className="px-8 pb-12 flex-1">
+          <div className="px-4 sm:px-8 pb-12 flex-1">
             {loading ? (
               <div className="flex items-center justify-center py-20 text-gray-400 gap-2">
                 <Loader2 size={24} className="animate-spin" />
                 <span>Loading your ads...</span>
               </div>
             ) : filteredAds.length === 0 ? (
-              <div className="border border-dashed border-gray-200 rounded-[16px] p-12 text-center flex flex-col items-center justify-center max-w-[600px] mx-auto my-8">
+              <div className="border border-dashed border-gray-200 rounded-[16px] p-8 sm:p-12 text-center flex flex-col items-center justify-center max-w-[600px] mx-auto my-8">
                 <div className="w-14 h-14 rounded-full bg-amber-50 flex items-center justify-center mb-3">
                   <Film size={26} className="text-[#D4AF37]" />
                 </div>
@@ -194,15 +194,15 @@ export default function AdsPage() {
                 </Link>
               </div>
             ) : (
-              <div className="flex flex-wrap gap-[28px]">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3.5 sm:gap-6">
                 {filteredAds.map((b) => {
                   const s = slotStatus(b);
                   const isVideo = b.file_type?.startsWith('video') || b.creative_url?.endsWith('.mp4');
                   const mediaUrl = fullUrl(b.creative_url);
 
                   return (
-                    <Link href={`/my-ads/${b.id}`} key={b.id} className="flex flex-col w-[154px] cursor-pointer hover:opacity-90 transition-opacity text-decoration-none">
-                      <div className="w-[154px] h-[154px] bg-slate-100 rounded-[8px] mb-3 overflow-hidden relative border border-gray-100 flex items-center justify-center">
+                    <Link href={`/my-ads/${b.id}`} key={b.id} className="flex flex-col w-full cursor-pointer hover:opacity-90 transition-opacity text-decoration-none">
+                      <div className="w-full aspect-square bg-slate-100 rounded-[8px] mb-2.5 sm:mb-3 overflow-hidden relative border border-gray-100 flex items-center justify-center">
                         {mediaUrl ? (
                           isVideo ? (
                             <video src={mediaUrl} className="w-full h-full object-cover" muted />
@@ -219,9 +219,9 @@ export default function AdsPage() {
                           {b.booking_number || 'AD'}
                         </span>
                       </div>
-                      <h3 className="text-[15px] text-[#000000] font-semibold leading-[20px] mb-1 truncate">{b.creative_title || 'Screen Ad'}</h3>
-                      <p className="text-[12px] text-black/50 leading-[16px] mb-1 truncate">{s.label}</p>
-                      <span className={`text-[12px] ${s.statusColor} font-semibold leading-[16px]`}>{s.status}</span>
+                      <h3 className="text-[14px] sm:text-[15px] text-[#000000] font-semibold leading-tight mb-1 truncate">{b.creative_title || 'Screen Ad'}</h3>
+                      <p className="text-[11px] sm:text-[12px] text-black/50 leading-tight mb-1 truncate">{s.label}</p>
+                      <span className={`text-[11px] sm:text-[12px] ${s.statusColor} font-semibold leading-tight`}>{s.status}</span>
                     </Link>
                   );
                 })}
@@ -303,17 +303,6 @@ export default function AdsPage() {
               See full calendar <ChevronRight size={14} />
             </Link>
           </div>
-
-          {/* Floating Chat Widget */}
-          <Link href="/chat" className="absolute bottom-[30px] right-[24px] z-50 text-decoration-none">
-            <div className="bg-white rounded-full py-[12px] px-[18px] shadow-[0_10px_30px_rgba(0,0,0,0.08)] flex items-center gap-2.5 relative cursor-pointer hover:-translate-y-1 transition-transform border border-slate-100">
-              <span className="text-[#1A1A1A] font-semibold text-[15px]">Chat with Arella</span>
-              <div className="w-[24px] h-[24px] rounded-full bg-gradient-to-tr from-[#CA94EB] to-[#25DDDC] flex items-center justify-center overflow-hidden">
-                <div className="w-full h-full bg-[url('/images/Asset_3.png')] bg-cover opacity-80" />
-              </div>
-            </div>
-          </Link>
-          
         </div>
       </div>
 

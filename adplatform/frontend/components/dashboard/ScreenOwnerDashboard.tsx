@@ -57,16 +57,32 @@ export default function ScreenOwnerDashboard() {
 
   return (
     <PageTransition>
-      <div style={{ fontFamily: F }}>
+      <div className="screen-owner-dashboard" style={{ fontFamily: F, padding: '24px 28px 40px' }}>
+        <style>{`
+          @media (max-width: 960px) {
+            .screen-owner-dashboard {
+              padding: 16px 14px 32px !important;
+            }
+            .screen-owner-grid {
+              grid-template-columns: 1fr !important;
+            }
+          }
+          @media (max-width: 640px) {
+            .screen-owner-kpis {
+              grid-template-columns: 1fr !important;
+              gap: 10px !important;
+            }
+          }
+        `}</style>
         <div style={{ marginBottom: 24 }}>
           <h1 style={{ fontSize: 22, fontWeight: 800, color: theme.color.text1, margin: '0 0 4px', letterSpacing: '-0.3px' }}>Welcome back, {user?.name?.split(' ')[0]}</h1>
           <p style={{ fontSize: 13, color: theme.color.text3, margin: 0 }}>{hasScreens ? 'Your screen performance and earnings overview.' : 'List your first screen to start earning from advertisers.'}</p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 16 }}>
+        <div className="screen-owner-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 16 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16, minWidth: 0 }}>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12 }}>
+            <div className="screen-owner-kpis" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12 }}>
               {[
                 { label: 'Booking Value', value: formatCurrency(bookings.reduce((s, b) => s + Number(b.total_cost || 0), 0), currency, rates), icon: DollarSign, color: theme.color.warning, bg: theme.color.warningLight, border: theme.color.warning },
                 { label: 'Active Screens', value: screens.filter(s => s.status === 'active').length, icon: Monitor, color: theme.color.info, bg: theme.color.infoLight, border: theme.color.infoBorder },
