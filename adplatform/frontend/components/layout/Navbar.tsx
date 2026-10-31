@@ -7,7 +7,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useThemeStore } from '@/store/themeStore';
 import { FaArrowRightFromBracket } from 'react-icons/fa6';
 import NotificationBell from '@/components/ui/NotificationBell';
-import { Search, Star, Sun, Moon, History, PanelLeft, Loader2, LayoutDashboard, User, LifeBuoy } from 'lucide-react';
+import { Search, Star, Sun, Moon, History, PanelLeft, Loader2, LayoutDashboard, User, LifeBuoy, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '@/lib/api';
 import { theme } from '@/lib/theme';
@@ -399,6 +399,18 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
                       </span>
                     </button>
                   </div>
+
+                  {/* Admin Panel Quick Link */}
+                  {user?.role === 'admin' && (
+                    <Link
+                      href="/admin"
+                      onClick={() => setDropOpen(false)}
+                      className="flex items-center gap-3 px-3 py-2.5 text-[14px] font-bold text-[#D4AF37] bg-amber-500/10 rounded-[10px] transition-all mb-1 border border-amber-500/20"
+                    >
+                      <Shield size={16} strokeWidth={2.2} />
+                      Admin Panel
+                    </Link>
+                  )}
 
                   {[
                     { label: 'My Dashboard', href: '/dashboard', icon: LayoutDashboard },

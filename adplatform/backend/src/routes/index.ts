@@ -8,7 +8,7 @@ import { otpGuessLimiter, otpRequestLimiter, authLimiter, chatLimiter } from '..
 import { register, login, getMe, updateProfile, uploadAvatar, changePassword, deleteAccount, becomeScreenOwner, verifyEmail, resendVerification, forgotPassword, resetPassword, acceptTerms, markTourSeen, setup2FA, verifySetup2FA, disable2FA, verify2FALogin, getSessions, revokeSession, revokeAllOtherSessions, updateNotificationPreferences, updateDisplayPreferences } from '../controllers/authController';
 import { getExchangeRates } from '../controllers/exchangeRateController';
 import { googleCallback, googleOneTap } from '../controllers/googleAuthController';
-import { submitLead, getLeads } from '../controllers/leadController';
+import { submitLead, getLeads, deleteLead } from '../controllers/leadController';
 import { subscribeNewsletter } from '../controllers/newsletterController';
 
 
@@ -26,7 +26,7 @@ import { getAds, createAd, updateAd, deleteAd, getAdminReviewQueue, reviewAd } f
 import { getScreens, createScreen, updateScreen, deleteScreen } from '../controllers/screenController';
 import { getBalance, getTransactions, getTotalRevenue } from '../controllers/financeController';
 import { getDashboardStats, getHourlyAnalytics, getAdvertiserProofOfPlay } from '../controllers/analyticsController';
-import { getPlatformStats, getAllUsers, getAllBookings, getAllCampaigns, getAllScreens, updateUserRole, getAllTransactions, getAllPodcastBookings } from '../controllers/adminController';
+import { getPlatformStats, getAllUsers, getAllBookings, getAllCampaigns, getAllScreens, updateUserRole, getAllTransactions, getAllPodcastBookings, adjustUserCredits, updatePodcastBookingStatus } from '../controllers/adminController';
 import { getPlans, getBaseRate } from '../controllers/pricingController';
 import { initializePayment, initializeCreditPayment, initializeCardLinking, verifyPayment, monnifyWebhook, devBypassPayment, payFromWallet, createReservedAccount, getSavedCards, deleteSavedCard, chargeCard, submitChargeOtp, chargeAuthorization, fundCampaignCharge, fundCampaignChargeAuthorization, topupCharge, topupChargeAuthorization, addCardVerification } from '../controllers/paymentController';
 import { getNotifications, markRead, markAllRead, deleteNotification, getUnreadCount } from '../controllers/notificationController';
@@ -262,8 +262,10 @@ router.delete('/notifications/:id', authenticate, deleteNotification);
 router.get('/admin/stats', authenticate, getPlatformStats);
 router.get('/admin/users', authenticate, getAllUsers);
 router.put('/admin/users/:id/role', authenticate, updateUserRole);
+router.put('/admin/users/:id/credits', authenticate, adjustUserCredits);
 router.get('/admin/bookings', authenticate, getAllBookings);
 router.get('/admin/podcasts', authenticate, getAllPodcastBookings);
+router.put('/admin/podcasts/:id/status', authenticate, updatePodcastBookingStatus);
 router.get('/admin/campaigns', authenticate, getAllCampaigns);
 router.get('/admin/screens', authenticate, getAllScreens);
 router.get('/admin/transactions', authenticate, getAllTransactions);
@@ -272,6 +274,7 @@ router.get('/admin/transactions', authenticate, getAllTransactions);
 // Ad Leads
 router.post('/leads', submitLead);
 router.get('/leads/admin', authenticate, getLeads);
+router.delete('/leads/admin/:id', authenticate, deleteLead);
 
 // Newsletter
 router.post('/newsletter', subscribeNewsletter);

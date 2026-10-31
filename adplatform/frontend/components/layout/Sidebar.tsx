@@ -21,9 +21,9 @@ import {
   CalendarCheck,
   Monitor,
   DollarSign,
-  X
-,
-  FileText
+  X,
+  FileText,
+  Mail
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useThemeStore } from '@/store/themeStore';
@@ -40,6 +40,7 @@ const adminNav = [
   { href: '/admin/bookings', label: 'All Bookings', icon: CalendarCheck },
   { href: '/admin/podcasts', label: 'All Podcasts', icon: Mic },
   { href: '/admin/screens', label: 'Screen Settings', icon: Monitor },
+  { href: '/admin/leads', label: 'Ad Leads', icon: Mail },
   { href: '/admin/finances', label: 'Revenue', icon: DollarSign },
   { href: '/admin/blog', label: 'Blog Manager', icon: FileText },
 ];
@@ -263,21 +264,49 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                 <SidebarExpandable href="/finances" onClick={onClose} icon={Wallet} label="Wallet" active={pathname === '/finances'} />
                 <SidebarExpandable href="/blog" onClick={onClose} icon={BookOpen} label="Blog" active={pathname === '/blog'} />
               </div>
+
+              {isAdmin && (
+                <>
+                  <SidebarSectionLabel>Admin Access</SidebarSectionLabel>
+                  <div className="space-y-0.5">
+                    <SidebarLink
+                      href="/admin"
+                      onClick={onClose}
+                      icon={Shield}
+                      label="Admin Panel"
+                      active={pathname.startsWith('/admin')}
+                    />
+                  </div>
+                </>
+              )}
             </>
           )}
         </div>
 
         <div className="border-t border-neutral-200 dark:border-white/10 px-3 py-3 space-y-1">
-          <Link
-            href={pathname.startsWith('/audience') ? '/dashboard' : '/audience'}
-            onClick={onClose}
-            className="flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-xs font-bold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors"
-          >
-            <span>{pathname.startsWith('/audience') ? 'Advertiser Dashboard' : 'Audience Space'}</span>
-            <span className="px-2 py-0.5 rounded-full bg-[#D4AF37] text-black font-extrabold text-[10px]">
-              {pathname.startsWith('/audience') ? 'Advertiser' : 'Audience'}
-            </span>
-          </Link>
+          {pathname.startsWith('/admin') ? (
+            <Link
+              href="/dashboard"
+              onClick={onClose}
+              className="flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-xs font-bold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors"
+            >
+              <span>Back to Dashboard</span>
+              <span className="px-2 py-0.5 rounded-full bg-[#D4AF37] text-black font-extrabold text-[10px]">
+                Exit Admin
+              </span>
+            </Link>
+          ) : (
+            <Link
+              href={pathname.startsWith('/audience') ? '/dashboard' : '/audience'}
+              onClick={onClose}
+              className="flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-xs font-bold text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors"
+            >
+              <span>{pathname.startsWith('/audience') ? 'Advertiser Dashboard' : 'Audience Space'}</span>
+              <span className="px-2 py-0.5 rounded-full bg-[#D4AF37] text-black font-extrabold text-[10px]">
+                {pathname.startsWith('/audience') ? 'Advertiser' : 'Audience'}
+              </span>
+            </Link>
+          )}
           <button
             type="button"
             onClick={() => {

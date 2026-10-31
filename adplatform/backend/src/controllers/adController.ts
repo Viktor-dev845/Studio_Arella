@@ -270,15 +270,54 @@ export const getAdminReviewQueue: RequestHandler = async (req, res) => {
   const authReq = req as AuthRequest;
   if (authReq.user?.role !== 'admin') { res.status(403).json({ message: 'Admin only' }); return; }
   try {
+    const statusParam = (req.query.status as string)?.toLowerCase();
+    const searchParam = (req.query.search as string)?.trim();
+    const conditions: string[] = [];
+    const params: any[] = [];
+
+    if (statusParam && ['pending', 'approved', 'rejected'].includes(statusParam)) {
+      params.push(statusParam);
+      conditions.push(`a.status = $${params.length}`);
+    }
+
+    if (searchParam) {
+      params.push(`%${searchParam}%`);
+      const pIdx = params.length;
+      conditions.push(`(a.title ILIKE $${pIdx} OR u.name ILIKE $${pIdx} OR u.email ILIKE $${pIdx})`);
+    }
+
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
     const result = await pool.query(
       `SELECT a.*, u.name as advertiser_name, u.email as advertiser_email
        FROM ads a
        LEFT JOIN users u ON a.user_id = u.id
-       WHERE a.status = 'pending'
-       ORDER BY a.created_at ASC`
+       ${whereClause}
+       ORDER BY 
+         CASE WHEN a.status = 'pending' THEN 0 WHEN a.status = 'rejected' THEN 1 ELSE 2 END,
+         a.created_at DESC`,
+      params
     );
-    res.json({ queue: result.rows, count: result.rows.length });
+
+    const countsRes = await pool.query(
+      `SELECT 
+         COUNT(*) as all_count,
+         COUNT(*) FILTER (WHERE status = 'pending') as pending_count,
+         COUNT(*) FILTER (WHERE status = 'approved') as approved_count,
+         COUNT(*) FILTER (WHERE status = 'rejected') as rejected_count
+       FROM ads`
+    );
+
+    const counts = {
+      all: parseInt(countsRes.rows[0]?.all_count || '0'),
+      pending: parseInt(countsRes.rows[0]?.pending_count || '0'),
+      approved: parseInt(countsRes.rows[0]?.approved_count || '0'),
+      rejected: parseInt(countsRes.rows[0]?.rejected_count || '0'),
+    };
+
+    res.json({ queue: result.rows, count: result.rows.length, counts });
   } catch (err) {
+    console.error('getAdminReviewQueue error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -302,7 +341,7 @@ export const reviewAd: RequestHandler = async (req, res) => {
        WHERE id = $4
        RETURNING *, (SELECT email FROM users WHERE id = ads.user_id) as advertiser_email,
                     (SELECT name FROM users WHERE id = ads.user_id) as advertiser_name`,
-      [decision, rejection_reason || null, authReq.user?.id, req.params.id]
+      [decision, decision === 'approved' ? null : (rejection_reason || null), authReq.user?.id, req.params.id]
     );
     if (!result.rows[0]) { res.status(404).json({ message: 'Creative not found' }); return; }
 

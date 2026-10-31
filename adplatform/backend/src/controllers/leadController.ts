@@ -64,3 +64,23 @@ export const getLeads: RequestHandler = async (req, res) => {
     res.status(500).json({ message: 'Server error while fetching leads' });
   }
 };
+
+export const deleteLead: RequestHandler = async (req, res) => {
+  try {
+    const authReq = req as any;
+    if (authReq.user?.role !== 'admin') {
+      res.status(403).json({ message: 'Admin access required' });
+      return;
+    }
+    const result = await pool.query('DELETE FROM ad_leads WHERE id = $1 RETURNING id', [req.params.id]);
+    if (!result.rows[0]) {
+      res.status(404).json({ message: 'Lead not found' });
+      return;
+    }
+    res.json({ message: 'Lead deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting lead:', err);
+    res.status(500).json({ message: 'Server error while deleting lead' });
+  }
+};
+

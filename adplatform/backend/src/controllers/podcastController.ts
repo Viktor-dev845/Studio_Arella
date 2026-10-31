@@ -329,17 +329,21 @@ export const extendPodcastBooking = async (req: Request, res: Response) => {
 
 // ── Cancel a podcast booking ────────────────────────────────────────────────
 export const cancelPodcastBooking = async (req: Request, res: Response) => {
-  const userId = (req as any).user.id;
+  const user = (req as any).user;
+  const isAdmin = user?.role === 'admin';
+  const userId = user?.id;
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
 
     // Locked so a second concurrent cancel on the same booking blocks here
     // instead of racing past the 'cancelled' status check and double-refunding.
-    const bookingRes = await client.query(
-      `SELECT * FROM podcast_bookings WHERE id = $1 AND user_id = $2 FOR UPDATE`,
-      [req.params.id, userId]
-    );
+    const query = isAdmin
+      ? `SELECT * FROM podcast_bookings WHERE id = $1 FOR UPDATE`
+      : `SELECT * FROM podcast_bookings WHERE id = $1 AND user_id = $2 FOR UPDATE`;
+    const params = isAdmin ? [req.params.id] : [req.params.id, userId];
+
+    const bookingRes = await client.query(query, params);
     if (!bookingRes.rows[0]) {
       await client.query('ROLLBACK');
       return res.status(404).json({ message: 'Booking not found' });
@@ -350,38 +354,37 @@ export const cancelPodcastBooking = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'This booking cannot be cancelled' });
     }
 
-    // Same 48-hour refund-eligibility window used for ad bookings.
+    // Same 48-hour refund-eligibility window used for ad bookings, or forced refund by admin.
     const hoursUntilSession = (new Date(booking.start_time).getTime() - Date.now()) / (1000 * 60 * 60);
-    const eligibleForRefund = hoursUntilSession >= 48;
+    const eligibleForRefund = hoursUntilSession >= 48 || (isAdmin && req.body.force_refund === true);
     const refundAmount = eligibleForRefund ? Number(booking.total_cost) : 0;
 
     await client.query(
       `UPDATE podcast_bookings
        SET status = 'cancelled', cancelled_at = NOW(), cancellation_reason = $1, refund_amount = $2
        WHERE id = $3`,
-      [req.body.reason || 'Cancelled by user', refundAmount, booking.id]
+      [req.body.reason || (isAdmin ? 'Cancelled by admin' : 'Cancelled by user'), refundAmount, booking.id]
     );
 
-    // Refunds are always issued as wallet credit, regardless of the original
-    // payment method — there's no gateway refund integration.
+    // Refunds are always issued as wallet credit to the booking owner.
     if (refundAmount > 0) {
-      await client.query('UPDATE users SET credits = credits + $1 WHERE id = $2', [refundAmount, userId]);
+      await client.query('UPDATE users SET credits = credits + $1 WHERE id = $2', [refundAmount, booking.user_id]);
       await client.query(
         `INSERT INTO transactions (user_id, type, source, amount, description, reference)
          VALUES ($1, 'refund', 'podcast_booking_cancellation', $2, $3, $4)`,
-        [userId, refundAmount, `Refund for cancelled podcast session ${booking.booking_number}`, booking.id]
+        [booking.user_id, refundAmount, `Refund for cancelled podcast session ${booking.booking_number}`, booking.id]
       );
     }
 
     await client.query('COMMIT');
 
     createNotification({
-      user_id: userId,
+      user_id: booking.user_id,
       type: 'booking_cancelled',
       title: 'Studio session cancelled',
       body: eligibleForRefund
         ? `Your podcast session ${booking.booking_number} was cancelled. ₦${refundAmount.toLocaleString()} has been credited to your wallet.`
-        : `Your podcast session ${booking.booking_number} was cancelled. No refund applicable (within 48-hour window).`,
+        : `Your podcast session ${booking.booking_number} was cancelled. No refund applicable.`,
       link: '/bookings',
     });
 

@@ -145,17 +145,28 @@ export const fundCampaignWallet: RequestHandler = async (req, res) => {
 export const updateCampaign : RequestHandler = async (req, res) => {
     const authReq = req as AuthRequest;
   try {
+    const isAdmin = authReq.user?.role === 'admin';
     const { name, status, budget, start_date, end_date } = req.body;
-    const result = await pool.query(
-      `UPDATE campaigns SET
-        name = COALESCE($1, name),
-        status = COALESCE($2, status),
-        budget = COALESCE($3, budget),
-        start_date = COALESCE($4, start_date),
-        end_date = COALESCE($5, end_date)
-       WHERE id = $6 AND user_id = $7 RETURNING *`,
-      [name, status, budget, start_date, end_date, req.params.id, authReq.user?.id]
-    );
+    const query = isAdmin
+      ? `UPDATE campaigns SET
+          name = COALESCE($1, name),
+          status = COALESCE($2, status),
+          budget = COALESCE($3, budget),
+          start_date = COALESCE($4, start_date),
+          end_date = COALESCE($5, end_date)
+         WHERE id = $6 RETURNING *`
+      : `UPDATE campaigns SET
+          name = COALESCE($1, name),
+          status = COALESCE($2, status),
+          budget = COALESCE($3, budget),
+          start_date = COALESCE($4, start_date),
+          end_date = COALESCE($5, end_date)
+         WHERE id = $6 AND user_id = $7 RETURNING *`;
+    const params = isAdmin
+      ? [name, status, budget, start_date, end_date, req.params.id]
+      : [name, status, budget, start_date, end_date, req.params.id, authReq.user?.id];
+
+    const result = await pool.query(query, params);
     if (!result.rows[0]) {
       res.status(404).json({ message: 'Campaign not found' });
       return;
@@ -169,10 +180,13 @@ export const updateCampaign : RequestHandler = async (req, res) => {
 export const deleteCampaign : RequestHandler = async (req, res) => {
     const authReq = req as AuthRequest;
   try {
-    const result = await pool.query(
-      'DELETE FROM campaigns WHERE id = $1 AND user_id = $2 RETURNING id',
-      [req.params.id, authReq.user?.id]
-    );
+    const isAdmin = authReq.user?.role === 'admin';
+    const query = isAdmin
+      ? 'DELETE FROM campaigns WHERE id = $1 RETURNING id'
+      : 'DELETE FROM campaigns WHERE id = $1 AND user_id = $2 RETURNING id';
+    const params = isAdmin ? [req.params.id] : [req.params.id, authReq.user?.id];
+
+    const result = await pool.query(query, params);
     if (!result.rows[0]) {
       res.status(404).json({ message: 'Campaign not found' });
       return;

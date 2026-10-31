@@ -8,7 +8,7 @@ import StatusBadge from '@/components/ui/StatusBadge';
 import { Table, TableHead, TableHeaderCell, TableBody, TableRow, TableCell } from '@/components/ui/Table';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
-import { FaDisplay, FaMapPin, FaPen, FaTrash } from 'react-icons/fa6';
+import { FaDisplay, FaMapPin, FaPen, FaTrash, FaPlus, FaXmark } from 'react-icons/fa6';
 import { Search, Monitor } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { theme } from '@/lib/theme';
@@ -20,11 +20,21 @@ export default function AdminScreensPage() {
   const [screens, setScreens] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+
+  // Edit state
   const [editing, setEditing] = useState<any | null>(null);
   const [form, setForm] = useState({ name: '', location: '', type: 'digital', size: '', price_per_sec: '', impressions_per_day: '', status: 'active' });
   const [saving, setSaving] = useState(false);
+
+  // Create state
+  const [creating, setCreating] = useState(false);
+  const [createForm, setCreateForm] = useState({ name: '', location: '', type: 'digital', size: '', price_per_sec: '', impressions_per_day: '', status: 'active' });
+  const [creatingLoading, setCreatingLoading] = useState(false);
+
+  // Delete state
   const [deleteTarget, setDeleteTarget] = useState<any | null>(null);
   const [deleting, setDeleting] = useState(false);
+
   const { toast } = useToast();
 
   const fetchScreens = () => {
@@ -55,13 +65,37 @@ export default function AdminScreensPage() {
         price_per_sec: parseFloat(form.price_per_sec) || 0,
         impressions_per_day: parseInt(form.impressions_per_day) || 0,
       });
-      toast('Screen updated', 'success');
+      toast('Screen updated successfully', 'success');
       setEditing(null);
       fetchScreens();
     } catch (err: any) {
       toast(err?.response?.data?.message || 'Failed to update screen', 'error');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleCreateScreen = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!createForm.name || !createForm.location) {
+      toast('Screen name and location are required', 'error');
+      return;
+    }
+    setCreatingLoading(true);
+    try {
+      await api.post('/screens', {
+        ...createForm,
+        price_per_sec: parseFloat(createForm.price_per_sec) || 0,
+        impressions_per_day: parseInt(createForm.impressions_per_day) || 0,
+      });
+      toast('Screen registered successfully', 'success');
+      setCreating(false);
+      setCreateForm({ name: '', location: '', type: 'digital', size: '', price_per_sec: '', impressions_per_day: '', status: 'active' });
+      fetchScreens();
+    } catch (err: any) {
+      toast(err?.response?.data?.message || 'Failed to create screen', 'error');
+    } finally {
+      setCreatingLoading(false);
     }
   };
 
@@ -91,17 +125,58 @@ export default function AdminScreensPage() {
   return (
     <PageTransition>
       <div style={{ fontFamily: F }}>
-        <div style={{ marginBottom: 24 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-            <Monitor size={18} color={theme.color.success} />
-            <h1 style={{ fontFamily: theme.font.display, fontSize: 24, fontWeight: 600, color: theme.color.text1, margin: 0 }}>Studio Arella Screen</h1>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+              <Monitor size={18} color={theme.color.success} />
+              <h1 style={{ fontFamily: theme.font.display, fontSize: 24, fontWeight: 700, color: theme.color.text1, margin: 0 }}>Screen Settings & Inventory</h1>
+            </div>
+            <p style={{ fontSize: 13, color: theme.color.text3, margin: 0 }}>{screens.length} active screens across the Studio Arella display network</p>
           </div>
-          <p style={{ fontSize: 13, color: theme.color.text3, margin: 0 }}>{screens.length} screens managed by Bems Group</p>
+
+          <button
+            onClick={() => setCreating(true)}
+            style={{
+              padding: '10px 18px',
+              background: theme.color.gold,
+              color: theme.color.charcoal900,
+              border: 'none',
+              borderRadius: 8,
+              fontWeight: 700,
+              fontSize: 13,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              boxShadow: theme.shadow.gold
+            }}
+          >
+            <FaPlus size={12} /> Add New Screen
+          </button>
         </div>
 
         <div style={{ position: 'relative', marginBottom: 16, maxWidth: 360 }}>
           <Search size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: theme.color.text3 }} />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search screens, locations, owners..." style={{ width: '100%', paddingLeft: 36, paddingRight: 14, paddingTop: 10, paddingBottom: 10, background: theme.color.surface, border: `1px solid ${theme.color.border}`, borderRadius: 10, color: theme.color.text1, fontSize: 13, outline: 'none', fontFamily: F, boxSizing: 'border-box' }} />
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search screens, locations, owners..."
+            style={{
+              width: '100%',
+              paddingLeft: 36,
+              paddingRight: 14,
+              paddingTop: 10,
+              paddingBottom: 10,
+              background: theme.color.surface,
+              border: `1.5px solid ${theme.color.border}`,
+              borderRadius: 10,
+              color: theme.color.text1,
+              fontSize: 13,
+              outline: 'none',
+              fontFamily: F,
+              boxSizing: 'border-box'
+            }}
+          />
         </div>
 
         <div style={card}>
@@ -141,7 +216,7 @@ export default function AdminScreensPage() {
                   </TableCell>
                   <TableCell>
                     <div>
-                      <div style={{ fontWeight: 600 }}>{s.owner_name || '—'}</div>
+                      <div style={{ fontWeight: 600 }}>{s.owner_name || 'Studio Arella'}</div>
                       {s.owner_email && <div style={{ fontSize: 11, color: theme.color.text3 }}>{s.owner_email}</div>}
                     </div>
                   </TableCell>
@@ -168,6 +243,66 @@ export default function AdminScreensPage() {
         </div>
       </div>
 
+      {/* Add new screen modal */}
+      <AnimatePresence>
+        {creating && (
+          <>
+            <motion.div key="create-bd" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setCreating(false)}
+              style={{ position: 'fixed', inset: 0, background: 'rgba(26,26,26,0.4)', zIndex: 200, backdropFilter: 'blur(3px)' }} />
+            <div style={{ position: 'fixed', inset: 0, zIndex: 201, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+              <motion.div key="create-modal"
+                initial={{ opacity: 0, scale: 0.93, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 12 }} transition={{ duration: 0.22, ease: theme.motion.easing }}
+                style={{ width: '100%', maxWidth: 500 }}>
+                <div style={{ background: theme.color.surface, borderRadius: theme.radius.xl, padding: 28, boxShadow: theme.shadow.lg, fontFamily: F, border: `1px solid ${theme.color.border}` }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                    <h2 style={{ fontFamily: theme.font.display, fontSize: 20, fontWeight: 700, color: theme.color.text1, margin: 0 }}>Add New Screen</h2>
+                    <button onClick={() => setCreating(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme.color.text3 }}>
+                      <FaXmark size={18} />
+                    </button>
+                  </div>
+                  <form onSubmit={handleCreateScreen} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                    <Input label="Screen name *" type="text" placeholder="e.g. Lekki Phase 1 Mega LED" value={createForm.name} onChange={e => setCreateForm({ ...createForm, name: e.target.value })} autoFocus required />
+                    <Input label="Location *" type="text" placeholder="e.g. Admiralty Way, Lekki, Lagos" value={createForm.location} onChange={e => setCreateForm({ ...createForm, location: e.target.value })} required />
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                      <div>
+                        <label style={{ fontSize: 11, fontWeight: 700, color: theme.color.text2, display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Type</label>
+                        <select value={createForm.type} onChange={e => setCreateForm({ ...createForm, type: e.target.value })}
+                          style={{ width: '100%', padding: '11px 14px', background: theme.color.surface, border: `1.5px solid ${theme.color.border}`, borderRadius: theme.radius.sm, fontSize: 13, outline: 'none', fontFamily: F, color: theme.color.text1, boxSizing: 'border-box', cursor: 'pointer' }}>
+                          <option value="digital">Digital LED</option>
+                          <option value="billboard">Billboard</option>
+                          <option value="indoor">Indoor</option>
+                          <option value="outdoor">Outdoor</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label style={{ fontSize: 11, fontWeight: 700, color: theme.color.text2, display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Status</label>
+                        <select value={createForm.status} onChange={e => setCreateForm({ ...createForm, status: e.target.value })}
+                          style={{ width: '100%', padding: '11px 14px', background: theme.color.surface, border: `1.5px solid ${theme.color.border}`, borderRadius: theme.radius.sm, fontSize: 13, outline: 'none', fontFamily: F, color: theme.color.text1, boxSizing: 'border-box', cursor: 'pointer' }}>
+                          <option value="active">Active</option>
+                          <option value="inactive">Inactive</option>
+                          <option value="maintenance">Maintenance</option>
+                        </select>
+                      </div>
+                    </div>
+                    <Input label="Dimensions / Resolution" type="text" placeholder="e.g. 1920x1080 (10m x 4m)" value={createForm.size} onChange={e => setCreateForm({ ...createForm, size: e.target.value })} />
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                      <Input label="Price per second (₦)" type="number" placeholder="e.g. 25" value={createForm.price_per_sec} onChange={e => setCreateForm({ ...createForm, price_per_sec: e.target.value })} />
+                      <Input label="Est. Impressions / day" type="number" placeholder="e.g. 150000" value={createForm.impressions_per_day} onChange={e => setCreateForm({ ...createForm, impressions_per_day: e.target.value })} />
+                    </div>
+                    <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
+                      <Button onClick={() => setCreating(false)} variant="secondary" style={{ flex: 1 }}>Cancel</Button>
+                      <Button type="submit" loading={creatingLoading} loadingText="Creating..." variant="primary" style={{ flex: 1 }}>Register Screen</Button>
+                    </div>
+                  </form>
+                </div>
+              </motion.div>
+            </div>
+          </>
+        )}
+      </AnimatePresence>
+
       {/* Edit screen modal */}
       <AnimatePresence>
         {editing && (
@@ -175,14 +310,14 @@ export default function AdminScreensPage() {
             <motion.div key="bd" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setEditing(null)}
               style={{ position: 'fixed', inset: 0, background: 'rgba(26,26,26,0.4)', zIndex: 200, backdropFilter: 'blur(3px)' }} />
-            <div style={{ position: 'fixed', inset: 0, zIndex: 201, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', padding: 16 }}>
+            <div style={{ position: 'fixed', inset: 0, zIndex: 201, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
               <motion.div key="modal"
                 initial={{ opacity: 0, scale: 0.93, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 12 }} transition={{ duration: 0.22, ease: theme.motion.easing }}
-                style={{ width: '100%', maxWidth: 500, pointerEvents: 'auto' }}>
-                <div style={{ background: theme.color.surface, borderRadius: theme.radius.xl, padding: 28, boxShadow: theme.shadow.lg, fontFamily: F }}>
-                  <h2 style={{ fontFamily: theme.font.display, fontSize: 20, fontWeight: 600, color: theme.color.text1, margin: '0 0 4px', letterSpacing: '-0.2px' }}>Edit Screen</h2>
-                  <p style={{ fontSize: 12, color: theme.color.text3, margin: '0 0 20px' }}>Owned by {editing.owner_name || 'unknown'}{editing.owner_email ? ` (${editing.owner_email})` : ''}</p>
+                style={{ width: '100%', maxWidth: 500 }}>
+                <div style={{ background: theme.color.surface, borderRadius: theme.radius.xl, padding: 28, boxShadow: theme.shadow.lg, fontFamily: F, border: `1px solid ${theme.color.border}` }}>
+                  <h2 style={{ fontFamily: theme.font.display, fontSize: 20, fontWeight: 700, color: theme.color.text1, margin: '0 0 4px', letterSpacing: '-0.2px' }}>Edit Screen</h2>
+                  <p style={{ fontSize: 12, color: theme.color.text3, margin: '0 0 20px' }}>Owned by {editing.owner_name || 'Studio Arella'}{editing.owner_email ? ` (${editing.owner_email})` : ''}</p>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                     <Input label="Screen name *" type="text" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} autoFocus />
                     <Input label="Location *" type="text" value={form.location} onChange={e => setForm({ ...form, location: e.target.value })} />
@@ -231,12 +366,12 @@ export default function AdminScreensPage() {
             <motion.div key="del-bd" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setDeleteTarget(null)}
               style={{ position: 'fixed', inset: 0, background: 'rgba(26,26,26,0.4)', zIndex: 200, backdropFilter: 'blur(3px)' }} />
-            <div style={{ position: 'fixed', inset: 0, zIndex: 201, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', padding: 16 }}>
+            <div style={{ position: 'fixed', inset: 0, zIndex: 201, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
               <motion.div key="del-modal"
                 initial={{ opacity: 0, scale: 0.93, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 12 }} transition={{ duration: 0.22, ease: theme.motion.easing }}
-                style={{ width: '100%', maxWidth: 380, pointerEvents: 'auto' }}>
-                <div style={{ background: theme.color.surface, borderRadius: theme.radius.xl, padding: 28, boxShadow: theme.shadow.lg, fontFamily: F, textAlign: 'center' }}>
+                style={{ width: '100%', maxWidth: 380 }}>
+                <div style={{ background: theme.color.surface, borderRadius: theme.radius.xl, padding: 28, boxShadow: theme.shadow.lg, fontFamily: F, textAlign: 'center', border: `1px solid ${theme.color.border}` }}>
                   <div style={{ width: 48, height: 48, borderRadius: 14, background: theme.color.errorLight, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
                     <FaTrash size={18} color={theme.color.error} />
                   </div>
