@@ -146,84 +146,48 @@ export default function PodcastDetailPage() {
               }}
             >
               {/* Stat 1: Total Active Listeners */}
-              <div
-                style={{
-                  background: '#F8FAF2',
-                  borderRadius: 14,
-                  padding: '16px 20px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 14,
-                }}
-              >
-                <p style={{ fontSize: 12, fontWeight: 700, color: theme.color.text1, margin: 0 }}>
+              <div className="bg-neutral-50 dark:bg-[#161618] border border-neutral-200/80 dark:border-white/10 rounded-2xl p-4 sm:p-5 flex flex-col gap-3.5 shadow-xs">
+                <p className="text-xs font-bold text-neutral-600 dark:text-neutral-400 m-0">
                   Total Active Listeners
                 </p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ fontSize: 22, fontWeight: 700, color: theme.color.text1, letterSpacing: '-0.02em' }}>
+                  <span className="text-[24px] font-bold text-neutral-900 dark:text-white tracking-tight">
                     0
                   </span>
                 </div>
               </div>
 
               {/* Stat 2: Total Plays */}
-              <div
-                style={{
-                  background: '#FDF7EC',
-                  borderRadius: 14,
-                  padding: '16px 20px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 14,
-                }}
-              >
-                <p style={{ fontSize: 12, fontWeight: 700, color: theme.color.text1, margin: 0 }}>
+              <div className="bg-neutral-50 dark:bg-[#161618] border border-neutral-200/80 dark:border-white/10 rounded-2xl p-4 sm:p-5 flex flex-col gap-3.5 shadow-xs">
+                <p className="text-xs font-bold text-neutral-600 dark:text-neutral-400 m-0">
                   Total Plays
                 </p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ fontSize: 22, fontWeight: 700, color: theme.color.text1, letterSpacing: '-0.02em' }}>
+                  <span className="text-[24px] font-bold text-neutral-900 dark:text-white tracking-tight">
                     0
                   </span>
                 </div>
               </div>
 
               {/* Stat 3: Total Episodes */}
-              <div
-                style={{
-                  background: '#F7FAF2',
-                  borderRadius: 14,
-                  padding: '16px 20px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 14,
-                }}
-              >
-                <p style={{ fontSize: 12, fontWeight: 700, color: theme.color.text1, margin: 0 }}>
+              <div className="bg-neutral-50 dark:bg-[#161618] border border-neutral-200/80 dark:border-white/10 rounded-2xl p-4 sm:p-5 flex flex-col gap-3.5 shadow-xs">
+                <p className="text-xs font-bold text-neutral-600 dark:text-neutral-400 m-0">
                   Total Episodes
                 </p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ fontSize: 22, fontWeight: 700, color: theme.color.text1, letterSpacing: '-0.02em' }}>
+                  <span className="text-[24px] font-bold text-neutral-900 dark:text-white tracking-tight">
                     {episodes.length}
                   </span>
                 </div>
               </div>
 
               {/* Stat 4: Total Likes */}
-              <div
-                style={{
-                  background: '#FEF9F0',
-                  borderRadius: 14,
-                  padding: '16px 20px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 14,
-                }}
-              >
-                <p style={{ fontSize: 12, fontWeight: 700, color: theme.color.text1, margin: 0 }}>
+              <div className="bg-neutral-50 dark:bg-[#161618] border border-neutral-200/80 dark:border-white/10 rounded-2xl p-4 sm:p-5 flex flex-col gap-3.5 shadow-xs">
+                <p className="text-xs font-bold text-neutral-600 dark:text-neutral-400 m-0">
                   Total Likes
                 </p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ fontSize: 22, fontWeight: 700, color: theme.color.text1, letterSpacing: '-0.02em' }}>
+                  <span className="text-[24px] font-bold text-neutral-900 dark:text-white tracking-tight">
                     0
                   </span>
                 </div>
@@ -354,53 +318,30 @@ export default function PodcastDetailPage() {
 
                 <Link
                   href={`/podcast/${params.id}/episode/new`}
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 500,
-                    color: '#EAB308',
-                    background: theme.color.surface,
-                    border: '1px solid #EAB308',
-                    borderRadius: 6,
-                    padding: '8px 14px',
-                    textDecoration: 'none',
-                    display: 'inline-block',
-                  }}
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-500 hover:text-amber-400 bg-amber-500/10 border border-amber-500/30 px-3.5 py-2 rounded-lg transition-colors"
+                  style={{ textDecoration: 'none' }}
                 >
-                  Add New Episode
+                  + Add New Episode
                 </Link>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {loadingShow ? (
                   <p style={{ fontSize: 12, color: theme.color.text4 }}>Loading episodes…</p>
                 ) : episodes.length === 0 ? (
                   <div
-                    style={{
-                      padding: '32px 20px',
-                      background: '#FAFAFA',
-                      borderRadius: 12,
-                      border: '1px dashed #E2E8F0',
-                      textAlign: 'center',
-                    }}
+                    className="p-8 text-center bg-neutral-50 dark:bg-[#161618] rounded-xl border border-dashed border-neutral-300 dark:border-white/10"
                   >
-                    <p style={{ fontSize: 13, fontWeight: 600, color: theme.color.text1, margin: '0 0 6px' }}>
+                    <p className="text-[13px] font-semibold text-neutral-900 dark:text-white m-0 mb-1.5">
                       No episodes published for this show yet.
                     </p>
-                    <p style={{ fontSize: 12, color: theme.color.text4, margin: '0 0 14px' }}>
+                    <p className="text-[12px] text-neutral-500 dark:text-neutral-400 m-0 mb-3.5">
                       Upload your first MP3 or WAV audio track to start streaming to your audience.
                     </p>
                     <Link
                       href={`/podcast/${params.id}/episode/new`}
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 700,
-                        color: '#EA580C',
-                        textDecoration: 'none',
-                        background: '#FFF7ED',
-                        padding: '8px 16px',
-                        borderRadius: 8,
-                        display: 'inline-block',
-                      }}
+                      className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-[#EA580C] hover:bg-[#c2410c] px-3.5 py-2 rounded-lg transition-colors shadow-xs"
+                      style={{ textDecoration: 'none' }}
                     >
                       + Upload Episode 1
                     </Link>
@@ -409,7 +350,7 @@ export default function PodcastDetailPage() {
                   const duration = formatEpisodeDuration(ep.duration_seconds);
                   const uploaded = new Date(ep.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
                   return (
-                    <div key={ep.id} style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                    <div key={ep.id} className="flex items-center gap-4 p-2.5 rounded-xl hover:bg-neutral-50 dark:hover:bg-white/[0.04] transition-colors">
                       <div
                         style={{
                           width: 56,
@@ -434,10 +375,10 @@ export default function PodcastDetailPage() {
                         )}
                       </div>
                       <div>
-                        <p style={{ fontSize: 15, fontWeight: 700, color: theme.color.text1, margin: '0 0 4px' }}>
+                        <p className="text-[15px] font-bold text-neutral-900 dark:text-white m-0 mb-1">
                           {ep.title}
                         </p>
-                        <p style={{ fontSize: 13, color: theme.color.text4, fontWeight: 500, margin: 0 }}>
+                        <p className="text-[13px] text-neutral-500 dark:text-neutral-400 font-medium m-0">
                           {ep.status === 'scheduled' ? 'Scheduled' : 'Uploaded'} {uploaded}{duration ? ` • ${duration}` : ''}
                         </p>
                       </div>
