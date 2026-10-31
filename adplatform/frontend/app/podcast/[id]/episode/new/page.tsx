@@ -54,10 +54,20 @@ export default function AddNewEpisodePage() {
   useEffect(() => {
     if (!params.id) return;
     api.get(`/shows/${params.id}`)
-      .then(() => setShowExists(true))
+      .then((res) => {
+        setShowExists(true);
+        const eps = res.data?.episodes || [];
+        const maxEpNum = eps.reduce((max: number, ep: any) => {
+          const num = Number(ep.episode_number);
+          return !isNaN(num) && num > max ? num : max;
+        }, eps.length);
+        const nextNum = maxEpNum + 1;
+        setSelectedEpisode(String(nextNum));
+      })
       .catch(() => {
         // Fallback for development if backend is down or no data
         setShowExists(true);
+        setSelectedEpisode('4');
       });
   }, [params.id]);
 
@@ -259,18 +269,18 @@ export default function AddNewEpisodePage() {
                       top: '100%',
                       left: 0,
                       marginTop: 4,
-                      width: 140,
+                      width: 160,
                       background: theme.color.surface,
                       border: `1px solid ${theme.color.border}`,
                       borderRadius: 8,
-                      boxShadow: '0 10px 25px rgba(0,0,0,0.08)',
-                      zIndex: 20,
+                      boxShadow: '0 10px 25px rgba(0,0,0,0.12)',
+                      zIndex: 30,
                       overflow: 'hidden',
                       display: 'flex',
                     }}
                   >
-                    <div style={{ flex: 1, padding: '4px 0' }}>
-                      {['1', '2', '3'].map((ep) => (
+                    <div style={{ flex: 1, padding: '4px 0', maxHeight: 220, overflowY: 'auto' }}>
+                      {Array.from({ length: 50 }, (_, i) => String(i + 1)).map((ep) => (
                         <div
                           key={ep}
                           onClick={() => {
@@ -280,30 +290,25 @@ export default function AddNewEpisodePage() {
                           style={{
                             padding: '8px 16px',
                             fontSize: 13,
-                            fontWeight: 600,
-                            color: theme.color.text1,
+                            fontWeight: selectedEpisode === ep ? 700 : 500,
+                            color: selectedEpisode === ep ? '#DCA525' : theme.color.text1,
+                            background: selectedEpisode === ep ? 'rgba(220, 165, 37, 0.08)' : 'transparent',
                             cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
                           }}
-                          onMouseOver={(e) => (e.currentTarget.style.background = theme.color.bg)}
-                          onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
+                          onMouseOver={(e) => {
+                            if (selectedEpisode !== ep) e.currentTarget.style.background = theme.color.bg;
+                          }}
+                          onMouseOut={(e) => {
+                            if (selectedEpisode !== ep) e.currentTarget.style.background = 'transparent';
+                          }}
                         >
-                          {ep}
+                          <span>Episode {ep}</span>
+                          {selectedEpisode === ep && <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#DCA525' }} />}
                         </div>
                       ))}
-                    </div>
-                    {/* Gold indicator bar */}
-                    <div style={{ width: 4, background: theme.color.bg, position: 'relative' }}>
-                      <div
-                        style={{
-                          width: 3,
-                          height: 16,
-                          background: '#CCA336',
-                          borderRadius: 2,
-                          position: 'absolute',
-                          top: 8,
-                          right: 1,
-                        }}
-                      />
                     </div>
                   </div>
                 )}
