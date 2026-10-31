@@ -50,6 +50,13 @@ app.get('/health', (_req, res) => res.json({
   timestamp: new Date().toISOString(),
 }));
 
+// ── Error handling middleware ─────────────────────────────────────────────────
+app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error('Server error:', err);
+  const status = err.status || (err.message?.includes('File type not allowed') ? 400 : 500);
+  res.status(status).json({ message: err.message || 'Server error occurred' });
+});
+
 import pool from './db/pool';
 
 app.listen(PORT, async () => {

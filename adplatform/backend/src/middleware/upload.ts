@@ -8,16 +8,24 @@ if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 const storage = multer.memoryStorage();
 
 const fileFilter = (_req: any, file: any, cb: any) => {
-  const allowed = [
-    'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp',
-    'video/mp4', 'video/quicktime',
-    'audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/x-wav', 'audio/wave',
-    'audio/m4a', 'audio/x-m4a', 'audio/aac', 'audio/ogg', 'audio/webm'
+  const allowedMimes = [
+    'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
+    'video/mp4', 'video/quicktime', 'video/webm', 'video/mpeg',
+    'audio/mpeg', 'audio/mp3', 'audio/mpeg3', 'audio/x-mpeg-3', 'audio/wav', 'audio/x-wav', 'audio/wave',
+    'audio/m4a', 'audio/x-m4a', 'audio/aac', 'audio/ogg', 'audio/webm', 'audio/mp4',
+    'application/octet-stream'
   ];
-  if (allowed.includes(file.mimetype)) {
+  const ext = path.extname(file.originalname || '').toLowerCase();
+  const allowedExts = [
+    '.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg',
+    '.mp4', '.mov', '.webm',
+    '.mp3', '.wav', '.m4a', '.aac', '.ogg'
+  ];
+
+  if (allowedMimes.includes(file.mimetype) || allowedExts.includes(ext)) {
     cb(null, true);
   } else {
-    cb(new Error(`File type not allowed: ${file.mimetype}`), false);
+    cb(new Error(`File type not allowed: ${file.mimetype || ext}`), false);
   }
 };
 
