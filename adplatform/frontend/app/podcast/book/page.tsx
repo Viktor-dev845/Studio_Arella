@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Check, ChevronLeft, Clock, Loader2, Mic, Wallet, CreditCard, AlertTriangle } from 'lucide-react';
+import { Check, ChevronLeft, Clock, Loader2, Mic, Video, Wallet, CreditCard, AlertTriangle, Sparkles } from 'lucide-react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { PageTransition } from '@/components/ui/Animations';
 import { useToast } from '@/components/ui/ToastProvider';
@@ -171,157 +171,269 @@ export default function BookPodcastSessionPage() {
     transition: 'all 0.15s',
   });
 
+  const labelClasses = "block text-[13px] sm:text-[14px] font-semibold text-slate-800 dark:text-slate-200 mb-2 font-body";
+  const inputClasses = "w-full px-4 py-3.5 bg-white dark:bg-white/5 border border-slate-300 dark:border-white/15 rounded-[12px] text-[15px] font-medium text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-[#D4AF37] focus:ring-2 focus:ring-[#D4AF37]/20 transition-all font-body shadow-xs";
+
   return (
     <DashboardLayout>
       <PageTransition>
-        <div className="flex flex-col font-body w-full max-w-[1200px] mt-2 px-[24px]">
-          {/* Header row */}
-          <div className="flex items-center gap-[4px] text-[12px] text-[rgba(0,0,0,0.4)] dark:text-[rgba(255,255,255,0.4)] mb-[40px]">
-            <Link href="/bookings" className="flex items-center gap-[4px] hover:text-[#000] dark:hover:text-white transition-colors">
-              <ChevronLeft size={16} />
-              <span>Back</span>
-            </Link>
-            <span className="text-[12px] text-[#000] dark:text-white font-medium ml-[16px]">Book podcast slot</span>
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-6 sm:py-8 h-full relative font-body bg-white dark:bg-[#111111] rounded-2xl sm:rounded-[24px] border border-slate-100 dark:border-white/10 shadow-xs mt-2 mb-12">
+          
+          {/* Header */}
+          <div className="flex items-center gap-3 mb-6 sm:mb-8 pb-4 border-b border-slate-100 dark:border-white/10">
+            <button
+              type="button"
+              onClick={() => router.push('/bookings?tab=podcast')}
+              className="flex items-center gap-1.5 text-[16px] sm:text-[18px] font-medium text-slate-700 dark:text-slate-200 hover:text-[#D4AF37] transition-colors"
+            >
+              <ChevronLeft size={20} strokeWidth={2.5} />
+              <span>Back to Bookings</span>
+            </button>
+            <div className="h-4 w-[1px] bg-slate-300 dark:bg-white/20 mx-1" />
+            <h1 className="text-[18px] sm:text-[20px] font-bold text-slate-900 dark:text-slate-50">
+              Book Podcast Studio Session
+            </h1>
           </div>
 
-          
-            <div className="flex flex-col lg:flex-row gap-[100px]">
-              {/* Form side */}
-              <div className="flex-1 max-w-[850px] flex flex-col gap-[24px]">
-                {/* Textarea */}
+          <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start">
+            {/* Form side */}
+            <div className="flex-1 w-full flex flex-col gap-6">
+
+              {/* Package Selection */}
+              <div>
+                <label className={labelClasses}>Select Studio Package</label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {PACKAGES.map((pkg) => {
+                    const isSelected = packageId === pkg.id;
+                    return (
+                      <div
+                        key={pkg.id}
+                        onClick={() => setPackageId(pkg.id)}
+                        className={`p-4 rounded-[14px] border-2 cursor-pointer transition-all flex items-start justify-between ${
+                          isSelected
+                            ? 'border-[#D4AF37] bg-[#D4AF37]/10 shadow-xs'
+                            : 'border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-white/5 hover:border-slate-300'
+                        }`}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isSelected ? 'bg-[#D4AF37] text-black font-bold' : 'bg-white dark:bg-white/10 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10'}`}>
+                            {pkg.id === 'Audio Only' ? <Mic size={20} /> : <Video size={20} />}
+                          </div>
+                          <div>
+                            <h4 className="text-[15px] font-bold text-slate-900 dark:text-white">{pkg.label}</h4>
+                            <p className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">{pkg.desc}</p>
+                            <span className="inline-block mt-2 text-[13px] font-bold text-[#C69A2C]">
+                              {naira(pkg.ratePerHour)} / hour
+                            </span>
+                          </div>
+                        </div>
+                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-1 shrink-0 ${isSelected ? 'border-[#D4AF37] bg-[#D4AF37]' : 'border-slate-300'}`}>
+                          {isSelected && <Check size={12} className="text-black stroke-[3]" />}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Textarea */}
+              <div>
+                <label className={labelClasses}>Describe your Session</label>
                 <textarea
                   value={notes}
                   onChange={e => setNotes(e.target.value)}
-                  placeholder="Describe your session"
-                  className="w-full h-[131px] p-[16px] border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[17px] font-light text-[#16151C] dark:text-white placeholder:text-[rgba(162,161,168,0.8)] focus:outline-none focus:border-[#D4AF37] bg-transparent resize-none"
+                  placeholder="Tell us about your show, guest names, or special equipment needed..."
+                  className={`${inputClasses} h-[115px] resize-none`}
                 />
+              </div>
 
-                {/* Row 2: Duration & Type */}
-                <div className="flex flex-col sm:flex-row gap-[20px]">
-                  <input
-                    type="text"
-                    value={durationText}
-                    onChange={e => setDurationText(e.target.value)}
-                    placeholder="Enter studio duration (e.g 2 hours)"
-                    className="w-full h-[56px] p-[16px] border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[17px] font-light text-[#16151C] dark:text-white placeholder:text-[rgba(162,161,168,0.8)] focus:outline-none focus:border-[#D4AF37] bg-transparent"
-                  />
+              {/* Row 2: Duration & Type */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div>
+                  <label className={labelClasses}>Studio Duration (Hours)</label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      min={1}
+                      max={12}
+                      value={durationHours}
+                      onChange={e => setDurationText(`${Math.max(1, parseInt(e.target.value) || 1)} hours`)}
+                      placeholder="e.g. 2"
+                      className={`${inputClasses} pr-16`}
+                    />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 text-[13px] font-semibold pointer-events-none">
+                      {durationHours === 1 ? 'Hour' : 'Hours'}
+                    </span>
+                  </div>
+                </div>
 
-                  <div className="relative w-full">
-                    <div
+                <div>
+                  <label className={labelClasses}>Booking Type</label>
+                  <div className="relative">
+                    <button
+                      type="button"
                       onClick={() => setShowTypeDropdown(!showTypeDropdown)}
-                      className="w-full h-[56px] p-[16px] border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[17px] font-light text-[rgba(162,161,168,0.8)] bg-transparent flex items-center justify-between cursor-pointer select-none"
+                      className={`${inputClasses} flex items-center justify-between text-left`}
                     >
-                      <span className={bookingType !== 'How would you run your studio session?' ? 'text-[#16151C] dark:text-white' : ''}>
-                        {bookingType}
+                      <span className={bookingType !== 'How would you run your studio session?' ? 'text-slate-900 dark:text-white font-medium' : 'text-slate-500'}>
+                        {bookingType === 'How would you run your studio session?' ? 'One time booking' : bookingType}
                       </span>
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-slate-600 dark:text-slate-300">
                         <path d="M6 9L12 15L18 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
-                    </div>
+                    </button>
                     {showTypeDropdown && (
-                      <div className="absolute top-[64px] right-0 w-[200px] bg-white shadow-[-4.75px_30px_30px_rgba(184,184,184,0.25)] rounded-[10px] p-[23px_14px_5px_13px] z-10 flex flex-col gap-[11px]">
-                        <div 
-                          className="flex items-center justify-between cursor-pointer group"
-                          onClick={() => { setBookingType('One time booking'); setShowTypeDropdown(false); }}
-                        >
-                          <span className="font-body text-[15px] text-[#000] group-hover:text-[#D4AF37] transition-colors">One time booking</span>
-                          {bookingType === 'One time booking' && <div className="w-[2px] h-[14px] bg-[#D4AF37] rounded-[20px]" />}
-                        </div>
-                        <div 
-                          className="flex items-center justify-between cursor-pointer group"
-                          onClick={() => { setBookingType('Recurring booking'); setShowTypeDropdown(false); }}
-                        >
-                          <span className="font-body text-[15px] text-[#000] group-hover:text-[#D4AF37] transition-colors">Recurring booking</span>
-                          {bookingType === 'Recurring booking' && <div className="w-[2px] h-[14px] bg-[#D4AF37] rounded-[20px]" />}
-                        </div>
+                      <div className="absolute top-[56px] left-0 right-0 bg-white dark:bg-[#1E1E1E] shadow-xl rounded-[12px] p-2 z-20 border border-slate-200 dark:border-white/10 flex flex-col gap-1">
+                        {['One time booking', 'Recurring booking'].map((bt) => (
+                          <button
+                            key={bt}
+                            type="button"
+                            className="flex items-center justify-between px-3 py-2.5 rounded-lg text-left text-[14px] font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
+                            onClick={() => { setBookingType(bt); setShowTypeDropdown(false); }}
+                          >
+                            <span>{bt}</span>
+                            {(bookingType === bt || (bookingType === 'How would you run your studio session?' && bt === 'One time booking')) && (
+                              <div className="w-2 h-2 rounded-full bg-[#D4AF37]" />
+                            )}
+                          </button>
+                        ))}
                       </div>
                     )}
                   </div>
                 </div>
+              </div>
 
-                {/* Row 3: Date & Time */}
-                <div className="flex flex-col sm:flex-row gap-[20px]">
-                  <div className="relative w-full">
+              {/* Row 3: Date & Time */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div>
+                  <label className={labelClasses}>Session Date</label>
+                  <div className="relative">
                     <input
                       type="date"
                       value={date}
                       min={todayISODate()}
                       onChange={e => setDate(e.target.value)}
-                      className="w-full h-[56px] p-[16px] border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[17px] font-light text-[#16151C] dark:text-white placeholder:text-[rgba(162,161,168,0.8)] focus:outline-none focus:border-[#D4AF37] bg-transparent appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                      className={inputClasses}
                     />
-                    <svg className="absolute right-[16px] top-[16px] pointer-events-none text-[#16151C] dark:text-white" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      <circle cx="8" cy="14" r="1.5" fill="currentColor"/>
-                      <circle cx="12" cy="14" r="1.5" fill="currentColor"/>
-                      <circle cx="16" cy="14" r="1.5" fill="currentColor"/>
-                      <circle cx="8" cy="18" r="1.5" fill="currentColor"/>
-                      <circle cx="12" cy="18" r="1.5" fill="currentColor"/>
-                      <circle cx="16" cy="18" r="1.5" fill="currentColor"/>
-                    </svg>
                   </div>
-                  
-                  <div className="relative w-full">
+                </div>
+                
+                <div>
+                  <label className={labelClasses}>Start Time</label>
+                  <div className="relative">
                     <input
                       type="time"
                       value={startTime}
                       onChange={e => setStartTime(e.target.value)}
-                      className="w-full h-[56px] p-[16px] border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[17px] font-light text-[#16151C] dark:text-white placeholder:text-[rgba(162,161,168,0.8)] focus:outline-none focus:border-[#D4AF37] bg-transparent appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:right-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                      className={inputClasses}
                     />
-                    <svg className="absolute right-[16px] top-[16px] pointer-events-none text-[#16151C] dark:text-white" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
-                      <path d="M12 6V12L16 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
                   </div>
-                </div>
-
-                {/* Conflict Warning */}
-                {hasConflict && (
-                  <div className="flex items-center gap-2 text-red-500 text-[13px] font-medium mt-[-10px]">
-                    <AlertTriangle size={14} /> This overlaps an existing booking. Please pick a different time.
-                  </div>
-                )}
-
-                {/* Action Buttons */}
-                <div className="flex justify-end gap-[20px] mt-[16px]">
-                  <button
-                    type="button"
-                    onClick={() => router.push('/bookings')}
-                    className="w-[91px] h-[40px] flex items-center justify-center border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[16px] font-light text-[#16151C] dark:text-white font-body hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleReserve}
-                    disabled={reserving || hasConflict || isPastStart || !startTime}
-                    className="w-[116px] h-[40px] flex items-center justify-center bg-[#D4AF37] rounded-[6px] text-[14px] text-black opacity-80 capitalize font-body hover:opacity-100 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {reserving ? 'Wait...' : 'Book Slot'}
-                  </button>
                 </div>
               </div>
 
-              {/* Promo Card side */}
-              <div className="w-[245px] h-[162px] bg-[#232121] rounded-[15px] p-[31px_16px] relative shrink-0">
-                <p className="text-[12.6px] leading-[16px] text-white m-0 font-body">
-                  we are running Ad space promo, get a discount for more than 3months booking
-                </p>
-                <button 
+              {/* Conflict Warning */}
+              {hasConflict && (
+                <div className="flex items-center gap-2.5 text-amber-800 bg-amber-50 border border-amber-200 p-3.5 rounded-[12px] text-[13px] font-medium">
+                  <AlertTriangle size={18} className="text-amber-600 shrink-0" />
+                  <span>That time slot overlaps an existing booking. Please pick another time or date.</span>
+                </div>
+              )}
+
+              {/* Buttons on mobile */}
+              <div className="flex items-center justify-end gap-3 pt-2 lg:hidden">
+                <button
                   type="button"
-                  className="mt-[27px] w-[148px] h-[23.5px] bg-[#FBFF79] shadow-[0px_0px_7.08px_rgba(251,255,121,0.32)] rounded-[6px] flex items-center justify-center text-[9.4px] font-semibold text-[#051235] uppercase font-body hover:opacity-90 transition-opacity mx-auto"
+                  onClick={() => router.push('/bookings?tab=podcast')}
+                  className="px-5 py-3 border border-slate-300 dark:border-white/15 rounded-[10px] text-[14px] font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 transition-colors"
                 >
-                  Book podcast session
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleReserve}
+                  disabled={reserving || hasConflict || isPastStart || !startTime}
+                  className="px-6 py-3 bg-[#D4AF37] hover:bg-[#b58b24] text-black font-bold rounded-[10px] text-[14px] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-xs"
+                >
+                  {reserving ? 'Reserving...' : 'Book Slot'}
                 </button>
               </div>
             </div>
+
+            {/* Right Summary Side */}
+            <div className="w-full lg:w-[360px] shrink-0 flex flex-col gap-4">
+              <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 rounded-[18px] p-6 flex flex-col gap-4 shadow-xs">
+                <h3 className="text-[16px] font-bold text-slate-900 dark:text-white">Session Summary</h3>
+                
+                <div className="flex flex-col gap-3 text-[13px] border-b border-slate-200 dark:border-white/10 pb-4">
+                  <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
+                    <span>Package:</span>
+                    <span className="font-semibold text-slate-900 dark:text-white">{selectedPackage.label}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
+                    <span>Hourly Rate:</span>
+                    <span className="font-semibold text-slate-900 dark:text-white">{naira(selectedPackage.ratePerHour)}/hr</span>
+                  </div>
+                  <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
+                    <span>Duration:</span>
+                    <span className="font-semibold text-slate-900 dark:text-white">{durationHours} hour{durationHours > 1 ? 's' : ''}</span>
+                  </div>
+                  {startTime ? (
+                    <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
+                      <span>Schedule:</span>
+                      <span className="font-semibold text-slate-900 dark:text-white">{formatRange(startIso, endIso)}</span>
+                    </div>
+                  ) : (
+                    <div className="flex justify-between items-center text-amber-600 text-[12px] font-medium bg-amber-50 px-2.5 py-1 rounded-md">
+                      <span>* Choose start time to confirm slot</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex justify-between items-baseline pt-1">
+                  <span className="text-[14px] font-bold text-slate-900 dark:text-white">Estimated Total:</span>
+                  <span className="text-[22px] font-extrabold text-[#C69A2C]">{naira(estimatedCost)}</span>
+                </div>
+
+                {walletBalance !== null && (
+                  <div className="flex items-center justify-between text-[12px] bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 px-3.5 py-2.5 rounded-[10px] text-slate-600 dark:text-slate-400">
+                    <span className="flex items-center gap-1.5 font-medium"><Wallet size={14} className="text-emerald-600" /> Wallet Balance:</span>
+                    <span className="font-bold text-emerald-600">{naira(walletBalance)}</span>
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={handleReserve}
+                  disabled={reserving || hasConflict || isPastStart || !startTime}
+                  className="w-full h-[48px] flex items-center justify-center bg-[#D4AF37] hover:bg-[#b58b24] text-black font-bold rounded-[10px] text-[15px] shadow-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed mt-2"
+                >
+                  {reserving ? (
+                    <span className="flex items-center gap-2"><Loader2 size={16} className="animate-spin" /> Reserving...</span>
+                  ) : !startTime ? (
+                    'Select a Start Time'
+                  ) : (
+                    'Proceed to Billing'
+                  )}
+                </button>
+              </div>
+
+              {/* Promo Banner */}
+              <div className="bg-[#18181B] text-white rounded-[18px] p-5 flex flex-col gap-2.5 shadow-sm">
+                <div className="flex items-center gap-2 text-amber-400 text-[12px] font-bold uppercase tracking-wider">
+                  <Sparkles size={14} /> Studio Arella Promo
+                </div>
+                <p className="text-[12.5px] text-zinc-300 leading-relaxed m-0 font-light">
+                  Recording an ongoing podcast series? Enjoy studio soundproofing, 4K multi-cam setup, and audio mastering at discount rates.
+                </p>
+              </div>
+            </div>
+          </div>
 
         </div>
 
         {/* Billing Modal Overlay */}
         {bookingId && (
+
           <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#16151C]/40 backdrop-blur-[10px] font-body">
              <div className="w-[625px] bg-white rounded-[32px] pt-[32px] pb-[70px] relative flex flex-col items-center shadow-[0px_4px_40px_rgba(0,0,0,0.08)]">
                
