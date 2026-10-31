@@ -213,21 +213,24 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
         style={{
           width: '100%',
           padding: '12px 16px',
-          background: '#F5F0E6',
+          background: theme.color.surface,
+          border: `1px solid ${theme.color.border}`,
           borderRadius: 8,
           fontSize: 13,
           fontWeight: 700,
-          color: '#0F172A',
+          color: theme.color.text1,
           textAlign: 'center',
           textDecoration: 'none',
           display: 'block',
           transition: 'all 0.15s ease',
         }}
         onMouseOver={(e) => {
-          e.currentTarget.style.background = '#EBE3D3';
+          e.currentTarget.style.borderColor = theme.color.gold;
+          e.currentTarget.style.background = theme.color.surface2;
         }}
         onMouseOut={(e) => {
-          e.currentTarget.style.background = '#F5F0E6';
+          e.currentTarget.style.borderColor = theme.color.border;
+          e.currentTarget.style.background = theme.color.surface;
         }}
       >
         Add a podcast
@@ -245,9 +248,9 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
           <div
             style={{
               padding: '16px 14px',
-              background: '#FAFAFA',
+              background: theme.color.surface,
               borderRadius: 12,
-              border: '1px dashed #E2E8F0',
+              border: `1px dashed ${theme.color.border}`,
               textAlign: 'center',
             }}
           >
@@ -256,7 +259,7 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
                 width: 32,
                 height: 32,
                 borderRadius: '50%',
-                background: '#FFF7ED',
+                background: 'var(--owner-orange-light)',
                 color: '#EA580C',
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -351,8 +354,8 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
           {upcomingBookings.length === 0 ? (
             <div
               style={{
-                background: '#FAF8F0',
-                border: '1px solid #E8DFBF',
+                background: theme.color.surface,
+                border: `1px solid ${theme.color.border}`,
                 borderLeft: '3px solid #D4AF37',
                 borderRadius: 8,
                 padding: '12px 14px',
@@ -362,10 +365,10 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 12, fontWeight: 700, color: '#16151C' }}>No sessions booked today</span>
-                <span style={{ fontSize: 9, fontWeight: 700, color: '#16A34A', background: '#DCFCE7', padding: '2px 6px', borderRadius: 10 }}>AVAILABLE</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: theme.color.text1 }}>No sessions booked today</span>
+                <span style={{ fontSize: 9, fontWeight: 700, color: '#16A34A', background: 'var(--owner-green-light)', padding: '2px 6px', borderRadius: 10 }}>AVAILABLE</span>
               </div>
-              <p style={{ fontSize: 11, color: '#64748B', margin: 0 }}>
+              <p style={{ fontSize: 11, color: theme.color.text4, margin: 0 }}>
                 Acoustic recording suites ready for booking.
               </p>
             </div>
@@ -398,11 +401,12 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
           style={{
             width: '100%',
             padding: '10px 14px',
-            background: '#F5F0E6',
+            background: theme.color.surface,
+            border: `1px solid ${theme.color.border}`,
             borderRadius: 8,
             fontSize: 12,
             fontWeight: 700,
-            color: '#0F172A',
+            color: theme.color.text1,
             textAlign: 'center',
             textDecoration: 'none',
             display: 'block',
@@ -410,10 +414,12 @@ export default function PodcastRightPanel({ variant = 'calendar' }: PodcastRight
             transition: 'all 0.15s ease',
           }}
           onMouseOver={(e) => {
-            e.currentTarget.style.background = '#EBE3D3';
+            e.currentTarget.style.borderColor = theme.color.gold;
+            e.currentTarget.style.background = theme.color.surface2;
           }}
           onMouseOut={(e) => {
-            e.currentTarget.style.background = '#F5F0E6';
+            e.currentTarget.style.borderColor = theme.color.border;
+            e.currentTarget.style.background = theme.color.surface;
           }}
         >
           Book podcast slot

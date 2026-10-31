@@ -310,17 +310,24 @@ export default function PodcastsPage() {
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: 6,
-                    background: '#F1F5F9',
+                    background: theme.color.surface2,
+                    border: `1px solid ${theme.color.border}`,
                     color: theme.color.text1,
                     fontSize: 12,
                     fontWeight: 600,
                     padding: '8px 14px',
                     borderRadius: 8,
                     textDecoration: 'none',
-                    transition: 'background 0.15s ease',
+                    transition: 'all 0.15s ease',
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.borderColor = theme.color.gold;
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.borderColor = theme.color.border;
                   }}
                 >
-                  <Calendar size={14} />
+                  <Calendar size={14} color={theme.color.gold} />
                   Book Studio Time
                 </Link>
                 <Link
@@ -355,67 +362,27 @@ export default function PodcastsPage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                 {/* Hero Welcome Banner */}
                 <div
-                  style={{
-                    background: 'linear-gradient(135deg, #FFFDF8 0%, #FFF8ED 50%, #FFF3DC 100%)',
-                    border: '1px solid #FED7AA',
-                    borderRadius: 18,
-                    padding: '28px 32px',
-                    boxShadow: '0 2px 12px rgba(234, 88, 12, 0.04)',
-                    position: 'relative',
-                    overflow: 'hidden',
-                  }}
+                  className="rounded-[18px] p-7 sm:p-8 relative overflow-hidden bg-gradient-to-br from-[#FFFDF8] via-[#FFF8ED] to-[#FFF3DC] border border-[#FED7AA] dark:from-[#1A1208] dark:via-[#16120E] dark:to-[#111111] dark:border-amber-900/40 shadow-xs"
                 >
-                  <div style={{ position: 'relative', zIndex: 1, maxWidth: 620 }}>
-                    <div
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 8,
-                        background: 'rgba(255, 255, 255, 0.85)',
-                        border: '1px solid #FDBA74',
-                        borderRadius: 20,
-                        padding: '4px 12px',
-                        marginBottom: 14,
-                      }}
-                    >
-                      <span
-                        style={{
-                          width: 8,
-                          height: 8,
-                          borderRadius: '50%',
-                          background: '#16A34A',
-                          boxShadow: '0 0 6px #16A34A',
-                        }}
-                      />
-                      <span style={{ fontSize: 11, fontWeight: 700, color: '#9A3412', letterSpacing: '0.02em' }}>
+                  <div className="relative z-10 max-w-[620px]">
+                    <div className="inline-flex items-center gap-2 bg-white/85 dark:bg-amber-950/40 border border-[#FDBA74] dark:border-amber-700/40 rounded-full px-3 py-1 mb-3.5">
+                      <span className="w-2 h-2 rounded-full bg-[#16A34A] shadow-[0_0_6px_#16A34A]" />
+                      <span className="text-[11px] font-bold text-[#9A3412] dark:text-amber-400 tracking-wider">
                         Studio Arella Audio Studio Online
                       </span>
                     </div>
 
-                    <h2 style={{ fontSize: 22, fontWeight: 800, color: '#1E293B', margin: '0 0 10px', lineHeight: 1.3 }}>
+                    <h2 className="text-[22px] font-extrabold text-[#1E293B] dark:text-white mb-2.5 leading-snug">
                       Welcome to your Creator Audio Workspace
                     </h2>
-                    <p style={{ fontSize: 13.5, color: '#64748B', lineHeight: 1.55, margin: '0 0 22px' }}>
+                    <p className="text-[13.5px] text-[#64748B] dark:text-neutral-300 leading-relaxed mb-5.5">
                       Publish your podcast series, distribute episodes to listeners across Nigeria, or reserve dedicated acoustic studio time with sound engineer assistance at Studio Arella.
                     </p>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                    <div className="flex items-center gap-3 flex-wrap">
                       <Link
                         href="/podcast/new"
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: 8,
-                          background: '#EA580C',
-                          color: '#FFFFFF',
-                          fontSize: 13,
-                          fontWeight: 700,
-                          padding: '11px 22px',
-                          borderRadius: 10,
-                          textDecoration: 'none',
-                          boxShadow: '0 2px 8px rgba(234, 88, 12, 0.3)',
-                          transition: 'background 0.15s ease',
-                        }}
+                        className="inline-flex items-center gap-2 bg-[#EA580C] hover:bg-[#c2410c] text-white text-[13px] font-bold px-5 py-2.5 rounded-[10px] shadow-sm transition-colors"
                       >
                         <Plus size={16} />
                         Create Your First Show
@@ -423,22 +390,9 @@ export default function PodcastsPage() {
 
                       <Link
                         href="/podcast/book"
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: 8,
-                          background: '#FFFFFF',
-                          border: '1px solid #CBD5E1',
-                          color: '#0F172A',
-                          fontSize: 13,
-                          fontWeight: 600,
-                          padding: '11px 20px',
-                          borderRadius: 10,
-                          textDecoration: 'none',
-                          transition: 'all 0.15s ease',
-                        }}
+                        className="inline-flex items-center gap-2 bg-white dark:bg-[#161618] border border-[#CBD5E1] dark:border-white/10 text-[#0F172A] dark:text-white text-[13px] font-semibold px-5 py-2.5 rounded-[10px] hover:border-amber-500 transition-colors"
                       >
-                        <Headphones size={16} color="#64748B" />
+                        <Headphones size={16} className="text-[#64748B] dark:text-neutral-400" />
                         Book Studio Recording Time
                       </Link>
                     </div>
@@ -455,11 +409,12 @@ export default function PodcastsPage() {
                   }}
                 >
                   {/* Card 1 */}
+                  {/* Card 1 */}
                   <div
                     className="creator-feature-card"
                     style={{
-                      background: '#FFFFFF',
-                      border: '1px solid #E2E8F0',
+                      background: theme.color.surface,
+                      border: `1px solid ${theme.color.border}`,
                       borderRadius: 14,
                       padding: '20px 22px',
                       display: 'flex',
@@ -473,7 +428,7 @@ export default function PodcastsPage() {
                         width: 44,
                         height: 44,
                         borderRadius: 10,
-                        background: '#FFF7ED',
+                        background: 'var(--owner-orange-light)',
                         color: '#EA580C',
                         display: 'flex',
                         alignItems: 'center',
@@ -512,8 +467,8 @@ export default function PodcastsPage() {
                   <div
                     className="creator-feature-card"
                     style={{
-                      background: '#FFFFFF',
-                      border: '1px solid #E2E8F0',
+                      background: theme.color.surface,
+                      border: `1px solid ${theme.color.border}`,
                       borderRadius: 14,
                       padding: '20px 22px',
                       display: 'flex',
@@ -527,7 +482,7 @@ export default function PodcastsPage() {
                         width: 44,
                         height: 44,
                         borderRadius: 10,
-                        background: '#EFF6FF',
+                        background: 'var(--owner-blue-light)',
                         color: '#2563EB',
                         display: 'flex',
                         alignItems: 'center',
@@ -566,8 +521,8 @@ export default function PodcastsPage() {
                   <div
                     className="creator-feature-card"
                     style={{
-                      background: '#FFFFFF',
-                      border: '1px solid #E2E8F0',
+                      background: theme.color.surface,
+                      border: `1px solid ${theme.color.border}`,
                       borderRadius: 14,
                       padding: '20px 22px',
                       display: 'flex',
@@ -581,7 +536,7 @@ export default function PodcastsPage() {
                         width: 44,
                         height: 44,
                         borderRadius: 10,
-                        background: '#F0FDF4',
+                        background: 'var(--owner-green-light)',
                         color: '#16A34A',
                         display: 'flex',
                         alignItems: 'center',
@@ -620,8 +575,8 @@ export default function PodcastsPage() {
                   <div
                     className="creator-feature-card"
                     style={{
-                      background: '#FFFFFF',
-                      border: '1px solid #E2E8F0',
+                      background: theme.color.surface,
+                      border: `1px solid ${theme.color.border}`,
                       borderRadius: 14,
                       padding: '20px 22px',
                       display: 'flex',
@@ -635,7 +590,7 @@ export default function PodcastsPage() {
                         width: 44,
                         height: 44,
                         borderRadius: 10,
-                        background: '#FEFCE8',
+                        background: 'var(--stat-vanilla)',
                         color: '#CA8A04',
                         display: 'flex',
                         alignItems: 'center',
@@ -673,24 +628,14 @@ export default function PodcastsPage() {
 
                 {/* Clean Empty Catalog Card */}
                 <div
-                  style={{
-                    padding: '36px 24px',
-                    textAlign: 'center',
-                    background: '#FAFAFA',
-                    borderRadius: 16,
-                    border: '1px dashed #CBD5E1',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: 10,
-                  }}
+                  className="p-9 text-center bg-white dark:bg-[#111111] border border-dashed border-neutral-300 dark:border-white/10 rounded-2xl flex flex-col items-center gap-2.5 shadow-xs"
                 >
                   <div
                     style={{
                       width: 48,
                       height: 48,
                       borderRadius: 24,
-                      background: '#FFF7ED',
+                      background: 'rgba(234, 88, 12, 0.12)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -700,30 +645,20 @@ export default function PodcastsPage() {
                     <Mic size={24} />
                   </div>
                   <div>
-                    <h3 style={{ fontSize: 15, fontWeight: 700, color: theme.color.text1, margin: '0 0 4px' }}>
+                    <h3 className="text-[16px] font-bold text-neutral-900 dark:text-white m-0 mb-1">
                       No podcast shows published yet
                     </h3>
-                    <p style={{ fontSize: 12.5, color: theme.color.text4, margin: 0, maxWidth: 420 }}>
+                    <p className="text-[13px] text-neutral-500 dark:text-neutral-400 m-0 max-w-[420px] leading-relaxed">
                       When you create your show or release episodes, they will be listed here in board or list view with episode counts and statistics.
                     </p>
                   </div>
-                  <div style={{ marginTop: 6 }}>
+                  <div style={{ marginTop: 8 }}>
                     <Link
                       href="/podcast/new"
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 6,
-                        background: '#EA580C',
-                        color: '#fff',
-                        fontSize: 12.5,
-                        fontWeight: 700,
-                        padding: '8px 16px',
-                        borderRadius: 8,
-                        textDecoration: 'none',
-                      }}
+                      className="inline-flex items-center gap-2 bg-[#EA580C] hover:bg-[#c2410c] text-white text-[13px] font-bold px-4 py-2 rounded-lg transition-colors shadow-xs"
+                      style={{ textDecoration: 'none' }}
                     >
-                      <Plus size={14} />
+                      <Plus size={15} />
                       Create Show
                     </Link>
                   </div>
