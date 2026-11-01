@@ -48,7 +48,7 @@ import CreatorMonetizationView from '@/components/wallet/CreatorMonetizationView
 
 const F = theme.font.body;
 const BANKS = ['GTBank', 'Wema Bank', 'Access Bank', 'Zenith Bank', 'UBA', 'First Bank', 'Union Bank', 'Sterling Bank'];
-const CARD_VERIFICATION_AMOUNT = 50;
+const CARD_VERIFICATION_AMOUNT = 100;
 type FundStep = 'cards' | 'confirm' | 'otp' | 'success' | 'add-card' | 'add-card-otp' | 'add-card-success';
 
 export default function FinancesPage() {
@@ -1123,7 +1123,7 @@ function FinancesPageContent() {
                                   fontFamily: 'var(--font-dm-sans)'
                                 }}
                               >
-                                {linkingCard ? 'Connecting...' : 'Link Bank Card (Refundable ₦50)'}
+                                {linkingCard ? 'Connecting...' : 'Link Bank Card (Refundable ₦100)'}
                               </button>
                             </div>
                           )}
@@ -1321,7 +1321,7 @@ function FinancesPageContent() {
                             </span>
                           </div>
                           <p style={{ fontSize: 12, color: '#667085', margin: '0 0 16px', lineHeight: 1.5, fontFamily: 'var(--font-dm-sans)' }}>
-                            Link your Mastercard, Visa, or Verve card securely. A small ₦50 verification fee is charged and immediately refunded to your wallet balance.
+                            Link your Mastercard, Visa, or Verve card securely. A small ₦100 verification fee is charged and immediately refunded to your wallet balance.
                           </p>
                           <button
                             type="button"

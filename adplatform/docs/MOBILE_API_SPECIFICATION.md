@@ -582,7 +582,43 @@ Returns the social audio feed, including author details, likes, bookmark status,
       "hasLiked": false,
       "isPremium": false,
       "isUnlocked": true,
-      "price": 0
+      "price": 0,
+      "quotedPost": null // Present as nested object when post is a Quote Post
+    },
+    {
+      "id": "bb656c21-5133-491c-ba43-94e95240f810",
+      "author": {
+        "id": "b01fe67f-52a6-43a9-8848-c6fb55279773",
+        "name": "kalu victor",
+        "role": "Creator",
+        "avatar": "/audience/adam-udochi.png"
+      },
+      "title": "Nice!",
+      "description": "",
+      "content_type": "quote",
+      "mediaUrl": "",
+      "coverUrl": "",
+      "duration": "00:45:00",
+      "initialLikes": 1,
+      "initialComments": 1,
+      "viewsCount": 2,
+      "repostsCount": 1,
+      "quotedPostId": "802a65a2-b592-4f36-b0bb-d2e62183b610",
+      "quotedPost": {
+        "id": "802a65a2-b592-4f36-b0bb-d2e62183b610",
+        "author": {
+          "id": "3a9555f6-fa47-47ef-aa88-f19d80a90e6e",
+          "name": "Darlene Black",
+          "role": "Podcasts",
+          "avatar": "/audience/darlene-black.png"
+        },
+        "title": "Modern Marriage & Relationship Wisdom",
+        "description": "Honest, vulnerable conversations on emotional intimacy, resolving partnership conflicts, and flourishing together in love.",
+        "category": "Podcasts",
+        "mediaUrl": "/audience/covers/relationship.jpg",
+        "coverUrl": "/audience/covers/relationship.jpg",
+        "duration": "01:32:00"
+      }
     }
   ]
 }
@@ -590,16 +626,42 @@ Returns the social audio feed, including author details, likes, bookmark status,
 
 ---
 
-### 4.2 Publish Creator Content / Post
-Allows creators or fans to publish audio podcasts, thoughts, or media updates.
+### 4.2 Get Single Content Post Detail
+Fetch full post details by ID (including populated `quotedPost` object if this post is quoting another).
+* **Endpoint:** `GET /content/:id`
+* **Access:** Optional Auth (Provide Bearer token for user-specific like/bookmark status)
+* **Success Response (200 OK):**
+```json
+{
+  "post": {
+    "id": "bb656c21-5133-491c-ba43-94e95240f810",
+    "author": { "name": "kalu victor", "role": "Creator" },
+    "title": "Nice!",
+    "quotedPostId": "802a65a2-b592-4f36-b0bb-d2e62183b610",
+    "quotedPost": {
+      "id": "802a65a2-b592-4f36-b0bb-d2e62183b610",
+      "author": { "name": "Darlene Black", "role": "Podcasts" },
+      "title": "Modern Marriage & Relationship Wisdom",
+      "mediaUrl": "/audience/covers/relationship.jpg",
+      "coverUrl": "/audience/covers/relationship.jpg",
+      "duration": "01:32:00"
+    }
+  }
+}
+```
+
+---
+
+### 4.3 Publish Creator Content / Quote Post
+Allows creators or fans to publish audio podcasts, thoughts, media updates, or **Quote Posts**.
 * **Endpoint:** `POST /content`
 * **Access:** Protected
-* **Request Body:**
+* **Standard Post Request Body:**
 ```json
 {
   "title": "Episode 12: Modern Marriage & Trust",
   "description": "Deep dive into financial transparency and relationship boundaries.",
-  "content_type": "podcast", // "post" | "podcast" | "video"
+  "content_type": "podcast", // "post" | "podcast" | "video" | "quote"
   "media_url": "https://.../recording.mp3",
   "cover_url": "https://.../cover.jpg",
   "duration_text": "01:18:00",
@@ -610,6 +672,14 @@ Allows creators or fans to publish audio podcasts, thoughts, or media updates.
   "badge_theme": "gold"
 }
 ```
+* **Quote Post Request Body:**
+```json
+{
+  "title": "Brilliant insights on this podcast!",
+  "quotedPostId": "802a65a2-b592-4f36-b0bb-d2e62183b610"
+}
+```
+*(When `quotedPostId` is provided, the backend automatically links the quote relation, populates the `quotedPost` snapshot, increments the original post's repost count, and returns the populated post object).*
 
 ---
 

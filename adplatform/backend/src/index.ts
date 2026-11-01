@@ -335,6 +335,11 @@ app.listen(PORT, async () => {
       ALTER TABLE users ADD COLUMN IF NOT EXISTS social_links JSONB DEFAULT '{}';
       ALTER TABLE users ADD COLUMN IF NOT EXISTS pro_subscription_expires_at TIMESTAMPTZ;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS pro_auto_renew BOOLEAN DEFAULT false;
+
+      ALTER TABLE creator_content ADD COLUMN IF NOT EXISTS reposts_count INTEGER DEFAULT 0;
+      ALTER TABLE creator_content ADD COLUMN IF NOT EXISTS quote_parent_id UUID REFERENCES creator_content(id) ON DELETE SET NULL;
+      ALTER TABLE creator_content ADD COLUMN IF NOT EXISTS quote_post JSONB;
+      CREATE INDEX IF NOT EXISTS idx_creator_content_quote_parent ON creator_content(quote_parent_id);
     `);
     console.log('✅ Creator Space monetization tables & columns verified');
   } catch (err) {

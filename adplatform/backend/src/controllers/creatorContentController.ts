@@ -1,6 +1,104 @@
 import { Request, Response } from 'express';
 import pool from '../db/pool';
 
+// ── HELPER: FORMAT QUOTED POST ───────────────────────────────────────────────
+function formatQuotedPost(r: any) {
+  if (r.quoted_post_id) {
+    return {
+      id: r.quoted_post_id,
+      author: {
+        id: r.quoted_author_id,
+        name: r.quoted_author_name || 'Studio Arella Creator',
+        role: r.quoted_author_role || 'Creator',
+        avatar: r.quoted_author_avatar || '/audience/adam-udochi.png',
+      },
+      title: String(r.quoted_post_title || 'Studio Podcast').replace(/^[-–—\s]+/, ''),
+      description: r.quoted_post_description || '',
+      category: r.quoted_post_category || 'General',
+      mediaUrl: r.quoted_post_cover_url || r.quoted_post_media_url || '',
+      coverUrl: r.quoted_post_cover_url || r.quoted_post_media_url || '',
+      duration: r.quoted_post_duration || '00:00:00',
+    };
+  }
+
+  if (r.quote_post) {
+    try {
+      const raw = typeof r.quote_post === 'string' ? JSON.parse(r.quote_post) : r.quote_post;
+      if (raw && typeof raw === 'object') {
+        return {
+          id: raw.id || r.quote_parent_id || undefined,
+          author: {
+            id: raw.author?.id || undefined,
+            name: raw.author?.name || 'Studio Arella Creator',
+            role: raw.author?.role || 'Creator',
+            avatar: raw.author?.avatar || '/audience/adam-udochi.png',
+          },
+          title: String(raw.title || '').replace(/^[-–—\s]+/, ''),
+          description: raw.description || '',
+          category: raw.category || 'General',
+          mediaUrl: raw.coverUrl || raw.cover_url || raw.mediaUrl || raw.media_url || '',
+          coverUrl: raw.coverUrl || raw.cover_url || raw.mediaUrl || raw.media_url || '',
+          duration: raw.duration || raw.duration_text || '00:00:00',
+        };
+      }
+    } catch {
+      // ignore parse error
+    }
+  }
+
+  return null;
+}
+
+// ── HELPER: FORMAT POST ROW ──────────────────────────────────────────────────
+function formatPostRow(r: any) {
+  const quoted = formatQuotedPost(r);
+  const quoteId = r.quote_parent_id || quoted?.id || null;
+
+  return {
+    id: r.id,
+    author: {
+      id: r.author_id,
+      name: r.author_name || 'Studio Arella Creator',
+      role: r.author_role || 'Creator',
+      avatar: r.author_avatar || '/audience/adam-udochi.png',
+      tier: r.author_tier || 'pro',
+    },
+    author_name: r.author_name || 'Studio Arella Creator',
+    author_role: r.author_role || 'Creator',
+    author_avatar: r.author_avatar || '/audience/adam-udochi.png',
+    author_tier: r.author_tier || 'pro',
+    title: String(r.title || 'Studio Podcast').replace(/^[-–—\s]+/, ''),
+    description: r.description || '',
+    content_type: r.content_type,
+    mediaUrl: r.cover_url || r.media_url || '',
+    cover_url: r.cover_url || r.media_url || '',
+    coverUrl: r.cover_url || r.media_url || '',
+    duration: r.duration_text || '01:15:00',
+    currentTime: '00:04:15',
+    progressPercent: 30,
+    initialLikes: parseInt(r.likes_count, 10) || 0,
+    initialComments: parseInt(r.comments_count, 10) || 0,
+    likes_count: parseInt(r.likes_count, 10) || 0,
+    comments_count: parseInt(r.comments_count, 10) || 0,
+    viewsCount: parseInt(r.views_count, 10) || 0,
+    repostsCount: parseInt(r.reposts_count, 10) || 0,
+    badgeTheme: r.badge_theme || 'gold',
+    isBookmarked: Boolean(r.is_bookmarked),
+    hasLiked: Boolean(r.has_liked),
+    isPremium: Boolean(r.is_premium),
+    isUnlocked: r.is_unlocked ?? (!r.is_premium),
+    price: parseFloat(r.price) || 0,
+    category: r.category,
+    tags: r.tags || [],
+    quotedPost: quoted,
+    quotePost: quoted,
+    quotedPostId: quoteId,
+    quoteParentId: quoteId,
+    createdAt: r.created_at,
+    created_at: r.created_at,
+  };
+}
+
 // ── GET FEED (ALL / TRENDING / FILTERED BY CATEGORY OR TAG) ──────────────────
 export async function getFeed(req: Request, res: Response) {
   try {
@@ -23,7 +121,10 @@ export async function getFeed(req: Request, res: Response) {
         c.price,
         c.likes_count,
         c.comments_count,
-        c.views_count,
+        COALESCE(c.views_count, 0) AS views_count,
+        COALESCE(c.reposts_count, 0) AS reposts_count,
+        c.quote_parent_id,
+        c.quote_post,
         c.badge_theme,
         c.created_at,
         u.id AS author_id,
@@ -38,12 +139,25 @@ export async function getFeed(req: Request, res: Response) {
           WHEN c.creator_id = $1 THEN true
           WHEN pcp.id IS NOT NULL THEN true
           ELSE false 
-        END AS is_unlocked
+        END AS is_unlocked,
+        qp.id AS quoted_post_id,
+        qp.title AS quoted_post_title,
+        qp.description AS quoted_post_description,
+        qp.category AS quoted_post_category,
+        qp.media_url AS quoted_post_media_url,
+        qp.cover_url AS quoted_post_cover_url,
+        qp.duration_text AS quoted_post_duration,
+        qu.id AS quoted_author_id,
+        qu.name AS quoted_author_name,
+        COALESCE(NULLIF(qu.creator_niche, ''), CASE WHEN qu.role = 'creator' THEN 'Creator' WHEN qu.role = 'screen_owner' THEN 'Media Partner' WHEN qu.role = 'admin' THEN 'Administrator' ELSE 'Creator' END) AS quoted_author_role,
+        COALESCE(qu.avatar, '/audience/adam-udochi.png') AS quoted_author_avatar
       FROM creator_content c
       JOIN users u ON c.creator_id = u.id
       LEFT JOIN user_bookmarks ub ON ub.content_id = c.id AND ub.user_id = $1
       LEFT JOIN creator_content_likes cl ON cl.content_id = c.id AND cl.user_id = $1
       LEFT JOIN premium_content_purchases pcp ON pcp.content_id = c.id AND pcp.user_id = $1
+      LEFT JOIN creator_content qp ON c.quote_parent_id = qp.id
+      LEFT JOIN users qu ON qp.creator_id = qu.id
       WHERE c.status = 'published'
     `;
 
@@ -70,44 +184,92 @@ export async function getFeed(req: Request, res: Response) {
 
     const { rows } = await pool.query(query, params);
 
-    const formattedPosts = rows.map((r: any) => ({
-      id: r.id,
-      author: {
-        id: r.author_id,
-        name: r.author_name || 'Studio Arella Creator',
-        role: r.author_role || 'Creator',
-        avatar: r.author_avatar || '/audience/adam-udochi.png',
-        tier: r.author_tier || 'pro',
-      },
-      author_name: r.author_name || 'Studio Arella Creator',
-      author_role: r.author_role || 'Creator',
-      author_avatar: r.author_avatar || '/audience/adam-udochi.png',
-      author_tier: r.author_tier || 'pro',
-      title: String(r.title || 'Studio Podcast').replace(/^[-–—\s]+/, ''),
-      description: r.description,
-      mediaUrl: r.cover_url || r.media_url || '',
-      cover_url: r.cover_url || r.media_url || '',
-      duration: r.duration_text || '01:15:00',
-      currentTime: '00:04:15',
-      progressPercent: 30,
-      initialLikes: parseInt(r.likes_count, 10) || 0,
-      initialComments: parseInt(r.comments_count, 10) || 0,
-      likes_count: parseInt(r.likes_count, 10) || 0,
-      comments_count: parseInt(r.comments_count, 10) || 0,
-      badgeTheme: r.badge_theme || 'gold',
-      isBookmarked: r.is_bookmarked,
-      hasLiked: r.has_liked,
-      isPremium: r.is_premium,
-      isUnlocked: r.is_unlocked ?? (!r.is_premium),
-      price: parseFloat(r.price) || 0,
-      category: r.category,
-      tags: r.tags || [],
-    }));
+    const formattedPosts = rows.map(formatPostRow);
 
     return res.json({ posts: formattedPosts });
   } catch (error: any) {
     console.error('getFeed error:', error);
     return res.status(500).json({ error: 'Failed to fetch content feed' });
+  }
+}
+
+// ── GET SINGLE CONTENT POST DETAIL ────────────────────────────────────────────
+export async function getContentById(req: Request, res: Response) {
+  try {
+    const contentId = req.params.id;
+    const userId = (req as any).user?.id || null;
+
+    const query = `
+      SELECT 
+        c.id,
+        c.title,
+        c.description,
+        c.content_type,
+        c.media_url,
+        c.cover_url,
+        c.duration_seconds,
+        c.duration_text,
+        c.category,
+        c.tags,
+        c.is_premium,
+        c.price,
+        c.likes_count,
+        c.comments_count,
+        COALESCE(c.views_count, 0) AS views_count,
+        COALESCE(c.reposts_count, 0) AS reposts_count,
+        c.quote_parent_id,
+        c.quote_post,
+        c.badge_theme,
+        c.created_at,
+        u.id AS author_id,
+        u.name AS author_name,
+        COALESCE(u.avatar, '/audience/adam-udochi.png') AS author_avatar,
+        COALESCE(NULLIF(u.creator_niche, ''), CASE WHEN u.role = 'creator' THEN 'Creator' WHEN u.role = 'screen_owner' THEN 'Media Partner' WHEN u.role = 'admin' THEN 'Administrator' ELSE 'Creator' END) AS author_role,
+        u.creator_tier AS author_tier,
+        CASE WHEN ub.id IS NOT NULL THEN true ELSE false END AS is_bookmarked,
+        CASE WHEN cl.id IS NOT NULL THEN true ELSE false END AS has_liked,
+        CASE 
+          WHEN c.is_premium IS NOT TRUE THEN true
+          WHEN c.creator_id = $2 THEN true
+          WHEN pcp.id IS NOT NULL THEN true
+          ELSE false 
+        END AS is_unlocked,
+        qp.id AS quoted_post_id,
+        qp.title AS quoted_post_title,
+        qp.description AS quoted_post_description,
+        qp.category AS quoted_post_category,
+        qp.media_url AS quoted_post_media_url,
+        qp.cover_url AS quoted_post_cover_url,
+        qp.duration_text AS quoted_post_duration,
+        qu.id AS quoted_author_id,
+        qu.name AS quoted_author_name,
+        COALESCE(NULLIF(qu.creator_niche, ''), CASE WHEN qu.role = 'creator' THEN 'Creator' WHEN qu.role = 'screen_owner' THEN 'Media Partner' WHEN qu.role = 'admin' THEN 'Administrator' ELSE 'Creator' END) AS quoted_author_role,
+        COALESCE(qu.avatar, '/audience/adam-udochi.png') AS quoted_author_avatar
+      FROM creator_content c
+      JOIN users u ON c.creator_id = u.id
+      LEFT JOIN user_bookmarks ub ON ub.content_id = c.id AND ub.user_id = $2
+      LEFT JOIN creator_content_likes cl ON cl.content_id = c.id AND cl.user_id = $2
+      LEFT JOIN premium_content_purchases pcp ON pcp.content_id = c.id AND pcp.user_id = $2
+      LEFT JOIN creator_content qp ON c.quote_parent_id = qp.id
+      LEFT JOIN users qu ON qp.creator_id = qu.id
+      WHERE c.id = $1
+    `;
+
+    const { rows } = await pool.query(query, [contentId, userId]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Content not found' });
+    }
+
+    const formattedPost = formatPostRow(rows[0]);
+
+    return res.json({
+      post: formattedPost,
+      ...formattedPost
+    });
+  } catch (error: any) {
+    console.error('getContentById error:', error);
+    return res.status(500).json({ error: 'Failed to fetch content' });
   }
 }
 
@@ -132,7 +294,10 @@ export async function getBookmarkedContent(req: Request, res: Response) {
         c.price,
         c.likes_count,
         c.comments_count,
-        c.views_count,
+        COALESCE(c.views_count, 0) AS views_count,
+        COALESCE(c.reposts_count, 0) AS reposts_count,
+        c.quote_parent_id,
+        c.quote_post,
         c.badge_theme,
         c.created_at,
         u.id AS author_id,
@@ -141,47 +306,32 @@ export async function getBookmarkedContent(req: Request, res: Response) {
         COALESCE(NULLIF(u.creator_niche, ''), CASE WHEN u.role = 'creator' THEN 'Creator' WHEN u.role = 'screen_owner' THEN 'Media Partner' WHEN u.role = 'admin' THEN 'Administrator' ELSE 'Creator' END) AS author_role,
         u.creator_tier AS author_tier,
         true AS is_bookmarked,
-        CASE WHEN cl.id IS NOT NULL THEN true ELSE false END AS has_liked
+        CASE WHEN cl.id IS NOT NULL THEN true ELSE false END AS has_liked,
+        true AS is_unlocked,
+        qp.id AS quoted_post_id,
+        qp.title AS quoted_post_title,
+        qp.description AS quoted_post_description,
+        qp.category AS quoted_post_category,
+        qp.media_url AS quoted_post_media_url,
+        qp.cover_url AS quoted_post_cover_url,
+        qp.duration_text AS quoted_post_duration,
+        qu.id AS quoted_author_id,
+        qu.name AS quoted_author_name,
+        COALESCE(NULLIF(qu.creator_niche, ''), CASE WHEN qu.role = 'creator' THEN 'Creator' WHEN qu.role = 'screen_owner' THEN 'Media Partner' WHEN qu.role = 'admin' THEN 'Administrator' ELSE 'Creator' END) AS quoted_author_role,
+        COALESCE(qu.avatar, '/audience/adam-udochi.png') AS quoted_author_avatar
       FROM user_bookmarks ub
       JOIN creator_content c ON ub.content_id = c.id
       JOIN users u ON c.creator_id = u.id
       LEFT JOIN creator_content_likes cl ON cl.content_id = c.id AND cl.user_id = $1
+      LEFT JOIN creator_content qp ON c.quote_parent_id = qp.id
+      LEFT JOIN users qu ON qp.creator_id = qu.id
       WHERE ub.user_id = $1 AND c.status = 'published'
       ORDER BY ub.created_at DESC
     `;
 
     const { rows } = await pool.query(query, [userId]);
 
-    const formattedPosts = rows.map((r: any) => ({
-      id: r.id,
-      author: {
-        id: r.author_id,
-        name: r.author_name || 'Studio Arella Creator',
-        role: r.author_role || 'Creator',
-        avatar: r.author_avatar || '/audience/adam-udochi.png',
-        tier: r.author_tier || 'pro',
-      },
-      author_name: r.author_name || 'Studio Arella Creator',
-      author_role: r.author_role || 'Creator',
-      author_avatar: r.author_avatar || '/audience/adam-udochi.png',
-      author_tier: r.author_tier || 'pro',
-      title: String(r.title || 'Studio Podcast').replace(/^[-–—\s]+/, ''),
-      description: r.description,
-      mediaUrl: r.cover_url || r.media_url || '/audience/podcast-scthon.png',
-      cover_url: r.cover_url || r.media_url || '/audience/podcast-scthon.png',
-      duration: r.duration_text || '01:15:00',
-      currentTime: '00:04:15',
-      progressPercent: 30,
-      initialLikes: parseInt(r.likes_count, 10) || 0,
-      initialComments: parseInt(r.comments_count, 10) || 0,
-      badgeTheme: r.badge_theme || 'gold',
-      isBookmarked: true,
-      hasLiked: r.has_liked,
-      isPremium: r.is_premium,
-      price: parseFloat(r.price) || 0,
-      category: r.category,
-      tags: r.tags || [],
-    }));
+    const formattedPosts = rows.map(formatPostRow);
 
     return res.json({ posts: formattedPosts });
   } catch (error: any) {
@@ -205,26 +355,158 @@ export async function createContent(req: Request, res: Response) {
       tags = [], 
       is_premium = false, 
       price = 0,
-      badge_theme = 'gold' 
+      badge_theme = 'gold',
+      quotedPostId,
+      quote_parent_id,
+      quoteParentId,
+      quotedPost,
+      quote_post,
+      quotePost
     } = req.body;
 
-    if (!title) {
+    if (!title || typeof title !== 'string' || !title.trim()) {
       return res.status(400).json({ error: 'Title is required' });
+    }
+
+    const targetQuotedId = quotedPostId || quote_parent_id || quoteParentId || null;
+    const isQuoteUuid = targetQuotedId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetQuotedId);
+
+    let finalContentType = content_type;
+    let quotePostData = quotedPost || quote_post || quotePost || null;
+
+    if (isQuoteUuid) {
+      if (!content_type || content_type === 'post') {
+        finalContentType = 'quote';
+      }
+
+      // If snapshot is not provided, fetch original post from database
+      if (!quotePostData || !quotePostData.author) {
+        try {
+          const originalRes = await pool.query(
+            `SELECT 
+              c.id, c.title, c.description, c.category, c.cover_url, c.media_url, c.duration_text,
+              u.id AS author_id, u.name AS author_name,
+              COALESCE(NULLIF(u.creator_niche, ''), CASE WHEN u.role = 'creator' THEN 'Creator' WHEN u.role = 'screen_owner' THEN 'Media Partner' WHEN u.role = 'admin' THEN 'Administrator' ELSE 'Creator' END) AS author_role,
+              COALESCE(u.avatar, '/audience/adam-udochi.png') AS author_avatar
+            FROM creator_content c
+            JOIN users u ON c.creator_id = u.id
+            WHERE c.id = $1`,
+            [targetQuotedId]
+          );
+
+          if (originalRes.rows.length > 0) {
+            const orig = originalRes.rows[0];
+            quotePostData = {
+              id: orig.id,
+              author: {
+                id: orig.author_id,
+                name: orig.author_name || 'Studio Arella Creator',
+                role: orig.author_role || 'Creator',
+                avatar: orig.author_avatar || '/audience/adam-udochi.png'
+              },
+              title: String(orig.title || '').replace(/^[-–—\s]+/, ''),
+              description: orig.description || '',
+              category: orig.category || 'General',
+              mediaUrl: orig.cover_url || orig.media_url || '',
+              coverUrl: orig.cover_url || orig.media_url || '',
+              duration: orig.duration_text || '00:00:00'
+            };
+          }
+        } catch (origErr) {
+          console.warn('Failed to fetch quoted post details for snapshot:', origErr);
+        }
+      }
+
+      // Increment reposts_count on original post
+      try {
+        await pool.query(
+          'UPDATE creator_content SET reposts_count = COALESCE(reposts_count, 0) + 1 WHERE id = $1',
+          [targetQuotedId]
+        );
+      } catch (repErr) {
+        console.warn('Failed to increment reposts_count:', repErr);
+      }
     }
 
     const { rows } = await pool.query(
       `INSERT INTO creator_content (
         creator_id, title, description, content_type, media_url, cover_url, 
-        duration_text, category, tags, is_premium, price, badge_theme, status
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'published')
+        duration_text, category, tags, is_premium, price, badge_theme, status,
+        quote_parent_id, quote_post
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'published', $13, $14)
       RETURNING *`,
       [
-        creatorId, title, description || '', content_type, media_url || '', cover_url || '',
-        duration_text, category, tags, is_premium, price, badge_theme
+        creatorId,
+        title.trim(),
+        description || '',
+        finalContentType,
+        media_url || '',
+        cover_url || '',
+        duration_text,
+        category,
+        Array.isArray(tags) ? tags : [],
+        Boolean(is_premium),
+        parseFloat(String(price)) || 0,
+        badge_theme,
+        isQuoteUuid ? targetQuotedId : null,
+        quotePostData ? JSON.stringify(quotePostData) : null
       ]
     );
 
-    return res.status(201).json({ message: 'Content published successfully', post: rows[0] });
+    const created = rows[0];
+
+    // Fetch author info for response
+    const authorRes = await pool.query(
+      `SELECT name, avatar, creator_niche, creator_tier, role FROM users WHERE id = $1`,
+      [creatorId]
+    );
+    const author = authorRes.rows[0] || {};
+    const authorName = author.name || 'Studio Arella Creator';
+    const authorRole = author.creator_niche || (author.role === 'creator' ? 'Creator' : author.role === 'screen_owner' ? 'Media Partner' : 'Creator');
+    const authorAvatar = author.avatar || '/audience/adam-udochi.png';
+
+    const formattedCreatedPost = {
+      id: created.id,
+      author: {
+        id: creatorId,
+        name: authorName,
+        role: authorRole,
+        avatar: authorAvatar,
+        tier: author.creator_tier || 'pro',
+      },
+      author_name: authorName,
+      author_role: authorRole,
+      author_avatar: authorAvatar,
+      author_tier: author.creator_tier || 'pro',
+      title: String(created.title || 'Studio Podcast').replace(/^[-–—\s]+/, ''),
+      description: created.description || '',
+      content_type: created.content_type,
+      mediaUrl: created.cover_url || created.media_url || '',
+      cover_url: created.cover_url || created.media_url || '',
+      coverUrl: created.cover_url || created.media_url || '',
+      duration: created.duration_text || '00:45:00',
+      category: created.category,
+      tags: created.tags || [],
+      isPremium: created.is_premium,
+      price: parseFloat(created.price) || 0,
+      badgeTheme: created.badge_theme,
+      likes_count: 0,
+      comments_count: 0,
+      viewsCount: 0,
+      repostsCount: 0,
+      quotedPost: quotePostData,
+      quotePost: quotePostData,
+      quotedPostId: created.quote_parent_id,
+      quoteParentId: created.quote_parent_id,
+      created_at: created.created_at,
+      createdAt: created.created_at
+    };
+
+    return res.status(201).json({
+      message: 'Content published successfully',
+      post: formattedCreatedPost,
+      ...formattedCreatedPost
+    });
   } catch (error: any) {
     console.error('createContent error:', error);
     return res.status(500).json({ error: 'Failed to publish content' });

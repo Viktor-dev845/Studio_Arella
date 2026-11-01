@@ -45,6 +45,7 @@ import { getBlogPosts, getBlogPost, likeBlogPost, unlikeBlogPost, createBlogPost
 import {
   getFeed,
   getBookmarkedContent,
+  getContentById,
   createContent,
   toggleLikeContent,
   toggleBookmark,
@@ -282,6 +283,7 @@ router.post('/newsletter', subscribeNewsletter);
 // ── Creator Space: Content & Feed ────────────────────────────────────────────
 router.get('/content/feed', optionalAuthenticate, getFeed);
 router.get('/content/bookmarks', authenticate, getBookmarkedContent);
+router.get('/content/:id', optionalAuthenticate, getContentById);
 router.post('/content', authenticate, createContent);
 router.post('/content/:id/like', authenticate, toggleLikeContent);
 router.post('/content/:id/bookmark', authenticate, toggleBookmark);

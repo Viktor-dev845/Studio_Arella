@@ -18,7 +18,7 @@ const MONNIFY_BASE        = isMonnifyProd
   ? 'api.monnify.com'
   : 'sandbox.monnify.com';
 
-const CARD_VERIFICATION_AMOUNT = 50; // NGN — charged then refunded, verifies card token validity
+const CARD_VERIFICATION_AMOUNT = 100; // NGN — charged then refunded, satisfies bank minimum online debit limits and verifies card token validity
 
 // Helper: Save tokenized Monnify card to saved_cards table
 async function saveMonnifyCard(userId: string | undefined, cardDetails: any, cardholderName?: string | null) {
@@ -401,7 +401,7 @@ export const initializeCardLinking: RequestHandler = async (req, res) => {
 
     const paymentReference = `CARDLINK-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
     const token = await getMonnifyToken();
-    const amount = CARD_VERIFICATION_AMOUNT; // ₦50 refundable verification charge
+    const amount = CARD_VERIFICATION_AMOUNT; // ₦100 refundable verification charge
     const frontendUrl = process.env.FRONTEND_URL || (req.headers.origin as string) || 'http://localhost:3000';
 
     await pool.query(
