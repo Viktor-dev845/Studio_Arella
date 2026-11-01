@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { 
   Search,
   MessageSquare, 
@@ -81,10 +81,17 @@ export default function AudienceRightSidebar({
   onClearFilters,
 }: AudienceRightSidebarProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const activeQ = (searchParams.get('q') || searchParams.get('search') || '').trim();
+
   const { user } = useAuthStore();
   const { toast } = useToast();
 
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(activeQ);
+
+  useEffect(() => {
+    setSearchQuery(activeQ);
+  }, [activeQ]);
   const [recommendedCreators, setRecommendedCreators] = useState<CreatorRecommendation[]>([]);
   const [isLoadingCreators, setIsLoadingCreators] = useState(true);
   const [togglingFollowId, setTogglingFollowId] = useState<string | null>(null);
@@ -267,12 +274,14 @@ const DEFAULT_RECOMMENDED_CREATORS: CreatorRecommendation[] = [
     e.preventDefault();
     if (searchQuery.trim()) {
       router.push(`/audience?view=trending&q=${encodeURIComponent(searchQuery.trim())}`);
+    } else {
+      router.push(view === 'trending' ? '/audience?view=trending' : '/audience');
     }
   };
 
   // Clicking a trend filters real posts in audience view
   const handleTrendClick = (trendQuery?: string, trendTitle?: string) => {
-    const q = (trendQuery || trendTitle || '').replace('#', '').trim();
+    const q = (trendQuery || trendTitle || '').trim();
     router.push(`/audience?view=trending&q=${encodeURIComponent(q)}`);
   };
 
@@ -293,7 +302,12 @@ const DEFAULT_RECOMMENDED_CREATORS: CreatorRecommendation[] = [
           {searchQuery && (
             <button
               type="button"
-              onClick={() => setSearchQuery('')}
+              onClick={() => {
+                setSearchQuery('');
+                if (activeQ) {
+                  router.push(view === 'trending' ? '/audience?view=trending' : '/audience');
+                }
+              }}
               className="w-5 h-5 rounded-full bg-[#0F1419] text-white flex items-center justify-center hover:bg-neutral-700 transition-colors cursor-pointer"
             >
               <X size={12} />
@@ -458,37 +472,59 @@ const DEFAULT_RECOMMENDED_CREATORS: CreatorRecommendation[] = [
         ) : trends.length === 0 ? (
           <p className="text-[13px] text-gray-500 py-2 font-normal">No trending topics yet.</p>
         ) : (
-          <div className="flex flex-col divide-y divide-gray-100/80">
-            {(showAllTrends ? trends : trends.slice(0, 4)).map((t) => (
-              <div 
-                key={t.id} 
-                onClick={() => handleTrendClick(t.query, t.title)}
-                className="py-2.5 flex items-start justify-between gap-2 cursor-pointer group first:pt-1 last:pb-1"
-              >
-                <div className="flex flex-col min-w-0">
-                  <span className="text-[12px] text-gray-500 font-normal">
-                    {t.category}
-                  </span>
-                  <span className="text-[14.5px] font-bold text-gray-950 leading-tight mt-0.5 group-hover:text-[#1D9BF0] transition-colors truncate">
-                    {t.title}
-                  </span>
-                  <span className="text-[11.5px] text-gray-400 font-normal mt-0.5">
-                    {t.postCount}
-                  </span>
-                </div>
+          <div className="flex flex-col gap-1">
+            {(showAllTrends ? trends : trends.slice(0, 4)).map((t) => {
+              const cleanQ = activeQ.toLowerCase().replace(/^#/, '');
+              const cleanTrendQuery = (t.query || '').toLowerCase().replace(/^#/, '');
+              const cleanTrendTitle = (t.title || '').toLowerCase().replace(/^#/, '');
+              const isCurrentTrend = Boolean(
+                cleanQ && (cleanQ === cleanTrendQuery || cleanQ === cleanTrendTitle)
+              );
 
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                  }}
-                  className="w-7 h-7 rounded-full text-gray-400 hover:text-gray-700 hover:bg-black/5 flex items-center justify-center transition-colors shrink-0 -mr-1"
-                  title="Options"
+              return (
+                <div 
+                  key={t.id} 
+                  onClick={() => handleTrendClick(t.query, t.title)}
+                  className={`py-2 px-2.5 rounded-xl transition-all flex items-start justify-between gap-2 cursor-pointer group ${
+                    isCurrentTrend 
+                      ? 'bg-sky-50/80 border border-[#1D9BF0]/30 shadow-2xs' 
+                      : 'hover:bg-black/[0.03]'
+                  }`}
                 >
-                  <MoreHorizontal size={16} />
-                </button>
-              </div>
-            ))}
+                  <div className="flex flex-col min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[12px] text-gray-500 font-normal">
+                        {t.category}
+                      </span>
+                      {isCurrentTrend && (
+                        <span className="px-1.5 py-0.5 bg-[#1D9BF0] text-white text-[9px] font-bold rounded-full uppercase tracking-wider">
+                          Active
+                        </span>
+                      )}
+                    </div>
+                    <span className={`text-[14.5px] font-bold leading-tight mt-0.5 truncate transition-colors ${
+                      isCurrentTrend ? 'text-[#1D9BF0]' : 'text-gray-950 group-hover:text-[#1D9BF0]'
+                    }`}>
+                      {t.title}
+                    </span>
+                    <span className="text-[11.5px] text-gray-400 font-normal mt-0.5">
+                      {t.postCount}
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                    }}
+                    className="w-7 h-7 rounded-full text-gray-400 hover:text-gray-700 hover:bg-black/5 flex items-center justify-center transition-colors shrink-0 -mr-1"
+                    title="Options"
+                  >
+                    <MoreHorizontal size={16} />
+                  </button>
+                </div>
+              );
+            })}
           </div>
         )}
 

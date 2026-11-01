@@ -44,6 +44,7 @@ import { getBlogPosts, getBlogPost, likeBlogPost, unlikeBlogPost, createBlogPost
 // ── Creator Space Controllers ────────────────────────────────────────────────
 import {
   getFeed,
+  getTrending,
   getBookmarkedContent,
   getContentById,
   createContent,
@@ -282,6 +283,7 @@ router.post('/newsletter', subscribeNewsletter);
 
 // ── Creator Space: Content & Feed ────────────────────────────────────────────
 router.get('/content/feed', optionalAuthenticate, getFeed);
+router.get('/content/trending', getTrending);
 router.get('/content/bookmarks', authenticate, getBookmarkedContent);
 router.get('/content/:id', optionalAuthenticate, getContentById);
 router.post('/content', authenticate, createContent);

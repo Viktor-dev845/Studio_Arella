@@ -20,6 +20,7 @@ import AudiencePodcastPlayerView from '@/components/audience/AudiencePodcastPlay
 import AudiencePremiumCard from '@/components/audience/AudiencePremiumCard';
 import AudienceGetVerifiedView from '@/components/audience/AudienceGetVerifiedView';
 import AudienceSponsoredAdCard from '@/components/audience/AudienceSponsoredAdCard';
+import { TrendingUp, X } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/api';
 
@@ -257,6 +258,8 @@ function AudienceContent() {
 
   const activeMenu = resolveActiveMenu(queryView);
 
+  const queryQ = (searchParams.get('q') || searchParams.get('search') || '').trim();
+
   const [posts, setPosts] = useState<PostData[]>([]);
   const [isLoadingPosts, setIsLoadingPosts] = useState<boolean>(false);
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
@@ -265,12 +268,17 @@ function AudienceContent() {
   // Fetch live posts from Creator Space API for the active view with resilient fallbacks
   useEffect(() => {
     let isMounted = true;
-    let url = '/content/feed';
-    if (activeMenu === 'bookmarks') {
-      url = '/content/bookmarks';
-    } else if (activeMenu === 'trending') {
-      url = '/content/feed?view=trending';
+    const params = new URLSearchParams();
+    if (activeMenu === 'trending') {
+      params.set('view', 'trending');
     }
+    if (queryQ) {
+      params.set('q', queryQ);
+    }
+    const queryStr = params.toString() ? `?${params.toString()}` : '';
+
+    const url = activeMenu === 'bookmarks' ? '/content/bookmarks' : `/content/feed${queryStr}`;
+    const directUrl = activeMenu === 'bookmarks' ? '/api/content/bookmarks' : `/api/content/feed${queryStr}`;
 
     const fetchPosts = async () => {
       setIsLoadingPosts(true);
@@ -279,7 +287,6 @@ function AudienceContent() {
         
         // 1. Prioritize internal Next.js direct database route (fast, live Supabase connection)
         try {
-          const directUrl = `/api/content/feed${activeMenu === 'trending' ? '?view=trending' : ''}`;
           const directRes = await fetch(directUrl);
           if (directRes.ok) {
             const data = await directRes.json();
@@ -289,8 +296,8 @@ function AudienceContent() {
           // Direct route error
         }
 
-        // 2. Fall back to external API if direct route returned no posts
-        if (feedPosts.length === 0) {
+        // 2. Fall back to external API if direct route returned no posts AND no search query was passed
+        if (feedPosts.length === 0 && !queryQ) {
           try {
             const res = await api.get(url);
             feedPosts = res.data?.posts || [];
@@ -360,8 +367,25 @@ function AudienceContent() {
           });
           setPosts(mapped);
         } else {
-          // 3. Fall back to rich Figma seeded posts so the space is never accidentally blank
-          if (activeMenu === 'bookmarks') {
+          // 3. Fall back to rich Figma seeded posts if no search query, or filter seeded posts if search query exists
+          if (queryQ) {
+            const cleanQ = queryQ.toLowerCase().replace(/^#/, '');
+            const matchingDefaults = DEFAULT_FEED_POSTS.filter((post) => {
+              const postCat = (post.category || '').toLowerCase();
+              const postTitle = (post.title || '').toLowerCase();
+              const postDesc = (post.description || '').toLowerCase();
+              const postTags = (post.tags || []).map((t) => t.toLowerCase());
+              const authorName = (post.author?.name || '').toLowerCase();
+              return (
+                postTitle.includes(cleanQ) ||
+                postDesc.includes(cleanQ) ||
+                postCat.includes(cleanQ) ||
+                authorName.includes(cleanQ) ||
+                postTags.some((tag) => tag.includes(cleanQ))
+              );
+            });
+            setPosts(matchingDefaults);
+          } else if (activeMenu === 'bookmarks') {
             setPosts(DEFAULT_BOOKMARKED_POSTS);
           } else {
             setPosts(DEFAULT_FEED_POSTS);
@@ -392,7 +416,7 @@ function AudienceContent() {
       isMounted = false;
       window.removeEventListener('post-created', handlePostCreatedEvent);
     };
-  }, [activeMenu]);
+  }, [activeMenu, queryQ]);
 
   // Real-time topic, search query, and live experience filter connected to backend posts
   const searchQuery = (searchParams.get('q') || '').toLowerCase().trim();
@@ -772,6 +796,38 @@ function AudienceContent() {
                     />
                   )}
 
+                  {queryQ && (
+                    <div className="bg-gradient-to-r from-amber-50/70 via-white to-sky-50/40 rounded-[16px] px-5 py-3.5 border border-[#D4AF37]/30 shadow-2xs flex items-center justify-between">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-8 h-8 rounded-full bg-[#D4AF37]/15 text-[#8B7322] flex items-center justify-center shrink-0">
+                          <TrendingUp size={16} />
+                        </div>
+                        <div className="flex flex-col min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500">
+                              {activeMenu === 'trending' ? 'Trending Topic' : 'Search Filter'}
+                            </span>
+                            <span className="px-2 py-0.5 rounded-full bg-black/5 text-[11px] font-bold text-gray-700">
+                              {filteredPosts.length} {filteredPosts.length === 1 ? 'post' : 'posts'}
+                            </span>
+                          </div>
+                          <h3 className="text-[15px] font-extrabold text-gray-950 truncate">
+                            {queryQ.startsWith('#') ? queryQ : `#${queryQ}`}
+                          </h3>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => router.push(activeMenu === 'trending' ? '/audience?view=trending' : '/audience')}
+                        className="px-3 py-1.5 rounded-full text-[12px] font-bold text-gray-600 hover:text-black hover:bg-black/5 transition-colors flex items-center gap-1.5 shrink-0 cursor-pointer"
+                        title="Clear filter"
+                      >
+                        <X size={14} />
+                        <span>All Posts</span>
+                      </button>
+                    </div>
+                  )}
+
                   <div className="flex flex-col gap-6">
                     {isLoadingPosts ? (
                       <div className="flex flex-col gap-6 animate-pulse">
@@ -793,11 +849,13 @@ function AudienceContent() {
                       <div className="bg-white rounded-[16px] p-12 text-center shadow-sm border border-gray-100/80 flex flex-col items-center justify-center">
                         <div className="w-16 h-16 rounded-full bg-amber-50 flex items-center justify-center mb-4">
                           <span className="text-2xl">
-                            {posts.length === 0 ? '🎙️' : '🔍'}
+                            {queryQ ? '🔍' : posts.length === 0 ? '🎙️' : '🔍'}
                           </span>
                         </div>
                         <h4 className="text-[17px] font-semibold text-[#181818]">
-                          {posts.length === 0 
+                          {queryQ 
+                            ? `No posts found for "${queryQ}"`
+                            : posts.length === 0 
                             ? (activeMenu === 'bookmarks'
                                 ? 'No saved bookmarks yet'
                                 : activeMenu === 'trending'
@@ -806,7 +864,9 @@ function AudienceContent() {
                             : 'No podcasts found matching this topic'}
                         </h4>
                         <p className="text-[13px] text-[#181818]/60 max-w-[340px] mt-1.5 leading-relaxed">
-                          {posts.length === 0 
+                          {queryQ
+                            ? 'No creator posts currently match this trending topic. Be the first to publish content about it!'
+                            : posts.length === 0 
                             ? (activeMenu === 'bookmarks'
                                 ? 'Click the bookmark icon on any podcast card in the feed to save episodes here for later listening.'
                                 : activeMenu === 'trending'
@@ -814,16 +874,17 @@ function AudienceContent() {
                                 : 'Be the first to share an audio experience with your community!')
                             : 'Try selecting another genre or click below to reset your filters and see all podcasts.'}
                         </p>
-                        {posts.length > 0 && (selectedTopics.length > 0 || (selectedLiveExp.length > 0 && !selectedLiveExp.includes('all'))) && (
+                        {(queryQ || posts.length > 0) && (queryQ || selectedTopics.length > 0 || (selectedLiveExp.length > 0 && !selectedLiveExp.includes('all'))) && (
                           <button
                             type="button"
                             onClick={() => {
                               setSelectedTopics([]);
                               setSelectedLiveExp([]);
+                              router.push(activeMenu === 'trending' ? '/audience?view=trending' : '/audience');
                             }}
-                            className="mt-4 px-4 py-2 bg-[#D4AF37] hover:bg-[#b89528] text-white rounded-full text-[13px] font-semibold shadow-sm transition-all cursor-pointer"
+                            className="mt-4 px-5 py-2 bg-[#D4AF37] hover:bg-[#b89528] text-white rounded-full text-[13px] font-semibold shadow-sm transition-all cursor-pointer"
                           >
-                            View All Podcasts
+                            View All Posts
                           </button>
                         )}
                       </div>

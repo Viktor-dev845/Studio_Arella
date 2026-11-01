@@ -70,6 +70,37 @@ export async function GET(request: Request) {
       paramIndex++;
     }
 
+    const q = searchParams.get('q') || searchParams.get('search');
+    const searchQuery = (q || '').trim();
+    if (searchQuery) {
+      const cleanSearch = searchQuery.replace(/^#/, '').trim();
+      const searchTerms = cleanSearch.split(/\s+/).filter((w) => w.length > 2);
+
+      query += ` AND (
+        c.title ILIKE $${paramIndex} OR
+        c.description ILIKE $${paramIndex} OR
+        c.category ILIKE $${paramIndex} OR
+        u.name ILIKE $${paramIndex} OR
+        $${paramIndex + 1} = ANY(c.tags) OR
+        EXISTS (SELECT 1 FROM unnest(c.tags) t WHERE t ILIKE $${paramIndex}) OR
+        (c.category IS NOT NULL AND c.category != '' AND $${paramIndex + 2} ILIKE '%' || c.category || '%') OR
+        EXISTS (SELECT 1 FROM unnest(c.tags) t WHERE LENGTH(replace(t, '#', '')) >= 3 AND $${paramIndex + 2} ILIKE '%' || replace(t, '#', '') || '%')
+      `;
+      params.push(`%${cleanSearch}%`);
+      params.push(cleanSearch.toLowerCase().startsWith('#') ? cleanSearch.toLowerCase() : `#${cleanSearch.toLowerCase()}`);
+      params.push(cleanSearch);
+      paramIndex += 3;
+
+      for (const term of searchTerms) {
+        query += ` OR c.category ILIKE $${paramIndex} OR EXISTS (SELECT 1 FROM unnest(c.tags) t WHERE t ILIKE $${paramIndex}) OR (c.category IS NOT NULL AND c.category != '' AND $${paramIndex + 1} ILIKE '%' || c.category || '%')`;
+        params.push(`%${term}%`);
+        params.push(term);
+        paramIndex += 2;
+      }
+
+      query += `)`;
+    }
+
     if (view === 'trending') {
       query += ` ORDER BY CASE WHEN c.created_at >= NOW() - INTERVAL '24 hours' THEN 1 ELSE 0 END DESC, (c.likes_count + c.comments_count + c.views_count) DESC, c.created_at DESC`;
     } else {
