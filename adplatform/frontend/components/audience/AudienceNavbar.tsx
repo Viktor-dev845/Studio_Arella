@@ -70,7 +70,7 @@ export default function AudienceNavbar({
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full h-[76px] bg-white border-b border-[#F0F0F0] flex items-center justify-between px-6 lg:px-14 shadow-[0_1px_2px_rgba(0,0,0,0.03)] font-quicksand">
+    <header className="sticky top-0 z-50 w-full h-[76px] bg-white border-b border-[#F0F0F0] flex items-center justify-between px-6 lg:px-14 shadow-[0_1px_2px_rgba(0,0,0,0.03)] font-quicksand shrink-0">
       {/* ─── Left: Studio Arella Logo ─── */}
       <div className="flex items-center">
         <Link href="/audience" className="flex items-center hover:opacity-90 transition-opacity">

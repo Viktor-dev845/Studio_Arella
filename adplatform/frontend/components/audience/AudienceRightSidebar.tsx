@@ -277,7 +277,7 @@ const DEFAULT_RECOMMENDED_CREATORS: CreatorRecommendation[] = [
   };
 
   return (
-    <aside className="w-full lg:w-[320px] xl:w-[350px] flex flex-col gap-4 shrink-0 relative lg:sticky lg:top-[88px] lg:self-start lg:max-h-[calc(100vh-96px)] lg:overflow-y-auto no-scrollbar font-quicksand pb-6">
+    <aside className="w-full lg:w-[320px] xl:w-[350px] flex flex-col gap-4 shrink-0 relative lg:h-full lg:overflow-y-auto no-scrollbar font-quicksand pb-6">
       
       {/* ─── 1. Capsule Search Bar (Connected to Live Search) ─── */}
       <form onSubmit={handleSearchSubmit} className="w-full relative">
