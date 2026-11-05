@@ -19,73 +19,61 @@ export default function LandingNavbar() {
   const navLinks = [
     { name: 'Home', href: '#home' },
     { name: 'How it works', href: '#process' },
-    { name: 'Services', href: '#services' },
-    { name: 'Testimonials', href: '#testimonials' },
-    { name: 'FAQ', href: '#faq' },
+    { name: 'About us', href: '#services' },
     { name: 'Contact us', href: '#contact' },
+    { name: 'Pricing', href: '/pricing' },
+    { name: 'Blog', href: '/blog' },
   ];
 
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
-          ? 'bg-white/95 backdrop-blur-md shadow-xs py-3.5 border-b border-gray-100'
-          : 'bg-transparent py-5 sm:py-6'
+          ? 'bg-white/95 backdrop-blur-md shadow-xs py-3 border-b border-gray-100'
+          : 'bg-white/80 backdrop-blur-xs py-4 sm:py-5'
       }`}
     >
-      <div className="max-w-[1520px] mx-auto px-5 sm:px-10 lg:px-16 flex items-center justify-between">
-        {/* Logo - Bold, Clear, and Enlarged */}
-        <Link href="/" className="flex items-center gap-2 group flex-shrink-0 py-1">
-          <div className="relative transition-transform duration-200 group-hover:scale-105">
-            <img
-              src="/studio-arella-logo.png"
-              alt="Studio Arella"
-              className="h-14 sm:h-16 md:h-20 w-auto object-contain filter drop-shadow-xs"
-            />
-          </div>
+      <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-12 flex items-center justify-between">
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2 flex-shrink-0">
+          <img
+            src="/studio-arella-logo.png"
+            alt="Studio Arella"
+            className="h-10 sm:h-12 w-auto object-contain"
+          />
         </Link>
 
-        {/* Desktop Nav Links Pill - Enlarged with comfortable touch & text size */}
-        <nav className="hidden md:flex items-center gap-1.5 lg:gap-3 px-7 py-3 bg-white/95 border border-gray-200/90 rounded-full shadow-xs backdrop-blur-md">
+        {/* Desktop Nav Links - Clean without outer pill enclosure */}
+        <nav className="hidden md:flex items-center gap-7 lg:gap-9">
           {navLinks.map((link) => (
             <a
               key={link.name}
               href={link.href}
-              className="px-4 py-1.5 text-base font-bold text-[#1F1F1F] hover:text-[#000000] hover:bg-gray-100/80 rounded-full transition-colors duration-150"
+              className="text-sm lg:text-base font-medium text-[#1F1F1F] hover:text-black transition-colors"
             >
               {link.name}
             </a>
           ))}
         </nav>
 
-        {/* CTA Actions */}
-        <div className="hidden sm:flex items-center gap-5">
-          <Link
-            href="/auth/login"
-            className="text-base font-bold text-gray-800 hover:text-black px-4 py-2.5 transition-colors"
-          >
-            Sign in
-          </Link>
+        {/* Right CTA Button */}
+        <div className="hidden sm:flex items-center">
           <Link
             href="/auth/register"
-            className="group inline-flex items-center gap-2.5 px-7 py-3.5 rounded-full bg-black text-white text-base font-bold shadow-md hover:bg-zinc-800 transition-all duration-200 hover:shadow-xl active:scale-95"
-            style={{
-              boxShadow:
-                'inset 0px 17.5px 35px 0px rgba(255, 255, 255, 0.08), inset 0px -4px 6px 0px rgba(255, 255, 255, 0.03)',
-            }}
+            className="group inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-black text-white text-sm sm:text-base font-semibold hover:bg-zinc-800 transition-all duration-200 active:scale-95 shadow-sm"
           >
             <span>Get Started</span>
-            <ArrowUpRight className="w-4.5 h-4.5 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            <ArrowUpRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
           </Link>
         </div>
 
         {/* Mobile Hamburger Button */}
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="md:hidden p-2.5 rounded-xl text-gray-800 hover:bg-gray-100 transition-colors"
+          className="md:hidden p-2 rounded-xl text-gray-800 hover:bg-gray-100 transition-colors"
           aria-label="Toggle Navigation Menu"
         >
-          {mobileMenuOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
+          {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
       </div>
 

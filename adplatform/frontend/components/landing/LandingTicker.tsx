@@ -18,8 +18,8 @@ export default function LandingTicker() {
   return (
     <section className="py-14 md:py-20 bg-white border-y border-gray-100 overflow-hidden">
       <div className="max-w-[1520px] mx-auto px-5 sm:px-10 lg:px-16 mb-9 text-center">
-        <p className="text-sm sm:text-base uppercase tracking-widest text-[#4A4B48] font-bold">
-          Trusted by Top Businesses &amp; Brands
+        <p className="text-sm sm:text-base tracking-widest text-[#5E5F5C] font-semibold">
+          Trusted by Businesses
         </p>
       </div>
 
