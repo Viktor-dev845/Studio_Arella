@@ -155,7 +155,8 @@ export default function PublicBlogLayout({ children }: { children: React.ReactNo
   const email = form.elements[1].value; 
   const category = form.elements[2].value; 
   try { 
-    const res = await fetch('https://studio-arella.onrender.com/api/newsletter', { 
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.studioarella.com/api';
+    const res = await fetch(`${apiUrl}/newsletter`, { 
       method: 'POST', 
       headers: { 'Content-Type': 'application/json' }, 
       body: JSON.stringify({ firstName, email, category }) 

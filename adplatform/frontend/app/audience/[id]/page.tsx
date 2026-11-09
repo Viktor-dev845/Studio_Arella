@@ -34,7 +34,7 @@ function formatDuration(sec: number | null) {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'https://studio-arella.onrender.com/api').replace('/api', '');
+const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'https://api.studioarella.com/api').replace('/api', '');
 
 function resolveMediaUrl(url: string | null | undefined): string {
   if (!url) return '';

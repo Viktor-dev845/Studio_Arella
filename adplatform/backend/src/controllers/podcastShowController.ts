@@ -52,7 +52,7 @@ async function uploadFileResilient(
   const filepath = path.join(uploadDir, safeName);
   fs.writeFileSync(filepath, file.buffer);
 
-  const baseUrl = process.env.BASE_URL || (process.env.NODE_ENV === 'production' ? 'https://studio-arella.onrender.com' : '');
+  const baseUrl = process.env.BASE_URL || (process.env.NODE_ENV === 'production' ? 'https://api.studioarella.com' : '');
   const urlPath = `/uploads/${safeName}`;
   const fullUrl = baseUrl ? `${baseUrl}${urlPath}` : urlPath;
 
