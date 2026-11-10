@@ -23,13 +23,16 @@ import {
   DollarSign,
   X,
   FileText,
-  Mail
+  Mail,
+  Lock
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useThemeStore } from '@/store/themeStore';
+import { useToast } from '@/components/ui/ToastProvider';
 import { theme } from '@/lib/theme';
 
 const F = theme.font.body;
+const CREATOR_SPACE_LOCKED = true;
 
 const adminNav = [
   { href: '/admin', label: 'Overview', icon: Shield },
@@ -140,6 +143,7 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
   const pathname = usePathname();
   const { user, logout } = useAuthStore();
   const { theme: colorMode } = useThemeStore();
+  const { toast } = useToast();
   
   const isAdmin = user?.role === 'admin';
   const showAdminSidebar = isAdmin && pathname.startsWith('/admin');
@@ -315,6 +319,19 @@ export default function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean;
                 {pathname.startsWith('/admin') ? 'Exit Admin' : 'Admin'}
               </span>
             </Link>
+          ) : CREATOR_SPACE_LOCKED && !pathname.startsWith('/audience') ? (
+            <button
+              type="button"
+              onClick={() => toast('Creator Space is temporarily locked and coming soon!', 'info')}
+              className="flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-xs font-bold text-neutral-700 dark:text-neutral-300 opacity-60 cursor-not-allowed transition-colors"
+              title="Creator Space (Temporarily Locked)"
+            >
+              <span>Audience Space</span>
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#D4AF37] text-black font-extrabold text-[10px]">
+                <Lock size={9} strokeWidth={2.5} />
+                Audience
+              </span>
+            </button>
           ) : (
             <Link
               href={pathname.startsWith('/audience') ? '/dashboard' : '/audience'}

@@ -7,20 +7,23 @@ import { useAuthStore } from '@/store/authStore';
 import { useThemeStore } from '@/store/themeStore';
 import { FaArrowRightFromBracket } from 'react-icons/fa6';
 import NotificationBell from '@/components/ui/NotificationBell';
-import { Search, Star, Sun, Moon, History, PanelLeft, Loader2, LayoutDashboard, User, LifeBuoy, Shield } from 'lucide-react';
+import { Search, Star, Sun, Moon, History, PanelLeft, Loader2, LayoutDashboard, User, LifeBuoy, Shield, Lock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '@/lib/api';
 import { theme } from '@/lib/theme';
 import { trackRecentPage, getRecentPages, pathToLabel, RecentPage } from '@/lib/recentPages';
 import { startRouteTransition } from '@/components/ui/RouteTransitionLoader';
+import { useToast } from '@/components/ui/ToastProvider';
 
 const F = theme.font.body;
+const CREATOR_SPACE_LOCKED = true;
 
 interface SearchResult { type: string; label: string; path: string; }
 
 export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const { user, logout } = useAuthStore();
   const { theme: colorMode, toggleTheme } = useThemeStore();
+  const { toast } = useToast();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -44,7 +47,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
   // Aggressive route prefetching: eliminates network delay when switching between Audience and Dashboard
   useEffect(() => {
     try {
-      router.prefetch('/audience');
+      if (!CREATOR_SPACE_LOCKED) router.prefetch('/audience');
       router.prefetch('/dashboard');
     } catch {
       // ignore
@@ -52,6 +55,10 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
   }, [router]);
 
   const handleToggleMode = () => {
+    if (CREATOR_SPACE_LOCKED && !optimisticAudience) {
+      toast('Creator Space is temporarily locked and coming soon!', 'info');
+      return;
+    }
     if (isSwitchingMode) return;
     const nextIsAudience = !optimisticAudience;
     setOptimisticAudience(nextIsAudience);
@@ -232,12 +239,11 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
           <button
             type="button"
             onClick={handleToggleMode}
-            onMouseEnter={() => {
-              try { router.prefetch(optimisticAudience ? '/dashboard' : '/audience'); } catch {}
-            }}
             disabled={isSwitchingMode}
-            className="relative inline-flex h-5 w-9 items-center rounded-full bg-neutral-900 dark:bg-white/20 p-0.5 transition-colors cursor-pointer disabled:cursor-wait"
-            title={optimisticAudience ? 'Switch back to Advertiser dashboard' : 'Preview Audience Creator Space'}
+            className={`relative inline-flex h-5 w-9 items-center rounded-full bg-neutral-900 dark:bg-white/20 p-0.5 transition-colors ${
+              CREATOR_SPACE_LOCKED ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'
+            } disabled:cursor-wait`}
+            title={CREATOR_SPACE_LOCKED ? 'Creator Space (Temporarily Locked)' : (optimisticAudience ? 'Switch back to Advertiser dashboard' : 'Preview Audience Creator Space')}
           >
             <span
               className={`flex items-center justify-center h-4 w-4 rounded-full bg-[#D4AF37] shadow-xs transition-transform duration-250 ease-out ${
@@ -246,13 +252,16 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
             >
               {isSwitchingMode ? (
                 <Loader2 size={10} className="animate-spin text-black" />
+              ) : CREATOR_SPACE_LOCKED ? (
+                <Lock size={9} className="text-black" strokeWidth={2.5} />
               ) : (
                 <span className="w-1.5 h-1.5 rounded-full bg-black/80" />
               )}
             </span>
           </button>
-          <span className={`transition-colors duration-200 flex items-center gap-1.5 ${optimisticAudience ? "text-neutral-900 dark:text-white font-semibold" : ""}`}>
+          <span className={`transition-colors duration-200 flex items-center gap-1 ${optimisticAudience ? "text-neutral-900 dark:text-white font-semibold" : "opacity-60"}`}>
             <span>Audience</span>
+            {CREATOR_SPACE_LOCKED && <Lock size={11} className="text-neutral-400" />}
             {isSwitchingMode && (
               <Loader2 size={11} className="animate-spin text-[#D4AF37]" />
             )}
@@ -391,10 +400,13 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
                         setDropOpen(false);
                         handleToggleMode();
                       }}
-                      className="w-full flex items-center justify-between py-1 text-[13px] font-bold text-neutral-800 dark:text-neutral-200"
+                      className={`w-full flex items-center justify-between py-1 text-[13px] font-bold text-neutral-800 dark:text-neutral-200 ${
+                        CREATOR_SPACE_LOCKED ? 'opacity-60 cursor-not-allowed' : ''
+                      }`}
                     >
                       <span>Switch space:</span>
-                      <span className="text-xs px-2.5 py-1 rounded-full bg-[#D4AF37] text-black font-extrabold shadow-xs">
+                      <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-[#D4AF37] text-black font-extrabold shadow-xs">
+                        {CREATOR_SPACE_LOCKED && <Lock size={11} />}
                         {optimisticAudience ? '→ Advertiser' : '→ Audience'}
                       </span>
                     </button>

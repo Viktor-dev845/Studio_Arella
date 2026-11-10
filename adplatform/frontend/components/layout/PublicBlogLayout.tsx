@@ -1,10 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { theme } from '@/lib/theme';
 import { useAuthStore } from '@/store/authStore';
-import { useState, useEffect } from 'react';
 
 export default function PublicBlogLayout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuthStore();
@@ -48,10 +47,10 @@ export default function PublicBlogLayout({ children }: { children: React.ReactNo
           ))}
         </div>
 
-        <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', gap: 16 }}>
+        <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 12 }}>
           {mounted && user ? (
             <>
-              <Link href="/" style={{
+              <Link href={(user as any)?.role === 'admin' ? '/admin' : '/dashboard'} style={{
                 padding: '10px 20px',
                 borderRadius: 6,
                 background: '#262626',
@@ -76,17 +75,41 @@ export default function PublicBlogLayout({ children }: { children: React.ReactNo
               </button>
             </>
           ) : mounted ? (
-            <Link href="/book-ad" style={{
-              padding: '10px 20px',
-              borderRadius: 6,
-              background: '#D4AF37',
-              color: '#121212',
-              fontSize: 14,
-              fontWeight: 600,
-              textDecoration: 'none'
-            }}>
-              Advertise
-            </Link>
+            <>
+              <Link href="/auth/login" className="hidden sm:inline-block" style={{
+                padding: '10px 16px',
+                borderRadius: 6,
+                color: '#FFFFFF',
+                fontSize: 14,
+                fontWeight: 600,
+                textDecoration: 'none',
+                border: '1px solid #333333'
+              }}>
+                Sign In
+              </Link>
+              <Link href="/auth/register" style={{
+                padding: '10px 18px',
+                borderRadius: 6,
+                background: '#FFFFFF',
+                color: '#0A0A0A',
+                fontSize: 14,
+                fontWeight: 700,
+                textDecoration: 'none'
+              }}>
+                Sign Up
+              </Link>
+              <Link href="/book-ad" style={{
+                padding: '10px 20px',
+                borderRadius: 6,
+                background: '#D4AF37',
+                color: '#121212',
+                fontSize: 14,
+                fontWeight: 700,
+                textDecoration: 'none'
+              }}>
+                Advertise
+              </Link>
+            </>
           ) : null}
         </div>
       </header>

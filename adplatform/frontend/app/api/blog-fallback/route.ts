@@ -7,13 +7,17 @@ const pool = new Pool({
 });
 export const dynamic = 'force-dynamic';
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
     const result = await pool.query(
-      `SELECT * FROM blog_posts WHERE status = 'published' ORDER BY published_at DESC LIMIT 20`
+      `SELECT p.*,
+        (SELECT COUNT(*) FROM blog_post_likes l WHERE l.post_id = p.id) AS table_likes_count
+       FROM blog_posts p
+       WHERE p.status = 'published'
+       ORDER BY p.published_at DESC
+       LIMIT 20`
     );
     
-    // Map snake_case to camelCase
     const posts = result.rows.map(row => ({
       id: row.id,
       title: row.title,
@@ -23,7 +27,7 @@ export async function GET(request: Request) {
       authorName: row.author_name,
       imageUrl: row.image_url,
       readingTimeMinutes: row.reading_time_minutes,
-      likesCount: Number(row.likes_count || 0),
+      likesCount: Math.max(Number(row.likes_count || 0), Number(row.table_likes_count || 0)),
       viewsCount: Number(row.views_count || 0),
       commentsCount: Number(row.comments_count || 0),
       publishedAt: row.published_at,

@@ -13,7 +13,7 @@ const mapPost = (row: any) => ({
   authorName: row.author_name,
   imageUrl: row.image_url,
   readingTimeMinutes: row.reading_time_minutes,
-  likesCount: Number(row.likes_count || 0),
+  likesCount: Math.max(Number(row.likes_count || 0), Number(row.table_likes_count || 0)),
   viewsCount: Number(row.views_count || 0),
   commentsCount: Number(row.comments_count || 0),
   publishedAt: row.published_at,
@@ -30,7 +30,7 @@ export const getBlogPosts: RequestHandler = async (req, res) => {
 
     const result = await pool.query(
       `SELECT p.*,
-        (SELECT COUNT(*) FROM blog_post_likes l WHERE l.post_id = p.id) as likes_count,
+        (SELECT COUNT(*) FROM blog_post_likes l WHERE l.post_id = p.id) as table_likes_count,
         EXISTS(SELECT 1 FROM blog_post_likes l2 WHERE l2.post_id = p.id AND l2.user_id = $1) as liked
        FROM blog_posts p
        WHERE p.status = 'published'
@@ -53,14 +53,14 @@ export const getBlogPost: RequestHandler = async (req, res) => {
   try {
     const myId = authReq.user?.id || null;
     const updated = await pool.query(
-      `UPDATE blog_posts SET views_count = views_count + 1 WHERE id = $1 AND status = 'published' RETURNING id`,
+      `UPDATE blog_posts SET views_count = COALESCE(views_count, 0) + 1 WHERE id = $1 AND status = 'published' RETURNING id`,
       [req.params.id]
     );
     if (updated.rows.length === 0) { res.status(404).json({ message: 'Post not found' }); return; }
 
     const result = await pool.query(
       `SELECT p.*,
-        (SELECT COUNT(*) FROM blog_post_likes l WHERE l.post_id = p.id) as likes_count,
+        (SELECT COUNT(*) FROM blog_post_likes l WHERE l.post_id = p.id) as table_likes_count,
         EXISTS(SELECT 1 FROM blog_post_likes l2 WHERE l2.post_id = p.id AND l2.user_id = $1) as liked
        FROM blog_posts p WHERE p.id = $2`,
       [myId, req.params.id]
@@ -75,12 +75,23 @@ export const getBlogPost: RequestHandler = async (req, res) => {
 export const likeBlogPost: RequestHandler = async (req, res) => {
   const authReq = req as AuthRequest;
   try {
-    await pool.query(
-      `INSERT INTO blog_post_likes (post_id, user_id) VALUES ($1, $2) ON CONFLICT (post_id, user_id) DO NOTHING`,
-      [req.params.id, authReq.user?.id]
+    if (authReq.user?.id) {
+      await pool.query(
+        `INSERT INTO blog_post_likes (post_id, user_id) VALUES ($1, $2) ON CONFLICT (post_id, user_id) DO NOTHING`,
+        [req.params.id, authReq.user.id]
+      );
+    }
+    const updated = await pool.query(
+      `UPDATE blog_posts p
+       SET likes_count = COALESCE(p.likes_count, 0) + 1
+       WHERE p.id = $1
+       RETURNING p.likes_count,
+         (SELECT COUNT(*) FROM blog_post_likes l WHERE l.post_id = p.id) AS table_likes_count`,
+      [req.params.id]
     );
-    const count = await pool.query('SELECT COUNT(*) FROM blog_post_likes WHERE post_id = $1', [req.params.id]);
-    res.json({ liked: true, likesCount: parseInt(count.rows[0].count) });
+    const row = updated.rows[0];
+    const likesCount = Math.max(Number(row?.likes_count || 0), Number(row?.table_likes_count || 0));
+    res.json({ liked: true, likesCount });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
@@ -89,9 +100,33 @@ export const likeBlogPost: RequestHandler = async (req, res) => {
 export const unlikeBlogPost: RequestHandler = async (req, res) => {
   const authReq = req as AuthRequest;
   try {
-    await pool.query('DELETE FROM blog_post_likes WHERE post_id = $1 AND user_id = $2', [req.params.id, authReq.user?.id]);
-    const count = await pool.query('SELECT COUNT(*) FROM blog_post_likes WHERE post_id = $1', [req.params.id]);
-    res.json({ liked: false, likesCount: parseInt(count.rows[0].count) });
+    if (authReq.user?.id) {
+      await pool.query('DELETE FROM blog_post_likes WHERE post_id = $1 AND user_id = $2', [req.params.id, authReq.user.id]);
+    }
+    const updated = await pool.query(
+      `UPDATE blog_posts p
+       SET likes_count = GREATEST(0, COALESCE(p.likes_count, 0) - 1)
+       WHERE p.id = $1
+       RETURNING p.likes_count,
+         (SELECT COUNT(*) FROM blog_post_likes l WHERE l.post_id = p.id) AS table_likes_count`,
+      [req.params.id]
+    );
+    const row = updated.rows[0];
+    const likesCount = Math.max(Number(row?.likes_count || 0), Number(row?.table_likes_count || 0));
+    res.json({ liked: false, likesCount });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+export const shareBlogPost: RequestHandler = async (req, res) => {
+  try {
+    const updated = await pool.query(
+      `UPDATE blog_posts SET comments_count = COALESCE(comments_count, 0) + 1 WHERE id = $1 RETURNING comments_count`,
+      [req.params.id]
+    );
+    if (!updated.rows[0]) { res.status(404).json({ message: 'Post not found' }); return; }
+    res.json({ commentsCount: Number(updated.rows[0].comments_count || 0) });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
@@ -157,7 +192,7 @@ export const getAllBlogPostsAdmin: RequestHandler = async (req, res) => {
   if (authReq.user?.role !== 'admin') { res.status(403).json({ message: 'Admin only' }); return; }
   try {
     const result = await pool.query(
-      `SELECT p.*, (SELECT COUNT(*) FROM blog_post_likes l WHERE l.post_id = p.id) as likes_count
+      `SELECT p.*, (SELECT COUNT(*) FROM blog_post_likes l WHERE l.post_id = p.id) as table_likes_count
        FROM blog_posts p ORDER BY p.created_at DESC`
     );
     res.json({ posts: result.rows.map((r) => mapPost({ ...r, liked: false })) });

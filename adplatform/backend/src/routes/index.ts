@@ -39,7 +39,7 @@ import { createReview } from '../controllers/reviewController';
 import { getFavorites, addFavorite, removeFavorite } from '../controllers/favoriteController';
 import { globalSearch } from '../controllers/searchController';
 import { followUser, unfollowUser, getFollowers, getFollowing } from '../controllers/followController';
-import { getBlogPosts, getBlogPost, likeBlogPost, unlikeBlogPost, createBlogPost, updateBlogPost, deleteBlogPost, getAllBlogPostsAdmin } from '../controllers/blogController';
+import { getBlogPosts, getBlogPost, likeBlogPost, unlikeBlogPost, shareBlogPost, createBlogPost, updateBlogPost, deleteBlogPost, getAllBlogPostsAdmin } from '../controllers/blogController';
 
 // ── Creator Space Controllers ────────────────────────────────────────────────
 import {
@@ -122,8 +122,9 @@ router.get('/blog/posts/:id', optionalAuthenticate, getBlogPost);
 router.post('/blog/posts', authenticate, createBlogPost);
 router.put('/blog/posts/:id', authenticate, updateBlogPost);
 router.delete('/blog/posts/:id', authenticate, deleteBlogPost);
-router.post('/blog/posts/:id/like', authenticate, likeBlogPost);
-router.delete('/blog/posts/:id/like', authenticate, unlikeBlogPost);
+router.post('/blog/posts/:id/like', optionalAuthenticate, likeBlogPost);
+router.delete('/blog/posts/:id/like', optionalAuthenticate, unlikeBlogPost);
+router.post('/blog/posts/:id/share', optionalAuthenticate, shareBlogPost);
 
 // ── Global search ────────────────────────────────────────────────────────────
 router.get('/search', authenticate, globalSearch);

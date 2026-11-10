@@ -1,11 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { Heart, Eye, Send, ChevronDown } from 'lucide-react';
+import { Heart, Eye, Send, ChevronDown, Share2 } from 'lucide-react';
 import PublicBlogLayout from '@/components/layout/PublicBlogLayout';
 import { PageTransition } from '@/components/ui/Animations';
 import { useToast } from '@/components/ui/ToastProvider';
+import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/api';
 
 interface BlogPost {
@@ -104,27 +106,37 @@ const FALLBACK_POST: BlogPost = {
 export default function BlogPostPage() {
   const params = useParams();
   const { toast } = useToast();
+  const { user } = useAuthStore();
   const [post, setPost] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);
   const [liking, setLiking] = useState(false);
+  const viewRecordedForId = useRef<string | null>(null);
 
   useEffect(() => {
-    // Try fast internal DB route first to bypass slow Render backend wakeups
-    fetch(`/api/blog-fallback/${params.id}`)
+    const postId = String(params.id || '');
+    if (!postId) return;
+
+    const alreadyCountedInMount = viewRecordedForId.current === postId;
+    viewRecordedForId.current = postId;
+
+    const localLiked = typeof window !== 'undefined' && localStorage.getItem(`blog_liked_${postId}`) === '1';
+
+    // Fetch from internal DB route (which atomically increments views_count on initial load)
+    fetch(`/api/blog-fallback/${postId}${alreadyCountedInMount ? '?noView=1' : ''}`)
       .then(res => {
         if (!res.ok) throw new Error('Not found in internal DB');
         return res.json();
       })
       .then(data => {
-        setPost(data);
+        setPost({ ...data, liked: Boolean(data.liked || localLiked) });
         setLoading(false);
       })
       .catch(() => {
-        // Fallback to Render API
-        api.get(`/blog/posts/${params.id}`)
+        // Fallback to Render API (which also increments views_count)
+        api.get(`/blog/posts/${postId}`)
           .then((res) => {
-             if (res.data) setPost(res.data);
+             if (res.data) setPost({ ...res.data, liked: Boolean(res.data.liked || localLiked) });
              else setPost(FALLBACK_POST);
           })
           .catch(() => {
@@ -137,16 +149,75 @@ export default function BlogPostPage() {
   const toggleLike = async () => {
     if (!post || liking) return;
     setLiking(true);
-    const wasLiked = post.liked;
-    setPost({ ...post, liked: !wasLiked, likesCount: post.likesCount + (wasLiked ? -1 : 1) });
+    const wasLiked = Boolean(post.liked);
+    const nextLiked = !wasLiked;
+    const optimisticLikes = Math.max(0, post.likesCount + (nextLiked ? 1 : -1));
+
+    setPost({ ...post, liked: nextLiked, likesCount: optimisticLikes });
+    if (typeof window !== 'undefined') {
+      if (nextLiked) localStorage.setItem(`blog_liked_${post.id}`, '1');
+      else localStorage.removeItem(`blog_liked_${post.id}`);
+    }
+
     try {
-      if (wasLiked) await api.delete(`/blog/posts/${post.id}/like`);
-      else await api.post(`/blog/posts/${post.id}/like`);
+      const res = await fetch(`/api/blog-fallback/${post.id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: nextLiked ? 'like' : 'unlike',
+          userId: (user as any)?.id
+        }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setPost((prev) => prev ? { ...prev, liked: nextLiked, likesCount: updated.likesCount } : prev);
+      } else {
+        if (wasLiked) await api.delete(`/blog/posts/${post.id}/like`);
+        else await api.post(`/blog/posts/${post.id}/like`);
+      }
     } catch {
-      setPost((p) => (p ? { ...p, liked: wasLiked, likesCount: p.likesCount + (wasLiked ? 1 : -1) } : p));
+      setPost((p) => (p ? { ...p, liked: wasLiked, likesCount: Math.max(0, p.likesCount + (wasLiked ? 1 : -1)) } : p));
       toast('Could not update your like. Please try again.', 'error');
     } finally {
       setLiking(false);
+    }
+  };
+
+  const handleShare = async () => {
+    if (!post) return;
+    const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+
+    // Optimistically increment the share/send counter and persist to DB
+    setPost((prev) => prev ? { ...prev, commentsCount: (prev.commentsCount || 0) + 1 } : prev);
+    fetch(`/api/blog-fallback/${post.id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'share' }),
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && typeof data.commentsCount === 'number') {
+          setPost((prev) => (prev ? { ...prev, commentsCount: data.commentsCount } : prev));
+        }
+      })
+      .catch(() => {
+        api.post(`/blog/posts/${post.id}/share`).catch(() => {});
+      });
+
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share({
+          title: post.title || 'Studio Arella News',
+          url: shareUrl,
+        });
+        return;
+      } catch {
+        // Fallback to clipboard copy if user cancels native share sheet
+      }
+    }
+    if (shareUrl && typeof navigator !== 'undefined' && navigator.clipboard) {
+      await navigator.clipboard.writeText(shareUrl);
+      toast('Article link copied to clipboard!', 'success');
     }
   };
 
@@ -233,7 +304,7 @@ export default function BlogPostPage() {
                    <div className="absolute bottom-0 left-0 right-0 h-[180px] flex items-end justify-center pb-[20px]" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0) 0%, #FFFFFF 100%)' }}>
                      <button
                        onClick={() => setExpanded(true)}
-                       className="flex flex-row justify-center items-center px-[20px] py-[12px] gap-[8px] bg-[#1A1A1A] rounded-[100px] hover:bg-[#262626] transition-colors"
+                       className="flex flex-row justify-center items-center px-[20px] py-[12px] gap-[8px] bg-[#1A1A1A] rounded-[100px] hover:bg-[#262626] transition-colors cursor-pointer"
                      >
                        <span className="text-[#FFFFFF] font-normal text-[14px] leading-[150%] tracking-[-0.03em]" style={{ fontFamily: 'var(--font-kumbh-sans), Kumbh Sans, sans-serif' }}>Read Full Blog</span>
                        <ChevronDown size={16} color="#FFFFFF" />
@@ -241,37 +312,82 @@ export default function BlogPostPage() {
                    </div>
                  )}
                </div>
+
+               {/* Contextual Platform CTA Banner at the bottom of the article */}
+               <div className="mt-12 p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-[#141414] to-[#0A0A0A] border border-[#D4AF37]/30 text-white shadow-xl relative overflow-hidden">
+                 <div className="absolute top-0 right-0 w-48 h-48 bg-[#D4AF37]/10 rounded-full blur-3xl pointer-events-none" />
+                 <span className="inline-block text-[11px] font-bold uppercase tracking-widest text-[#D4AF37] bg-[#D4AF37]/10 px-3 py-1 rounded-full mb-3">
+                   Studio Arella Platform
+                 </span>
+                 <h3 className="text-xl sm:text-2xl font-bold text-white mb-2" style={{ fontFamily: 'var(--font-dm-sans), DM Sans, sans-serif' }}>
+                   Advertise on Digital Billboards or Earn as a Creator
+                 </h3>
+                 <p className="text-gray-300 text-sm sm:text-base leading-relaxed mb-6 max-w-2xl">
+                   Studio Arella connects brands with high-impact digital billboard screens and top creators across Nigeria. Launch an ad campaign in minutes or join our creator network to monetize your audience.
+                 </p>
+                 <div className="flex flex-wrap items-center gap-3">
+                   {!user && (
+                     <Link
+                       href="/auth/register"
+                       className="px-6 py-3 rounded-lg bg-[#D4AF37] text-[#121212] font-bold text-sm hover:bg-white transition-colors"
+                     >
+                       Create Free Account &rarr;
+                     </Link>
+                   )}
+                   <Link
+                     href="/book-ad"
+                     className="px-6 py-3 rounded-lg bg-[#262626] text-white font-semibold text-sm border border-gray-700 hover:border-[#D4AF37] transition-colors"
+                   >
+                     Book Ad Slot
+                   </Link>
+                   <button
+                     onClick={handleShare}
+                     className="px-4 py-3 rounded-lg bg-transparent text-gray-300 font-semibold text-sm border border-gray-800 hover:text-white hover:border-gray-600 transition-colors inline-flex items-center gap-2 cursor-pointer"
+                   >
+                     <Share2 size={15} />
+                     Share Story
+                   </button>
+                 </div>
+               </div>
             </div>
 
             {/* Right Column (Sidebar) */}
             <div className="flex flex-col w-full lg:w-[400px] shrink-0 lg:border-l lg:border-[rgba(38,38,38,0.2)]">
                
-               {/* 3 Buttons Row */}
+               {/* 3 Metrics Row: Likes, Views, Shares */}
                <div className="flex flex-row items-center justify-between py-[40px] px-[20px] lg:px-[40px] gap-[14px] lg:border-t lg:border-b lg:border-[rgba(38,38,38,0.2)] lg:border-t-transparent border-b border-[rgba(38,38,38,0.2)] w-full">
                   <button 
                      onClick={toggleLike}
                      disabled={liking}
-                     className="flex flex-row justify-center items-center px-[14px] py-[8px] gap-[4px] min-w-[92px] h-[42px] bg-[#141414] border border-[#262626] rounded-[100px] hover:bg-[#1f1f1f] transition-colors disabled:opacity-50"
+                     title="Like this article"
+                     className="flex flex-row justify-center items-center px-[14px] py-[8px] gap-[4px] min-w-[92px] h-[42px] bg-[#141414] border border-[#262626] rounded-[100px] hover:bg-[#1f1f1f] transition-colors disabled:opacity-50 cursor-pointer"
                   >
-                     <Heart size={16} fill={currentPost.liked ? '#D4AF37' : 'none'} color={currentPost.liked ? '#D4AF37' : '#D4AF37'} />
+                     <Heart size={16} fill={currentPost.liked ? '#D4AF37' : 'none'} color="#D4AF37" />
                      <span className="text-[#98989A] font-normal text-[14px] leading-[150%] tracking-[-0.03em]" style={{ fontFamily: 'var(--font-kumbh-sans), Kumbh Sans, sans-serif' }}>
                        {formatCount(currentPost.likesCount)}
                      </span>
                   </button>
                   
-                  <div className="flex flex-row justify-center items-center px-[14px] py-[8px] gap-[4px] min-w-[81px] h-[42px] bg-[#141414] border border-[#262626] rounded-[100px]">
+                  <div
+                     title="Total article views"
+                     className="flex flex-row justify-center items-center px-[14px] py-[8px] gap-[4px] min-w-[81px] h-[42px] bg-[#141414] border border-[#262626] rounded-[100px]"
+                  >
                      <Eye size={16} color="#98989A" />
                      <span className="text-[#98989A] font-normal text-[14px] leading-[150%] tracking-[-0.03em]" style={{ fontFamily: 'var(--font-kumbh-sans), Kumbh Sans, sans-serif' }}>
                        {formatCount(currentPost.viewsCount)}
                      </span>
                   </div>
                   
-                  <div className="flex flex-row justify-center items-center px-[14px] py-[8px] gap-[4px] min-w-[82px] h-[42px] bg-[#141414] border border-[#262626] rounded-[100px]">
+                  <button
+                     onClick={handleShare}
+                     title="Share this article"
+                     className="flex flex-row justify-center items-center px-[14px] py-[8px] gap-[4px] min-w-[82px] h-[42px] bg-[#141414] border border-[#262626] rounded-[100px] hover:bg-[#1f1f1f] transition-colors cursor-pointer"
+                  >
                      <Send size={16} color="#98989A" />
                      <span className="text-[#98989A] font-normal text-[14px] leading-[150%] tracking-[-0.03em]" style={{ fontFamily: 'var(--font-kumbh-sans), Kumbh Sans, sans-serif' }}>
                        {formatCount(currentPost.commentsCount)}
                      </span>
-                  </div>
+                  </button>
                </div>
 
                {/* Details & TOC */}
@@ -288,7 +404,7 @@ export default function BlogPostPage() {
                        <div className="flex flex-col flex-1 gap-[6px] h-full">
                           <span className="text-[rgba(0,0,0,0.4)] font-normal text-[16px] leading-[24px] tracking-[-0.03em]" style={{ fontFamily: 'var(--font-dm-sans), DM Sans, sans-serif' }}>Category</span>
                           <span className="text-[#000000] font-medium text-[16px] leading-[24px] tracking-[-0.03em]" style={{ fontFamily: 'var(--font-dm-sans), DM Sans, sans-serif' }}>
-                            {currentPost.category || 'Healthcare'}
+                            {currentPost.category || 'News'}
                           </span>
                        </div>
                     </div>
@@ -303,7 +419,7 @@ export default function BlogPostPage() {
                        <div className="flex flex-col flex-1 gap-[6px] h-full">
                           <span className="text-[rgba(0,0,0,0.4)] font-normal text-[16px] leading-[24px] tracking-[-0.03em]" style={{ fontFamily: 'var(--font-dm-sans), DM Sans, sans-serif' }}>Author Name</span>
                           <span className="text-[#000000] font-medium text-[16px] leading-[24px] tracking-[-0.03em]" style={{ fontFamily: 'var(--font-dm-sans), DM Sans, sans-serif' }}>
-                            {currentPost.authorName || 'Dr. Emily Walker'}
+                            {currentPost.authorName || 'Studio Arella'}
                           </span>
                        </div>
                     </div>
@@ -325,6 +441,33 @@ export default function BlogPostPage() {
                        </div>
                     </div>
                   )}
+
+                  {/* Sidebar Advertising & App Signup CTA Card */}
+                  <div className="flex flex-col items-center justify-center bg-gradient-to-br from-[#1A1A1A] to-[#0A0A0A] p-6 rounded-[12px] shadow-lg border border-[#D4AF37]/20 relative overflow-hidden w-full max-w-[430px]">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-[#D4AF37]/10 rounded-full blur-2xl transform translate-x-1/2 -translate-y-1/2" />
+                    <h4 className="text-[#D4AF37] font-bold text-[18px] mb-2 text-center z-10 uppercase tracking-widest drop-shadow-md">
+                      Grow Your Business
+                    </h4>
+                    <p className="text-gray-300 text-[14px] text-center mb-5 z-10 leading-relaxed">
+                      Advertise on Umuahia&apos;s premier digital screen or partner with creators. Book a slot instantly.
+                    </p>
+                    <div className="flex flex-col gap-2.5 w-full z-10">
+                      <Link
+                        href="/book-ad"
+                        className="w-full text-center bg-[#D4AF37] text-black text-[13px] font-bold px-5 py-2.5 rounded-sm hover:bg-white transition-colors shadow-md"
+                      >
+                        Book Ad Slot &rarr;
+                      </Link>
+                      {!user && (
+                        <Link
+                          href="/auth/register"
+                          className="w-full text-center bg-[#262626] text-white text-[13px] font-semibold px-5 py-2.5 rounded-sm hover:bg-[#333333] transition-colors border border-gray-700"
+                        >
+                          Create Free Account
+                        </Link>
+                      )}
+                    </div>
+                  </div>
 
                </div>
             </div>
