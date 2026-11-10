@@ -426,20 +426,21 @@ export default function AdvertiserDashboard() {
           <div className="dash-chart-card" style={{ background: theme.color.surface, borderRadius: 20, padding: '22px 24px', border: `1px solid ${theme.color.surface2}` }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '0 0 18px' }}>
               <p style={{ fontSize: 14, fontWeight: 800, color: theme.color.text1, margin: 0 }}>Traffic by Podcast</p>
-              <Link
-                href="/audience"
+              <span
+                title="Creator Space (Temporarily Locked)"
                 style={{
                   fontSize: 11,
                   fontWeight: 700,
                   color: theme.color.gold,
-                  textDecoration: 'none',
+                  opacity: 0.6,
+                  cursor: 'not-allowed',
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: 3,
                 }}
               >
-                Audience Feed →
-              </Link>
+                Audience Feed (Locked)
+              </span>
             </div>
             {podcastTraffic.length === 0 ? (
               <div style={{ padding: '28px 12px', textAlign: 'center' }}>
@@ -451,9 +452,8 @@ export default function AdvertiserDashboard() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 {podcastTraffic.map((t, idx) => (
-                  <Link
+                  <div
                     key={t.id || idx}
-                    href="/audience"
                     title={`${t.name} • ${t.views.toLocaleString()} views (${t.sharePercent}% share)`}
                     style={{
                       display: 'flex',
@@ -465,10 +465,7 @@ export default function AdvertiserDashboard() {
                       margin: '0 -8px',
                       borderRadius: 10,
                       transition: 'background 0.15s ease',
-                      cursor: 'pointer',
                     }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(0,0,0,0.03)')}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                   >
                     <span
                       style={{
@@ -517,7 +514,7 @@ export default function AdvertiserDashboard() {
                     >
                       {t.displayStat}
                     </span>
-                  </Link>
+                  </div>
                 ))}
               </div>
             )}

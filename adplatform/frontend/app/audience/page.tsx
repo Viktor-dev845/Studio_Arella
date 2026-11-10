@@ -225,6 +225,8 @@ const DEFAULT_BOOKMARKED_POSTS: PostData[] = [
   DEFAULT_FEED_POSTS[1],
 ];
 
+const CREATOR_SPACE_LOCKED = true;
+
 function AudienceContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -233,8 +235,12 @@ function AudienceContent() {
   const { user, loadFromStorage } = useAuthStore();
 
   useEffect(() => {
+    if (CREATOR_SPACE_LOCKED) {
+      router.replace('/dashboard');
+      return;
+    }
     loadFromStorage();
-  }, [loadFromStorage]);
+  }, [loadFromStorage, router]);
   // Synchronously derive activeMenu directly from searchParams so navigation is always 100% in sync
   const resolveActiveMenu = (view: string | null): string => {
     if (!view || view === 'podcast' || view === 'feed' || view === 'home') return 'podcast';
