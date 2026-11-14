@@ -208,6 +208,7 @@ export default function BlogPostPage() {
       try {
         await navigator.share({
           title: post.title || 'Studio Arella News',
+          text: post.excerpt || post.title || 'Read this article on Studio Arella',
           url: shareUrl,
         });
         return;
