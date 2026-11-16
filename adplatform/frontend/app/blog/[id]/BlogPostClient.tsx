@@ -226,15 +226,15 @@ export default function BlogPostClient({
           
           {/* Hero Image */}
           <div 
-            className="relative w-full h-[439px] shrink-0" 
+            className="relative w-full min-h-[460px] md:min-h-[520px] flex items-end justify-center pb-[35px] shrink-0" 
             style={{ 
-              backgroundImage: `linear-gradient(180deg, rgba(20, 20, 20, 0) 0%, rgba(20, 20, 20, 0.880208) 75.52%, #141414 100%), url('${currentPost.imageUrl || FALLBACK_POST.imageUrl}')`, 
+              backgroundImage: `linear-gradient(180deg, rgba(20, 20, 20, 0) 0%, rgba(20, 20, 20, 0.08) 45%, rgba(20, 20, 20, 0.85) 82%, #141414 100%), url('${currentPost.imageUrl || FALLBACK_POST.imageUrl}')`, 
               backgroundSize: 'cover', 
-              backgroundPosition: 'center 20%' 
+              backgroundPosition: 'center 10%' 
             }}
           >
             <h1 
-              className="absolute bottom-[35px] left-1/2 -translate-x-1/2 w-full max-w-[908px] px-[20px] text-center text-[#FFFFFF] font-semibold text-[32px] md:text-[44px] leading-[150%] tracking-[-0.03em]" 
+              className="w-full max-w-[908px] px-[20px] text-center text-[#FFFFFF] font-semibold text-[30px] md:text-[42px] leading-[135%] tracking-[-0.03em] drop-shadow-[0_3px_16px_rgba(0,0,0,0.85)] z-10" 
               style={{ fontFamily: 'var(--font-dm-sans), DM Sans, sans-serif' }}
             >
               {currentPost.title}
