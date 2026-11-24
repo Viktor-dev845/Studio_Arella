@@ -1,0 +1,25 @@
+name: Mirror to Company Repo
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  mirror:
+    name: Mirror Repository to Company
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Complete History
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push to Company Repository
+        env:
+          SYNC_PAT: ${{ secrets.SYNC_PAT }}
+        run: |
+          git config --global user.name "Viktor-dev845"
+          git config --global user.email "kaluvictor130@gmail.com"
+          git remote add company https://Viktor-dev845:${SYNC_PAT}@github.com/bemsfarmsltd/Studio-Arella-ERP-system.git
+          git push company main:main --force
