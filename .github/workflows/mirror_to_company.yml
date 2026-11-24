@@ -14,6 +14,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Push to Company Repository
         env:
@@ -21,5 +22,5 @@ jobs:
         run: |
           git config --global user.name "Viktor-dev845"
           git config --global user.email "kaluvictor130@gmail.com"
-          git remote add company https://Viktor-dev845:${SYNC_PAT}@github.com/bemsfarmsltd/Studio-Arella-ERP-system.git
+          git remote add company "https://Viktor-dev845:${SYNC_PAT}@github.com/bemsfarmsltd/Studio-Arella-ERP-system.git"
           git push company main:main --force
