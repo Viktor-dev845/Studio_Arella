@@ -8,6 +8,7 @@ on:
 jobs:
   mirror:
     name: Mirror Repository to Company
+    if: github.repository == 'Viktor-dev845/Studio_Arella'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Complete History
