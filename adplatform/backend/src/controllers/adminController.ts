@@ -480,3 +480,94 @@ export const adjustUserCredits: RequestHandler = async (req, res) => {
   }
 };
 
+export const getUserDetails: RequestHandler = async (req, res) => {
+  const authReq = req as AuthRequest;
+  if (!adminOnly(req, res)) return;
+  try {
+    const { id } = req.params;
+    const userRes = await pool.query(
+      `SELECT id, name, first_name, last_name, email, role, credits, business_name, phone, avatar, location, created_at, email_verified
+       FROM users WHERE id = $1`,
+      [id]
+    );
+
+    if (!userRes.rows[0]) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+
+    const user = userRes.rows[0];
+
+    // Fetch aggregate statistics for this user
+    const [bookingsRes, podcastBookingsRes, transactionsRes, paymentsRes, latestServiceRes] = await Promise.all([
+      pool.query(`SELECT COUNT(*) as count FROM bookings WHERE user_id = $1`, [id]).catch(() => ({ rows: [{ count: '0' }] })),
+      pool.query(`SELECT COUNT(*) as count FROM podcast_bookings WHERE user_id = $1`, [id]).catch(() => ({ rows: [{ count: '0' }] })),
+      pool.query(`SELECT COUNT(*) as count FROM transactions WHERE user_id = $1`, [id]).catch(() => ({ rows: [{ count: '0' }] })),
+      pool.query(`SELECT COALESCE(SUM(amount), 0) as total FROM transactions WHERE user_id = $1 AND type = 'debit'`, [id]).catch(() => ({ rows: [{ total: '0' }] })),
+      pool.query(`SELECT package_type FROM (
+        SELECT 'Advert placement' as package_type, created_at FROM campaigns WHERE user_id = $1
+        UNION ALL
+        SELECT package_type, created_at FROM podcast_bookings WHERE user_id = $1
+      ) s ORDER BY created_at DESC LIMIT 1`, [id]).catch(() => ({ rows: [] }))
+    ]);
+
+    const noOfBookings = parseInt(bookingsRes.rows[0]?.count || '0') + parseInt(podcastBookingsRes.rows[0]?.count || '0');
+    const transactionsCount = parseInt(transactionsRes.rows[0]?.count || '0');
+    const totalPayments = parseFloat(paymentsRes.rows[0]?.total || '0');
+    const serviceRequest = latestServiceRes.rows[0]?.package_type || 'Advert placement';
+
+    res.json({
+      user,
+      accounts: {
+        no_of_bookings: noOfBookings,
+        total_wallet_balance: parseFloat(user.credits || '0'),
+        service_request: serviceRequest,
+        transactions: transactionsCount,
+        payments: totalPayments,
+      }
+    });
+  } catch (err) {
+    console.error('getUserDetails error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+export const deleteUser: RequestHandler = async (req, res) => {
+  const authReq = req as AuthRequest;
+  if (!adminOnly(req, res)) return;
+  try {
+    const { id } = req.params;
+    if (authReq.user?.id === id) {
+      res.status(400).json({ message: 'Cannot remove your own admin account' });
+      return;
+    }
+    const checkRes = await pool.query('SELECT id, role FROM users WHERE id = $1', [id]);
+    if (!checkRes.rows[0]) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+    await pool.query('DELETE FROM users WHERE id = $1', [id]);
+    res.json({ message: 'User removed successfully' });
+  } catch (err) {
+    console.error('deleteUser error:', err);
+    res.status(500).json({ message: 'Failed to delete user' });
+  }
+};
+
+export const getUserTransactions: RequestHandler = async (req, res) => {
+  const authReq = req as AuthRequest;
+  if (!adminOnly(req, res)) return;
+  try {
+    const { id } = req.params;
+    const result = await pool.query(
+      `SELECT * FROM transactions WHERE user_id = $1 ORDER BY created_at DESC`,
+      [id]
+    );
+    res.json({ transactions: result.rows });
+  } catch (err) {
+    console.error('getUserTransactions error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+

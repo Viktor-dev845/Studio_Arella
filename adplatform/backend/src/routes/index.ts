@@ -26,7 +26,7 @@ import { getAds, createAd, updateAd, deleteAd, getAdminReviewQueue, reviewAd } f
 import { getScreens, createScreen, updateScreen, deleteScreen } from '../controllers/screenController';
 import { getBalance, getTransactions, getTotalRevenue } from '../controllers/financeController';
 import { getDashboardStats, getHourlyAnalytics, getAdvertiserProofOfPlay } from '../controllers/analyticsController';
-import { getPlatformStats, getAllUsers, getAllBookings, getAllCampaigns, getAllScreens, updateUserRole, getAllTransactions, getAllPodcastBookings, adjustUserCredits, updatePodcastBookingStatus } from '../controllers/adminController';
+import { getPlatformStats, getAllUsers, getAllBookings, getAllCampaigns, getAllScreens, updateUserRole, getAllTransactions, getAllPodcastBookings, adjustUserCredits, updatePodcastBookingStatus, getUserDetails, deleteUser, getUserTransactions } from '../controllers/adminController';
 import { getPlans, getBaseRate } from '../controllers/pricingController';
 import { initializePayment, initializeCreditPayment, initializeCardLinking, verifyPayment, monnifyWebhook, devBypassPayment, payFromWallet, createReservedAccount, getSavedCards, deleteSavedCard, chargeCard, submitChargeOtp, chargeAuthorization, fundCampaignCharge, fundCampaignChargeAuthorization, topupCharge, topupChargeAuthorization, addCardVerification } from '../controllers/paymentController';
 import { getNotifications, markRead, markAllRead, deleteNotification, getUnreadCount } from '../controllers/notificationController';
@@ -264,6 +264,9 @@ router.delete('/notifications/:id', authenticate, deleteNotification);
 // ── Admin ─────────────────────────────────────────────────────────────────────
 router.get('/admin/stats', authenticate, getPlatformStats);
 router.get('/admin/users', authenticate, getAllUsers);
+router.get('/admin/users/:id', authenticate, getUserDetails);
+router.delete('/admin/users/:id', authenticate, deleteUser);
+router.get('/admin/users/:id/transactions', authenticate, getUserTransactions);
 router.put('/admin/users/:id/role', authenticate, updateUserRole);
 router.put('/admin/users/:id/credits', authenticate, adjustUserCredits);
 router.get('/admin/bookings', authenticate, getAllBookings);

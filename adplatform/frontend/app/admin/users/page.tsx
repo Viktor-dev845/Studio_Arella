@@ -467,15 +467,15 @@ export default function AdminUsersPage() {
                     {/* Actions Column (Figma: See details button on row 2 or on hover, Chevron on standard) */}
                     <td className="py-3.5 px-3 text-right whitespace-nowrap relative">
                       <div className="flex items-center justify-end gap-2">
-                        {/* "See details" Pill Button */}
-                        <button
-                          onClick={() => setSelectedUserForDetails(user)}
+                        {/* "See details" Pill Button (Links to Figma User Detail Screen) */}
+                        <Link
+                          href={`/admin/users/${user.id || 'usr-001'}`}
                           className={`px-3 py-1.5 border border-slate-200 rounded-md text-xs font-medium text-[#06152B] bg-white hover:bg-slate-50 hover:border-slate-300 shadow-2xs transition-all cursor-pointer ${
                             isHighlightRow ? 'inline-flex' : 'hidden group-hover:inline-flex'
                           }`}
                         >
                           See details
-                        </button>
+                        </Link>
 
                         {/* Chevron Down Dropdown Toggle */}
                         <button
@@ -492,16 +492,13 @@ export default function AdminUsersPage() {
                       {/* Dropdown Menu */}
                       {isActionOpen && (
                         <div className="absolute right-3 mt-1 w-44 bg-white rounded-lg shadow-xl border border-slate-100 py-1 z-30 text-left">
-                          <button
-                            onClick={() => {
-                              setSelectedUserForDetails(user);
-                              setOpenActionId(null);
-                            }}
+                          <Link
+                            href={`/admin/users/${user.id || 'usr-001'}`}
                             className="w-full px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2"
                           >
                             <Eye size={14} className="text-slate-500" />
                             <span>See details</span>
-                          </button>
+                          </Link>
                           <button
                             onClick={() => {
                               setSelectedUserForCredits(user);
