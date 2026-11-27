@@ -196,10 +196,35 @@ export default function AdminReviewPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
 
-  // Filter controls
+  // Filter popup controls (Figma Filter Popup specification)
   const [filterOpen, setFilterOpen] = useState(false);
-  const [mediaFilter, setMediaFilter] = useState<'all' | 'image' | 'video'>('all');
-  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
+  const [filterSearch, setFilterSearch] = useState('');
+  const [activeColumnFilters, setActiveColumnFilters] = useState<string[]>([]);
+  const [draftColumnFilters, setDraftColumnFilters] = useState<string[]>(['pending']);
+
+  const FILTER_OPTIONS = [
+    { key: 'pending', label: 'Pending review' },
+    { key: 'approved', label: 'Approved' },
+    { key: 'rejected', label: 'Rejected' },
+    { key: 'all', label: 'All creatives' },
+  ];
+
+  const openFilterPopup = () => {
+    setDraftColumnFilters(activeColumnFilters.length > 0 ? [...activeColumnFilters] : ['pending']);
+    setFilterSearch('');
+    setFilterOpen(true);
+  };
+
+  const toggleDraftFilter = (key: string) => {
+    setDraftColumnFilters((prev) =>
+      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
+    );
+  };
+
+  const handleApplyFilter = () => {
+    setActiveColumnFilters([...draftColumnFilters]);
+    setFilterOpen(false);
+  };
 
   // Card 3-dot menu
   const [openMenuKey, setOpenMenuKey] = useState<string | null>(null);
@@ -293,30 +318,23 @@ export default function AdminReviewPage() {
   const filteredCreatives = useMemo(() => {
     const q = search.trim().toLowerCase();
     const list = queue.filter((ad) => {
-      const matchesSearch =
-        !q ||
+      if (!q) return true;
+      return (
         (ad.title || '').toLowerCase().includes(q) ||
         (ad.advertiser_name || '').toLowerCase().includes(q) ||
         (ad.advertiser_email || '').toLowerCase().includes(q) ||
-        (ad.campaign_name || '').toLowerCase().includes(q);
-
-      const isVideo = ad.file_type === 'video' || (ad.file_url || '').toLowerCase().endsWith('.mp4');
-      const matchesMedia =
-        mediaFilter === 'all' ||
-        (mediaFilter === 'video' && isVideo) ||
-        (mediaFilter === 'image' && !isVideo);
-
-      return matchesSearch && matchesMedia;
+        (ad.campaign_name || '').toLowerCase().includes(q)
+      );
     });
 
     return [...list].sort((a, b) => {
       const ta = new Date(a.created_at).getTime() || 0;
       const tb = new Date(b.created_at).getTime() || 0;
-      return sortOrder === 'newest' ? tb - ta : ta - tb;
+      return tb - ta;
     });
-  }, [queue, search, mediaFilter, sortOrder]);
+  }, [queue, search]);
 
-  const columns = useMemo(
+  const allColumns = useMemo(
     () => [
       {
         key: 'pending',
@@ -342,7 +360,18 @@ export default function AdminReviewPage() {
     [filteredCreatives]
   );
 
-  const activeFilterCount = (mediaFilter !== 'all' ? 1 : 0) + (sortOrder !== 'newest' ? 1 : 0);
+  const columns = useMemo(() => {
+    if (activeColumnFilters.length === 0) return allColumns;
+    return allColumns.filter((col) => activeColumnFilters.includes(col.key));
+  }, [allColumns, activeColumnFilters]);
+
+  const activeFilterCount = activeColumnFilters.length;
+
+  const visibleFilterOptions = useMemo(() => {
+    const q = filterSearch.trim().toLowerCase();
+    if (!q) return FILTER_OPTIONS;
+    return FILTER_OPTIONS.filter((opt) => opt.label.toLowerCase().includes(q));
+  }, [filterSearch]);
 
   return (
     <div className="space-y-6 max-w-[1440px] mx-auto text-[#06152B] font-sans">
@@ -422,9 +451,17 @@ export default function AdminReviewPage() {
         {/* Right-aligned Filter button stacked above Search input */}
         <div className="flex flex-col sm:items-end gap-3">
           {/* Gold Filter Button */}
-          <div className="relative">
+          <div className="flex items-center gap-2">
+            {activeFilterCount > 0 && (
+              <button
+                onClick={() => setActiveColumnFilters([])}
+                className="text-xs font-medium text-[#788B9A] hover:text-[#06152B] underline cursor-pointer"
+              >
+                Show all columns
+              </button>
+            )}
             <button
-              onClick={() => setFilterOpen((o) => !o)}
+              onClick={openFilterPopup}
               className="inline-flex items-center justify-center gap-2 px-6 py-2 bg-[#FED757] hover:bg-[#fecb2e] text-[#06152B] text-[13px] font-medium rounded-lg shadow-2xs transition-all cursor-pointer active:scale-95 min-w-[118px]"
             >
               <span>Filter</span>
@@ -435,75 +472,6 @@ export default function AdminReviewPage() {
                 </span>
               )}
             </button>
-
-            {filterOpen && (
-              <div className="absolute right-0 mt-2 w-60 bg-white rounded-xl shadow-xl border border-[#DDDDE8] p-4 z-30 space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-[#06152B] uppercase tracking-wider">Filter Creatives</span>
-                  {activeFilterCount > 0 && (
-                    <button
-                      onClick={() => {
-                        setMediaFilter('all');
-                        setSortOrder('newest');
-                      }}
-                      className="text-[11px] font-medium text-[#D4AF37] hover:underline cursor-pointer"
-                    >
-                      Reset
-                    </button>
-                  )}
-                </div>
-
-                {/* Media Type */}
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-semibold text-[#788B9A]">Media Format</label>
-                  <div className="grid grid-cols-3 gap-1.5">
-                    {(['all', 'image', 'video'] as const).map((type) => (
-                      <button
-                        key={type}
-                        onClick={() => setMediaFilter(type)}
-                        className={`py-1.5 rounded-md text-xs font-medium capitalize border transition-all cursor-pointer ${
-                          mediaFilter === type
-                            ? 'bg-[#FED757]/20 border-[#D4AF37] text-[#06152B] font-semibold'
-                            : 'border-slate-200 text-[#788B9A] hover:bg-slate-50'
-                        }`}
-                      >
-                        {type}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Sort Order */}
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-semibold text-[#788B9A]">Sort By Date</label>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {[
-                      { id: 'newest', label: 'Newest First' },
-                      { id: 'oldest', label: 'Oldest First' },
-                    ].map((s) => (
-                      <button
-                        key={s.id}
-                        onClick={() => setSortOrder(s.id as 'newest' | 'oldest')}
-                        className={`py-1.5 rounded-md text-xs font-medium border transition-all cursor-pointer ${
-                          sortOrder === s.id
-                            ? 'bg-[#FED757]/20 border-[#D4AF37] text-[#06152B] font-semibold'
-                            : 'border-slate-200 text-[#788B9A] hover:bg-slate-50'
-                        }`}
-                      >
-                        {s.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => setFilterOpen(false)}
-                  className="w-full py-1.5 bg-[#06152B] text-white text-xs font-semibold rounded-lg hover:bg-[#0d2244] transition-colors cursor-pointer"
-                >
-                  Apply
-                </button>
-              </div>
-            )}
           </div>
 
           {/* White Search Box */}
@@ -962,6 +930,101 @@ export default function AdminReviewPage() {
             >
               Cancel & Close
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL: FILTER POPUP (Exact Figma Specification: 383x433px, #FFFFFF, radius 20px) ── */}
+      {filterOpen && (
+        <div
+          onClick={() => setFilterOpen(false)}
+          className="fixed inset-0 bg-black/15 backdrop-blur-md z-50 flex items-center justify-center p-4"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-[383px] min-h-[433px] bg-white rounded-[20px] p-5 shadow-2xl flex flex-col justify-between animate-in fade-in zoom-in-95 font-sans"
+          >
+            <div>
+              {/* Title: Filter */}
+              <h2 className="text-[20px] font-semibold leading-[30px] text-[#16151C]">
+                Filter
+              </h2>
+
+              {/* Line 2 Divider */}
+              <div className="w-full border-t border-[rgba(162,161,168,0.1)] mt-4 mb-7" />
+
+              {/* Search Filter Input (343x50px, radius 10px) */}
+              <div className="flex items-center gap-[10px] h-[50px] px-4 border border-[rgba(162,161,168,0.1)] rounded-[10px] focus-within:border-[#FED757] transition-colors">
+                <Search size={22} className="text-[#16151C] shrink-0 stroke-[1.7]" />
+                <input
+                  type="text"
+                  placeholder="Search filter"
+                  value={filterSearch}
+                  onChange={(e) => setFilterSearch(e.target.value)}
+                  className="bg-transparent border-none outline-none w-full text-[16px] font-light leading-6 text-[#16151C] placeholder:text-[rgba(22,21,28,0.2)]"
+                />
+              </div>
+
+              {/* Section: All Ad creatives */}
+              <div className="mt-5 space-y-4">
+                <h3 className="text-[16px] font-semibold leading-6 text-[#16151C]">
+                  All Ad creatives
+                </h3>
+
+                {/* 2-Column Checkbox Grid */}
+                {visibleFilterOptions.length === 0 ? (
+                  <p className="text-sm font-light text-[#788B9A] py-2">
+                    No matching filter options
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-2 gap-x-[30px] gap-y-[12px]">
+                    {visibleFilterOptions.map((opt) => {
+                      const isChecked = draftColumnFilters.includes(opt.key);
+                      return (
+                        <button
+                          key={opt.key}
+                          type="button"
+                          onClick={() => toggleDraftFilter(opt.key)}
+                          className="flex items-center gap-[10px] text-left cursor-pointer group select-none"
+                        >
+                          <span
+                            className={`w-6 h-6 rounded-[6px] flex items-center justify-center shrink-0 transition-all ${
+                              isChecked
+                                ? 'bg-[#FED757] border border-[#FED757]'
+                                : 'bg-white border-[1.5px] border-[rgba(162,161,168,0.2)] group-hover:border-[#FED757]'
+                            }`}
+                          >
+                            {isChecked && <Check size={14} className="text-white stroke-[2.8]" />}
+                          </span>
+                          <span className="text-[16px] font-light leading-6 text-[#16151C] whitespace-nowrap">
+                            {opt.label}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Bottom Buttons: Cancel (166x50px) & Apply (166x50px, #FED757) */}
+            <div className="flex items-center gap-[11px] pt-10">
+              <button
+                type="button"
+                onClick={() => setFilterOpen(false)}
+                className="flex-1 h-[50px] bg-white hover:bg-slate-50 border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[16px] font-normal leading-[21px] text-[#16151C] flex items-center justify-center transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={handleApplyFilter}
+                className="flex-1 h-[50px] bg-[#FED757] hover:bg-[#fecb2e] rounded-[6px] text-[16px] font-normal leading-[21px] text-[#000000] flex items-center justify-center transition-colors cursor-pointer active:scale-[0.98]"
+              >
+                Apply
+              </button>
+            </div>
           </div>
         </div>
       )}
