@@ -132,6 +132,58 @@ const DEFAULT_FIGMA_CREATIVES: CreativeItem[] = [
     showInlinePreview: false,
   },
   {
+    id: 'mock-pending-3',
+    title: 'Cloth Launch Event',
+    advertiser_name: 'Kalu Victor',
+    advertiser_email: 'kaluvictor23@gmail.com',
+    status: 'pending',
+    file_type: 'image',
+    duration_seconds: 30,
+    created_at: '2026-10-10T12:36:00Z',
+    files_count: 2,
+    isMock: true,
+    showInlinePreview: false,
+  },
+  {
+    id: 'mock-pending-4',
+    title: 'Cloth Launch Event',
+    advertiser_name: 'Kalu Victor',
+    advertiser_email: 'kaluvictor23@gmail.com',
+    status: 'pending',
+    file_type: 'image',
+    duration_seconds: 30,
+    created_at: '2026-10-10T12:36:00Z',
+    files_count: 2,
+    isMock: true,
+    showInlinePreview: false,
+  },
+  {
+    id: 'mock-pending-5',
+    title: 'Cloth Launch Event',
+    advertiser_name: 'Kalu Victor',
+    advertiser_email: 'kaluvictor23@gmail.com',
+    status: 'pending',
+    file_type: 'image',
+    duration_seconds: 30,
+    created_at: '2026-10-10T12:36:00Z',
+    files_count: 2,
+    isMock: true,
+    showInlinePreview: false,
+  },
+  {
+    id: 'mock-pending-6',
+    title: 'Cloth Launch Event',
+    advertiser_name: 'Kalu Victor',
+    advertiser_email: 'kaluvictor23@gmail.com',
+    status: 'pending',
+    file_type: 'image',
+    duration_seconds: 30,
+    created_at: '2026-10-10T12:36:00Z',
+    files_count: 2,
+    isMock: true,
+    showInlinePreview: false,
+  },
+  {
     id: 'mock-approved-1',
     title: 'Cloth Launch Event',
     advertiser_name: 'Kalu Victor',
@@ -498,7 +550,7 @@ export default function AdminReviewPage() {
         </div>
       </div>
 
-      {/* ── 4-COLUMN KANBAN BOARD (Pending Review | Approved | Rejected | All Creatives) ── */}
+      {/* ── CREATIVES BOARD: 3-COLUMN FILTERED GRID (Single Filter) OR 4-COLUMN KANBAN BOARD ── */}
       {loading ? (
         <div className="flex gap-6 overflow-x-auto pb-6">
           {['Pending Review', 'Approved', 'Rejected', 'All Creatives'].map((colTitle) => (
@@ -528,29 +580,57 @@ export default function AdminReviewPage() {
           ))}
         </div>
       ) : (
-        <div className="flex gap-6 overflow-x-auto pb-8 items-start">
-          {columns.map((col) => (
-            <div key={col.key} className="w-[337px] shrink-0 flex flex-col gap-5">
+        <div
+          className={
+            columns.length === 1
+              ? 'space-y-5 pb-8'
+              : 'flex gap-6 overflow-x-auto pb-8 items-start'
+          }
+        >
+          {columns.map((col) => {
+            const isSingleFilteredGrid = columns.length === 1;
+            const visibleItems =
+              !isSingleFilteredGrid && usingMockData && col.key === 'pending'
+                ? col.items.slice(0, 2)
+                : col.items;
+
+            return (
+            <div
+              key={col.key}
+              className={
+                isSingleFilteredGrid
+                  ? 'w-full flex flex-col gap-5'
+                  : 'w-[337px] shrink-0 flex flex-col gap-5'
+              }
+            >
               {/* Column Title */}
               <div className="flex items-center justify-between">
                 <h2 className="text-[20px] font-bold text-[#06152B] leading-[28px] tracking-tight">
                   {col.title}
                 </h2>
-                <span className="text-[11px] font-semibold text-[#788B9A] bg-white border border-[#DDDDE8] px-2 py-0.5 rounded-full">
-                  {col.items.length}
-                </span>
+                {!isSingleFilteredGrid && (
+                  <span className="text-[11px] font-semibold text-[#788B9A] bg-white border border-[#DDDDE8] px-2 py-0.5 rounded-full">
+                    {col.items.length}
+                  </span>
+                )}
               </div>
 
-              {/* Cards Stack */}
-              {col.items.length === 0 ? (
+              {/* Cards Stack or 3-Column Filtered Grid */}
+              {visibleItems.length === 0 ? (
                 <div className="bg-white/70 border border-dashed border-[#DDDDE8] rounded-[4px] p-8 text-center">
                   <p className="text-xs font-medium text-[#788B9A]">
                     No creatives in {col.title.toLowerCase()}
                   </p>
                 </div>
               ) : (
-                <div className="flex flex-col gap-5">
-                  {col.items.map((ad, idx) => {
+                <div
+                  className={
+                    isSingleFilteredGrid
+                      ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'
+                      : 'flex flex-col gap-5'
+                  }
+                >
+                  {visibleItems.map((ad, idx) => {
                     const cardMenuKey = `${col.key}-${ad.id}-${idx}`;
                     const isMenuOpen = openMenuKey === cardMenuKey;
                     const mediaUrl = getMediaUrl(ad.file_url || ad.media_url);
@@ -725,7 +805,7 @@ export default function AdminReviewPage() {
                             }}
                             className="px-3 py-1 bg-[#FED757] hover:bg-[#f5c731] text-[#06152B] text-[12px] font-medium leading-4 rounded-[4px] transition-all cursor-pointer active:scale-95"
                           >
-                            {isPending && col.key === 'pending' ? 'Review' : 'View details'}
+                            {isPending && (col.key === 'pending' || isSingleFilteredGrid) ? 'Review' : 'View details'}
                           </button>
                         </div>
 
@@ -751,7 +831,8 @@ export default function AdminReviewPage() {
                 </div>
               )}
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
