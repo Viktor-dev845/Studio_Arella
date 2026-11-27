@@ -289,9 +289,11 @@ export const getAdminReviewQueue: RequestHandler = async (req, res) => {
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
     const result = await pool.query(
-      `SELECT a.*, u.name as advertiser_name, u.email as advertiser_email
+      `SELECT a.*, u.name as advertiser_name, u.email as advertiser_email, u.avatar as advertiser_avatar,
+              c.name as campaign_name
        FROM ads a
        LEFT JOIN users u ON a.user_id = u.id
+       LEFT JOIN campaigns c ON a.campaign_id = c.id
        ${whereClause}
        ORDER BY 
          CASE WHEN a.status = 'pending' THEN 0 WHEN a.status = 'rejected' THEN 1 ELSE 2 END,
