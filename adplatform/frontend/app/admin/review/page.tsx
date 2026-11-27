@@ -208,7 +208,7 @@ const DEFAULT_FIGMA_CREATIVES: CreativeItem[] = [
     status: 'rejected',
     file_type: 'image',
     duration_seconds: 15,
-    rejection_reason: 'Text is too small or illegible for billboard display',
+    rejection_reason: 'Low video / image resolution',
     created_at: '2026-10-10T12:36:00Z',
     files_count: 2,
     isMock: true,
@@ -940,13 +940,13 @@ export default function AdminReviewPage() {
                     {selected.title || 'Cloth Launch Event'}
                   </h2>
 
-                  {/* Status Pill (Figma: APPROVED rgba(3,197,210,0.2) + #005055, PENDING REVIEW rgba(3,36,210,0.2) + #005055) */}
+                  {/* Status Pill (Figma: APPROVED rgba(3,197,210,0.2)/#005055, REJECTED rgba(243,184,164,0.2)/#E31818, PENDING rgba(3,36,210,0.2)/#005055) */}
                   <span
                     className={`inline-flex items-center justify-center px-2.5 py-[3px] rounded-[14.3px] text-[10.7px] font-normal leading-[14px] uppercase tracking-wide ${
                       selected.status === 'approved'
                         ? 'bg-[rgba(3,197,210,0.2)] text-[#005055]'
                         : selected.status === 'rejected'
-                        ? 'bg-rose-100 text-rose-700'
+                        ? 'bg-[rgba(243,184,164,0.2)] text-[#E31818]'
                         : 'bg-[rgba(3,36,210,0.2)] text-[#005055]'
                     }`}
                   >
@@ -1225,9 +1225,21 @@ export default function AdminReviewPage() {
               );
             })()}
 
-            {/* ── Lower Body: Shown for Pending/Rejected creatives; hidden for Approved view-only modal (Figma 916px spec) ── */}
+            {/* ── Lower Body: Approved (916px clean view), Rejected (1011px Feedback Note), Pending (1359px full review controls) ── */}
             {selected.status === 'approved' ? (
               <div className="pb-10 sm:pb-14" />
+            ) : selected.status === 'rejected' ? (
+              <div className="px-6 sm:px-[45px] pt-6 pb-10 sm:pb-14 space-y-4">
+                <h3 className="text-[20px] font-semibold leading-[30px] text-[#16151C]">
+                  Feedback Note
+                </h3>
+
+                <div className="flex flex-wrap items-center gap-[13px]">
+                  <span className="inline-flex items-center justify-center px-3 py-[7px] min-h-[28px] rounded-[14.3px] bg-[rgba(166,183,184,0.2)] text-[11px] font-normal leading-[14px] text-[#000000]">
+                    {selected.rejection_reason || 'Low video / image resolution'}
+                  </span>
+                </div>
+              </div>
             ) : (
             <div className="px-6 sm:px-[45px] pt-4 pb-10 sm:pb-12 space-y-8">
               {/* Quick Feedback Presets */}
