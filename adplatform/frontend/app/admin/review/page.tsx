@@ -940,11 +940,11 @@ export default function AdminReviewPage() {
                     {selected.title || 'Cloth Launch Event'}
                   </h2>
 
-                  {/* Status Pill (Figma: PENDING REVIEW soft periwinkle blue rgba(3,36,210,0.2) + #005055) */}
+                  {/* Status Pill (Figma: APPROVED rgba(3,197,210,0.2) + #005055, PENDING REVIEW rgba(3,36,210,0.2) + #005055) */}
                   <span
                     className={`inline-flex items-center justify-center px-2.5 py-[3px] rounded-[14.3px] text-[10.7px] font-normal leading-[14px] uppercase tracking-wide ${
                       selected.status === 'approved'
-                        ? 'bg-emerald-100 text-emerald-800'
+                        ? 'bg-[rgba(3,197,210,0.2)] text-[#005055]'
                         : selected.status === 'rejected'
                         ? 'bg-rose-100 text-rose-700'
                         : 'bg-[rgba(3,36,210,0.2)] text-[#005055]'
@@ -1225,7 +1225,10 @@ export default function AdminReviewPage() {
               );
             })()}
 
-            {/* ── Lower Body: Quick Feedback Presets, Rejection Note & Decision Buttons ── */}
+            {/* ── Lower Body: Shown for Pending/Rejected creatives; hidden for Approved view-only modal (Figma 916px spec) ── */}
+            {selected.status === 'approved' ? (
+              <div className="pb-10 sm:pb-14" />
+            ) : (
             <div className="px-6 sm:px-[45px] pt-4 pb-10 sm:pb-12 space-y-8">
               {/* Quick Feedback Presets */}
               <div className="space-y-4">
@@ -1292,6 +1295,7 @@ export default function AdminReviewPage() {
                 </button>
               </div>
             </div>
+            )}
           </div>
         </div>
       )}
