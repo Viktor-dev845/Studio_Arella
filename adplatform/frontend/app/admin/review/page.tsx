@@ -26,6 +26,9 @@ import {
   Eye,
   Clock,
   Check,
+  ChevronLeft,
+  ChevronRight,
+  Play,
 } from 'lucide-react';
 
 const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7000/api').replace('/api', '');
@@ -285,6 +288,89 @@ export default function AdminReviewPage() {
   const [selected, setSelected] = useState<CreativeItem | null>(null);
   const [reason, setReason] = useState('');
   const [reviewing, setReviewing] = useState<string | null>(null);
+  const [activeSlideIndex, setActiveSlideIndex] = useState(1);
+  const [playingSlide, setPlayingSlide] = useState(false);
+
+  // Build 3-card coverflow slides for the Review Modal
+  const modalSlides = useMemo(() => {
+    if (!selected) return [];
+    const primaryUrl = getMediaUrl(selected.file_url || selected.media_url);
+    const primaryIsVideo =
+      selected.file_type === 'video' || primaryUrl.toLowerCase().endsWith('.mp4');
+
+    const fallbackSlides = [
+      {
+        id: 'slide-left',
+        eyebrow: 'MASTER CRAFT • VIDEO',
+        title: selected.campaign_name || 'Afri-fashion Trouser',
+        badge: 'VIDEO' as const,
+        mediaUrl: '',
+        isVideo: true,
+      },
+      {
+        id: 'slide-center',
+        eyebrow: selected.duration_seconds
+          ? `PRESTIGE TIER • ${primaryIsVideo ? 'VIDEO' : 'IMAGE'}`
+          : 'PRESTIGE TIER • VIDEO',
+        title: selected.isMock ? 'Afri-fashion Trouser' : (selected.title || 'Afri-fashion Trouser'),
+        badge: (primaryIsVideo ? 'VIDEO' : 'IMAGE') as 'VIDEO' | 'IMAGE',
+        mediaUrl: primaryUrl,
+        isVideo: primaryIsVideo,
+      },
+      {
+        id: 'slide-right',
+        eyebrow: 'STEALTH SERIES • VIDEO',
+        title: selected.campaign_name || 'Afri-fashion Trouser',
+        badge: 'IMAGE' as const,
+        mediaUrl: '',
+        isVideo: false,
+      },
+    ];
+
+    if (selected.isMock || usingMockData) {
+      return fallbackSlides;
+    }
+
+    // For real DB creatives, flank the selected creative with up to 2 sibling creatives from the queue
+    const siblings = queue.filter((q) => q.id !== selected.id);
+    const leftSibling = siblings[0];
+    const rightSibling = siblings[1];
+
+    const toSlide = (item: CreativeItem, tierLabel: string, fallback: (typeof fallbackSlides)[0]) => {
+      if (!item) return fallback;
+      const u = getMediaUrl(item.file_url || item.media_url);
+      const vid = item.file_type === 'video' || u.toLowerCase().endsWith('.mp4');
+      return {
+        id: item.id,
+        eyebrow: `${tierLabel} • ${vid ? 'VIDEO' : 'IMAGE'}`,
+        title: item.title || 'Untitled Creative',
+        badge: (vid ? 'VIDEO' : 'IMAGE') as 'VIDEO' | 'IMAGE',
+        mediaUrl: u,
+        isVideo: vid,
+      };
+    };
+
+    return [
+      toSlide(leftSibling, 'MASTER CRAFT', fallbackSlides[0]),
+      {
+        id: selected.id,
+        eyebrow: `${selected.duration_seconds ? `${selected.duration_seconds}S CREATIVE` : 'PRESTIGE TIER'} • ${primaryIsVideo ? 'VIDEO' : 'IMAGE'}`,
+        title: selected.title || 'Untitled Creative',
+        badge: (primaryIsVideo ? 'VIDEO' : 'IMAGE') as 'VIDEO' | 'IMAGE',
+        mediaUrl: primaryUrl,
+        isVideo: primaryIsVideo,
+      },
+      toSlide(rightSibling, 'STEALTH SERIES', fallbackSlides[2]),
+    ];
+  }, [selected, queue, usingMockData]);
+
+  // Reset carousel focus to center slide whenever a new creative is opened
+  useEffect(() => {
+    if (selected) {
+      setActiveSlideIndex(1);
+      setPlayingSlide(false);
+    }
+  }, [selected]);
 
   const { toast } = useToast();
 
@@ -836,181 +922,376 @@ export default function AdminReviewPage() {
         </div>
       )}
 
-      {/* ── MODAL: REVIEW & MEDIA INSPECTION ── */}
+      {/* ── MODAL: REVIEW & MEDIA INSPECTION (Exact Figma Specification: 1026px, 3-Card Coverflow Carousel) ── */}
       {selected && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-[#DDDDE8] max-h-[92vh] overflow-y-auto space-y-5 animate-in fade-in zoom-in-95">
-            {/* Modal Header */}
-            <div className="flex items-start justify-between gap-4 pb-3 border-b border-slate-100">
+        <div
+          onClick={() => setSelected(null)}
+          className="fixed inset-0 bg-black/25 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-[1026px] bg-white rounded-[20px] shadow-2xl max-h-[94vh] overflow-y-auto overflow-x-hidden flex flex-col animate-in fade-in zoom-in-95 font-sans"
+          >
+            {/* ── Top Header ── */}
+            <div className="px-6 sm:px-[45px] pt-8 sm:pt-[52px] pb-4 flex items-start justify-between gap-4">
               <div>
-                <div className="flex items-center gap-2.5 flex-wrap">
-                  <h2 className="text-lg font-bold text-[#06152B]">
-                    {selected.title || 'Untitled Creative'}
+                <div className="flex items-center gap-3.5 flex-wrap">
+                  <h2 className="text-[20px] font-semibold leading-[30px] text-[#16151C]">
+                    {selected.title || 'Cloth Launch Event'}
                   </h2>
+
+                  {/* Status Pill (Figma: PENDING REVIEW soft periwinkle blue rgba(3,36,210,0.2) + #005055) */}
                   <span
-                    className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold capitalize ${
+                    className={`inline-flex items-center justify-center px-2.5 py-[3px] rounded-[14.3px] text-[10.7px] font-normal leading-[14px] uppercase tracking-wide ${
                       selected.status === 'approved'
                         ? 'bg-emerald-100 text-emerald-800'
                         : selected.status === 'rejected'
-                        ? 'bg-rose-100 text-rose-800'
-                        : 'bg-[#FED757]/30 text-[#8A6D0B]'
+                        ? 'bg-rose-100 text-rose-700'
+                        : 'bg-[rgba(3,36,210,0.2)] text-[#005055]'
                     }`}
                   >
-                    {selected.status === 'pending' ? 'Pending Review' : selected.status}
+                    {selected.status === 'pending' ? 'PENDING REVIEW' : selected.status}
                   </span>
                 </div>
-                <p className="text-xs text-[#788B9A] mt-1">
-                  Submitted by <strong className="text-[#06152B]">{selected.advertiser_name || 'Kalu Victor'}</strong> (
-                  <span className="text-[#D4AF37]">{selected.advertiser_email || 'kaluvictor23@gmail.com'}</span>)
-                  {selected.campaign_name ? ` · Campaign: ${selected.campaign_name}` : ''}
+
+                {/* Submitted By Subtitle */}
+                <p className="text-[15px] sm:text-[17px] font-light leading-6 text-[rgba(162,161,168,0.8)] mt-1">
+                  Submitted by{' '}
+                  <span className="font-normal text-[#16151C]">
+                    {selected.advertiser_name || 'Kalu Victor'}
+                  </span>{' '}
+                  ({selected.advertiser_email || 'kaluvictor23@gmail.com'})
                 </p>
               </div>
+
+              {/* Close X Icon */}
               <button
+                type="button"
                 onClick={() => setSelected(null)}
-                className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                className="p-2 text-[#344053] hover:bg-slate-100 rounded-full transition-colors cursor-pointer shrink-0"
+                aria-label="Close review modal"
               >
-                <X size={18} />
+                <X size={22} className="stroke-[2]" />
               </button>
             </div>
 
-            {/* Media Preview Box */}
-            {getMediaUrl(selected.file_url || selected.media_url) ? (
-              <div className="bg-[#0d1117] rounded-xl p-2.5 flex items-center justify-center min-h-[220px] max-h-[340px] overflow-hidden border border-slate-200 relative">
-                {selected.file_type === 'video' ||
-                (selected.file_url || selected.media_url || '').toLowerCase().endsWith('.mp4') ? (
-                  <video
-                    src={getMediaUrl(selected.file_url || selected.media_url)}
-                    controls
-                    autoPlay
-                    loop
-                    className="max-w-full max-h-[320px] rounded-lg"
-                  />
-                ) : (
-                  <img
-                    src={getMediaUrl(selected.file_url || selected.media_url)}
-                    alt={selected.title}
-                    className="max-w-full max-h-[320px] object-contain rounded-lg"
-                  />
-                )}
-              </div>
-            ) : (
-              <div className="bg-[#F1F4FA] rounded-xl p-8 text-center space-y-2 border border-dashed border-[#DDDDE8]">
-                <ImageIcon size={28} className="mx-auto text-[#788B9A]" />
-                <p className="text-xs text-[#788B9A]">
-                  No media preview file attached to this creative record
-                </p>
-              </div>
-            )}
+            {/* ── 3-Card Interactive Coverflow Media Carousel ── */}
+            {modalSlides.length > 0 && (() => {
+              const total = modalSlides.length;
+              const prevIdx = (activeSlideIndex - 1 + total) % total;
+              const nextIdx = (activeSlideIndex + 1) % total;
+              const leftSlide = modalSlides[prevIdx];
+              const centerSlide = modalSlides[activeSlideIndex];
+              const rightSlide = modalSlides[nextIdx];
 
-            {/* Metadata Strip */}
-            <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 bg-[#F1F4FA] rounded-xl text-xs text-[#788B9A]">
-              <div className="flex items-center gap-4 flex-wrap">
-                <span className="flex items-center gap-1.5">
-                  <Clock size={14} className="text-[#D4AF37]" />
-                  <span>Submitted {formatSubmittedTimestamp(selected.created_at)}</span>
-                </span>
-                {selected.duration_seconds && (
-                  <span className="px-2 py-0.5 bg-white rounded border border-[#DDDDE8] text-[#06152B] font-semibold">
-                    {selected.duration_seconds}s duration
-                  </span>
-                )}
-                <span className="px-2 py-0.5 bg-white rounded border border-[#DDDDE8] text-[#06152B] font-semibold uppercase">
-                  {selected.file_type || 'image'}
-                </span>
-              </div>
-              {getMediaUrl(selected.file_url || selected.media_url) &&
-                !getMediaUrl(selected.file_url || selected.media_url).startsWith('data:') && (
-                  <a
-                    href={getMediaUrl(selected.file_url || selected.media_url)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-[#06152B] font-semibold hover:text-[#D4AF37] transition-colors"
-                  >
-                    <ExternalLink size={13} />
-                    <span>Open Raw File</span>
-                  </a>
-                )}
-            </div>
+              const handlePrev = () => {
+                setPlayingSlide(false);
+                setActiveSlideIndex(prevIdx);
+              };
 
-            {/* Existing Rejection Note */}
-            {selected.status === 'rejected' && selected.rejection_reason && (
-              <div className="flex items-start gap-2.5 p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800">
-                <AlertTriangle size={16} className="text-rose-500 shrink-0 mt-0.5" />
-                <div>
-                  <span className="font-bold">Previous Rejection Reason: </span>
-                  <span>{selected.rejection_reason}</span>
+              const handleNext = () => {
+                setPlayingSlide(false);
+                setActiveSlideIndex(nextIdx);
+              };
+
+              return (
+                <div className="w-full py-4 sm:py-6 select-none">
+                  {/* Slides Row */}
+                  <div className="relative flex items-center justify-center gap-5 sm:gap-9 overflow-hidden px-4 sm:px-0 min-h-[380px] sm:min-h-[470px]">
+                    {/* Left Peek Slide (404x368px scaled) */}
+                    <div
+                      onClick={handlePrev}
+                      className="hidden md:flex relative w-[340px] lg:w-[390px] h-[340px] lg:h-[368px] shrink-0 rounded-[24px] overflow-hidden border border-[rgba(19,21,21,0.1)] bg-[#B8B8B8] opacity-80 cursor-pointer hover:opacity-95 transition-all -ml-44 lg:-ml-40"
+                    >
+                      {leftSlide.mediaUrl && !leftSlide.isVideo && (
+                        <img
+                          src={leftSlide.mediaUrl}
+                          alt={leftSlide.title}
+                          className="absolute inset-0 w-full h-full object-cover opacity-55"
+                        />
+                      )}
+                      {leftSlide.mediaUrl && leftSlide.isVideo && (
+                        <video
+                          src={leftSlide.mediaUrl}
+                          muted
+                          playsInline
+                          className="absolute inset-0 w-full h-full object-cover opacity-55"
+                        />
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-b from-[#B8B8B8]/55 via-[#B8B8B8]/40 to-[#0A0B0B]/80" />
+
+                      {/* Top-left Pill */}
+                      <div className="absolute top-4 left-4 z-10 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[rgba(10,11,11,0.72)] border border-white/16 backdrop-blur-md">
+                        <Play size={9} className="text-[#CFA34B] fill-[#CFA34B]" />
+                        <span className="text-[10.5px] font-semibold tracking-[0.6px] text-white uppercase">
+                          {leftSlide.badge}
+                        </span>
+                      </div>
+
+                      {/* Center Play Circle (51.5px) */}
+                      <div className="absolute inset-0 flex items-center justify-center z-10">
+                        <div className="w-[52px] h-[52px] rounded-full bg-white/92 backdrop-blur-md shadow-[0_14px_38px_rgba(0,0,0,0.45)] flex items-center justify-center pl-0.5">
+                          <Play size={19} className="text-[#131515] fill-[#131515]" />
+                        </div>
+                      </div>
+
+                      {/* Bottom Caption */}
+                      <div className="absolute inset-x-0 bottom-0 p-5 pt-8 bg-gradient-to-t from-[rgba(10,11,11,0.92)] via-[rgba(10,11,11,0.5)] to-transparent z-10">
+                        <div className="text-[10px] font-semibold tracking-[0.8px] uppercase text-[#CFA34B]">
+                          {leftSlide.eyebrow}
+                        </div>
+                        <div className="text-[15.5px] font-semibold text-white leading-5 mt-1 truncate">
+                          {leftSlide.title}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Center Active Slide (440x500px Figma Hero Card) */}
+                    <div className="relative w-full max-w-[440px] h-[380px] sm:h-[470px] shrink-0 rounded-[24px] overflow-hidden bg-[#0A0B0B] border border-white/16 shadow-[0_24px_60px_rgba(0,0,0,0.35)]">
+                      {/* Ambient Gold Top-Right Glow */}
+                      <div
+                        className="pointer-events-none absolute -top-10 -right-10 w-[180px] h-[180px] rounded-full blur-[30px] z-0"
+                        style={{
+                          background:
+                            'radial-gradient(70.71% 70.71% at 50% 50%, rgba(207, 163, 75, 0.35) 0%, rgba(207, 163, 75, 0) 70%)',
+                        }}
+                      />
+
+                      {/* Actual Media or Studio Showcase Visual */}
+                      {centerSlide.mediaUrl ? (
+                        centerSlide.isVideo ? (
+                          playingSlide ? (
+                            <video
+                              src={centerSlide.mediaUrl}
+                              controls
+                              autoPlay
+                              playsInline
+                              className="relative z-20 w-full h-full object-contain bg-black"
+                            />
+                          ) : (
+                            <video
+                              src={centerSlide.mediaUrl}
+                              muted
+                              playsInline
+                              className="absolute inset-0 w-full h-full object-cover z-0"
+                            />
+                          )
+                        ) : (
+                          <img
+                            src={centerSlide.mediaUrl}
+                            alt={centerSlide.title}
+                            className="absolute inset-0 w-full h-full object-cover z-0"
+                          />
+                        )
+                      ) : (
+                        /* Sleek luxury dark studio backdrop matching Figma showcase card when no file attached */
+                        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-[#171A21] via-[#0B0D11] to-[#07080A] z-0">
+                          <div className="w-[165px] h-[235px] rounded-xl bg-gradient-to-br from-[#F3F4F6] via-[#6366F1] to-[#312E81] shadow-[0_20px_50px_rgba(0,0,0,0.7)] border border-white/25 flex flex-col items-center justify-center p-4 text-center relative overflow-hidden">
+                            <div className="text-[78px] font-black tracking-tighter text-white/95 leading-none select-none">
+                              N
+                            </div>
+                            <div className="text-[9px] uppercase tracking-[0.2em] text-white/80 mt-2">
+                              Studio Arella Preview
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Top-Left Media Badge Pill (hidden while video controls are active) */}
+                      {!playingSlide && (
+                        <div className="absolute top-[18px] left-[18px] z-10 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[rgba(10,11,11,0.72)] border border-white/16 shadow-[0_4px_14px_rgba(0,0,0,0.25)] backdrop-blur-md">
+                          <Play size={10} className="text-[#CFA34B] fill-[#CFA34B]" />
+                          <span className="text-[11.5px] font-semibold tracking-[0.69px] text-white uppercase">
+                            {centerSlide.badge}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* External Raw File shortcut (only when real media exists) */}
+                      {centerSlide.mediaUrl && !centerSlide.mediaUrl.startsWith('data:') && !playingSlide && (
+                        <a
+                          href={centerSlide.mediaUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="absolute top-[18px] right-[18px] z-10 p-2 rounded-full bg-[rgba(10,11,11,0.72)] border border-white/16 text-white/85 hover:text-[#CFA34B] backdrop-blur-md transition-colors"
+                          title="Open raw media file"
+                        >
+                          <ExternalLink size={14} />
+                        </a>
+                      )}
+
+                      {/* Center 74px Glass Play Icon */}
+                      {!playingSlide && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (centerSlide.mediaUrl && centerSlide.isVideo) {
+                              setPlayingSlide(true);
+                            } else if (centerSlide.mediaUrl && !centerSlide.mediaUrl.startsWith('data:')) {
+                              window.open(centerSlide.mediaUrl, '_blank', 'noopener,noreferrer');
+                            } else {
+                              toast('Previewing creative media asset', 'info');
+                            }
+                          }}
+                          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-[74px] h-[74px] rounded-full bg-white/92 hover:bg-white backdrop-blur-lg shadow-[0_14px_38px_rgba(0,0,0,0.45),0_0_0_1px_rgba(255,255,255,0.4)] flex items-center justify-center pl-1 transition-transform hover:scale-105 active:scale-95 cursor-pointer"
+                          aria-label="Play creative media"
+                        >
+                          <Play size={28} className="text-[#131515] fill-[#131515]" />
+                        </button>
+                      )}
+
+                      {/* Bottom Gradient Caption Overlay */}
+                      {!playingSlide && (
+                        <div className="absolute inset-x-0 bottom-0 px-5 pt-8 pb-[18px] bg-gradient-to-t from-[rgba(10,11,11,0.92)] via-[rgba(10,11,11,0.5)] to-transparent z-10">
+                          <div className="text-[11px] font-semibold leading-[18px] tracking-[0.88px] uppercase text-[#CFA34B]">
+                            {centerSlide.eyebrow}
+                          </div>
+                          <div className="text-[15.5px] font-semibold leading-5 tracking-[-0.155px] text-white mt-1 truncate">
+                            {centerSlide.title}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Right Peek Slide (404x368px scaled) */}
+                    <div
+                      onClick={handleNext}
+                      className="hidden md:flex relative w-[340px] lg:w-[390px] h-[340px] lg:h-[368px] shrink-0 rounded-[24px] overflow-hidden border border-[rgba(19,21,21,0.1)] bg-[#B8B8B8] opacity-80 cursor-pointer hover:opacity-95 transition-all -mr-44 lg:-mr-40"
+                    >
+                      {rightSlide.mediaUrl && !rightSlide.isVideo && (
+                        <img
+                          src={rightSlide.mediaUrl}
+                          alt={rightSlide.title}
+                          className="absolute inset-0 w-full h-full object-cover opacity-55"
+                        />
+                      )}
+                      {rightSlide.mediaUrl && rightSlide.isVideo && (
+                        <video
+                          src={rightSlide.mediaUrl}
+                          muted
+                          playsInline
+                          className="absolute inset-0 w-full h-full object-cover opacity-55"
+                        />
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-b from-[#B8B8B8]/55 via-[#B8B8B8]/40 to-[#0A0B0B]/80" />
+
+                      {/* Top-left Pill */}
+                      <div className="absolute top-4 left-4 z-10 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[rgba(10,11,11,0.72)] border border-white/16 backdrop-blur-md">
+                        <Play size={9} className="text-[#CFA34B] fill-[#CFA34B]" />
+                        <span className="text-[10.5px] font-semibold tracking-[0.6px] text-white uppercase">
+                          {rightSlide.badge}
+                        </span>
+                      </div>
+
+                      {/* Center Play Circle (51.5px) */}
+                      <div className="absolute inset-0 flex items-center justify-center z-10">
+                        <div className="w-[52px] h-[52px] rounded-full bg-white/92 backdrop-blur-md shadow-[0_14px_38px_rgba(0,0,0,0.45)] flex items-center justify-center pl-0.5">
+                          <Play size={19} className="text-[#131515] fill-[#131515]" />
+                        </div>
+                      </div>
+
+                      {/* Bottom Caption */}
+                      <div className="absolute inset-x-0 bottom-0 p-5 pt-8 bg-gradient-to-t from-[rgba(10,11,11,0.92)] via-[rgba(10,11,11,0.5)] to-transparent z-10">
+                        <div className="text-[10px] font-semibold tracking-[0.8px] uppercase text-[#CFA34B]">
+                          {rightSlide.eyebrow}
+                        </div>
+                        <div className="text-[15.5px] font-semibold text-white leading-5 mt-1 truncate">
+                          {rightSlide.title}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Previous & Next Circular Navigation Buttons (50x50px, gap 14px) */}
+                  <div className="flex items-center justify-center gap-[14px] mt-5">
+                    <button
+                      type="button"
+                      onClick={handlePrev}
+                      className="w-[50px] h-[50px] rounded-full bg-white border border-[rgba(19,21,21,0.12)] shadow-[0_6px_18px_rgba(19,21,21,0.08)] flex items-center justify-center text-[#131515] hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
+                      aria-label="Previous media"
+                    >
+                      <ChevronLeft size={22} className="stroke-[2]" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleNext}
+                      className="w-[50px] h-[50px] rounded-full bg-white border border-[rgba(19,21,21,0.12)] shadow-[0_6px_18px_rgba(19,21,21,0.08)] flex items-center justify-center text-[#131515] hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
+                      aria-label="Next media"
+                    >
+                      <ChevronRight size={22} className="stroke-[2]" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* ── Lower Body: Quick Feedback Presets, Rejection Note & Decision Buttons ── */}
+            <div className="px-6 sm:px-[45px] pt-4 pb-10 sm:pb-12 space-y-8">
+              {/* Quick Feedback Presets */}
+              <div className="space-y-4">
+                <h3 className="text-[20px] font-semibold leading-[30px] text-[#16151C]">
+                  Quick Feedback Presets
+                </h3>
+
+                <div className="flex flex-wrap items-center gap-x-[13px] gap-y-[18px]">
+                  {REJECTION_PRESETS.map((preset) => {
+                    const isSelected = reason === preset;
+                    return (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => setReason(preset)}
+                        className={`px-3 py-[7px] rounded-[14.3px] text-[11px] font-normal leading-[14px] text-[#000000] transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-[#D4AF37]/25 ring-1 ring-[#D4AF37] font-medium'
+                            : 'bg-[rgba(166,183,184,0.2)] hover:bg-[rgba(166,183,184,0.35)]'
+                        }`}
+                      >
+                        {preset}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
-            )}
 
-            {/* Quick Feedback Presets */}
-            <div className="space-y-2">
-              <label className="text-[11px] font-bold text-[#788B9A] uppercase tracking-wider block">
-                Quick Rejection Feedback Presets
-              </label>
-              <div className="flex flex-wrap gap-1.5">
-                {REJECTION_PRESETS.map((preset) => (
-                  <button
-                    key={preset}
-                    type="button"
-                    onClick={() => setReason(preset)}
-                    className={`px-2.5 py-1.5 rounded-lg text-[11px] font-medium border text-left transition-all cursor-pointer ${
-                      reason === preset
-                        ? 'bg-[#FED757]/25 border-[#D4AF37] text-[#06152B] font-semibold'
-                        : 'bg-slate-50 border-slate-200 text-[#788B9A] hover:bg-slate-100'
-                    }`}
-                  >
-                    {preset}
-                  </button>
-                ))}
+              {/* Rejection Feedback Note */}
+              <div className="space-y-4">
+                <h3 className="text-[20px] font-semibold leading-[30px] text-[#16151C]">
+                  Rejection feedback note{' '}
+                  <span className="font-normal text-[rgba(162,161,168,0.8)]">
+                    (Required only if rejecting)
+                  </span>
+                </h3>
+
+                <textarea
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  placeholder="Provide a clear reason so the advertiser can review their media"
+                  className="w-full max-w-[850px] h-[131px] p-4 bg-white border border-[rgba(162,161,168,0.2)] rounded-[10px] text-[16px] sm:text-[17px] font-light leading-6 text-[#16151C] placeholder:text-[rgba(162,161,168,0.8)] outline-none focus:border-[#D4AF37] resize-none transition-colors block"
+                />
+              </div>
+
+              {/* Centered Bottom Action Buttons (Reject creative 152x40 & Approve Creative 135x40) */}
+              <div className="flex items-center justify-center gap-[20px] pt-2">
+                <button
+                  type="button"
+                  disabled={reviewing === selected.id}
+                  onClick={() => handleDecision(selected, 'rejected')}
+                  className="w-[152px] h-[40px] bg-white hover:bg-rose-50 border border-[rgba(227,24,24,0.2)] rounded-[10px] text-[16px] font-light leading-6 text-[#E31818] flex items-center justify-center transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  {reviewing === selected.id ? 'Processing...' : 'Reject creative'}
+                </button>
+
+                <button
+                  type="button"
+                  disabled={reviewing === selected.id}
+                  onClick={() => handleDecision(selected, 'approved')}
+                  className="w-[135px] h-[40px] bg-[#D4AF37] hover:bg-[#c5a028] rounded-[6px] text-[14px] font-normal leading-5 text-black/80 capitalize flex items-center justify-center transition-colors cursor-pointer active:scale-[0.98] disabled:opacity-50"
+                >
+                  {reviewing === selected.id ? 'Saving...' : 'Approve Creative'}
+                </button>
               </div>
             </div>
-
-            {/* Rejection Feedback Note */}
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-bold text-[#788B9A] uppercase tracking-wider block">
-                Rejection Feedback Note{' '}
-                <span className="font-normal normal-case text-slate-400">(required when rejecting)</span>
-              </label>
-              <textarea
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                rows={3}
-                placeholder="Provide clear feedback so the advertiser can revise and resubmit their creative..."
-                className="w-full px-3.5 py-2.5 border border-[#DDDDE8] rounded-xl text-xs text-[#06152B] outline-none focus:border-[#D4AF37] resize-y"
-              />
-            </div>
-
-            {/* Decision Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 pt-1">
-              <button
-                type="button"
-                disabled={reviewing === selected.id}
-                onClick={() => handleDecision(selected, 'rejected')}
-                className="flex-1 py-2.5 px-4 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-50"
-              >
-                <XCircle size={15} />
-                <span>{reviewing === selected.id ? 'Processing...' : 'Reject Creative'}</span>
-              </button>
-
-              <button
-                type="button"
-                disabled={reviewing === selected.id}
-                onClick={() => handleDecision(selected, 'approved')}
-                className="flex-1 py-2.5 px-4 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-50"
-              >
-                <CheckCircle2 size={15} />
-                <span>{reviewing === selected.id ? 'Processing...' : 'Approve Creative'}</span>
-              </button>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setSelected(null)}
-              className="w-full py-2 border border-slate-200 text-[#788B9A] hover:bg-slate-50 rounded-xl text-xs font-medium transition-colors cursor-pointer"
-            >
-              Cancel & Close
-            </button>
           </div>
         </div>
       )}
